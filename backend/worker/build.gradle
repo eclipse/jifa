@@ -1,0 +1,61 @@
+/********************************************************************************
+ * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ ********************************************************************************/
+buildscript {
+    archivesBaseName = 'jifa-worker'
+}
+
+plugins {
+    id 'application'
+}
+
+distributions {
+    main {
+        baseName = 'jifa'
+        contents {
+            from("${project.rootDir}/build/static") {
+                into "webroot"
+            }
+        }
+    }
+}
+
+dependencies {
+    compile project(':backend:common')
+
+    compile group: 'io.vertx', name: 'vertx-core', version: "${vertx_version}"
+    compile group: 'io.vertx', name: 'vertx-config', version: "${vertx_version}"
+    compile group: 'io.vertx', name: 'vertx-web-client', version: "${vertx_version}"
+
+    compile 'com.hierynomus:sshj:0.27.0'
+
+    compile 'com.aliyun.oss:aliyun-sdk-oss:2.8.3'
+
+    compile files("${project.rootDir}/mat.jar" as String)
+
+    testCompile 'junit:junit:4.12'
+    testCompile group: 'io.vertx', name: 'vertx-unit', version: "${vertx_version}"
+
+    runtimeOnly project(':frontend')
+}
+
+compileJava {
+    targetCompatibility = JavaVersion.VERSION_1_8
+    sourceCompatibility = JavaVersion.VERSION_1_8
+}
+
+test {
+    useJUnit()
+}
+
+mainClassName = 'org.eclipse.jifa.worker.Starter'
+buildDir = "${project.rootDir}/build"

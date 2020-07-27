@@ -1,0 +1,35 @@
+/********************************************************************************
+ * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ ********************************************************************************/
+:focus {
+    outline: none;
+}
+
+button:focus {
+    outline: none;
+}
+
+a:hover {
+    text-decoration: none;
+}
+
+a:not([href]):not([tabindex]) {
+    color: #606266;
+}
+
+a:not([href]):not([tabindex]):hover {
+    color: #409EFF;
+}
+
+a:not([href]):not([tabindex]):focus {
+    color: #409EFF;
+}

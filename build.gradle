@@ -1,0 +1,16 @@
+allprojects {
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+        jcenter()
+        mavenCentral()
+    }
+}
+
+subprojects {
+    apply plugin: 'idea'
+    version = '0.1'
+}
+
+defaultTasks 'build'

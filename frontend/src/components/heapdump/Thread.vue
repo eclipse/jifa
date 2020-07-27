@@ -1,0 +1,310 @@
+<!--
+    Copyright (c) 2020 Contributors to the Eclipse Foundation
+
+    See the NOTICE file(s) distributed with this work for additional
+    information regarding copyright ownership.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License 2.0 which is available at
+    http://www.eclipse.org/legal/epl-2.0
+
+    SPDX-License-Identifier: EPL-2.0
+ -->
+<template>
+  <el-table ref="table" :data="threads"
+            :highlight-current-row="false"
+            stripe
+            :header-cell-style="headerCellStyle"
+            :cell-style='cellStyle'
+            row-key="rowKey"
+            lazy
+            v-loading="loading"
+            height="100%"
+            :indent=8
+            :load="loadStackInfo"
+            :span-method="tableSpanMethod">
+    <el-table-column label="Thread / Stack" width="450px" show-overflow-tooltip>
+      <template slot-scope="scope">
+          <span v-if="scope.row.isThread" @click="$emit('setSelectedObjectId', scope.row.objectId)"
+                style="cursor: pointer">
+            <img :src="threadIcon"/> {{scope.row.object}}
+          </span>
+
+        <span v-if="scope.row.isStack">
+            <img :src="frameIcon"/> {{scope.row.stack}}
+          </span>
+
+        <span v-if="scope.row.isLocal" @click="$emit('setSelectedObjectId', scope.row.objectId)"
+              style="cursor: pointer">
+            <img :src="scope.row.icon">
+            <strong>{{ " " +scope.row.prefix + " "}}</strong>
+            {{scope.row.label}}
+            <span style="font-weight: bold; color: #909399">{{ " " + scope.row.suffix}}</span>
+          </span>
+
+        <span v-if="scope.row.isOutbound" @click="$emit('setSelectedObjectId', scope.row.objectId)"
+              style="cursor: pointer">
+            <img :src="scope.row.icon">
+            <strong>{{ " " +scope.row.prefix + " "}}</strong>
+            {{scope.row.label}}
+            <span style="font-weight: bold; color: #909399">{{ " " + scope.row.suffix}}</span>
+          </span>
+
+        <span v-if="scope.row.isOutboundsSummary">
+            <img :src="ICONS.misc.sumIcon" v-if="scope.row.currentSize >= scope.row.totalSize"/>
+
+            <img :src="ICONS.misc.sumPlusIcon"
+                 @dblclick="fetchOutbounds(scope.row.parentRowKey, scope.row.objectId, scope.row.nextPage, scope.row.resolve)"
+                 style="cursor: pointer"
+                 v-else/>
+            {{ scope.row.currentSize }} <strong> / </strong> {{ scope.row.totalSize }}
+          </span>
+
+        <span v-if="scope.row.isThreadSummaryItem">
+            <img :src="sumIcon" v-if="currentSize >= totalSize"/>
+            <img :src="sumPlusIcon" @dblclick="fetchThreadDetails" style="cursor: pointer" v-else/>
+            {{ currentSize }} <strong> / </strong> {{totalSize}}
+          </span>
+      </template>
+    </el-table-column>
+
+    <el-table-column label="Name" prop="name" width="300px" show-overflow-tooltip>
+    </el-table-column>
+    <el-table-column label="Shallow Heap" prop="shallowHeap">
+    </el-table-column>
+    <el-table-column label="Retained Heap" prop="retainedHeap">
+    </el-table-column>
+    <el-table-column label="Context Class Loader" prop="contextClassLoader" width="420px" show-overflow-tooltip>
+    </el-table-column>
+    <el-table-column label="Is Daemon" prop="daemon">
+    </el-table-column>
+  </el-table>
+</template>
+
+<script>
+  import axios from 'axios'
+  import {heapDumpService} from '../../util'
+  import {getOutboundIcon, ICONS} from './IconHealper'
+
+  let rowKey = 1
+
+  export default {
+    props: ['file'],
+    methods: {
+      loadStackInfo(tree, treeNode, resolve) {
+        if (tree.isThread) {
+          this.fetchStackTrace(tree.objectId, resolve)
+        } else if (tree.isStack) {
+          this.fetchLocals(tree.threadObjectId, tree.depth, tree.firstNonNativeFrame, resolve)
+        } else if (tree.isLocal || tree.isOutbound) {
+          this.fetchOutbounds(tree.rowKey, tree.objectId, 1, resolve)
+        } else if (tree.isOutboundsSummary) {
+          this.fetchOutbounds(tree.parentRowKey, tree.objectId, tree.nextPage, resolve)
+        }
+      },
+      tableSpanMethod(i) {
+        if (i.row.isStack) {
+          if (i.columnIndex === 0) {
+            return [1, 2];
+          } else if (i.columnIndex === 1) {
+            return [0, 0];
+          } else {
+            return [1, 1]
+          }
+        }
+
+        if (i.row.isLocal || i.row.isOutbound) {
+          if (i.columnIndex === 0) {
+            return [1, 2];
+          } else if (i.columnIndex === 1) {
+            return [0, 0];
+          } else {
+            return [1, 1]
+          }
+        }
+      },
+      fetchOutbounds(parentRowKey, objectId, page, resolve) {
+        this.loading = true
+        axios.get(heapDumpService(this.file, 'outbounds'), {
+          params: {
+            objectId: objectId,
+            page: page,
+            pageSize: this.pageSize,
+          }
+        }).then(resp => {
+          let loadedLen = 0;
+          let loaded = this.$refs['table'].store.states.lazyTreeNodeMap[parentRowKey]
+          let callResolve = false
+          if (loaded) {
+            loadedLen = loaded.length
+            if (loadedLen > 0) {
+              loaded.splice(--loadedLen, 1)
+            }
+          } else {
+            loaded = []
+            callResolve = true;
+          }
+          let res = resp.data.data
+          for (let i = 0; i < res.length; i++) {
+            loaded.push({
+              rowKey: rowKey++,
+              isOutbound: true,
+              objectId: res[i].objectId,
+              prefix: res[i].prefix,
+              label: res[i].label,
+              suffix: res[i].suffix,
+              shallowHeap: res[i].shallowSize,
+              retainedHeap: res[i].retainedSize,
+              icon: getOutboundIcon(res[i].gCRoot, res[i].objectType),
+              hasChildren: res[i].hasOutbound
+            })
+          }
+
+          loaded.push({
+            rowKey: rowKey++,
+            objectId: objectId,
+            parentRowKey: parentRowKey,
+            isOutboundsSummary: true,
+            nextPage: page + 1,
+            currentSize: loadedLen + res.length,
+            totalSize: resp.data.totalSize,
+            resolve: resolve,
+          })
+
+          if (callResolve) {
+            resolve(loaded)
+          }
+          this.loading = false
+        })
+
+      },
+      fetchLocals(objId, depth, firstNonNativeFrame, resolve) {
+        this.loading = true
+        axios.get(heapDumpService(this.file, 'locals'), {
+          params: {
+            objectId: objId,
+            depth: depth,
+            firstNonNativeFrame: firstNonNativeFrame
+          }
+        }).then(resp => {
+          let res = resp.data
+          let locals = []
+          for (let i = 0; i < res.length; i++) {
+            locals.push({
+              rowKey: rowKey++,
+              isLocal: true,
+              objectId: res[i].objectId,
+              prefix: res[i].prefix,
+              label: res[i].label,
+              suffix: res[i].suffix,
+              shallowHeap: res[i].shallowSize,
+              retainedHeap: res[i].retainedSize,
+              icon: getOutboundIcon(res[i].gCRoot, res[i].objectType),
+              hasChildren: res[i].hasOutbound
+            })
+          }
+          resolve(locals)
+          this.loading = false
+        })
+      },
+      fetchStackTrace(objId, resolve) {
+        this.loading = true
+        axios.get(heapDumpService(this.file, 'stackTrace'), {
+          params: {
+            objectId: objId
+          }
+        }).then(resp => {
+          let res = resp.data
+          let stacks = []
+          let depth = 1
+          for (let i = 0; i < res.length; i++) {
+            stacks.push({
+              rowKey: rowKey++,
+              isStack: true,
+              threadObjectId: objId,
+              stack: res[i].stack,
+              depth: depth++,
+              hasChildren: res[i].hasLocal,
+              firstNonNativeFrame: res[i].firstNonNativeFrame
+            })
+          }
+          resolve(stacks)
+          this.loading = false
+        })
+      },
+      fetchThreadsData() {
+        this.loading = true
+        axios.get(heapDumpService(this.file, 'threadsSummary'), {}).then(resp => {
+          this.shallowHeap = resp.data.shallowHeap
+          this.retainedHeap = resp.data.retainedHeap
+          this.totalSize = resp.data.totalSize
+          this.fetchThreadDetails();
+        })
+      },
+      fetchThreadDetails() {
+        if (this.currentSize >= this.totalSize) {
+          return
+        }
+        this.loading = true
+        if (this.nextPage > 1) {
+          this.threads.splice(this.threads.length - 1, 1)
+        }
+        axios.get(heapDumpService(this.file, 'threads'), {
+          params: {
+            page: this.nextPage,
+            pageSize: this.pageSize
+          }
+        }).then(resp => {
+          let res = resp.data.data
+          let tmp = []
+          this.currentSize += res.length
+          for (let i = 0; i < res.length; i++) {
+            tmp.push({
+              rowKey: rowKey++,
+              isThread: true,
+              objectId: res[i].objectId,
+              object: res[i].object,
+              name: res[i].name,
+              shallowHeap: res[i].shallowSize,
+              retainedHeap: res[i].retainedSize,
+              contextClassLoader: res[i].contextClassLoader,
+              daemon: res[i].daemon + '',
+              hasChildren: res[i].hasStack
+            })
+          }
+          this.nextPage++
+          tmp.forEach(t => this.threads.push(t))
+          this.threads.push({
+            rowKey: rowKey++,
+            isThreadSummaryItem: true,
+            shallowHeap: this.shallowHeap,
+            retainedHeap: this.retainedHeap
+          })
+          this.loading = false
+        })
+      }
+    },
+    data() {
+      return {
+        loading: false,
+        threads: [],
+        ICONS,
+        threadIcon: require('../../assets/heap/thread.gif'),
+        frameIcon: require('../../assets/heap/stack_frame.gif'),
+        sumIcon: require('../../assets/heap/misc/sum.gif'),
+        sumPlusIcon: require('../../assets/heap/misc/sum_plus.gif'),
+        nextPage: 1,
+        pageSize: 25,
+        currentSize: 0,
+        totalSize: 0,
+        shallowHeap: 0,
+        retainedHeap: 0,
+        cellStyle: {padding: '4px', fontSize: '12px'},
+        headerCellStyle: {padding: 0, 'font-size': '12px', 'font-weight': 'normal'}
+      }
+    },
+    created() {
+      this.fetchThreadsData()
+    }
+  }
+</script>

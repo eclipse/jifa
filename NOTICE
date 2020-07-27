@@ -1,0 +1,172 @@
+# Notices for Jifa
+
+This content is produced and maintained by the Eclipse Jifa project.
+
+* Project home: https://projects.eclipse.org/projects/technology.jifa
+
+## Trademarks
+
+Eclipse Jifa, and Jifa are trademarks of the Eclipse Foundation.
+
+## Copyright
+
+All content is the property of the respective authors or their employers. For
+more information regarding authorship of content, please consult the listed
+source code repository logs.
+
+## Declared Project Licenses
+
+This program and the accompanying materials are made available under the terms
+of the Eclipse Public License v. 2.0 which is available at
+http://www.eclipse.org/legal/epl-2.0.
+
+SPDX-License-Identifier: EPL-2.0
+
+## Source Code
+
+The project maintains the following source code repositories:
+
+* https://git.eclipse.org/c/jifa/jifa.git
+
+## Third-party Content
+
+This project leverages the following third party content.
+
+lombok (1.18.6)
+
+* License: MIT
+
+commons-io (2.6)
+
+* License: Apache License 2.0
+
+Google Guava (27.1-jre)
+
+* License: Apache License 2.0
+
+Apache Log4j SLF4J Binding (2.11.2)
+
+* License: Apache License 2.0
+
+Google Gson (2.8.6)
+
+* License: Apache License 2.0
+
+Eclipse Vert.x (3.8.3)
+
+* License: Eclipse Public License 2.0
+
+* License: Apache License 2.0
+
+SSHJ (0.27.0)
+
+* License: Apache License 2.0
+
+Aliyun OSS SDK For Java (2.8.3)
+
+* License: Apache License 2.0
+
+Eclipse MAT
+
+* License: Eclipse Public License 1.0
+
+JUnit (4.12)
+
+* License: Eclipse Public License 1.0
+
+vue (2.6.10)
+
+* License: MIT
+
+axios (0.18.1)
+
+* License: MIT
+
+bootstrap-vue (2.0.0-rc.19)
+
+* License: MIT
+
+chart.js (2.8.0)
+
+* License: MIT
+
+echarts (4.6.0)
+
+* License: Apache License 2.0
+
+element-ui (2.13.1)
+
+* License: MIT
+
+font-awesome (4.7.0)
+
+* License: MIT
+
+jquery (3.4.1)
+
+* License: MIT
+
+node-sass (4.14.0)
+
+* License: MIT
+
+popper.js (1.15.0)
+
+* License: MIT
+
+sass-loader (7.1.0)
+
+* License: MIT
+
+tar (4.4.8)
+
+* License: ISC
+
+v-charts (1.9.0)
+
+* License: MIT
+
+v-contextmenu (2.8.0)
+
+* License: MIT
+
+vue-ads-table-tree (2.4.2)
+
+* License: MIT
+
+vue-chartjs (3.4.2)
+
+* License: MIT
+
+vue-click-outside (1.0.7)
+
+* License: MIT
+
+vue-clipboard2 (0.3.0)
+
+* License: MIT
+
+vue-cookies (1.5.13)
+
+* License: MIT
+
+vue-i18n (8.9.0)
+
+* License: MIT
+
+vue-router (3.0.2)
+
+* License: MIT
+
+## Cryptography
+
+Content may contain encryption software. The country in which you are currently
+may have restrictions on the import, possession, and use, and/or re-export to
+another country, of encryption software. BEFORE using any encryption software,
+please check the country's laws, regulations and policies concerning the import,
+possession, or use, and re-export of encryption software, to see if this is
+permitted.
+
+## Contributors:
+
+Alibaba - Initial implementation

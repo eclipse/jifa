@@ -1,0 +1,5 @@
+{
+  "server.host": "localhost",
+  "api.prefix": "/jifa-api",
+  "workspace": ".test_jifa_workspace"
+}

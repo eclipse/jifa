@@ -1,0 +1,209 @@
+<!--
+    Copyright (c) 2020 Contributors to the Eclipse Foundation
+
+    See the NOTICE file(s) distributed with this work for additional
+    information regarding copyright ownership.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License 2.0 which is available at
+    http://www.eclipse.org/legal/epl-2.0
+
+    SPDX-License-Identifier: EPL-2.0
+ -->
+<template>
+  <div style="height: 100%">
+    <el-table
+            ref="table"
+            :data="records"
+            :highlight-current-row="false"
+            stripe
+            :header-cell-style="headerCellStyle"
+            :cell-style='cellStyle'
+            row-key="rowKey"
+            height="100%"
+            :indent=8
+            lazy
+            v-loading="loading"
+            :load="fetchClassLoaders"
+            :span-method="tableSpanMethod">
+      <el-table-column label="Class Name / Class Loader" show-overflow-tooltip>
+        <template slot-scope="scope">
+          <span v-if="scope.row.isClassItem">
+            <img :src="ICONS.objects.class"/> {{scope.row.label}}
+          </span>
+
+          <span v-if="scope.row.isClassLoaderItem" @click="$emit('setSelectedObjectId', scope.row.objectId)"
+                style="cursor: pointer">
+            <img :src="scope.row.icon"/> {{scope.row.label}}
+            <span style="font-weight: bold; color: #909399" v-if="scope.row.suffix">{{ " " + scope.row.suffix}}</span>
+          </span>
+
+          <span v-if="scope.row.isCldSummaryItem">
+            <img :src="ICONS.misc.sumIcon" v-if="scope.row.currentSize >= scope.row.totalSize"/>
+
+            <img :src="ICONS.misc.sumPlusIcon" @dblclick="fetchMoreClassLoaders(scope.row)" style="cursor: pointer"
+                 v-else/>
+            {{ scope.row.currentSize }} <strong> / </strong> {{ scope.row.totalSize }}
+          </span>
+
+          <span v-if="scope.row.isSummaryItem">
+            <img :src="ICONS.misc.sumIcon" v-if="currentSize >= totalSize"/>
+            <img :src="ICONS.misc.sumPlusIcon" @dblclick="fetchDuplicatedClasses" style="cursor: pointer" v-else/>
+            {{ currentSize }} <strong> / </strong> {{totalSize}}
+          </span>
+        </template>
+      </el-table-column>
+
+      <el-table-column/>
+      <el-table-column/>
+      <el-table-column/>
+
+      <el-table-column label="ClassLoader Counts" prop="classLoaderCount">
+      </el-table-column>
+
+      <el-table-column label="Defined Classes" prop="definedClassesCount">
+      </el-table-column>
+
+      <el-table-column label="Num of Instances" prop="instantiatedObjectsCount">
+      </el-table-column>
+    </el-table>
+
+  </div>
+</template>
+
+<script>
+
+  import axios from 'axios'
+  import {heapDumpService} from '../../util'
+  import {getIcon, ICONS} from "./IconHealper";
+  import {OBJECT_TYPE} from './CommonType'
+
+  let rowKey = 1
+  export default {
+    props: ['file'],
+    methods: {
+      tableSpanMethod(row) {
+        let index = row.columnIndex
+        if (index === 0) {
+          return [1, 4]
+        } else if (index >= 1 && index <= 3) {
+          return [0, 0]
+        }
+        return [1, 1]
+      },
+      doFetchClassLoaders(parentRowKey, index, page, resolve) {
+        this.loading = true
+        axios.get(heapDumpService(this.file, 'duplicatedClasses/classLoaders'), {
+          params: {
+            index: index,
+            page: page,
+            pageSize: this.pageSize,
+          }
+        }).then(resp => {
+          let loadedLen = 0
+          let loaded = this.$refs['table'].store.states.lazyTreeNodeMap[parentRowKey]
+          let callResolve = false
+          if (loaded) {
+            loadedLen = loaded.length
+            if (loadedLen > 0) {
+              loaded.splice(--loadedLen, 1)
+            }
+          } else {
+            loaded = []
+            callResolve = true;
+          }
+          let res = resp.data.data
+          for (let i = 0; i < res.length; i++) {
+            loaded.push({
+              rowKey: rowKey++,
+              isClassLoaderItem: true,
+              label: res[i].label,
+              objectId: res[i].objectId,
+              suffix: res[i].suffix,
+              definedClassesCount: res[i].definedClassesCount,
+              instantiatedObjectsCount: res[i].instantiatedObjectsCount,
+              icon: getIcon(res[i].gCRoot, OBJECT_TYPE.CLASSLOADER)
+            })
+          }
+          loaded.push({
+            rowKey: rowKey++,
+            parentRowKey: parentRowKey,
+            isCldSummaryItem: true,
+            index: index,
+            nextPage: page + 1,
+            currentSize: loadedLen + res.length,
+            totalSize: resp.data.totalSize,
+            resolve: resolve,
+          })
+
+          if (callResolve) {
+            resolve(loaded)
+          }
+          this.loading = false
+        })
+      },
+      fetchMoreClassLoaders(summary) {
+        this.doFetchClassLoaders(summary.parentRowKey, summary.index, summary.nextPage, summary.resolve)
+      },
+      fetchClassLoaders(tree, treeNode, resolve) {
+        this.doFetchClassLoaders(tree.rowKey, tree.index, 1, resolve)
+      },
+      fetchDuplicatedClasses() {
+        this.loading = true
+        if (this.nextPage > 1) {
+          this.records.splice(this.records.length - 1, 1)
+        }
+        axios.get(heapDumpService(this.file, 'duplicatedClasses/classes'), {
+          params: {
+            page: this.nextPage,
+            pageSize: this.pageSize,
+          }
+        }).then(resp => {
+          this.totalSize = resp.data.totalSize
+          let res = resp.data.data
+          let index = this.currentSize
+          let tmp = []
+          for (let i = 0; i < res.length; i++) {
+            tmp.push({
+              rowKey: rowKey++,
+              label: res[i].label,
+              icon: this.classIcon,
+              index: index++,
+              classLoaderCount: res[i].count,
+              currentSize: 0,
+              hasChildren: res[i].count > 0,
+              isClassItem: true,
+            })
+          }
+          this.nextPage++
+          this.currentSize += res.length
+          tmp.forEach(t => this.records.push(t))
+          if (this.records.length > 0) {
+            this.records.push({
+              rowKey: rowKey++,
+              isSummaryItem: true
+            })
+          }
+          this.loading = false
+        })
+      },
+
+    },
+    data() {
+      return {
+        ICONS,
+        loading: true,
+        records: [],
+        nextPage: 1,
+        pageSize: 25,
+        currentSize: 0,
+        totalSize: 0,
+        cellStyle: {padding: '4px', fontSize: '12px'},
+        headerCellStyle: {padding: 0, 'font-size': '12px', 'font-weight': 'normal'},
+      }
+    },
+    created() {
+      this.fetchDuplicatedClasses()
+    }
+  }
+</script>

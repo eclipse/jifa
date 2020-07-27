@@ -1,0 +1,4 @@
+{
+  "server.port": 8102,
+  "api.prefix": "/jifa-api"
+}

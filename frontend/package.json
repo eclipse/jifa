@@ -1,0 +1,68 @@
+{
+  "name": "Jifa",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "serve": "vue-cli-service serve",
+    "dev-build": "vue-cli-service build --mode development --dest build",
+    "prod-build": "vue-cli-service build --mode production --dest build",
+    "build": "vue-cli-service build --mode production --dest build",
+    "lint": "vue-cli-service lint"
+  },
+  "dependencies": {
+    "axios": "^0.18.1",
+    "bootstrap-vue": "^2.0.0-rc.19",
+    "chart.js": "^2.8.0",
+    "echarts": "^4.6.0",
+    "element-ui": "^2.13.1",
+    "font-awesome": "^4.7.0",
+    "jquery": "^3.4.1",
+    "node-sass": "^4.14.0",
+    "popper.js": "^1.15.0",
+    "sass-loader": "^7.1.0",
+    "tar": "^4.4.8",
+    "v-charts": "^1.9.0",
+    "v-contextmenu": "^2.8.0",
+    "vue": "^2.6.10",
+    "vue-ads-table-tree": "^2.4.2",
+    "vue-chartjs": "^3.4.2",
+    "vue-click-outside": "^1.0.7",
+    "vue-clipboard2": "^0.3.0",
+    "vue-cookies": "^1.5.13",
+    "vue-i18n": "^8.9.0",
+    "vue-router": "^3.0.2"
+  },
+  "devDependencies": {
+    "@vue/cli-plugin-babel": "^3.5.0",
+    "@vue/cli-plugin-eslint": "^3.5.0",
+    "@vue/cli-service": "^3.6.0",
+    "babel-eslint": "^10.0.1",
+    "eslint": "^5.8.0",
+    "eslint-plugin-vue": "^5.0.0",
+    "vue-template-compiler": "^2.5.21"
+  },
+  "eslintConfig": {
+    "root": true,
+    "env": {
+      "node": true
+    },
+    "extends": [
+      "plugin:vue/essential",
+      "eslint:recommended"
+    ],
+    "rules": {},
+    "parserOptions": {
+      "parser": "babel-eslint"
+    }
+  },
+  "postcss": {
+    "plugins": {
+      "autoprefixer": {}
+    }
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not ie <= 8"
+  ]
+}
