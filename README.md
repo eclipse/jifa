@@ -18,7 +18,7 @@
 that provides HTTP services so that users can view the heap dump files analysis through a browser.
 Users can deploy Jifa to their production environments, and share the same analysis result to different users
 via their browsers, we believe it's a more convenient way to troubleshoot Java heap issues.
-__
+
 ## Introduction
 Eclipse Jifa uses Vert.x as the main backend framework, and uses Vue 2.0 as the frontend framework.
 
@@ -32,6 +32,9 @@ Heap dump Analysis:
 - Thread Overview
 - OQL
 - Other features
+
+![Jifa Sample](https://raw.githubusercontent.com/wiki/eclipse/jifa/resources/jifa-sample.jpg)
+
 
 ## What's the goal?
 We believe that many companies have encountered problems when troubleshooting Java problems
