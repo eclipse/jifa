@@ -12,11 +12,11 @@
  -->
 <template>
   <b-navbar-nav>
-    <b-nav-item href="#" @click="doReanalyze" v-if="analysisState === 'SUCCESS' || analysisState === 'ERROR'">
+    <b-nav-item href="#" @click="doReanalyze" v-if="$jifa.fileManagement() && (analysisState === 'SUCCESS' || analysisState === 'ERROR')">
       <i class="el-icon-warning-outline" style="margin-right: 3px"/> {{$t("jifa.reanalyze")}}
     </b-nav-item>
 
-    <b-nav-item href="#" @click="doRelease" v-if="analysisState === 'SUCCESS'">
+    <b-nav-item href="#" @click="doRelease" v-if="$jifa.fileManagement() && analysisState === 'SUCCESS'">
       <i class="el-icon-s-release" style="margin-right: 3px"/> {{$t("jifa.release")}}
     </b-nav-item>
 
@@ -49,27 +49,31 @@
     methods: {
 
       doReanalyze() {
-        this.$confirm(this.$t('jifa.heap.reanalyzePrompt'), this.$t('jifa.prompt'), {
-          confirmButtonText: this.$t('jifa.confirm'),
-          cancelButtonText: this.$t('jifa.cancel'),
-          type: 'warning'
-        }).then(() => {
-          axios.post(this.getUrlByType('clean')).then(() => {
-            window.location.reload();
+        if (this.$jifa.fileManagement()) {
+          this.$confirm(this.$t('jifa.heap.reanalyzePrompt'), this.$t('jifa.prompt'), {
+            confirmButtonText: this.$t('jifa.confirm'),
+            cancelButtonText: this.$t('jifa.cancel'),
+            type: 'warning'
+          }).then(() => {
+            axios.post(this.getUrlByType('clean')).then(() => {
+              window.location.reload();
+            })
           })
-        })
+        }
       },
 
       doRelease() {
-        this.$confirm(this.$t('jifa.heap.releasePrompt'), this.$t('jifa.prompt'), {
-          confirmButtonText: this.$t('jifa.confirm'),
-          cancelButtonText: this.$t('jifa.cancel'),
-          type: 'warning'
-        }).then(() => {
-          axios.post(this.getUrlByType('release')).then(() => {
-            this.$router.push({name: 'finder'})
+        if (this.$jifa.fileManagement()) {
+          this.$confirm(this.$t('jifa.heap.releasePrompt'), this.$t('jifa.prompt'), {
+            confirmButtonText: this.$t('jifa.confirm'),
+            cancelButtonText: this.$t('jifa.cancel'),
+            type: 'warning'
+          }).then(() => {
+            axios.post(this.getUrlByType('release')).then(() => {
+              this.$router.push({name: 'finder'})
+            })
           })
-        })
+        }
       },
 
       triggerInspector() {

@@ -42,5 +42,7 @@ public interface Constant extends org.eclipse.jifa.common.Constant {
         String API_PREFIX = "api.prefix";
         String SERVER_HOST_KEY = "server.host";
         String SERVER_PORT_KEY = "server.port";
+        String SERVER_UPLOAD_DIR_KEY = "server.uploadDir";
+        String HOOKS_NAME_KEY = "hooks.className";
     }
 }

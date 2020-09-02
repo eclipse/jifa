@@ -18,4 +18,9 @@ export default class JifaGlobal {
   static dev() {
     return process.env.NODE_ENV === 'development'
   }
+
+  static fileManagement() {
+    // default enabled, but can be disabled by setting 'false'
+    return process.env.VUE_APP_JIFA_FILE_MGMT !== 'false'
+  }
 }

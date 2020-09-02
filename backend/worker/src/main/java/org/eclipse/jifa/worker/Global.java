@@ -14,6 +14,7 @@ package org.eclipse.jifa.worker;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
+import org.eclipse.jifa.common.JifaHooks;
 import org.eclipse.jifa.worker.support.FileSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,9 +37,11 @@ public class Global {
 
     private static String WORKSPACE;
 
+    private static JifaHooks HOOKS;
+
     private static boolean initialized;
 
-    static synchronized void init(Vertx vertx, String host, int port, JsonObject config) {
+    static synchronized void init(Vertx vertx, String host, int port, JsonObject config, JifaHooks hooks) {
         if (initialized) {
             return;
         }
@@ -47,6 +50,7 @@ public class Global {
         HOST = host;
         PORT = port;
         CONFIG = config;
+        HOOKS = hooks;
 
         WORKSPACE = CONFIG.getString(Constant.ConfigKey.WORKSPACE, Constant.Misc.DEFAULT_WORKSPACE);
         LOGGER.debug("Workspace: {}", WORKSPACE);
@@ -70,5 +74,9 @@ public class Global {
 
     public static String workspace() {
         return WORKSPACE;
+    }
+
+    public static JifaHooks hooks() {
+        return HOOKS;
     }
 }

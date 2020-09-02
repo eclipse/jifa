@@ -18,6 +18,7 @@ import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.http.HttpServer;
+import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
@@ -25,12 +26,14 @@ import io.vertx.ext.web.handler.CorsHandler;
 import io.vertx.ext.web.handler.StaticHandler;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.eclipse.jifa.common.JifaHooks;
 import org.eclipse.jifa.worker.route.RouteFiller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.ReflectiveOperationException;
 import java.net.ServerSocket;
 import java.nio.charset.Charset;
 import java.util.Objects;
@@ -38,6 +41,8 @@ import java.util.concurrent.CountDownLatch;
 
 import static org.eclipse.jifa.worker.Constant.ConfigKey.SERVER_HOST_KEY;
 import static org.eclipse.jifa.worker.Constant.ConfigKey.SERVER_PORT_KEY;
+import static org.eclipse.jifa.worker.Constant.ConfigKey.SERVER_UPLOAD_DIR_KEY;
+import static org.eclipse.jifa.worker.Constant.ConfigKey.HOOKS_NAME_KEY;
 import static org.eclipse.jifa.worker.Constant.Misc.*;
 
 public class Starter extends AbstractVerticle {
@@ -81,6 +86,24 @@ public class Starter extends AbstractVerticle {
         }
     }
 
+    JifaHooks findHooks() {
+        JifaHooks hook = null;
+
+        if (config().containsKey(HOOKS_NAME_KEY)) {
+            String className = config().getString(HOOKS_NAME_KEY);
+            try {
+                LOGGER.info("applying hooks: " + className);
+                Class<JifaHooks> clazz = (Class<JifaHooks>) Class.forName(className);
+                hook = clazz.getConstructor().newInstance();
+                hook.init(config());
+            } catch (ReflectiveOperationException e) {
+                LOGGER.warn("could not start hook class: " + className + ", due to error", e);
+            }
+        }
+
+        return hook != null ? hook : new JifaHooks.EmptyHooks();
+    }
+
     @Override
     public void start() {
         String host = config().containsKey(SERVER_HOST_KEY) ? config().getString(SERVER_HOST_KEY) : DEFAULT_HOST;
@@ -89,11 +112,26 @@ public class Starter extends AbstractVerticle {
 
         String staticRoot = System.getProperty(WEB_ROOT_KEY, "webroot");
 
-        vertx.executeBlocking(event -> {
-            Global.init(vertx, host, port, config());
+        String uploadDir = config().containsKey(SERVER_UPLOAD_DIR_KEY) ? config().getString(SERVER_UPLOAD_DIR_KEY) : null;
 
-            HttpServer server = vertx.createHttpServer();
+        JifaHooks hooks = findHooks();
+
+        vertx.executeBlocking(event -> {
+            Global.init(vertx, host, port, config(), hooks);
+
+            HttpServer server = vertx.createHttpServer(hooks.serverOptions());
             Router router = Router.router(vertx);
+
+            // body handler always eneds to be first so it can read the body
+            if (uploadDir == null) {
+                router.post().handler(BodyHandler.create());
+            } else {
+                router.post().handler(BodyHandler.create(uploadDir));
+            }
+
+            hooks.beforeRoutes(router);
+
+            router.post().handler(BodyHandler.create());
 
             File webRoot = new File(staticRoot);
             if (webRoot.exists() && webRoot.isDirectory()) {
@@ -105,9 +143,9 @@ public class Starter extends AbstractVerticle {
             }
             // cors
             router.route().handler(CorsHandler.create("*"));
-            router.post().handler(BodyHandler.create());
 
             new RouteFiller(router).fill();
+            hooks.afterRoutes(router);
             server.requestHandler(router);
 
             server.listen(port, host, ar -> {
