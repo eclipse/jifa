@@ -15,7 +15,7 @@ buildscript {
 }
 
 dependencies {
-    compile "org.apache.logging.log4j:log4j-slf4j-impl:2.11.2"
+    compile "org.apache.logging.log4j:log4j-slf4j-impl:2.13.3"
 
     compile 'com.google.code.gson:gson:2.8.6'
 
