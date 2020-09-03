@@ -67,13 +67,10 @@ Some options are provided to configure JIFA without modification to the source c
 
 ### Frontend configuration
 
-Frontend can be configured at build time:
+Frontend can be configured by modifying the `config.js` file provided in the application webroot, in the same
+location as the `index.html` file.
 
-```
-# the UI file management links (release, analyze, go to file manager) can be disabled
-export VUE_APP_JIFA_FILE_MGMT=false
-./gradlew build
-```
+A [sample config.js file](frontend/public/config.js) is provided with JIFA which you can edit.
 
 ### Backend customization
 

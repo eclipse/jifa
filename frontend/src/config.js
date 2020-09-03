@@ -10,12 +10,12 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-export default class JifaGlobal {
-  static prod() {
-    return process.env.NODE_ENV === 'production'
-  }
 
-  static dev() {
-    return process.env.NODE_ENV === 'development'
-  }
+const defaults = {
+  fileManagement: true,
+}
+
+export default {
+  ...defaults,
+  ...window.config,
 }
