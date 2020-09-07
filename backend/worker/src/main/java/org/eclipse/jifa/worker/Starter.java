@@ -97,11 +97,15 @@ public class Starter extends AbstractVerticle {
 
             File webRoot = new File(staticRoot);
             if (webRoot.exists() && webRoot.isDirectory()) {
-                String staticPattern = "^(?!" + Global.stringConfig(Constant.ConfigKey.API_PREFIX) + ").*$";
                 StaticHandler staticHandler = StaticHandler.create();
                 staticHandler.setAllowRootFileSystemAccess(true);
                 staticHandler.setWebRoot(staticRoot);
-                router.routeWithRegex(staticPattern).handler(staticHandler);
+                // route index first
+                router.route("/").handler(staticHandler);
+
+                // reroute other non-api path to "/" since our frontend is single page
+                String staticPattern = "^(?!" + Global.stringConfig(Constant.ConfigKey.API_PREFIX) + ").*$";
+                router.routeWithRegex(staticPattern).handler(context -> context.reroute("/"));
             }
             // cors
             router.route().handler(CorsHandler.create("*"));
