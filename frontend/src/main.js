@@ -40,7 +40,7 @@ Vue.use(VueCharts)
 Vue.use(VueClipboard)
 Vue.use(contentmenu)
 Vue.use(VueCookies)
-Vue.prototype.$jifa = { ...JifaGlobal, ...config }
+Vue.prototype.$jifa = Object.assign(JifaGlobal, config)
 
 export default new Vue({
   router,
