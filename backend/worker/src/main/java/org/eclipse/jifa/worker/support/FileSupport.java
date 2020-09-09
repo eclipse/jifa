@@ -214,7 +214,8 @@ public class FileSupport {
     }
 
     public static String dirPath(FileType type, String name) {
-        return dirPath(type) + File.separator + name;
+        String defaultDirPath = dirPath(type) + File.separator + name;
+        return Global.hooks().mapDirPath(type, name, defaultDirPath);
     }
 
     private static String infoFilePath(FileType type, String name) {
@@ -230,7 +231,8 @@ public class FileSupport {
     }
 
     private static String filePath(FileType type, String name, String childrenName) {
-        return dirPath(type, name) + File.separator + childrenName;
+        String defaultFilePath = dirPath(type, name) + File.separator + childrenName;
+        return Global.hooks().mapFilePath(type, name, childrenName, defaultFilePath);
     }
 
     public static String errorLogPath(FileType fileType, String file) {
@@ -245,7 +247,8 @@ public class FileSupport {
         } else {
             indexFileNamePrefix = file + '.';
         }
-        return FileSupport.filePath(fileType, file, indexFileNamePrefix + "index");
+        String defaultIndexPath = FileSupport.filePath(fileType, file, indexFileNamePrefix + "index");
+        return Global.hooks().mapIndexPath(fileType, file, defaultIndexPath);
     }
 
     public static TransferListener createTransferListener(FileType fileType, String originalName, String fileName) {

@@ -17,6 +17,7 @@ import JifaGlobal from './Jifa'
 
 import i18n from './i18n/i18n-setup'
 import router from './router'
+import config from './config'
 
 import ElementUI from 'element-ui'
 import BootstrapVue from 'bootstrap-vue'
@@ -39,7 +40,7 @@ Vue.use(VueCharts)
 Vue.use(VueClipboard)
 Vue.use(contentmenu)
 Vue.use(VueCookies)
-Vue.prototype.$jifa = JifaGlobal
+Vue.prototype.$jifa = Object.assign(JifaGlobal, config)
 
 export default new Vue({
   router,

@@ -13,7 +13,11 @@
 <template>
   <b-navbar type="light" variant="faded" style="height: 100%; border-bottom: 1px solid #dcdfe6; font-size: 14px">
     <b-navbar-nav>
-      <b-navbar-brand href="" to="/">
+      <b-navbar-brand href="" to="/" v-if="$jifa.fileManagement">
+        <i class="el-icon-s-platform"/>
+        J I F A
+      </b-navbar-brand>
+      <b-navbar-brand v-if="!$jifa.fileManagement">
         <i class="el-icon-s-platform"/>
         J I F A
       </b-navbar-brand>

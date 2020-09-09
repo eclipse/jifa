@@ -14,11 +14,12 @@
   <b-navbar-nav>
 
     <b-nav-item @click="$emit('chooseMenu', 'HEAP_DUMP')"
+                v-if="$jifa.fileManagement"
                 :active="fileType==='HEAP_DUMP'">
       <i class="el-icon-coin" style="margin-right: 3px"/> {{$t("jifa.heapDumpAnalysis")}}
     </b-nav-item>
 
-    <b-nav-item @click="handleAddFile">
+    <b-nav-item @click="handleAddFile" v-if="$jifa.fileManagement">
       <i class="el-icon-plus" style="margin-right: 3px"/> {{this.title}}
     </b-nav-item>
   </b-navbar-nav>

@@ -12,11 +12,11 @@
  -->
 <template>
   <b-navbar-nav>
-    <b-nav-item href="#" @click="doReanalyze" v-if="analysisState === 'SUCCESS' || analysisState === 'ERROR'">
+    <b-nav-item href="#" @click="doReanalyze" v-if="$jifa.fileManagement && (analysisState === 'SUCCESS' || analysisState === 'ERROR')">
       <i class="el-icon-warning-outline" style="margin-right: 3px"/> {{$t("jifa.reanalyze")}}
     </b-nav-item>
 
-    <b-nav-item href="#" @click="doRelease" v-if="analysisState === 'SUCCESS'">
+    <b-nav-item href="#" @click="doRelease" v-if="$jifa.fileManagement && analysisState === 'SUCCESS'">
       <i class="el-icon-s-release" style="margin-right: 3px"/> {{$t("jifa.release")}}
     </b-nav-item>
 
