@@ -131,8 +131,6 @@ public class Starter extends AbstractVerticle {
 
             hooks.beforeRoutes(router);
 
-            router.post().handler(BodyHandler.create());
-
             File webRoot = new File(staticRoot);
             if (webRoot.exists() && webRoot.isDirectory()) {
                 StaticHandler staticHandler = StaticHandler.create();
