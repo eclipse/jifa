@@ -33,11 +33,11 @@ public class FileRouteSuite extends Base {
               .addQueryParam("page", "1")
               .addQueryParam("pageSize", "10")
               .send(ar -> {
-                  context.assertTrue(ar.succeeded());
+                  context.assertTrue(ar.succeeded(), ar.cause() != null ? ar.cause().getMessage() : "");
                   Type type = new TypeToken<PageView<FileInfo>>() {
                   }.getType();
                   PageView<FileInfo> view = GSON.fromJson(ar.result().bodyAsString(), type);
-                  context.assertTrue(view.getData().size() > 0);
+                  context.assertTrue(view.getData().size() > 0, ar.result().bodyAsString());
                   async.complete();
               });
     }
