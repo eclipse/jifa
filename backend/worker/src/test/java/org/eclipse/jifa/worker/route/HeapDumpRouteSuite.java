@@ -234,6 +234,7 @@ public class HeapDumpRouteSuite extends Base {
     static void test(String uri, HttpMethod method, PreProcessor processor, PostProcessor postProcessor) {
         LOGGER.info("test {}", uri);
         Async async = context.async();
+        LOGGER.info("method = {}, port = {}, host = {}, uri = {}", method, Global.PORT, Global.HOST, uri("/heap-dump/" + TEST_HEAP_DUMP_FILENAME + uri));
         HttpRequest<Buffer> request =
             CLIENT.request(method, Global.PORT, Global.HOST, uri("/heap-dump/" + TEST_HEAP_DUMP_FILENAME + uri));
         if (processor != null) {

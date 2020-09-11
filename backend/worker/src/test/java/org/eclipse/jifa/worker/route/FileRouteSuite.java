@@ -19,15 +19,19 @@ import org.eclipse.jifa.common.enums.FileType;
 import org.eclipse.jifa.common.vo.FileInfo;
 import org.eclipse.jifa.common.vo.PageView;
 import org.eclipse.jifa.worker.Global;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Type;
 
 import static org.eclipse.jifa.common.util.GsonHolder.GSON;
 
 public class FileRouteSuite extends Base {
+    private static Logger LOGGER = LoggerFactory.getLogger(FileRouteSuite.class);
 
     public static void test(TestContext context) {
         Async async = context.async();
+        LOGGER.info("port = {}, host = {}, uri = {}", Global.PORT, Global.HOST, uri("/files"));
         CLIENT.get(Global.PORT, Global.HOST, uri("/files"))
               .addQueryParam("type", FileType.HEAP_DUMP.name())
               .addQueryParam("page", "1")
