@@ -48,7 +48,7 @@ Looking forward to more users and contributors :-)
   The community primarily uses this list for project announcements and administrative discussions amongst committers.
   Questions are welcome here as well.
 - Ask a question or start a discussion via a [GitHub issue](https://github.com/eclipse/jifa/issues).
-- Slack channel: TBD
+- Slack channel: [Eclipse Jifa](https://eclipsejifa.slack.com)
 
 ## Quick start
 ```
