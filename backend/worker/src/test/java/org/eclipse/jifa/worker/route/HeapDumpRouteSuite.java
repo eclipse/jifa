@@ -51,7 +51,7 @@ public class HeapDumpRouteSuite extends Base {
                     Type type = new TypeToken<Result<Boolean>>() {
                     }.getType();
                     Result<Boolean> result = GSON.fromJson(resp.bodyAsString(), type);
-                    context.assertTrue(result.getResult());
+                    context.assertTrue(result.getResult(), resp.bodyAsString());
 
                 });
 
@@ -63,7 +63,7 @@ public class HeapDumpRouteSuite extends Base {
                     (PostProcessor) resp -> {
                         Progress progress = GSON.fromJson(resp.bodyAsString(), Progress.class);
                         ProgressState state = progress.getState();
-                        context.assertTrue(state == ProgressState.IN_PROGRESS || state == ProgressState.SUCCESS);
+                        context.assertTrue(state == ProgressState.IN_PROGRESS || state == ProgressState.SUCCESS, resp.bodyAsString());
                         if (state == ProgressState.SUCCESS) {
                             success.set(true);
                         }
@@ -234,6 +234,7 @@ public class HeapDumpRouteSuite extends Base {
     static void test(String uri, HttpMethod method, PreProcessor processor, PostProcessor postProcessor) {
         LOGGER.info("test {}", uri);
         Async async = context.async();
+        LOGGER.info("method = {}, port = {}, host = {}, uri = {}", method, Global.PORT, Global.HOST, uri("/heap-dump/" + TEST_HEAP_DUMP_FILENAME + uri));
         HttpRequest<Buffer> request =
             CLIENT.request(method, Global.PORT, Global.HOST, uri("/heap-dump/" + TEST_HEAP_DUMP_FILENAME + uri));
         if (processor != null) {
@@ -241,7 +242,8 @@ public class HeapDumpRouteSuite extends Base {
         }
         request.send(
             ar -> {
-                context.assertTrue(ar.succeeded());
+                context.assertTrue(ar.succeeded(), ar.cause() != null ? ar.cause().getMessage() : "");
+                LOGGER.debug("{}: {} - {}", uri, ar.result().statusCode(), ar.result().bodyAsString());
                 context.assertEquals(ar.result().statusCode(),
                                      method == HttpMethod.GET ? HTTP_GET_OK_STATUS_CODE : HTTP_POST_CREATED_STATUS_CODE,
                                      ar.result().bodyAsString());
