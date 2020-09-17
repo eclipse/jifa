@@ -34,9 +34,11 @@ import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 
+import java.net.ServerSocket;
 import java.util.HashMap;
 import java.util.Map;
 import java.io.File;
+import java.io.IOException;
 import java.lang.management.ManagementFactory;
 
 @RunWith(VertxUnitRunner.class)
@@ -52,7 +54,8 @@ public class TestStarter {
     @Test
     public void testStartupBasicConfig(TestContext context) throws Exception {
         Map<String, Object> cfg = new HashMap<>();
-        cfg.put("server.port", 8888);
+        cfg.put("server.port", findRandomPort());
+        cfg.put("server.host", "127.0.0.1");
         cfg.put("api.prefix", "/jifa-api");
         
         Async async = context.async();
@@ -71,7 +74,8 @@ public class TestStarter {
     @Test
     public void testStartWithHook(TestContext context) throws Exception {
         Map<String, Object> cfg = new HashMap<>();
-        cfg.put("server.port", 8888);
+        cfg.put("server.port", findRandomPort());
+        cfg.put("server.host", "127.0.0.1");
         cfg.put("api.prefix", "/jifa-api");
         cfg.put("hooks.className", FakeHooks.class.getName());
         
@@ -89,4 +93,10 @@ public class TestStarter {
             });
     }
 
+    int findRandomPort() throws IOException {
+        ServerSocket socket = new ServerSocket(0);
+        int port = socket.getLocalPort();
+        socket.close();
+        return port;
+    }
 }
