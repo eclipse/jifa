@@ -57,17 +57,24 @@ public class TestStarter {
         cfg.put("server.port", findRandomPort());
         cfg.put("server.host", "127.0.0.1");
         cfg.put("api.prefix", "/jifa-api");
-        
+
         Async async = context.async();
 
         Vertx vertx = Vertx.vertx();
         vertx.deployVerticle(Starter.class.getName(),
             new DeploymentOptions().setConfig(new JsonObject(cfg)).setInstances(1),
             res -> {
-                context.assertTrue(res.succeeded());
-                vertx.close(res2 -> {
-                    async.complete();
-                });
+                if (res.succeeded()) {
+                    vertx.undeploy(res.result(), res2 -> {
+                        if (res2.succeeded()) {
+                            async.complete();
+                        } else {
+                            context.fail(res2.cause());
+                        }
+                    });
+                } else {
+                    context.fail(res.cause());
+                }
             });
     }
 
@@ -78,18 +85,25 @@ public class TestStarter {
         cfg.put("server.host", "127.0.0.1");
         cfg.put("api.prefix", "/jifa-api");
         cfg.put("hooks.className", FakeHooks.class.getName());
-        
+
         Async async = context.async();
 
         Vertx vertx = Vertx.vertx();
         vertx.deployVerticle(Starter.class.getName(),
             new DeploymentOptions().setConfig(new JsonObject(cfg)).setInstances(1),
             res -> {
-                context.assertTrue(res.succeeded());
-                context.assertEquals(FakeHooks.countInitTriggered(), 1);
-                vertx.close(res2 -> {
-                    async.complete();
-                });
+                if (res.succeeded()) {
+                    vertx.undeploy(res.result(), res2 -> {
+                        if (res2.succeeded()) {
+                            context.assertEquals(FakeHooks.countInitTriggered(), 1);
+                            async.complete();
+                        } else {
+                            context.fail(res2.cause());
+                        }
+                    });
+                } else {
+                    context.fail(res.cause());
+                }
             });
     }
 
