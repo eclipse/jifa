@@ -29,7 +29,7 @@
     <b-navbar-nav v-if="subject==='finder'" class="ml-auto">
       <b-nav-item-dropdown>
         <template v-slot:button-content>{{currentLanguage}}</template>
-        <b-dropdown-item href="#" v-for="lang in supportLanguages" :key="lang"
+        <b-dropdown-item href="#" v-for="lang in supportLanguages" :key="lang.value"
                          @click="$i18n.locale=lang.value; currentLanguage=lang.label">
           {{lang.label}}
         </b-dropdown-item>
