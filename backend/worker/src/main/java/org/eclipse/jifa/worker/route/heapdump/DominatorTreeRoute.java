@@ -28,10 +28,12 @@ import io.vertx.core.Future;
 import org.eclipse.mat.SnapshotException;
 import org.eclipse.mat.internal.snapshot.inspections.DominatorQuery;
 import org.eclipse.mat.query.Bytes;
+import org.eclipse.mat.query.IResultTree;
 import org.eclipse.mat.snapshot.ISnapshot;
 import org.eclipse.mat.snapshot.model.IObject;
 
 import java.lang.reflect.Constructor;
+import java.util.Collections;
 import java.util.List;
 
 import static org.eclipse.jifa.common.util.Assertion.ASSERT;
@@ -71,7 +73,7 @@ class DominatorTreeRoute extends HeapBaseRoute {
     @RouteMeta(path = "/dominatorTree/children")
     void children(Future<PageView<BaseRecord>> future, @ParamKey("file") String file,
                   @ParamKey("grouping") Grouping grouping, PagingRequest pagingRequest,
-                  @ParamKey("parentObjectId") int parentObjectId) throws Exception {
+                  @ParamKey("parentObjectId") int parentObjectId, @ParamKey(value = "idPathInResultTree", mandatory = false) int[] idPathInResultTree) throws Exception {
 
         ISnapshot snapshot = Analyzer.getOrOpenSnapshotContext(file).getSnapshot();
         DominatorQuery query = new DominatorQuery();
@@ -83,7 +85,9 @@ class DominatorTreeRoute extends HeapBaseRoute {
             Object parentNode = DEFAULT_NODE.newInstance(parentObjectId);
             future.complete(buildDefaultRecord(snapshot, tree, tree.getChildren(parentNode), pagingRequest));
         } else if (grouping == Grouping.BY_CLASS) {
-
+            future.complete(buildChildrenRecordGroupByClass(tree, pagingRequest, idPathInResultTree));
+        } else {
+            throw new JifaException("unsupported now.");
         }
     }
 
@@ -126,6 +130,13 @@ class DominatorTreeRoute extends HeapBaseRoute {
             record.setPercent((Double) tree.getColumnValue(e, 4));
             return record;
         });
+    }
+
+    private PageView<BaseRecord> buildChildrenRecordGroupByClass(DominatorQuery.Tree tree,
+            PagingRequest pagingRequest, int[] idPathInResultTree) {
+        Object object = HeapDumpSupport.fetchObjectInResultTree(tree, idPathInResultTree);
+        List<?> elements = object == null ? Collections.emptyList() : tree.getChildren(object);
+        return buildClassRecord(tree, elements, pagingRequest);
     }
 
     public enum Grouping {
