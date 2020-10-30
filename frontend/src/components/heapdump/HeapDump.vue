@@ -117,6 +117,7 @@
                                @outgoingRefsOfClass="outgoingRefsOfClass"
                                @incomingRefsOfClass="incomingRefsOfClass"
                                @pathToGCRootsOfObj="pathToGCRootsOfObj"
+                               @mergePathToGCRootsFromHistogram="mergePathToGCRootsFromHistogram"
                                @setSelectedObjectId="setSelectedObjectId"/>
                   </div>
                 </el-tab-pane>
@@ -200,7 +201,8 @@
                                          @incomingRefsOfObj="incomingRefsOfObj"
                                          @outgoingRefsOfClass="outgoingRefsOfClass"
                                          @incomingRefsOfClass="incomingRefsOfClass"
-                                         @pathToGCRootsOfObj="pathToGCRootsOfObj"/>
+                                         @pathToGCRootsOfObj="pathToGCRootsOfObj"
+                                         @mergePathToGCRootsFromHistogram="mergePathToGCRootsFromHistogram"/>
                   </div>
                 </el-tab-pane>
               </el-tabs>
@@ -372,6 +374,11 @@
 
       pathToGCRootsOfObj(id, label) {
         this.$refs['dynamicResultSlot'].pathToGCRootsOfObj(id, label);
+        this.enableShowDynamicResultSlot();
+      },
+
+      mergePathToGCRootsFromHistogram(id, label) {
+        this.$refs['dynamicResultSlot'].mergePathToGCRootsFromHistogram(id, label);
         this.enableShowDynamicResultSlot();
       },
 

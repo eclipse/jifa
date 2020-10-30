@@ -35,8 +35,8 @@
       </v-contextmenu-submenu>
       <v-contextmenu-item divider/>
       <v-contextmenu-item
-              @click="$emit('pathToGCRootsOfObj', contextMenuTargetObjectId, contextMenuTargetObjectLabel)">
-        {{$t('jifa.heap.pathToGCRoots')}}
+              @click="$emit('mergePathToGCRootsFromHistogram', contextMenuTargetObjectId, contextMenuTargetObjectLabel)">
+        {{$t('jifa.heap.mergePathToGCRoots')}}
       </v-contextmenu-item>
     </v-contextmenu>
 

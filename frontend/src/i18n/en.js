@@ -113,6 +113,7 @@ exports.default = {
       },
 
       pathToGCRoots: 'Path to GC Roots',
+      mergePathToGCRoots: 'Merge Path to GC Roots',
     },
   }
 };
