@@ -1,0 +1,77 @@
+/********************************************************************************
+ * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ ********************************************************************************/
+plugins {
+    id 'application'
+}
+
+group 'org.eclipse.jifa'
+version '1.0'
+
+dependencies {
+    compile project(':backend:common')
+
+    compile group: 'io.vertx', name: 'vertx-core', version: "${vertx_version}"
+    compile group: 'io.vertx', name: 'vertx-config', version: "${vertx_version}"
+    compile group: 'io.vertx', name: 'vertx-service-proxy', version: "${vertx_version}"
+    compileOnly group: 'io.vertx', name: 'vertx-codegen', version: "${vertx_version}", classifier: 'processor'
+
+    compile group: 'io.vertx', name: 'vertx-rx-java2', version: "${vertx_version}"
+    compile group: 'io.vertx', name: 'vertx-rx-java2-gen', version: "${vertx_version}"
+
+    compile group: 'io.vertx', name: 'vertx-web', version: "${vertx_version}"
+    compile group: 'io.vertx', name: 'vertx-auth-jwt', version: "${vertx_version}"
+    compile group: 'io.vertx', name: 'vertx-web-client', version: "${vertx_version}"
+    compile group: 'io.vertx', name: 'vertx-auth-common', version: "${vertx_version}"
+    compile group: 'io.vertx', name: 'vertx-jdbc-client', version: "${vertx_version}"
+
+    compile group: 'mysql', name: 'mysql-connector-java', version: '8.0.15'
+
+    testCompile group: 'junit', name: 'junit', version: "4.12"
+    testCompile group: 'io.vertx', name: 'vertx-unit', version: "3.7.1"
+}
+
+application {
+    mainClassName = 'io.vertx.core.Launcher'
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs += 'src/main/generated'
+        }
+    }
+}
+
+task runVertxCodeGen(type: JavaCompile, group: 'build') {
+    def generated = project.file('src/main/generated')
+    generated.delete()
+    source = sourceSets.main.java
+    classpath = sourceSets.main.compileClasspath
+    options.annotationProcessorPath = sourceSets.main.compileClasspath
+    destinationDir = generated
+    options.compilerArgs = [
+            "-proc:only",
+            "-processor",
+            'lombok.launch.AnnotationProcessorHider$AnnotationProcessor,io.vertx.codegen.CodeGenProcessor',
+    ]
+}
+
+compileJava {
+    options.encoding = "UTF-8"
+    targetCompatibility = JavaVersion.VERSION_1_8
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    dependsOn runVertxCodeGen
+}
+
+mainClassName = 'org.eclipse.jifa.master.Master'
+

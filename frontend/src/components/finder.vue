@@ -58,23 +58,32 @@
                 </el-col>
 
                 <el-col :span="8" align="right">
-                  <span>
-                    <el-link icon="el-icon-document-copy" v-clipboard:copy="file(row, col).name"
-                             :underline="false" target="_blank"/>
-                  </span>
 
-                  <span v-if="file(row,col).hasOwnProperty('displayName')">
+                  <el-tooltip class="item" effect="light" :content="$t('jifa.tip.copyName')" placement="top-start">
+                    <span>
+                      <el-link icon="el-icon-document-copy" v-clipboard:copy="file(row, col).name"
+                               :underline="false" target="_blank"/>
+                    </span>
+                  </el-tooltip>
+
+
+                  <el-tooltip class="item" effect="light" :content="$t('jifa.tip.rename')" placement="top-start">
+                    <span v-if="file(row,col).hasOwnProperty('displayName')">
                     <el-divider direction="vertical"></el-divider>
                     <el-link icon="el-icon-edit" :underline="false" @click="updateFile(file(row,col))"/>
                   </span>
+                  </el-tooltip>
 
-                  <span v-if="file(row,col).hasOwnProperty('shared')">
-                    <el-divider direction="vertical"></el-divider>
-                    <el-link :icon="file(row, col).shared ? 'el-icon-unlock' : 'el-icon-lock'"
-                             v-on:click="toggleSharedState(file(row, col))"
-                             :underline="false"
-                             target="_blank"/>
-                  </span>
+                  <el-tooltip class="item" effect="light" :content="$t('jifa.tip.setShare')" placement="top-start">
+                    <span v-if="file(row,col).hasOwnProperty('shared')">
+                      <el-divider direction="vertical"></el-divider>
+                      <el-link :icon="file(row, col).shared ? 'el-icon-unlock' : 'el-icon-lock'"
+                               v-on:click="toggleSharedState(file(row, col))"
+                               :underline="false"
+                               target="_blank"/>
+                    </span>
+                  </el-tooltip>
+
 
                   <span v-if="downloadable(file(row,col))">
                     <el-divider direction="vertical"></el-divider>
@@ -83,11 +92,14 @@
                              target="_blank"/>
                   </span>
 
-                  <span v-if="canDelete(file(row,col))">
+
+                  <el-tooltip class="item" effect="light" :content="$t('jifa.tip.deleteFile')" placement="top-start">
+                    <span v-if="canDelete(file(row,col))">
                     <el-divider direction="vertical"></el-divider>
                     <el-link icon="el-icon-delete" :underline="false"
                              v-on:click="fileToDelete =  file(row, col).name"/>
                   </span>
+                  </el-tooltip>
                 </el-col>
               </el-row>
               <el-row :align='"middle"' type="flex">

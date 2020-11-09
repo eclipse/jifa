@@ -12,8 +12,8 @@
  ********************************************************************************/
 package org.eclipse.jifa.common.vo;
 
-import org.eclipse.jifa.common.request.PagingRequest;
 import lombok.Data;
+import org.eclipse.jifa.common.request.PagingRequest;
 
 import java.util.List;
 

@@ -17,10 +17,10 @@ import com.sun.management.HotSpotDiagnosticMXBean;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.apache.commons.io.FileUtils;
+import org.eclipse.jifa.common.enums.FileTransferState;
 import org.eclipse.jifa.common.enums.FileType;
-import org.eclipse.jifa.common.enums.ProgressState;
-import org.eclipse.jifa.worker.Global;
-import org.eclipse.jifa.worker.Starter;
+import org.eclipse.jifa.worker.Worker;
+import org.eclipse.jifa.worker.WorkerGlobal;
 import org.eclipse.jifa.worker.support.FileSupport;
 import org.junit.After;
 import org.junit.Before;
@@ -40,7 +40,7 @@ public class TestRoutes {
     @Before
     public void setup(TestContext context) throws Exception {
         // start worker
-        Starter.main(new String[]{});
+        Worker.main(new String[]{});
 
         // prepare heap dump file
         HotSpotDiagnosticMXBean mxBean = ManagementFactory.getPlatformMXBean(HotSpotDiagnosticMXBean.class);
@@ -49,7 +49,7 @@ public class TestRoutes {
         mxBean.dumpHeap(name, false);
         FileSupport.initInfoFile(FileType.HEAP_DUMP, name, name);
         Files.move(new File(name), new File(FileSupport.filePath(FileType.HEAP_DUMP, name)));
-        FileSupport.updateTransferState(FileType.HEAP_DUMP, name, ProgressState.SUCCESS);
+        FileSupport.updateTransferState(FileType.HEAP_DUMP, name, FileTransferState.SUCCESS);
     }
 
     @Test
@@ -62,8 +62,8 @@ public class TestRoutes {
     public void tearDown(TestContext context) {
         try {
             System.out.println(context);
-            FileUtils.deleteDirectory(new File(Global.workspace()));
-            Global.VERTX.close(context.asyncAssertSuccess());
+            FileUtils.deleteDirectory(new File(WorkerGlobal.workspace()));
+            WorkerGlobal.VERTX.close(context.asyncAssertSuccess());
         } catch (Throwable t) {
             LOGGER.error("Error", t);
         }

@@ -22,14 +22,17 @@
         J I F A
       </b-navbar-brand>
     </b-navbar-nav>
+    |
+    <user-worker v-if="subject==='finder' && $jifa.workerOnly===true" />
 
     <finder-menu v-if="subject==='finder'" v-bind="$attrs" v-on="$listeners"/>
     <analysis-result-menu v-else-if="subject==='analysisResult'" v-bind="$attrs" v-on="$listeners"/>
 
     <b-navbar-nav v-if="subject==='finder'" class="ml-auto">
+      <Feedback/>
       <b-nav-item-dropdown>
         <template v-slot:button-content>{{currentLanguage}}</template>
-        <b-dropdown-item href="#" v-for="lang in supportLanguages" :key="lang"
+        <b-dropdown-item href="#" v-for="lang in supportLanguages" :key="lang.label"
                          @click="$i18n.locale=lang.value; currentLanguage=lang.label">
           {{lang.label}}
         </b-dropdown-item>
@@ -39,8 +42,10 @@
 </template>
 
 <script>
-  import FinderMenu from "./FinderMenu";
-  import AnalysisResultMenu from "./AnalysisResultMenu";
+  import FinderMenu from "./FinderMenu"
+  import AnalysisResultMenu from "./AnalysisResultMenu"
+  import Feedback from "./Feedback";
+  import UserWorker from "./UserWorker";
 
   import {supportLanguages} from '../../i18n/i18n-setup'
 
@@ -51,6 +56,8 @@
     components: {
       FinderMenu,
       AnalysisResultMenu,
+      Feedback,
+      UserWorker
     },
 
     methods: {
@@ -66,7 +73,7 @@
 
     data() {
       return {
-        supportLanguages,
+        supportLanguages: supportLanguages,
         currentLanguage: this.getCurrentLanguageLabel(),
       }
     },

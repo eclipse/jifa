@@ -12,12 +12,12 @@
  ********************************************************************************/
 package org.eclipse.jifa.worker.route.heapdump;
 
+import io.vertx.core.Future;
 import org.eclipse.jifa.worker.route.ParamKey;
 import org.eclipse.jifa.worker.route.RouteMeta;
 import org.eclipse.jifa.worker.support.Analyzer;
 import org.eclipse.jifa.worker.support.heapdump.HeapDumpSupport;
 import org.eclipse.jifa.worker.vo.heapdump.HeapObject;
-import io.vertx.core.Future;
 import org.eclipse.mat.snapshot.ISnapshot;
 import org.eclipse.mat.snapshot.model.IObject;
 

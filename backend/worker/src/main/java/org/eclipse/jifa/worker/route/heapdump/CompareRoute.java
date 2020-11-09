@@ -13,8 +13,8 @@
 package org.eclipse.jifa.worker.route.heapdump;
 
 import io.vertx.core.Future;
+import org.eclipse.jifa.common.enums.FileTransferState;
 import org.eclipse.jifa.common.enums.FileType;
-import org.eclipse.jifa.common.enums.ProgressState;
 import org.eclipse.jifa.common.request.PagingRequest;
 import org.eclipse.jifa.common.util.PageViewBuilder;
 import org.eclipse.jifa.common.vo.FileInfo;
@@ -39,7 +39,7 @@ class CompareRoute extends HeapBaseRoute {
     void files(Future<PageView<FileInfo>> future, @ParamKey("file") String source,
                @ParamKey(value = "expected", mandatory = false) String expected, PagingRequest pagingRequest) {
         future.complete(PageViewBuilder.build(FileSupport.info(FileType.HEAP_DUMP).stream().filter(
-            fileInfo -> !fileInfo.getName().equals(source) && fileInfo.getTransferState() == ProgressState.SUCCESS)
+            fileInfo -> !fileInfo.getName().equals(source) && fileInfo.getTransferState() == FileTransferState.SUCCESS)
                                                          .sorted((i1, i2) -> Long
                                                              .compare(i2.getCreationTime(), i1.getCreationTime()))
                                                          .collect(Collectors.toList()), pagingRequest));

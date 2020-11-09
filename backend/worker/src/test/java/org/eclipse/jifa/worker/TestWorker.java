@@ -12,39 +12,27 @@
  ********************************************************************************/
 package org.eclipse.jifa.worker;
 
-import com.google.common.io.Files;
-import com.sun.management.HotSpotDiagnosticMXBean;
+import io.vertx.core.DeploymentOptions;
+import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import org.apache.commons.io.FileUtils;
-import org.eclipse.jifa.common.enums.FileType;
-import org.eclipse.jifa.common.enums.ProgressState;
-import org.eclipse.jifa.worker.Global;
-import org.eclipse.jifa.worker.Starter;
-import org.eclipse.jifa.worker.support.FileSupport;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.vertx.core.DeploymentOptions;
-import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonObject;
-
+import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.HashMap;
 import java.util.Map;
-import java.io.File;
-import java.io.IOException;
-import java.lang.management.ManagementFactory;
 
 @RunWith(VertxUnitRunner.class)
-public class TestStarter {
+public class TestWorker {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(TestStarter.class);
+    private static Logger LOGGER = LoggerFactory.getLogger(TestWorker.class);
 
     @Before
     public void setup(TestContext context) throws Exception {
@@ -61,21 +49,21 @@ public class TestStarter {
         Async async = context.async();
 
         Vertx vertx = Vertx.vertx();
-        vertx.deployVerticle(Starter.class.getName(),
-            new DeploymentOptions().setConfig(new JsonObject(cfg)).setInstances(1),
-            res -> {
-                if (res.succeeded()) {
-                    vertx.undeploy(res.result(), res2 -> {
-                        if (res2.succeeded()) {
-                            async.complete();
-                        } else {
-                            context.fail(res2.cause());
-                        }
-                    });
-                } else {
-                    context.fail(res.cause());
-                }
-            });
+        vertx.deployVerticle(Worker.class.getName(),
+                             new DeploymentOptions().setConfig(new JsonObject(cfg)).setInstances(1),
+                             res -> {
+                                 if (res.succeeded()) {
+                                     vertx.undeploy(res.result(), res2 -> {
+                                         if (res2.succeeded()) {
+                                             async.complete();
+                                         } else {
+                                             context.fail(res2.cause());
+                                         }
+                                     });
+                                 } else {
+                                     context.fail(res.cause());
+                                 }
+                             });
     }
 
     @Test
@@ -89,22 +77,22 @@ public class TestStarter {
         Async async = context.async();
 
         Vertx vertx = Vertx.vertx();
-        vertx.deployVerticle(Starter.class.getName(),
-            new DeploymentOptions().setConfig(new JsonObject(cfg)).setInstances(1),
-            res -> {
-                if (res.succeeded()) {
-                    vertx.undeploy(res.result(), res2 -> {
-                        if (res2.succeeded()) {
-                            context.assertEquals(FakeHooks.countInitTriggered(), 1);
-                            async.complete();
-                        } else {
-                            context.fail(res2.cause());
-                        }
-                    });
-                } else {
-                    context.fail(res.cause());
-                }
-            });
+        vertx.deployVerticle(Worker.class.getName(),
+                             new DeploymentOptions().setConfig(new JsonObject(cfg)).setInstances(1),
+                             res -> {
+                                 if (res.succeeded()) {
+                                     vertx.undeploy(res.result(), res2 -> {
+                                         if (res2.succeeded()) {
+                                             context.assertEquals(FakeHooks.countInitTriggered(), 1);
+                                             async.complete();
+                                         } else {
+                                             context.fail(res2.cause());
+                                         }
+                                     });
+                                 } else {
+                                     context.fail(res.cause());
+                                 }
+                             });
     }
 
     int findRandomPort() throws IOException {

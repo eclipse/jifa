@@ -21,6 +21,7 @@ import io.vertx.ext.web.RoutingContext;
 import org.apache.logging.log4j.util.Strings;
 import org.eclipse.jifa.common.aux.ErrorCode;
 import org.eclipse.jifa.common.aux.JifaException;
+import org.eclipse.jifa.common.enums.FileTransferState;
 import org.eclipse.jifa.common.enums.FileType;
 import org.eclipse.jifa.common.enums.ProgressState;
 import org.eclipse.jifa.common.request.PagingRequest;
@@ -30,7 +31,7 @@ import org.eclipse.jifa.common.vo.FileInfo;
 import org.eclipse.jifa.common.vo.PageView;
 import org.eclipse.jifa.common.vo.TransferProgress;
 import org.eclipse.jifa.common.vo.TransferringFile;
-import org.eclipse.jifa.worker.Global;
+import org.eclipse.jifa.worker.WorkerGlobal;
 import org.eclipse.jifa.worker.support.FileSupport;
 import org.eclipse.jifa.worker.support.heapdump.TransferListener;
 import org.slf4j.Logger;
@@ -121,17 +122,17 @@ class FileRoute extends BaseRoute {
 
     @RouteMeta(path = "/file/transferByS3", method = HttpMethod.POST)
     void transferByS3(Future<TransferringFile> future, @ParamKey("type") FileType fileType,
-            @ParamKey("endpoint") String endpoint, @ParamKey("accessKey") String accessKey,
-            @ParamKey("keySecret") String keySecret, @ParamKey("bucketName") String bucketName,
-            @ParamKey("objectName") String objectName,
-            @ParamKey(value = "fileName", mandatory = false) String fileName) {
+                      @ParamKey("endpoint") String endpoint, @ParamKey("accessKey") String accessKey,
+                      @ParamKey("keySecret") String keySecret, @ParamKey("bucketName") String bucketName,
+                      @ParamKey("objectName") String objectName,
+                      @ParamKey(value = "fileName", mandatory = false) String fileName) {
         String originalName = extractFileName(objectName);
         fileName = Strings.isNotBlank(fileName) ? fileName : decorateFileName(originalName);
 
         TransferListener listener = FileSupport.createTransferListener(fileType, originalName, fileName);
 
         FileSupport.transferByS3(endpoint, accessKey, keySecret, bucketName, objectName,
-                fileType, fileName, listener, future);
+                                 fileType, fileName, listener, future);
     }
 
     @RouteMeta(path = "/file/transferBySCP", method = HttpMethod.POST)
@@ -172,9 +173,9 @@ class FileRoute extends BaseRoute {
         listener.setTotalSize(src.length());
         listener.updateState(ProgressState.IN_PROGRESS);
         if (move) {
-            Global.VERTX.fileSystem().moveBlocking(path, FileSupport.filePath(fileType, fileName));
+            WorkerGlobal.VERTX.fileSystem().moveBlocking(path, FileSupport.filePath(fileType, fileName));
         } else {
-            Global.VERTX.fileSystem().copyBlocking(path, FileSupport.filePath(fileType, fileName));
+            WorkerGlobal.VERTX.fileSystem().copyBlocking(path, FileSupport.filePath(fileType, fileName));
         }
         listener.setTransferredSize(listener.getTotalSize());
         listener.updateState(ProgressState.SUCCESS);
@@ -201,14 +202,14 @@ class FileRoute extends BaseRoute {
         } else {
             FileInfo info = FileSupport.info(type, name);
             ASSERT.notNull(info);
-            if (info.getTransferState() == ProgressState.IN_PROGRESS
-                || info.getTransferState() == ProgressState.NOT_STARTED) {
+            if (info.getTransferState() == FileTransferState.IN_PROGRESS
+                || info.getTransferState() == FileTransferState.NOT_STARTED) {
                 LOGGER.warn("Illegal file {} state", name);
-                info.setTransferState(ProgressState.ERROR);
+                info.setTransferState(FileTransferState.ERROR);
                 FileSupport.save(info);
             }
             TransferProgress progress = new TransferProgress();
-            progress.setState(info.getTransferState());
+            progress.setState(info.getTransferState().toProgressState());
             if (progress.getState() == ProgressState.SUCCESS) {
                 progress.setPercent(1.0);
                 progress.setTotalSize(info.getSize());
@@ -226,7 +227,7 @@ class FileRoute extends BaseRoute {
             FileSupport.initInfoFile(type, upload.fileName(), fileName);
             FileSystem fileSystem = context.vertx().fileSystem();
             fileSystem.moveBlocking(upload.uploadedFileName(), FileSupport.filePath(type, fileName));
-            FileSupport.updateTransferState(type, fileName, ProgressState.SUCCESS);
+            FileSupport.updateTransferState(type, fileName, FileTransferState.SUCCESS);
         }
         HTTPRespGuarder.ok(context);
     }

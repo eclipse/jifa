@@ -71,6 +71,17 @@ exports.default = {
     shrinkResultDivWidth: '显示宽度 Shrink',
     resetResultDivWidth: '显示宽度 Reset',
 
+    backToHome: '返回主页',
+    promote404: '您所寻找的页面不存在。可以点击下面的按钮，返回主页。',
+
+    tip: {
+      copyName: '复制文件名',
+      rename: '修改文件名',
+      uploadToOSS: '上传文件到OSS',
+      setShare: '设置文件共享',
+      deleteFile: '删除文件',
+    },
+
     heap: {
       basicInformation: '基础信息',
       reanalyzePrompt: '是否继续？',

@@ -23,7 +23,7 @@ import org.eclipse.jifa.common.enums.ProgressState;
 import org.eclipse.jifa.common.vo.PageView;
 import org.eclipse.jifa.common.vo.Progress;
 import org.eclipse.jifa.common.vo.Result;
-import org.eclipse.jifa.worker.Global;
+import org.eclipse.jifa.worker.WorkerGlobal;
 import org.eclipse.jifa.worker.vo.heapdump.classloader.Record;
 import org.eclipse.jifa.worker.vo.heapdump.inspector.ObjectView;
 import org.eclipse.jifa.worker.vo.heapdump.thread.Info;
@@ -63,7 +63,8 @@ public class HeapDumpRouteSuite extends Base {
                     (PostProcessor) resp -> {
                         Progress progress = GSON.fromJson(resp.bodyAsString(), Progress.class);
                         ProgressState state = progress.getState();
-                        context.assertTrue(state == ProgressState.IN_PROGRESS || state == ProgressState.SUCCESS, resp.bodyAsString());
+                        context.assertTrue(state == ProgressState.IN_PROGRESS || state == ProgressState.SUCCESS,
+                                           resp.bodyAsString());
                         if (state == ProgressState.SUCCESS) {
                             success.set(true);
                         }
@@ -234,9 +235,11 @@ public class HeapDumpRouteSuite extends Base {
     static void test(String uri, HttpMethod method, PreProcessor processor, PostProcessor postProcessor) {
         LOGGER.info("test {}", uri);
         Async async = context.async();
-        LOGGER.info("method = {}, port = {}, host = {}, uri = {}", method, Global.PORT, Global.HOST, uri("/heap-dump/" + TEST_HEAP_DUMP_FILENAME + uri));
+        LOGGER.info("method = {}, port = {}, host = {}, uri = {}", method, WorkerGlobal.PORT, WorkerGlobal.HOST,
+                    uri("/heap-dump/" + TEST_HEAP_DUMP_FILENAME + uri));
         HttpRequest<Buffer> request =
-            CLIENT.request(method, Global.PORT, Global.HOST, uri("/heap-dump/" + TEST_HEAP_DUMP_FILENAME + uri));
+            CLIENT.request(method, WorkerGlobal.PORT, WorkerGlobal.HOST,
+                           uri("/heap-dump/" + TEST_HEAP_DUMP_FILENAME + uri));
         if (processor != null) {
             processor.process(request);
         }

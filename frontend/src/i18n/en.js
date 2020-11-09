@@ -73,6 +73,17 @@ exports.default = {
 
     addResultDivWidth: 'Add width',
 
+    backToHome: 'Back to home',
+    promote404: 'The page you request was not found, you can click the following button to go to home page.',
+
+    tip: {
+      copyName: 'Copy file name',
+      rename: 'Rename file name',
+      uploadToOSS: 'Upload file to OSS',
+      setShare: 'Set file as shared',
+      deleteFile: 'Delete file permanently',
+    },
+
     heap: {
       basicInformation: 'Basic Information',
       reanalyzePrompt: 'Do you want to continue?',

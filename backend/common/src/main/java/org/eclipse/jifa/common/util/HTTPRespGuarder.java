@@ -30,6 +30,22 @@ public class HTTPRespGuarder implements Constant {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HTTPRespGuarder.class);
 
+    public static void ok(io.vertx.reactivex.ext.web.RoutingContext context) {
+        ok(context.getDelegate());
+    }
+
+    public static void ok(io.vertx.reactivex.ext.web.RoutingContext context, int statusCode, Object content) {
+        ok(context.getDelegate(), statusCode, content);
+    }
+
+    public static void ok(io.vertx.reactivex.ext.web.RoutingContext context, Object content) {
+        ok(context.getDelegate(), content);
+    }
+
+    public static void fail(io.vertx.reactivex.ext.web.RoutingContext context, Throwable t) {
+        fail(context.getDelegate(), t);
+    }
+
     public static void ok(RoutingContext context) {
         ok(context, commonStatusCodeOf(context.request().method()), null);
     }

@@ -23,5 +23,9 @@ subprojects {
 
         compile 'commons-io:commons-io:2.6'
         compile 'com.google.guava:guava:27.1-jre'
+
+        compile 'com.alibaba:druid:1.2.3'
+        compile 'com.alibaba:fastjson:1.2.73'
+        compile 'commons-lang:commons-lang:2.6'
     }
 }

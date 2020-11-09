@@ -1,4 +1,4 @@
- /********************************************************************************
+/********************************************************************************
  * Copyright (c) 2020 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -9,21 +9,18 @@
  * http://www.eclipse.org/legal/epl-2.0
  *
  * SPDX-License-Identifier: EPL-2.0
- ********************************************************************************/ 
+ ********************************************************************************/
 package org.eclipse.jifa.worker;
 
 import io.vertx.core.json.JsonObject;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.eclipse.jifa.common.JifaHooks;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class FakeHooks implements JifaHooks {
     static AtomicInteger initTriggered = new AtomicInteger(0);
 
-    public FakeHooks() {}
-
-    @Override
-    public void init(JsonObject config) {
-        initTriggered.incrementAndGet();
+    public FakeHooks() {
     }
 
     public static void reset() {
@@ -32,5 +29,10 @@ public class FakeHooks implements JifaHooks {
 
     public static int countInitTriggered() {
         return initTriggered.get();
+    }
+
+    @Override
+    public void init(JsonObject config) {
+        initTriggered.incrementAndGet();
     }
 }

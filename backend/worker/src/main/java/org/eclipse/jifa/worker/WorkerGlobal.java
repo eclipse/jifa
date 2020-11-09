@@ -23,9 +23,9 @@ import java.io.File;
 
 import static org.eclipse.jifa.common.util.Assertion.ASSERT;
 
-public class Global {
+public class WorkerGlobal {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(Starter.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(Worker.class);
 
     public static Vertx VERTX;
 
@@ -70,6 +70,27 @@ public class Global {
 
     public static String stringConfig(String key) {
         return CONFIG.getString(key);
+    }
+
+    static String stringConfig(String... keys) {
+        JsonObject o = CONFIG;
+        for (int i = 0; i < keys.length - 1; i++) {
+            o = CONFIG.getJsonObject(keys[i]);
+        }
+
+        return o.getString(keys[keys.length - 1]);
+    }
+
+    public static boolean booleanConfig(String... keys) {
+        JsonObject o = CONFIG;
+        for (int i = 0; i < keys.length - 1; i++) {
+            o = CONFIG.getJsonObject(keys[i]);
+        }
+        if (o == null) {
+            return false;
+        }
+
+        return o.getBoolean(keys[keys.length - 1]);
     }
 
     public static String workspace() {

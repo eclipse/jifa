@@ -12,11 +12,11 @@
  ********************************************************************************/
 package org.eclipse.jifa.worker.vo.heapdump.thread;
 
-import org.eclipse.jifa.worker.vo.heapdump.HeapObject;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.eclipse.jifa.worker.vo.heapdump.HeapObject;
 
 @Data
-@EqualsAndHashCode(callSuper=true)
+@EqualsAndHashCode(callSuper = true)
 public class LocalVariable extends HeapObject {
 }

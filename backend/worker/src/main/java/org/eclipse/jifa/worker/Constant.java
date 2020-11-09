@@ -15,15 +15,10 @@ package org.eclipse.jifa.worker;
 public interface Constant extends org.eclipse.jifa.common.Constant {
 
     interface Misc {
-        String VERTX_CONFIG_KEY = "jifa.vertx.config";
-        String WORKER_CONFIG_KEY = "jifa.worker.config";
-        String DEFAULT_VERTX_CONFIG = "vertx-config.json";
-        String DEFAULT_WORKER_CONFIG = "worker-config.json";
-
         String DEFAULT_WORKSPACE = System.getProperty("user.home") + java.io.File.separator + "jifa_workspace";
-
+        String DEFAULT_VERTX_CONFIG_FILE = "vertx-config.json";
+        String DEFAULT_WORKER_CONFIG_FILE = "worker-config.json";
         String DEFAULT_HOST = "0.0.0.0";
-
         String WEB_ROOT_KEY = "jifa.webroot";
     }
 
@@ -38,11 +33,15 @@ public interface Constant extends org.eclipse.jifa.common.Constant {
     }
 
     interface ConfigKey {
+        String BASIC_AUTH = "basicAuth";
+        String ENABLED = "enabled";
         String WORKSPACE = "workspace";
         String API_PREFIX = "api.prefix";
         String SERVER_HOST_KEY = "server.host";
         String SERVER_PORT_KEY = "server.port";
-        String SERVER_UPLOAD_DIR_KEY = "server.uploadDir";
+        String USERNAME = "username";
+        String PASSWORD = "password";
         String HOOKS_NAME_KEY = "hooks.className";
+        String SERVER_UPLOAD_DIR_KEY = "server.uploadDir";
     }
 }

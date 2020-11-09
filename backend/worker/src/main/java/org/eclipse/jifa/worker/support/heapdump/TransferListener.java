@@ -13,6 +13,7 @@
 package org.eclipse.jifa.worker.support.heapdump;
 
 import lombok.Data;
+import org.eclipse.jifa.common.enums.FileTransferState;
 import org.eclipse.jifa.common.enums.FileType;
 import org.eclipse.jifa.common.enums.ProgressState;
 import org.eclipse.jifa.worker.support.FileSupport;
@@ -41,16 +42,16 @@ public class TransferListener {
         }
 
         if (state == ProgressState.SUCCESS) {
-            FileSupport.updateTransferState(fileType, fileName, ProgressState.SUCCESS);
+            FileSupport.updateTransferState(fileType, fileName, FileTransferState.SUCCESS);
             totalSize = FileSupport.info(fileType, fileName).getSize();
         }
 
         if (state == ProgressState.ERROR) {
-            FileSupport.updateTransferState(fileType, fileName, ProgressState.ERROR);
+            FileSupport.updateTransferState(fileType, fileName, FileTransferState.ERROR);
         }
 
         if (state == ProgressState.IN_PROGRESS && this.state == ProgressState.NOT_STARTED) {
-            FileSupport.updateTransferState(fileType, fileName, ProgressState.IN_PROGRESS);
+            FileSupport.updateTransferState(fileType, fileName, FileTransferState.IN_PROGRESS);
         }
 
         this.state = state;

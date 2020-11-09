@@ -12,13 +12,13 @@
  ********************************************************************************/
 package org.eclipse.jifa.worker.route.heapdump;
 
+import io.vertx.core.Future;
 import org.eclipse.jifa.worker.route.ParamKey;
 import org.eclipse.jifa.worker.route.RouteMeta;
 import org.eclipse.jifa.worker.support.Analyzer;
 import org.eclipse.jifa.worker.support.heapdump.HeapDumpSupport;
 import org.eclipse.jifa.worker.vo.heapdump.HeapObject;
 import org.eclipse.jifa.worker.vo.heapdump.gcrootpath.Result;
-import io.vertx.core.Future;
 import org.eclipse.mat.SnapshotException;
 import org.eclipse.mat.snapshot.IPathsFromGCRootsComputer;
 import org.eclipse.mat.snapshot.ISnapshot;

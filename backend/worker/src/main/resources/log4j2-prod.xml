@@ -45,7 +45,7 @@
             <AppenderRef ref="STDERR"/>
         </Root>
 
-        <Logger name="org.eclipse.jifa" level="info" additivity="false">
+        <Logger name="org.eclipse.jifa.worker" level="info" additivity="false">
             <AppenderRef ref="STDOUT"/>
             <AppenderRef ref="STDERR"/>
         </Logger>
