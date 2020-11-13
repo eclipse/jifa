@@ -19,6 +19,8 @@ import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.ext.web.RoutingContext;
 import org.apache.logging.log4j.util.Strings;
+import org.eclipse.jifa.common.aux.ErrorCode;
+import org.eclipse.jifa.common.aux.JifaException;
 import org.eclipse.jifa.common.enums.FileType;
 import org.eclipse.jifa.common.enums.ProgressState;
 import org.eclipse.jifa.common.request.PagingRequest;
@@ -35,6 +37,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.List;
 import java.util.Set;
 
@@ -84,7 +88,13 @@ class FileRoute extends BaseRoute {
     void transferByURL(Future<TransferringFile> future, @ParamKey("type") FileType fileType,
                        @ParamKey("url") String url, @ParamKey(value = "fileName", mandatory = false) String fileName) {
 
-        String originalName = extractFileName(url);
+        String originalName;
+        try {
+            originalName = extractFileName(new URL(url).getPath());
+        } catch (MalformedURLException e) {
+            LOGGER.warn("invalid url: {}", url);
+            throw new JifaException(ErrorCode.ILLEGAL_ARGUMENT, e);
+        }
 
         fileName = Strings.isNotBlank(fileName) ? fileName : decorateFileName(originalName);
 
