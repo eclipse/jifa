@@ -175,6 +175,37 @@
         </el-form>
        </el-tab-pane>
 
+      <el-tab-pane label="S3" name="s3">
+        <el-form ref="s3Form" :model="s3" :rules="s3Rules" label-width="150px" size="medium" label-position="right"
+                 style="margin-top: 10px" status-icon :show-message=false>
+          <el-form-item label="Endpoint" prop="endpoint">
+            <el-input v-model="s3.endpoint" placeholder="Endpoint" style="width: 80%" clearable></el-input>
+          </el-form-item>
+
+          <el-form-item label="Access Key" prop="accessKey">
+            <el-input v-model="s3.accessKey" placeholder="Access Key" style="width: 80%" clearable
+                      show-password=""></el-input>
+          </el-form-item>
+
+          <el-form-item label="Access Key Secret" prop="accessKeySecret">
+            <el-input v-model="s3.secretKey" placeholder="Access Key Secret" style="width: 80%" clearable
+                      show-password=""></el-input>
+          </el-form-item>
+
+          <el-form-item label="Bucket Name" prop="bucketName">
+            <el-input v-model="s3.bucketName" placeholder="Bucket Name" style="width: 80%" clearable></el-input>
+          </el-form-item>
+
+          <el-form-item label="Object Name" prop="objectName">
+            <el-input v-model="s3.objectName" placeholder="Object Name" style="width: 80%" clearable></el-input>
+          </el-form-item>
+
+          <el-form-item>
+            <el-button type="primary" @click="s3Confirm" :disabled="inTransferring">{{$t('jifa.confirm')}}</el-button>
+          </el-form-item>
+        </el-form>
+      </el-tab-pane>
+
     </el-tabs>
 
     
@@ -242,6 +273,30 @@
             {required: true, trigger: 'blur'}
           ],
           accessKeySecret: [
+            {required: true, trigger: 'blur'}
+          ],
+          bucketName: [
+            {required: true, trigger: 'blur'}
+          ],
+          objectName: [
+            {required: true, trigger: 'blur'}
+          ],
+        },
+        s3: {
+          endpoint: '',
+          accessKey: '',
+          secretKey: '',
+          bucketName: '',
+          objectName: ''
+        },
+        s3Rules: {
+          endpoint: [
+            {required: true, trigger: 'blur'}
+          ],
+          accessKey: [
+            {required: true, trigger: 'blur'}
+          ],
+          secretKey: [
             {required: true, trigger: 'blur'}
           ],
           bucketName: [
@@ -336,6 +391,19 @@
             formData.append('bucketName', this.oss.bucketName)
             formData.append('objectName', this.oss.objectName)
             this.doTransfer('/file/transferByOSS', formData)
+          }
+        })
+      },
+      s3Confirm() {
+        this.$refs['s3Form'].validate((valid) => {
+          if (valid) {
+            let formData = new FormData()
+            formData.append('endpoint', this.s3.endpoint)
+            formData.append('accessKey', this.s3.accessKey)
+            formData.append('keySecret', this.s3.secretKey)
+            formData.append('bucketName', this.s3.bucketName)
+            formData.append('objectName', this.s3.objectName)
+            this.doTransfer('/file/transferByS3', formData)
           }
         })
       },
