@@ -91,7 +91,10 @@ A sample configuration file is here:
   "server.port": 7101,
   "server.uploadDir": "/mnt/data/uploads",
   "api.prefix": "/jifa-api",
-  "hooks.className": "com.yourco.JifaHooksImplementation"
+  "hooks.className": "com.yourco.JifaHooksImplementation",
+  "enableAutoCleanExpiredCache": true,
+  "expireMinutesAfterAccess": 30,
+  "cleanupIntervalInMinutes": 10
 }
 ```
 

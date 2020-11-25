@@ -24,6 +24,10 @@ public interface Constant extends org.eclipse.jifa.common.Constant {
 
         String DEFAULT_HOST = "0.0.0.0";
 
+        int DEFAULT_EXPIRE_MINUTES_AFTER_ACCESS = 30; // 30 minutes
+
+        long DEFAULT_CLEANUP_INTERVAL_IN_MINUTES = 20; // 20 minutes
+
         String WEB_ROOT_KEY = "jifa.webroot";
     }
 
@@ -44,5 +48,8 @@ public interface Constant extends org.eclipse.jifa.common.Constant {
         String SERVER_PORT_KEY = "server.port";
         String SERVER_UPLOAD_DIR_KEY = "server.uploadDir";
         String HOOKS_NAME_KEY = "hooks.className";
+        String ENABLE_AUTO_CLEAN_EXPIRED_CACHE = "enableAutoCleanExpiredCache";
+        String EXPIRE_MINUTES_AFTER_ACCESS = "expireMinutesAfterAccess";
+        String CLEANUP_INTERVAL_IN_MINUTES = "cleanupIntervalInMinutes";
     }
 }

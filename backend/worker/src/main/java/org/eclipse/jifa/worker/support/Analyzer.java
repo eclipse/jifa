@@ -12,38 +12,114 @@
  ********************************************************************************/
 package org.eclipse.jifa.worker.support;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-import io.vertx.core.Future;
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.eclipse.jifa.common.enums.FileType.HEAP_DUMP;
+import static org.eclipse.jifa.common.util.Assertion.ASSERT;
+import static org.eclipse.jifa.worker.Constant.ConfigKey.CLEANUP_INTERVAL_IN_MINUTES;
+import static org.eclipse.jifa.worker.Constant.ConfigKey.ENABLE_AUTO_CLEAN_EXPIRED_CACHE;
+import static org.eclipse.jifa.worker.Constant.ConfigKey.EXPIRE_MINUTES_AFTER_ACCESS;
+import static org.eclipse.jifa.worker.Constant.Misc.DEFAULT_CLEANUP_INTERVAL_IN_MINUTES;
+import static org.eclipse.jifa.worker.Constant.Misc.DEFAULT_EXPIRE_MINUTES_AFTER_ACCESS;
+import static org.eclipse.jifa.worker.support.heapdump.HeapDumpSupport.VOID_LISTENER;
+
+import java.io.File;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
+import java.time.Duration;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+
 import org.eclipse.jifa.common.aux.JifaException;
 import org.eclipse.jifa.common.enums.FileType;
 import org.eclipse.jifa.common.enums.ProgressState;
 import org.eclipse.jifa.common.util.ErrorUtil;
 import org.eclipse.jifa.common.util.FileUtil;
+import org.eclipse.jifa.worker.Global;
 import org.eclipse.jifa.worker.support.heapdump.SnapshotContext;
 import org.eclipse.mat.snapshot.SnapshotFactory;
 import org.eclipse.mat.util.IProgressListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.RemovalCause;
 
-import static org.eclipse.jifa.common.enums.FileType.HEAP_DUMP;
-import static org.eclipse.jifa.common.util.Assertion.ASSERT;
-import static org.eclipse.jifa.worker.support.heapdump.HeapDumpSupport.VOID_LISTENER;
+import io.vertx.core.Future;
 
 public class Analyzer {
     private static final Logger LOGGER = LoggerFactory.getLogger(Analyzer.class);
-
+    private static final long ONE_MB = 1024 * 1024;
+    // total available memory size (MB)
+    private static final long availableMemorySizeInMB;
+    private static long availableMemorySizeForSnapshotInMB;
     private Map<String, AnalysisProgressListener> listeners;
     private Cache<String, Object> cache;
 
+    static {
+        MemoryMXBean memoryMXBean = ManagementFactory.getMemoryMXBean();
+        availableMemorySizeInMB = memoryMXBean.getHeapMemoryUsage().getMax() / ONE_MB;
+        availableMemorySizeForSnapshotInMB = (long) (Math.floor(availableMemorySizeInMB * 0.85));
+        LOGGER.info("totalAvailableMemorySize: {} Mb, availableMemorySizeForSnapshotInMB: {} MB",
+                availableMemorySizeInMB, availableMemorySizeForSnapshotInMB);
+    }
+
     private Analyzer() {
         listeners = new HashMap<>();
-        cache = CacheBuilder.newBuilder().build();
+        CacheBuilder<String, Object> cacheBuilder = CacheBuilder.newBuilder().removalListener(notification -> {
+            try {
+                RemovalCause cause = notification.getCause();
+                String fileName = notification.getKey();
+                LOGGER.info("clean cache : {} cause of {}", fileName, cause);
+                Object object = notification.getValue();
+                if (object instanceof SnapshotContext) {
+                    long snapshotHeapSizeInBytes =
+                            ((SnapshotContext) object).getSnapshot().getSnapshotInfo().getUsedHeapSize();
+                    SnapshotFactory.dispose(((SnapshotContext) object).getSnapshot());
+                    availableMemorySizeForSnapshotInMB += snapshotHeapSizeInBytes / ONE_MB;
+                    LOGGER.info("release {} snapshot, released size: {} Mb, now availableMemorySizeForSnapshotInMB: {}", fileName,
+                            snapshotHeapSizeInBytes / ONE_MB, availableMemorySizeForSnapshotInMB);
+                }
+            } catch (Throwable e) {
+                LOGGER.warn("clean cache {} failed.", notification.getKey());
+            }
+        });
+
+        boolean enableAutoCleanExpiredCache = Global.booleanConfig(ENABLE_AUTO_CLEAN_EXPIRED_CACHE, false);
+        if (enableAutoCleanExpiredCache) {
+            long expireAfterAccessInMinutes =
+                    Global.longConfig(EXPIRE_MINUTES_AFTER_ACCESS, DEFAULT_EXPIRE_MINUTES_AFTER_ACCESS);
+            cacheBuilder.expireAfterAccess(Duration.ofMinutes(expireAfterAccessInMinutes))
+                    .maximumWeight(availableMemorySizeForSnapshotInMB)
+                    .weigher((fileName, snapshotContext) -> {
+                        assert snapshotContext instanceof SnapshotContext;
+                        long snapshotHeapSizeInBytes =
+                                ((SnapshotContext) snapshotContext).getSnapshot().getSnapshotInfo().getUsedHeapSize();
+                        long snapshotHeapSizeInMb = snapshotHeapSizeInBytes / ONE_MB;
+                        availableMemorySizeForSnapshotInMB -= snapshotHeapSizeInMb;
+                        LOGGER.info("add snapshot size: {} Mb, now availableMemorySizeForSnapshotInMB: {}", snapshotHeapSizeInMb,
+                                availableMemorySizeForSnapshotInMB);
+                        return (int) Math.ceil(snapshotHeapSizeInMb);
+                    });
+
+            // guava Cache don't callback removalListener if EXPIRED event, so we need to use the scheduler to
+            // trigger cleanUp
+            // see: https://stackoverflow.com/questions/10626720/guava-cachebuilder-removal-listener
+            long cleanupInterval = Global.longConfig(CLEANUP_INTERVAL_IN_MINUTES, DEFAULT_CLEANUP_INTERVAL_IN_MINUTES);
+            ScheduledExecutorService cleanupExecutor = Executors.newSingleThreadScheduledExecutor(r -> {
+                Thread t = new Thread(r);
+                t.setName("snapshot-cleaner");
+                t.setDaemon(true);
+                return t;
+            });
+            cleanupExecutor
+                    .scheduleAtFixedRate(() -> cache.cleanUp(), 60, Duration.ofMinutes(cleanupInterval).getSeconds(),
+                            SECONDS);
+        }
+        cache = cacheBuilder.build();
     }
 
     private static <T> T getOrBuild(String key, Builder<T> builder) {

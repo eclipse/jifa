@@ -72,6 +72,14 @@ public class Global {
         return CONFIG.getString(key);
     }
 
+    public static Long longConfig(String key, long defaultValue) {
+        return CONFIG.getLong(key, defaultValue);
+    }
+
+    public static Boolean booleanConfig(String key, boolean defaultValue) {
+        return CONFIG.getBoolean(key, defaultValue);
+    }
+
     public static String workspace() {
         return WORKSPACE;
     }
