@@ -119,6 +119,21 @@ class FileRoute extends BaseRoute {
                                   fileType, fileName, listener, future);
     }
 
+    @RouteMeta(path = "/file/transferByS3", method = HttpMethod.POST)
+    void transferByS3(Future<TransferringFile> future, @ParamKey("type") FileType fileType,
+            @ParamKey("endpoint") String endpoint, @ParamKey("accessKey") String accessKey,
+            @ParamKey("keySecret") String keySecret, @ParamKey("bucketName") String bucketName,
+            @ParamKey("objectName") String objectName,
+            @ParamKey(value = "fileName", mandatory = false) String fileName) {
+        String originalName = extractFileName(objectName);
+        fileName = Strings.isNotBlank(fileName) ? fileName : decorateFileName(originalName);
+
+        TransferListener listener = FileSupport.createTransferListener(fileType, originalName, fileName);
+
+        FileSupport.transferByS3(endpoint, accessKey, keySecret, bucketName, objectName,
+                fileType, fileName, listener, future);
+    }
+
     @RouteMeta(path = "/file/transferBySCP", method = HttpMethod.POST)
     void transferBySCP(Future<TransferringFile> future, @ParamKey("type") FileType fileType,
                        @ParamKey("hostname") String hostname, @ParamKey("path") String path,

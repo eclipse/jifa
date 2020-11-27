@@ -16,6 +16,17 @@ import com.aliyun.oss.OSSClient;
 import com.aliyun.oss.event.ProgressEventType;
 import com.aliyun.oss.model.DownloadFileRequest;
 import com.aliyun.oss.model.ObjectMetadata;
+import com.amazonaws.ClientConfiguration;
+import com.amazonaws.Protocol;
+import com.amazonaws.auth.AWSCredentials;
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
+import com.amazonaws.regions.Regions;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.model.GetObjectRequest;
+
 import io.vertx.core.Future;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.common.StreamCopier;
@@ -393,6 +404,55 @@ public class FileSupport {
         } finally {
             if (ossClient != null) {
                 ossClient.shutdown();
+            }
+        }
+    }
+
+    public static void transferByS3(String endpoint, String accessKey, String secretKey, String bucketName,
+                                    String objectName, FileType fileType, String fileName,
+                                    TransferListener transferProgressListener,
+                                    Future<TransferringFile> future) {
+        AmazonS3 s3Client = null;
+        try {
+            AWSCredentials credentials = new BasicAWSCredentials(accessKey, secretKey);
+            ClientConfiguration clientConfig = new ClientConfiguration();
+            clientConfig.setProtocol(Protocol.HTTPS);
+            s3Client = AmazonS3ClientBuilder.standard()
+                    .withCredentials(new AWSStaticCredentialsProvider(credentials))
+                    .withClientConfiguration(clientConfig)
+                    .withEndpointConfiguration(new EndpointConfiguration(endpoint, Regions.DEFAULT_REGION.getName()))
+                    .withPathStyleAccessEnabled(true)
+                    .build();
+
+            GetObjectRequest getObjectRequest = new GetObjectRequest(bucketName, objectName)
+                    .withGeneralProgressListener(progressEvent -> {
+                        long bytes = progressEvent.getBytes();
+                        switch (progressEvent.getEventType()) {
+                            case TRANSFER_STARTED_EVENT:
+                                transferProgressListener.updateState(ProgressState.IN_PROGRESS);
+                                break;
+                            case RESPONSE_BYTE_TRANSFER_EVENT:
+                                transferProgressListener.addTransferredSize(bytes);
+                                break;
+                            case TRANSFER_FAILED_EVENT:
+                                transferProgressListener.updateState(ProgressState.ERROR);
+                                break;
+                            default:
+                                break;
+                        }
+                    });
+
+            com.amazonaws.services.s3.model.ObjectMetadata objectMetadata = s3Client.getObjectMetadata(bucketName, objectName);
+            transferProgressListener.setTotalSize(objectMetadata.getContentLength());
+            future.complete(new TransferringFile(fileName));
+            s3Client.getObject(getObjectRequest, new File(FileSupport.filePath(fileType, fileName)));
+            transferProgressListener.updateState(ProgressState.SUCCESS);
+        } catch (Throwable t) {
+            LOGGER.error("S3 transfer failed");
+            handleTransferError(fileName, transferProgressListener, future, t);
+        } finally {
+            if (s3Client != null) {
+                s3Client.shutdown();
             }
         }
     }
