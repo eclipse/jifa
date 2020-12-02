@@ -36,7 +36,7 @@ dependencies {
     compile group: 'io.vertx', name: 'vertx-config', version: "${vertx_version}"
     compile group: 'io.vertx', name: 'vertx-web-client', version: "${vertx_version}"
 
-    compile 'com.hierynomus:sshj:0.27.0'
+    compile 'com.hierynomus:sshj:0.30.0'
 
     compile 'com.aliyun.oss:aliyun-sdk-oss:2.8.3'
 
