@@ -90,14 +90,5 @@ For the sake of simplicity, we demonstrate how to start them in development mode
 This would work for further developing and testing. 
 
 # Documents
-<details>
-<summary>1. Jifa Customization</summary>
-
-[1. Jifa Customization](./docs/customization.md)
-</details>
-
-<details>
-<summary>2. Contribution</summary>
-
-If you would like to contribute to Jifa, please check out the [contribution guide](./docs/contribution.md) for more information.
-</details>
++ 1. [Jifa Customization](./docs/customization.md)
++ 2. [Contribution Guide](./docs/CONTRIBUTING.md)
