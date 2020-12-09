@@ -12,67 +12,49 @@
  ********************************************************************************/
 package org.eclipse.jifa.worker;
 
-import com.google.common.base.Strings;
-import io.vertx.core.AbstractVerticle;
-import io.vertx.core.DeploymentOptions;
-import io.vertx.core.Vertx;
-import io.vertx.core.VertxOptions;
+import io.vertx.core.*;
 import io.vertx.core.http.HttpServer;
-import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.auth.AbstractUser;
+import io.vertx.ext.auth.AuthProvider;
+import io.vertx.ext.auth.User;
 import io.vertx.ext.web.Router;
-import io.vertx.ext.web.handler.BodyHandler;
-import io.vertx.ext.web.handler.CorsHandler;
-import io.vertx.ext.web.handler.StaticHandler;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
+import io.vertx.ext.web.handler.*;
 import org.eclipse.jifa.common.JifaHooks;
+import org.eclipse.jifa.common.aux.JifaException;
+import org.eclipse.jifa.common.util.FileUtil;
 import org.eclipse.jifa.worker.route.RouteFiller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.ReflectiveOperationException;
 import java.net.ServerSocket;
-import java.nio.charset.Charset;
-import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 
-import static org.eclipse.jifa.worker.Constant.ConfigKey.SERVER_HOST_KEY;
-import static org.eclipse.jifa.worker.Constant.ConfigKey.SERVER_PORT_KEY;
-import static org.eclipse.jifa.worker.Constant.ConfigKey.SERVER_UPLOAD_DIR_KEY;
-import static org.eclipse.jifa.worker.Constant.ConfigKey.HOOKS_NAME_KEY;
+import static org.eclipse.jifa.worker.Constant.ConfigKey.*;
 import static org.eclipse.jifa.worker.Constant.Misc.*;
+import static org.eclipse.jifa.worker.WorkerGlobal.stringConfig;
 
-public class Starter extends AbstractVerticle {
+public class Worker extends AbstractVerticle {
+    private static final Logger LOGGER = LoggerFactory.getLogger(Worker.class);
+    private static CountDownLatch count = new CountDownLatch(Runtime.getRuntime().availableProcessors());
+    private static long startTime;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(Starter.class);
+    public static void main(String[] args) throws InterruptedException {
+        startTime = System.currentTimeMillis();
 
-    private static CountDownLatch count;
+        JsonObject vertxConfig = new JsonObject(
+            FileUtil.content(Worker.class.getClassLoader().getResourceAsStream(DEFAULT_VERTX_CONFIG_FILE)));
+        Vertx vertx = Vertx.vertx(new VertxOptions(vertxConfig));
 
-    public static void main(String[] args) throws Exception {
-        long start = System.currentTimeMillis();
+        JsonObject jifaConfig = new JsonObject(
+            FileUtil.content(Worker.class.getClassLoader().getResourceAsStream(DEFAULT_WORKER_CONFIG_FILE)));
+        jifaConfig.getJsonObject(BASIC_AUTH).put(ENABLED, false);
+        vertx.deployVerticle(Worker.class.getName(), new DeploymentOptions().setConfig(jifaConfig).setInstances(
+            Runtime.getRuntime().availableProcessors()));
 
-        JsonObject vc = new JsonObject(readConfig(VERTX_CONFIG_KEY, DEFAULT_VERTX_CONFIG));
-        Vertx vertx = Vertx.vertx(new VertxOptions(vc));
-        JsonObject wc = new JsonObject(readConfig(WORKER_CONFIG_KEY, DEFAULT_WORKER_CONFIG));
-        int processors = Runtime.getRuntime().availableProcessors();
-
-        count = new CountDownLatch(processors);
-        vertx.deployVerticle(Starter.class.getName(), new DeploymentOptions().setConfig(wc).setInstances(processors));
         count.await();
-
-        LOGGER.info("Jifa-Worker startup successfully in {} ms, verticle count = {}, http server = {}:{}",
-                    System.currentTimeMillis() - start, processors, Global.HOST, Global.PORT);
-    }
-
-    private static String readConfig(String key, String def) throws IOException {
-        String v = System.getProperty(key);
-        return Strings.isNullOrEmpty(v)
-               ? IOUtils.toString(Objects.requireNonNull(Starter.class.getClassLoader().getResource(def)),
-                                  Charset.defaultCharset())
-               : FileUtils.readFileToString(new File(v), Charset.defaultCharset());
     }
 
     private static int randomPort() {
@@ -104,6 +86,33 @@ public class Starter extends AbstractVerticle {
         return hook != null ? hook : new JifaHooks.EmptyHooks();
     }
 
+    private void setupBasicAuthHandler(Router router) {
+        AuthHandler authHandler = BasicAuthHandler.create((authInfo, resultHandler) -> {
+            Future<User> result = Future.future();
+            if (stringConfig(BASIC_AUTH, USERNAME).equals(authInfo.getString(USERNAME)) &&
+                stringConfig(BASIC_AUTH, PASSWORD).equals(authInfo.getString(PASSWORD))) {
+                result.complete(new AbstractUser() {
+                    @Override
+                    public JsonObject principal() {
+                        return null;
+                    }
+
+                    @Override
+                    public void setAuthProvider(AuthProvider authProvider) {
+                    }
+
+                    @Override
+                    protected void doIsPermitted(String permission, Handler<AsyncResult<Boolean>> resultHandler) {
+                    }
+                });
+            } else {
+                result.fail(new JifaException("Illegal User"));
+            }
+            resultHandler.handle(result);
+        });
+        router.route().handler(authHandler);
+    }
+
     @Override
     public void start() {
         String host = config().containsKey(SERVER_HOST_KEY) ? config().getString(SERVER_HOST_KEY) : DEFAULT_HOST;
@@ -117,12 +126,12 @@ public class Starter extends AbstractVerticle {
         JifaHooks hooks = findHooks();
 
         vertx.executeBlocking(event -> {
-            Global.init(vertx, host, port, config(), hooks);
+            WorkerGlobal.init(vertx, host, port, config(), hooks);
 
             HttpServer server = vertx.createHttpServer(hooks.serverOptions());
             Router router = Router.router(vertx);
 
-            // body handler always eneds to be first so it can read the body
+            // body handler always ends to be first so it can read the body
             if (uploadDir == null) {
                 router.post().handler(BodyHandler.create());
             } else {
@@ -137,14 +146,22 @@ public class Starter extends AbstractVerticle {
                 staticHandler.setAllowRootFileSystemAccess(true);
                 staticHandler.setWebRoot(staticRoot);
                 // non-api
-                String staticPattern = "^(?!" + Global.stringConfig(Constant.ConfigKey.API_PREFIX) + ").*$";
+                String staticPattern = "^(?!" + WorkerGlobal.stringConfig(Constant.ConfigKey.API_PREFIX) + ").*$";
                 router.routeWithRegex(staticPattern)
-                      .handler(staticHandler)
-                      // route to "/" if not found
-                      .handler(context -> context.reroute("/"));
+                        .handler(staticHandler)
+                        // route to "/" if not found
+                        .handler(context -> context.reroute("/"));
             }
+
             // cors
             router.route().handler(CorsHandler.create("*"));
+
+            // basic auth
+            if (WorkerGlobal.booleanConfig(BASIC_AUTH, Constant.ConfigKey.ENABLED)) {
+                setupBasicAuthHandler(router);
+            }
+
+            router.post().handler(BodyHandler.create());
 
             new RouteFiller(router).fill();
             hooks.afterRoutes(router);
@@ -159,9 +176,14 @@ public class Starter extends AbstractVerticle {
             });
         }, ar -> {
             if (ar.succeeded()) {
+                LOGGER.info("Jifa-Worker startup successfully in {} ms, verticle count = {}, http server = {}:{}",
+                            System.currentTimeMillis() - startTime,
+                            Runtime.getRuntime().availableProcessors(),
+                            WorkerGlobal.HOST,
+                            WorkerGlobal.PORT);
                 count.countDown();
             } else {
-                LOGGER.error("Worker-Verticle startup failed", ar.cause());
+                LOGGER.error("Failed to start Jifa' worker side", ar.cause());
                 System.exit(-1);
             }
         });

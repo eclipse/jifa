@@ -12,8 +12,8 @@
  ********************************************************************************/
 package org.eclipse.jifa.worker.vo.heapdump.oql;
 
-import org.eclipse.jifa.common.vo.PageView;
 import lombok.Data;
+import org.eclipse.jifa.common.vo.PageView;
 
 import java.util.List;
 

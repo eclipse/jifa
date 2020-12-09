@@ -18,11 +18,14 @@ import finder from "./components/finder"
 
 import heapDump from "./components/heapdump/HeapDump"
 
+import auth from "./components/auth/Auth"
+
 import axios from "axios";
 
 import notFound from "./components/404"
 
 import VueInsatence from "./main"
+import JifaGlobal from "./Jifa";
 
 Vue.use(VueRouter)
 
@@ -31,6 +34,11 @@ const routes = [
     name: 'finder',
     path: '/',
     component: finder
+  },
+  {
+    name: 'auth',
+    path: "/auth",
+    component: auth
   },
   {
     name: 'heapDump',
@@ -66,6 +74,9 @@ axios.interceptors.response.use(function (response) {
             showClose: true
           });
         }
+      } else if (status === 401) {
+        JifaGlobal.save_back_url(window.location.href)
+        window.location.href = window.location.protocol + "//" +window.location.host + "/auth"
       }
     }
   }

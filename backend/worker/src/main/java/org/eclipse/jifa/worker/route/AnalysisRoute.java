@@ -12,17 +12,17 @@
  ********************************************************************************/
 package org.eclipse.jifa.worker.route;
 
-import org.eclipse.jifa.worker.Constant;
-import org.eclipse.jifa.worker.Global;
-import org.eclipse.jifa.common.enums.FileType;
-import org.eclipse.jifa.common.vo.Progress;
-import org.eclipse.jifa.common.vo.Result;
-import org.eclipse.jifa.common.util.FileUtil;
-import org.eclipse.jifa.worker.support.Analyzer;
-import org.eclipse.jifa.worker.support.FileSupport;
 import io.vertx.core.Future;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerRequest;
+import org.eclipse.jifa.common.enums.FileType;
+import org.eclipse.jifa.common.util.FileUtil;
+import org.eclipse.jifa.common.vo.Progress;
+import org.eclipse.jifa.common.vo.Result;
+import org.eclipse.jifa.worker.Constant;
+import org.eclipse.jifa.worker.WorkerGlobal;
+import org.eclipse.jifa.worker.support.Analyzer;
+import org.eclipse.jifa.worker.support.FileSupport;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +37,7 @@ class AnalysisRoute extends BaseRoute {
     // TODO: not good enough
     private FileType typeOf(HttpServerRequest request) {
         String uri = request.uri();
-        String apiPrefix = Global.stringConfig(Constant.ConfigKey.API_PREFIX);
+        String apiPrefix = WorkerGlobal.stringConfig(Constant.ConfigKey.API_PREFIX);
         int end = uri.indexOf("/", apiPrefix.length() + 1);
         return FileType.getByTag(uri.substring(apiPrefix.length() + 1, end));
     }

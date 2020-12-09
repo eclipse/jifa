@@ -12,10 +12,11 @@
  ********************************************************************************/
 package org.eclipse.jifa.worker.route.heapdump;
 
+import io.vertx.core.Future;
 import org.eclipse.jifa.common.aux.JifaException;
-import org.eclipse.jifa.common.vo.PageView;
 import org.eclipse.jifa.common.request.PagingRequest;
 import org.eclipse.jifa.common.util.PageViewBuilder;
+import org.eclipse.jifa.common.vo.PageView;
 import org.eclipse.jifa.worker.route.ParamKey;
 import org.eclipse.jifa.worker.route.RouteMeta;
 import org.eclipse.jifa.worker.support.Analyzer;
@@ -24,7 +25,6 @@ import org.eclipse.jifa.worker.vo.heapdump.HeapObject;
 import org.eclipse.jifa.worker.vo.heapdump.dominatortree.BaseRecord;
 import org.eclipse.jifa.worker.vo.heapdump.dominatortree.ClassRecord;
 import org.eclipse.jifa.worker.vo.heapdump.dominatortree.DefaultRecord;
-import io.vertx.core.Future;
 import org.eclipse.mat.SnapshotException;
 import org.eclipse.mat.internal.snapshot.inspections.DominatorQuery;
 import org.eclipse.mat.query.Bytes;

@@ -47,78 +47,57 @@ Looking forward to more users and contributors :-)
 - Join the Eclipse Jifa developer community [mailing list](https://accounts.eclipse.org/mailing-list/jifa-dev).
   The community primarily uses this list for project announcements and administrative discussions amongst committers.
   Questions are welcome here as well.
-- Ask a question or start a discussion via a [GitHub issue](https://github.com/eclipse/jifa/issues).
+- Ask a question or start a discussion via the [GitHub issue](https://github.com/eclipse/jifa/issues).
 - Slack channel: [Eclipse Jifa](https://eclipsejifa.slack.com)
 
 ## Quick start
-```
-./gradlew build
+Jifa provides two modes of running: worker-only mode and full cluster mode. The following shows how to use the these two mode, respectively.
 
-cd build/distributions && unzip jifa-0.1.zip && cd jifa-0.1
-
-./bin/worker
-
-Jifa will now be reachable at http://localhost:8102.
-```
-
-## Customizing JIFA
-
-Some options are provided to configure JIFA without modification to the source code.
-
-### Frontend configuration
-
-Frontend can be configured by modifying the `config.js` file provided in the application webroot, in the same
-location as the `index.html` file.
-
-A [sample config.js file](frontend/public/config.js) is provided with JIFA which you can edit.
-
-### Backend customization
-
-#### Configuration options
-
-A configuration file can be specified as an environment variable.
-
-```
-export WORKER_OPTS=-Djifa.worker.config=/path/to/worker-config.json
-./bin/worker
-...
+## 1. Worker-only mode
+Only using worker as a standalone application is a simple and lightweight mode. 
+In this mode, we only need to deploy the front end and worker side without any database configuration. 
+To use this mode, we need to forward the http requests to the workers:
+```bash
+$ ./gradlew clean buildWorker
+$ cd demo
+$ ./run_worker.sh
 ```
 
-A sample configuration file is here:
+## 2. Full cluster mode
+The other mode is to start the entire Jifa, which includes worker and master. 
+This mode needs to set up the database in advance. 
+
+Here we have prepared an example to demonstrate how to get started. First, configure the database:
+```bash
+$ cd demo
+$ docker-compose build
+$ docker-compose up # start mysql server
 ```
-{
-  "server.host": "0.0.0.0",
-  "server.port": 7101,
-  "server.uploadDir": "/mnt/data/uploads",
-  "api.prefix": "/jifa-api",
-  "hooks.className": "com.yourco.JifaHooksImplementation"
-}
+Then build the Jifa:
+``` bash
+$ ./gradlew clean buildJifa
 ```
+Artifacts can be found in the `./deploy` directory. 
+In production mode, we could use `nginx` as a static front-end resource server, 
+and then start multiple workers and at least one master.
 
-If you choose to provide a configuration file, the `api.prefix` is the only required value. Otherwise,
-defaults will apply. If you do not provide a configuration, defaults will apply. For more specific
-customization, see next section.
+For the sake of simplicity, we demonstrate how to start them in development mode:
 
-#### Overriding HTTP server, route, and file mapping
++ `Frontend`: `cd frontend && npm run serve`
++ `Master node` : `./gradlew :backend:master:run`
++ `Worker node` : `./gradlew :backend:worker:run` 
 
-The backend can be configured; JIFA has a number of hook points where it will call some code that you provide.
+This would work for further developing and testing. 
 
-With hooks you can:
-- Customize the HTTP server options
-- Configure HTTP server routes to add authentication, error handling, health check URLs, etc.
-- Customize the layout of heap files on the local file system.
+# Documents
+<details>
+<summary>1. Jifa Customization</summary>
 
-To do so, you need to set configuration to refer to a new class which provides your custom implementations.
-You can [provide the implementations by implementing this class](backend/common/src/main/java/org/eclipse/jifa/common/JifaHooks.java)
-and then updating configuration file.
+[1. Jifa Customization](./docs/customization.md)
+</details>
 
-In the configuration file, provide a hooks class name to use it and it will be loaded at service startup. See
-the `hooks.className` key. The JAR containing your class needs to be present on the classpath. You can use
-`export WORKER_OPTS="-Djifa.worker.config=/path/to/config.json -cp /path/to/hook.jar"`.
+<details>
+<summary>2. Contribution</summary>
 
-You will need to extract the `common.jar` from the build process to get access to the JifaHooks interface.
-
-## Contributing
-If you would like to contribute to Jifa, please check out the [contributing guide][contrib] for more information.
-
-[contrib]: CONTRIBUTING.md
+If you would like to contribute to Jifa, please check out the [contribution guide](./docs/contribution.md) for more information.
+</details>

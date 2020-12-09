@@ -14,18 +14,62 @@ package org.eclipse.jifa.common.aux;
 
 public enum ErrorCode {
 
-    ILLEGAL_ARGUMENT,
-
-    FILE_DOES_NOT_EXIST,
-
-    TRANSFER_ERROR,
-
-    SANITY_CHECK,
+    SHOULD_NOT_REACH_HERE,
 
     UNKNOWN_ERROR,
 
-    SHOULD_NOT_REACH_HERE,
-    ;
+    ILLEGAL_ARGUMENT,
+
+    SANITY_CHECK,
+
+    FILE_DOES_NOT_EXIST,
+
+    FILE_HAS_BEEN_DELETED,
+
+    TRANSFER_ERROR,
+
+    NOT_TRANSFERRED,
+
+    FILE_TYPE_MISMATCHED,
+
+    HOST_IP_MISMATCHED,
+
+    TRANSFERRING,
+
+    UPLOADING,
+
+    UPLOAD_TO_OSS_ERROR,
+
+    /**
+     * for master
+     */
+    DUMMY_ERROR_CODE,
+
+    FORBIDDEN,
+
+    PENDING_JOB,
+
+    IMMEDIATE_JOB,
+
+    JOB_DOES_NOT_EXIST,
+
+    WORKER_DOES_NOT_EXIST,
+
+    WORKER_DISABLED,
+
+    PRIVATE_HOST_IP,
+
+    REPEATED_USER_WORKER,
+
+    SERVER_TOO_BUSY,
+
+    UNSUPPORTED_OPERATION,
+
+    FILE_IS_IN_USED,
+
+    FILE_IS_BEING_DELETING,
+
+    RELEASE_PENDING_JOB;
 
     public boolean isFatal() {
         switch (this) {

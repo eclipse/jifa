@@ -12,7 +12,8 @@
  ********************************************************************************/
 rootProject.name = 'Jifa'
 
-include ':frontend'
 include ':backend'
 include ':backend:common'
+include ':backend:master'
 include ':backend:worker'
+include ':frontend'

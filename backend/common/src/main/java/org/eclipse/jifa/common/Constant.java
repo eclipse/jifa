@@ -20,10 +20,14 @@ public interface Constant {
     int HTTP_POST_CREATED_STATUS_CODE = 201;
 
     int HTTP_BAD_REQUEST_STATUS_CODE = 400;
-    int HTTP_FORBIDDEN_REQUEST_STATUS_CODE = 403;
+    int HTTP_POST_CREATED_STATUS = 201;
     int HTTP_INTERNAL_SERVER_ERROR_STATUS_CODE = 500;
 
     String LINE_SEPARATOR = System.lineSeparator();
 
     String EMPTY_STRING = "";
+
+    String FILE_TYPE = "type";
+    String PAGE = "page";
+    String PAGE_SIZE = "pageSize";
 }

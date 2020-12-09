@@ -18,7 +18,7 @@ import org.eclipse.jifa.common.aux.ErrorCode;
 import org.eclipse.jifa.common.aux.JifaException;
 import org.eclipse.jifa.common.util.HTTPRespGuarder;
 import org.eclipse.jifa.worker.Constant;
-import org.eclipse.jifa.worker.Global;
+import org.eclipse.jifa.worker.WorkerGlobal;
 import org.eclipse.jifa.worker.route.heapdump.HeapBaseRoute;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,6 +44,7 @@ public class RouteFiller {
         try {
             register(FileRoute.class);
             register(AnalysisRoute.class);
+            register(SystemRoute.class);
 
             for (Class<? extends HeapBaseRoute> route : HeapBaseRoute.routes()) {
                 register(route);
@@ -61,7 +62,7 @@ public class RouteFiller {
 
     private void buildPrefix(ArrayList<String> prefixes, String prevPrefix, Class<?> clazz) {
         if (clazz == null) {
-            String rootPrefix = Global.stringConfig(Constant.ConfigKey.API_PREFIX);
+            String rootPrefix = WorkerGlobal.stringConfig(Constant.ConfigKey.API_PREFIX);
             prefixes.add(rootPrefix + prevPrefix);
             return;
         }

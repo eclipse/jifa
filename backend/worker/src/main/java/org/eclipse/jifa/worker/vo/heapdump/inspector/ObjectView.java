@@ -18,39 +18,26 @@ import org.eclipse.mat.snapshot.model.HeapLayout;
 @Data
 public class ObjectView {
 
+    private static final int YOUNG = 1;
+    private static final int OLD = 2;
+    private static final int OTHER = 0;
     private long objectAddress;
-
     /**
      * for non-class object, name = the name of object's class
      * for class object, name = class name
      */
     private String name;
-
     private boolean gCRoot;
-
     private int objectType;
-
     private String classLabel;
-
     private boolean classGCRoot;
-
     private String superClassName;
-
     private String classLoaderLabel;
-
     private boolean classLoaderGCRoot;
-
     private long shallowSize;
-
     private long retainedSize;
-
     private String gcRootInfo;
-
     private int locationType;
-
-    private static final int YOUNG = 1;
-    private static final int OLD = 2;
-    private static final int OTHER = 0;
 
     public static int locationTypeOf(HeapLayout.Generation gen) {
         if (gen == HeapLayout.Generation.YOUNG) {
@@ -58,6 +45,6 @@ public class ObjectView {
         } else if (gen == HeapLayout.Generation.OLD) {
             return OLD;
         }
-        return  OTHER;
+        return OTHER;
     }
 }

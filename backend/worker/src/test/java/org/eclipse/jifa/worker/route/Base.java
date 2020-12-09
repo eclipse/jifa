@@ -15,7 +15,7 @@ package org.eclipse.jifa.worker.route;
 import io.vertx.core.Vertx;
 import io.vertx.ext.web.client.WebClient;
 import org.eclipse.jifa.worker.Constant;
-import org.eclipse.jifa.worker.Global;
+import org.eclipse.jifa.worker.WorkerGlobal;
 
 public class Base {
 
@@ -24,7 +24,7 @@ public class Base {
     static String TEST_HEAP_DUMP_FILENAME;
 
     public static String uri(String uri) {
-        return Global.stringConfig(Constant.ConfigKey.API_PREFIX) + uri;
+        return WorkerGlobal.stringConfig(Constant.ConfigKey.API_PREFIX) + uri;
     }
 
 }

@@ -22,27 +22,13 @@ buildscript {
     }
 }
 
-apply plugin: 'base'
 apply plugin: 'com.moowork.node'
 
-node {
-    version = '10.14.1'
-    npmVersion = '6.4.1'
-    download = true
+//Gradle task calling npm run build command
+task build(type: NpmTask, dependsOn: npmInstall) {
+    group = 'node'
+    args = ['run', 'prod-build']
 }
 
-npm_run_build {
-    inputs.files fileTree("public")
-    inputs.files fileTree("src")
-    inputs.file 'package.json'
-    inputs.file 'package-lock.json'
-    outputs.dir 'build'
+task clean() {
 }
-
-task copy_build(type: Copy) {
-    dependsOn npm_run_build
-    from "build" as Object
-    into "${project.rootDir}/build/static" as Object
-}
-
-assemble.dependsOn copy_build

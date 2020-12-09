@@ -129,7 +129,8 @@ class RouterAnnotationProcessor {
         return false;
     }
 
-    static boolean processRoutingContext(List<Object> arguments, RoutingContext context, Method method, Parameter param) {
+    static boolean processRoutingContext(List<Object> arguments, RoutingContext context, Method method,
+                                         Parameter param) {
         if (param.getType().equals(RoutingContext.class)) {
             arguments.add(context);
             return true;

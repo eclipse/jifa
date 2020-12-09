@@ -12,7 +12,6 @@
  -->
 <template>
   <b-navbar-nav>
-
     <b-nav-item @click="$emit('chooseMenu', 'HEAP_DUMP')"
                 v-if="$jifa.fileManagement"
                 :active="fileType==='HEAP_DUMP'">

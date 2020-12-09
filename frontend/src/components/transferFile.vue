@@ -55,15 +55,16 @@
       </b-card>
     </el-dialog>
 
-    <el-tabs value="upload" style="margin-top: 10px">
-      <el-tab-pane label="Upload" name="upload">
+    <el-tabs value="scp" style="margin-top: 10px">
+      <el-tab-pane label="Upload" name="upload" v-if="false">
         <div align="center">
           <el-upload ref="uploadComp"
                      drag
+                     :headers="authHeader"
                      :limit=1
-                     :data="{type: fileType}"
+                     :data="{uploadName:'upload', type: fileType}"
                      :action="service('/file/upload')"
-                     :multiple=false
+                     :multiple=true
                      :on-success="onSuccess">
             <i class="el-icon-upload"></i>
             <div class="el-upload__text">{{ $t('jifa.uploadPrompt') }}</div>
@@ -124,7 +125,7 @@
         </el-form>
       </el-tab-pane>
 
-      <el-tab-pane label="File System" name="fileSystem">
+      <el-tab-pane label="File System" name="fileSystem" v-if="false">
         <el-form ref="fileSystemForm" :model="fileSystem" :rules="fileSystemRules" label-width="150px" size="medium"
                  label-position="right"
                  style="margin-top: 10px" :show-message=false status-icon>
@@ -220,6 +221,7 @@
     props: ['fileType', 'transferViewVisible'],
     data() {
       return {
+        authHeader:{ Authorization: this.$jifa.get_authorization_header()},
         url: {
           url: '',
         },
@@ -404,16 +406,6 @@
             formData.append('bucketName', this.s3.bucketName)
             formData.append('objectName', this.s3.objectName)
             this.doTransfer('/file/transferByS3', formData)
-          }
-        })
-      },
-      jmxConfirm() {
-        this.$refs['jmxForm'].validate((valid) => {
-          if (valid) {
-            let formData = new FormData();
-            formData.append('host', this.jmx.host);
-            formData.append('port', this.jmx.port);
-            this.doTransfer('/file/createJmxConn', formData)
           }
         })
       },

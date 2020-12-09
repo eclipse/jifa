@@ -12,9 +12,9 @@
  ********************************************************************************/
 package org.eclipse.jifa.worker.vo.heapdump.gcrootpath;
 
-import org.eclipse.jifa.worker.vo.heapdump.HeapObject;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.eclipse.jifa.worker.vo.heapdump.HeapObject;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -13,8 +13,8 @@
 package org.eclipse.jifa.common.vo;
 
 import lombok.Data;
+import org.eclipse.jifa.common.enums.FileTransferState;
 import org.eclipse.jifa.common.enums.FileType;
-import org.eclipse.jifa.common.enums.ProgressState;
 
 @Data
 public class FileInfo {
@@ -27,7 +27,7 @@ public class FileInfo {
 
     private FileType type;
 
-    private ProgressState transferState;
+    private FileTransferState transferState;
 
     private boolean downloadable;
 

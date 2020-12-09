@@ -10,6 +10,8 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
+import axios from "axios";
+
 export default class JifaGlobal {
   static prod() {
     return process.env.NODE_ENV === 'production'
@@ -18,4 +20,51 @@ export default class JifaGlobal {
   static dev() {
     return process.env.NODE_ENV === 'development'
   }
+
+  static save_back_url(url) {
+    window.localStorage.setItem("jifa_back_url", url)
+  }
+
+  static back_url() {
+    return window.localStorage.getItem("jifa_back_url")
+  }
+
+  static clean_back_url() {
+    window.localStorage.removeItem("jifa_back_url")
+  }
+
+  static save_jifa_token(token) {
+    window.localStorage.setItem("jifa_token", token)
+  }
+
+  static jifa_token() {
+    return window.localStorage.getItem("jifa_token")
+  }
+
+  static init_authorization_header() {
+    let jifa_token = this.jifa_token()
+    if (jifa_token) {
+      axios.defaults.headers.common['Authorization'] = 'Bearer ' + jifa_token;
+    }
+  }
+
+  static reset_authorization_header(new_token) {
+    if (new_token){
+      this.save_jifa_token(new_token)
+      axios.defaults.headers.common['Authorization'] = 'Bearer ' + new_token;
+    }
+  }
+
+  static get_authorization_header() {
+    return axios.defaults.headers.common['Authorization']
+  }
+}
+
+
+export var USER = {
+  id: 1,
+  nickname: 'Jifa',
+  avatar: require('./assets/avatar.png'),
+  admin: false,
+  loaded: false
 }

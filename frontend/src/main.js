@@ -13,7 +13,7 @@
 import Vue from 'vue'
 
 import Jifa from './Jifa.vue'
-import JifaGlobal from './Jifa'
+import JifaGlobal, {USER} from './Jifa'
 
 import i18n from './i18n/i18n-setup'
 import router from './router'
@@ -41,12 +41,15 @@ Vue.use(VueClipboard)
 Vue.use(contentmenu)
 Vue.use(VueCookies)
 Vue.prototype.$jifa = Object.assign(JifaGlobal, config)
+Vue.prototype.$jifa_user = USER
 
 export default new Vue({
   router,
   i18n,
   render: h => h(Jifa),
   created() {
+    this.$jifa.init_authorization_header()
+    // eslint-disable-next-line no-console
     console.log(this.$t("jifa.consoleMsg"))
   }
 }).$mount('#app')

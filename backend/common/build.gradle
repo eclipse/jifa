@@ -10,16 +10,14 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-buildscript {
-    archivesBaseName = 'jifa-common'
-}
-
 dependencies {
     compile "org.apache.logging.log4j:log4j-slf4j-impl:2.13.3"
 
     compile 'com.google.code.gson:gson:2.8.6'
 
     compile group: 'io.vertx', name: 'vertx-web', version: "${vertx_version}"
+    compile group: 'io.vertx', name: 'vertx-rx-java2', version: "${vertx_version}"
+    compile group: 'io.vertx', name: 'vertx-service-proxy', version: "${vertx_version}"
 }
 
 compileJava {

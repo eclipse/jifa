@@ -36,12 +36,13 @@ import net.schmizz.sshj.xfer.scp.SCPFileTransfer;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jifa.common.aux.ErrorCode;
 import org.eclipse.jifa.common.aux.JifaException;
+import org.eclipse.jifa.common.enums.FileTransferState;
 import org.eclipse.jifa.common.enums.FileType;
 import org.eclipse.jifa.common.enums.ProgressState;
 import org.eclipse.jifa.common.util.FileUtil;
 import org.eclipse.jifa.common.vo.FileInfo;
 import org.eclipse.jifa.common.vo.TransferringFile;
-import org.eclipse.jifa.worker.Global;
+import org.eclipse.jifa.worker.WorkerGlobal;
 import org.eclipse.jifa.worker.support.heapdump.TransferListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,7 +82,7 @@ public class FileSupport {
 
     public static void init() {
         for (FileType type : FileType.values()) {
-            File file = new File(Global.workspace() + File.separator + type.getTag());
+            File file = new File(WorkerGlobal.workspace() + File.separator + type.getTag());
             if (file.exists()) {
                 ASSERT.isTrue(file.isDirectory(), String.format("%s must be directory", file.getAbsolutePath()));
             } else {
@@ -115,7 +116,7 @@ public class FileSupport {
         info.setName(name);
         info.setSize(0);
         info.setType(type);
-        info.setTransferState(ProgressState.NOT_STARTED);
+        info.setTransferState(FileTransferState.NOT_STARTED);
         info.setDownloadable(false);
         info.setCreationTime(System.currentTimeMillis());
         return info;
@@ -171,7 +172,7 @@ public class FileSupport {
 
         FileInfo fileInfo = buildInitFileInfo(type, name, name);
         fileInfo.setCreationTime(file.lastModified());
-        fileInfo.setTransferState(ProgressState.SUCCESS);
+        fileInfo.setTransferState(FileTransferState.SUCCESS);
         fileInfo.setSize(file.length());
         save(fileInfo);
         return fileInfo;
@@ -209,10 +210,10 @@ public class FileSupport {
         }
     }
 
-    public static void updateTransferState(FileType type, String name, ProgressState state) {
+    public static void updateTransferState(FileType type, String name, FileTransferState state) {
         FileInfo info = info(type, name);
         info.setTransferState(state);
-        if (state == ProgressState.SUCCESS) {
+        if (state == FileTransferState.SUCCESS) {
             // for worker, file is downloadable after transferred
             info.setSize(new File(FileSupport.filePath(type, name)).length());
             info.setDownloadable(true);
@@ -221,12 +222,12 @@ public class FileSupport {
     }
 
     private static String dirPath(FileType type) {
-        return Global.workspace() + File.separator + type.getTag();
+        return WorkerGlobal.workspace() + File.separator + type.getTag();
     }
 
     public static String dirPath(FileType type, String name) {
         String defaultDirPath = dirPath(type) + File.separator + name;
-        return Global.hooks().mapDirPath(type, name, defaultDirPath);
+        return WorkerGlobal.hooks().mapDirPath(type, name, defaultDirPath);
     }
 
     private static String infoFilePath(FileType type, String name) {
@@ -243,7 +244,7 @@ public class FileSupport {
 
     private static String filePath(FileType type, String name, String childrenName) {
         String defaultFilePath = dirPath(type, name) + File.separator + childrenName;
-        return Global.hooks().mapFilePath(type, name, childrenName, defaultFilePath);
+        return WorkerGlobal.hooks().mapFilePath(type, name, childrenName, defaultFilePath);
     }
 
     public static String errorLogPath(FileType fileType, String file) {
@@ -259,7 +260,7 @@ public class FileSupport {
             indexFileNamePrefix = file + '.';
         }
         String defaultIndexPath = FileSupport.filePath(fileType, file, indexFileNamePrefix + "index");
-        return Global.hooks().mapIndexPath(fileType, file, defaultIndexPath);
+        return WorkerGlobal.hooks().mapIndexPath(fileType, file, defaultIndexPath);
     }
 
     public static TransferListener createTransferListener(FileType fileType, String originalName, String fileName) {
@@ -418,31 +419,33 @@ public class FileSupport {
             ClientConfiguration clientConfig = new ClientConfiguration();
             clientConfig.setProtocol(Protocol.HTTPS);
             s3Client = AmazonS3ClientBuilder.standard()
-                    .withCredentials(new AWSStaticCredentialsProvider(credentials))
-                    .withClientConfiguration(clientConfig)
-                    .withEndpointConfiguration(new EndpointConfiguration(endpoint, Regions.DEFAULT_REGION.getName()))
-                    .withPathStyleAccessEnabled(true)
-                    .build();
+                                            .withCredentials(new AWSStaticCredentialsProvider(credentials))
+                                            .withClientConfiguration(clientConfig)
+                                            .withEndpointConfiguration(
+                                                new EndpointConfiguration(endpoint, Regions.DEFAULT_REGION.getName()))
+                                            .withPathStyleAccessEnabled(true)
+                                            .build();
 
             GetObjectRequest getObjectRequest = new GetObjectRequest(bucketName, objectName)
-                    .withGeneralProgressListener(progressEvent -> {
-                        long bytes = progressEvent.getBytes();
-                        switch (progressEvent.getEventType()) {
-                            case TRANSFER_STARTED_EVENT:
-                                transferProgressListener.updateState(ProgressState.IN_PROGRESS);
-                                break;
-                            case RESPONSE_BYTE_TRANSFER_EVENT:
-                                transferProgressListener.addTransferredSize(bytes);
-                                break;
-                            case TRANSFER_FAILED_EVENT:
-                                transferProgressListener.updateState(ProgressState.ERROR);
-                                break;
-                            default:
-                                break;
-                        }
-                    });
+                .withGeneralProgressListener(progressEvent -> {
+                    long bytes = progressEvent.getBytes();
+                    switch (progressEvent.getEventType()) {
+                        case TRANSFER_STARTED_EVENT:
+                            transferProgressListener.updateState(ProgressState.IN_PROGRESS);
+                            break;
+                        case RESPONSE_BYTE_TRANSFER_EVENT:
+                            transferProgressListener.addTransferredSize(bytes);
+                            break;
+                        case TRANSFER_FAILED_EVENT:
+                            transferProgressListener.updateState(ProgressState.ERROR);
+                            break;
+                        default:
+                            break;
+                    }
+                });
 
-            com.amazonaws.services.s3.model.ObjectMetadata objectMetadata = s3Client.getObjectMetadata(bucketName, objectName);
+            com.amazonaws.services.s3.model.ObjectMetadata objectMetadata =
+                s3Client.getObjectMetadata(bucketName, objectName);
             transferProgressListener.setTotalSize(objectMetadata.getContentLength());
             future.complete(new TransferringFile(fileName));
             s3Client.getObject(getObjectRequest, new File(FileSupport.filePath(fileType, fileName)));
@@ -472,4 +475,14 @@ public class FileSupport {
         }
         throw new JifaException(ErrorCode.TRANSFER_ERROR, t);
     }
+
+    public static long getTotalDiskSpace() {
+        return new File(WorkerGlobal.workspace()).getTotalSpace() >> 20;
+    }
+
+    public static long getUsedDiskSpace() {
+        String path = WorkerGlobal.workspace();
+        return FileUtils.sizeOfDirectory(new File(path)) >> 20;
+    }
+
 }
