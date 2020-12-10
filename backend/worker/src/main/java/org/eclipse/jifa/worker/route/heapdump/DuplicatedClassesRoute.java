@@ -15,7 +15,9 @@ package org.eclipse.jifa.worker.route.heapdump;
 import io.vertx.core.Future;
 import org.eclipse.jifa.common.aux.JifaException;
 import org.eclipse.jifa.common.request.PagingRequest;
-import org.eclipse.jifa.common.util.PageViewBuilder;
+import org.eclipse.jifa.worker.route.PageViewBuilder;
+import org.eclipse.jifa.worker.vo.feature.SearchPredicate;
+import org.eclipse.jifa.worker.vo.feature.SearchType;
 import org.eclipse.jifa.common.vo.PageView;
 import org.eclipse.jifa.worker.route.ParamKey;
 import org.eclipse.jifa.worker.route.RouteMeta;
@@ -36,6 +38,8 @@ class DuplicatedClassesRoute extends HeapBaseRoute {
 
     @RouteMeta(path = "/duplicatedClasses/classes")
     void classRecords(Future<PageView<ClassRecord>> future, @ParamKey("file") String file,
+                      @ParamKey(value = "searchText", mandatory = false) String searchText,
+                      @ParamKey(value = "searchType", mandatory = false) SearchType searchType,
                       PagingRequest pagingRequest) throws Exception {
 
         DuplicatedClassesQuery query = new DuplicatedClassesQuery();
@@ -44,17 +48,24 @@ class DuplicatedClassesRoute extends HeapBaseRoute {
 
         List<?> classes = result.getElements();
         classes.sort((o1, o2) -> ((List) o2).size() - ((List) o1).size());
-        future.complete(PageViewBuilder.build(classes, pagingRequest, r -> {
-            ClassRecord record = new ClassRecord();
-            record.setLabel((String) result.getColumnValue(r, 0));
-            record.setCount((Integer) result.getColumnValue(r, 1));
-            return record;
-        }));
+        PageViewBuilder<?, ClassRecord> builder = PageViewBuilder.fromList(classes);
+        PageView<ClassRecord> fut = builder.paging(pagingRequest)
+                .map(r -> {
+                    ClassRecord record = new ClassRecord();
+                    record.setLabel((String) result.getColumnValue(r, 0));
+                    record.setCount((Integer) result.getColumnValue(r, 1));
+                    return record;
+                })
+                .filter(SearchPredicate.createPredicate(searchText, searchType))
+                .done();
+
+        future.complete(fut);
     }
 
     @RouteMeta(path = "/duplicatedClasses/classLoaders")
     void classLoaderRecords(Future<PageView<ClassLoaderRecord>> future, @ParamKey("file") String file,
-                            @ParamKey("index") int index, PagingRequest pagingRequest) throws Exception {
+                            @ParamKey("index") int index,
+                            PagingRequest pagingRequest) throws Exception {
         DuplicatedClassesQuery query = new DuplicatedClassesQuery();
         ISnapshot snapshot = Analyzer.getOrOpenSnapshotContext(file).getSnapshot();
         query.snapshot = snapshot;

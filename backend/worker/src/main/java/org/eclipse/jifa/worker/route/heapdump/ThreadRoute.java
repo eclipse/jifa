@@ -15,13 +15,15 @@ package org.eclipse.jifa.worker.route.heapdump;
 import io.vertx.core.Future;
 import org.eclipse.jifa.common.aux.JifaException;
 import org.eclipse.jifa.common.request.PagingRequest;
-import org.eclipse.jifa.common.util.PageViewBuilder;
 import org.eclipse.jifa.common.vo.PageView;
 import org.eclipse.jifa.worker.Constant;
+import org.eclipse.jifa.worker.route.PageViewBuilder;
 import org.eclipse.jifa.worker.route.ParamKey;
 import org.eclipse.jifa.worker.route.RouteMeta;
 import org.eclipse.jifa.worker.support.Analyzer;
 import org.eclipse.jifa.worker.support.heapdump.HeapDumpSupport;
+import org.eclipse.jifa.worker.vo.feature.SearchPredicate;
+import org.eclipse.jifa.worker.vo.feature.SearchType;
 import org.eclipse.jifa.worker.vo.heapdump.HeapObject;
 import org.eclipse.jifa.worker.vo.heapdump.thread.Info;
 import org.eclipse.jifa.worker.vo.heapdump.thread.LocalVariable;
@@ -45,44 +47,74 @@ import static org.eclipse.jifa.common.util.Assertion.ASSERT;
 class ThreadRoute extends HeapBaseRoute {
 
     @RouteMeta(path = "/threadsSummary")
-    void threadsSummary(Future<Map<String, Long>> future, @ParamKey("file") String file) throws Exception {
+    void threadsSummary(Future<Map<String, Long>> future, @ParamKey("file") String file, @ParamKey(value = "searchText", mandatory = false) String searchText,
+                        @ParamKey(value = "searchType", mandatory = false) SearchType searchType) throws Exception {
 
-        ThreadOverviewQuery query = new ThreadOverviewQuery();
-        query.snapshot = Analyzer.getOrOpenSnapshotContext(file).getSnapshot();
-        IResultTree result = (IResultTree) query.execute(HeapDumpSupport.VOID_LISTENER);
+        IResultTree result = doQuery(file);
         List<?> elements = result.getElements();
+
+        PageViewBuilder<?, Info> builder = PageViewBuilder.fromList(elements);
+        PageView<Info> fut = builder.paging(new PagingRequest(1, elements.size()))
+                .map(e -> new Info(result.getContext(e).getObjectId(),
+                        (String) result.getColumnValue(e, 0),
+                        (String) result.getColumnValue(e, 1),
+                        ((Bytes) result.getColumnValue(e, 2))
+                                .getValue(),
+                        ((Bytes) result.getColumnValue(e, 3))
+                                .getValue(),
+                        (String) result.getColumnValue(e, 4),
+                        result.hasChildren(e),
+                        (Boolean) result.getColumnValue(e, 5))
+                )
+                .filter(SearchPredicate.createPredicate(searchText, searchType))
+                .done();
+
         long totalShallowSize = 0;
         long totalRetainedSize = 0;
-        for (Object t : elements) {
-            totalShallowSize += ((Bytes) result.getColumnValue(t, 2)).getValue();
-            totalRetainedSize += ((Bytes) result.getColumnValue(t, 3)).getValue();
+        for (Info t : fut.getData()) {
+            totalShallowSize += t.getShallowSize();
+            totalRetainedSize += t.getRetainedSize();
         }
         Map<String, Long> info = new HashMap<>();
-        info.put(Constant.Heap.TOTAL_SIZE_KEY, (long) elements.size());
+        info.put(Constant.Heap.TOTAL_SIZE_KEY, (long) fut.getData().size());
         info.put(Constant.Heap.SHALLOW_HEAP_KEY, totalShallowSize);
         info.put(Constant.Heap.RETAINED_HEAP_KEY, totalRetainedSize);
         future.complete(info);
     }
 
     @RouteMeta(path = "/threads")
-    void threads(Future<PageView<Info>> future, @ParamKey("file") String file, PagingRequest paging) throws Exception {
+    void threads(Future<PageView<Info>> future, @ParamKey("file") String file, @ParamKey(value = "sortBy", mandatory = false) String sortBy,
+                 @ParamKey(value = "ascendingOrder", mandatory = false) boolean ascendingOrder,
+                 @ParamKey(value = "searchText", mandatory = false) String searchText,
+                 @ParamKey(value = "searchType", mandatory = false) SearchType searchType,
+                 PagingRequest paging) throws Exception {
 
-        ThreadOverviewQuery query = new ThreadOverviewQuery();
-        query.snapshot = Analyzer.getOrOpenSnapshotContext(file).getSnapshot();
-        IResultTree result = (IResultTree) query.execute(HeapDumpSupport.VOID_LISTENER);
+        IResultTree result = doQuery(file);
         List<?> elements = result.getElements();
 
+        PageViewBuilder<?, Info> builder = PageViewBuilder.fromList(elements);
+        PageView<Info> fut = builder.paging(paging)
+                .map(e -> new Info(result.getContext(e).getObjectId(),
+                        (String) result.getColumnValue(e, 0),
+                        (String) result.getColumnValue(e, 1),
+                        ((Bytes) result.getColumnValue(e, 2))
+                                .getValue(),
+                        ((Bytes) result.getColumnValue(e, 3))
+                                .getValue(),
+                        (String) result.getColumnValue(e, 4),
+                        result.hasChildren(e),
+                        (Boolean) result.getColumnValue(e, 5))
+                )
+                .sort(Info.sortBy(sortBy, ascendingOrder))
+                .filter(SearchPredicate.createPredicate(searchText, searchType))
+                .done();
+        future.complete(fut);
+    }
 
-        future.complete(PageViewBuilder.build(elements, paging, e -> new Info(result.getContext(e).getObjectId(),
-                                                                              (String) result.getColumnValue(e, 0),
-                                                                              (String) result.getColumnValue(e, 1),
-                                                                              ((Bytes) result.getColumnValue(e, 2))
-                                                                                  .getValue(),
-                                                                              ((Bytes) result.getColumnValue(e, 3))
-                                                                                  .getValue(),
-                                                                              (String) result.getColumnValue(e, 4),
-                                                                              result.hasChildren(e),
-                                                                              (Boolean) result.getColumnValue(e, 5))));
+    private IResultTree doQuery(String file) throws Exception {
+        ThreadOverviewQuery query = new ThreadOverviewQuery();
+        query.snapshot = Analyzer.getOrOpenSnapshotContext(file).getSnapshot();
+        return (IResultTree) query.execute(HeapDumpSupport.VOID_LISTENER);
     }
 
     private IResultTree fetchStaceTrace(ISnapshot snapshot, int objectId) throws Exception {
@@ -136,10 +168,10 @@ class ThreadRoute extends HeapBaseRoute {
             List<?> frames = result.getChildren(elements.get(0));
 
             List<StackFrame> res = frames.stream().map(
-                frame -> new StackFrame((String) result.getColumnValue(frame, 0), result.hasChildren(frame)))
-                                         .collect(Collectors.toList());
+                    frame -> new StackFrame((String) result.getColumnValue(frame, 0), result.hasChildren(frame)))
+                    .collect(Collectors.toList());
             res.stream().filter(t -> !t.getStack().contains("Native Method")).findFirst()
-               .ifPresent(sf -> sf.setFirstNonNativeFrame(true));
+                    .ifPresent(sf -> sf.setFirstNonNativeFrame(true));
             future.complete(res);
         } else {
             future.complete(Collections.emptyList());
@@ -177,8 +209,8 @@ class ThreadRoute extends HeapBaseRoute {
                             if (gcRootInfos != null) {
                                 for (GCRootInfo gcRootInfo : gcRootInfos) {
                                     if (gcRootInfo.getContextId() != 0 &&
-                                        (gcRootInfo.getType() & GCRootInfo.Type.BUSY_MONITOR) != 0 &&
-                                        gcRootInfo.getContextId() == objectId) {
+                                            (gcRootInfo.getType() & GCRootInfo.Type.BUSY_MONITOR) != 0 &&
+                                            gcRootInfo.getContextId() == objectId) {
                                         var.setPrefix(Messages.ThreadStackQuery_Label_Local_Blocked_On);
                                     }
                                 }

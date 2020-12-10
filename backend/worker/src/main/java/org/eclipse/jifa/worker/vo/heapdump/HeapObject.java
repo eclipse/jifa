@@ -13,9 +13,13 @@
 package org.eclipse.jifa.worker.vo.heapdump;
 
 import lombok.Data;
+import org.eclipse.jifa.worker.vo.feature.SortTableGenerator;
 import org.eclipse.mat.snapshot.model.IClass;
 import org.eclipse.mat.snapshot.model.IClassLoader;
 import org.eclipse.mat.snapshot.model.IObject;
+
+import java.util.Comparator;
+import java.util.Map;
 
 @Data
 public class HeapObject {
@@ -51,6 +55,18 @@ public class HeapObject {
             }
             return NORMAL;
         }
+    }
+
+    // FIXME: can we generate these code automatically?
+    private static Map<String, Comparator> sortTable = new SortTableGenerator()
+            .add("id", HeapObject::getObjectId)
+            .add("shallowHeap", HeapObject::getShallowSize)
+            .add("retainedHeap", HeapObject::getRetainedSize)
+            .add("label", HeapObject::getLabel)
+            .build();
+
+    public static Comparator<HeapObject> sortBy(String field, boolean ascendingOrder){
+        return ascendingOrder? sortTable.get(field):sortTable.get(field).reversed();
     }
 }
 

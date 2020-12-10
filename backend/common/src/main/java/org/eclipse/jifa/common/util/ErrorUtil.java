@@ -33,4 +33,8 @@ public class ErrorUtil {
     public static <T> T shouldNotReachHere() {
         throw new JifaException(ErrorCode.SHOULD_NOT_REACH_HERE);
     }
+
+    public static void errorWith(ErrorCode code, String detail) {
+        throw new JifaException(code, detail);
+    }
 }

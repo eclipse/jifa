@@ -15,6 +15,8 @@
 exports.__esModule = true;
 exports.default = {
   jifa: {
+    searchTip:"搜索文本使用Java语言正则语法，比如用 *.String.* 来搜索java.lang.String，搜索数值使用>num,<num,>=num,<=num,==num,!=num,num的语法",
+    searchPlaceholder:'搜索...',
     heapDumpAnalysis: '堆分析',
 
     setting: '设置',

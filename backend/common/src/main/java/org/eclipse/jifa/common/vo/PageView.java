@@ -32,8 +32,8 @@ public class PageView<T> {
 
     public PageView(PagingRequest request, int totalSize, List<T> data) {
         this.data = data;
-        this.page = request.getPage();
-        this.pageSize = request.getPageSize();
+        this.page = request != null ? request.getPage() : 0;
+        this.pageSize = request != null ? request.getPageSize() : 0;
         this.totalSize = totalSize;
     }
 

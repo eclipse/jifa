@@ -10,29 +10,8 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-package org.eclipse.jifa.worker.vo.heapdump.dominatortree;
+package org.eclipse.jifa.worker.vo.feature;
 
-import lombok.Data;
-
-@Data
-public class BaseRecord {
-
-    private String label;
-
-    private String suffix;
-
-    private int objectId;
-
-    private int objectType;
-
-    private boolean gCRoot;
-
-    private long shallowSize;
-
-    private long retainedSize;
-
-    private double percent;
-
-    private boolean isObjType = true;
-
+public interface Searchable {
+    Object getBySearchType(SearchType type);
 }

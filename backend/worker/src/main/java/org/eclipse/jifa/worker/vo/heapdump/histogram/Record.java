@@ -13,9 +13,18 @@
 package org.eclipse.jifa.worker.vo.heapdump.histogram;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.eclipse.jifa.common.util.ErrorUtil;
+import org.eclipse.jifa.worker.vo.feature.SearchType;
+import org.eclipse.jifa.worker.vo.feature.Searchable;
+import org.eclipse.jifa.worker.vo.feature.SortTableGenerator;
+
+import java.util.Comparator;
+import java.util.Map;
 
 @Data
-public class Record {
+@NoArgsConstructor
+public class Record implements Searchable {
     private long numberOfObjects;
     private long shallowSize;
     private long numberOfYoungObjects;
@@ -43,10 +52,35 @@ public class Record {
         this.shallowSizeOfOld = shallowSizeOfOld;
     }
 
-    public static class Type {
-        public static int CLASS = 1;
-        public static int SUPER_CLASS = 2;
-        public static int CLASS_LOADER = 3;
-        public static int PACKAGE = 4;
+    private static Map<String, Comparator> sortTable = new SortTableGenerator()
+            .add("id", Record::getObjectId)
+            .add("numberOfObjects", Record::getNumberOfObjects)
+            .add("shallowSize", Record::getShallowSize)
+            .add("numberOfYoungObjects", Record::getNumberOfYoungObjects)
+            .add("shallowSizeOfYoung", Record::getShallowSizeOfYoung)
+            .add("numberOfOldObjects", Record::getNumberOfOldObjects)
+            .add("shallowSizeOfOld", Record::getShallowSizeOfOld)
+            .add("retainedSize", Record::getRetainedSize)
+            .build();
+
+    public static Comparator<Record> sortBy(String field, boolean ascendingOrder){
+        return ascendingOrder? sortTable.get(field):sortTable.get(field).reversed();
+    }
+
+    @Override
+    public Object getBySearchType(SearchType type) {
+        switch (type) {
+            case BY_NAME:
+                return getLabel();
+            case BY_OBJ_NUM:
+                return getNumberOfObjects();
+            case BY_RETAINED_SIZE:
+                return getRetainedSize();
+            case BY_SHALLOW_SIZE:
+                return getShallowSize();
+            default:
+                ErrorUtil.shouldNotReachHere();
+        }
+        return null;
     }
 }

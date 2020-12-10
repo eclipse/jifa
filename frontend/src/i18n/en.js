@@ -15,6 +15,8 @@
 exports.__esModule = true;
 exports.default = {
   jifa: {
+    searchTip:'Use Java regex for text searching(such as matching java.lang.String with the regex pattern .*String.* ). Use >num,<num,>=num,<=num,!=num,num for numeric searching',
+    searchPlaceholder:'Search...',
     heapDumpAnalysis: 'Heap Dump Analysis',
 
     setting: 'Setting',

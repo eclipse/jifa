@@ -10,29 +10,21 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-package org.eclipse.jifa.worker.vo.heapdump.dominatortree;
+package org.eclipse.jifa.common.util;
 
-import lombok.Data;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
-@Data
-public class BaseRecord {
+public class ReflectionUtil {
 
-    private String label;
-
-    private String suffix;
-
-    private int objectId;
-
-    private int objectType;
-
-    private boolean gCRoot;
-
-    private long shallowSize;
-
-    private long retainedSize;
-
-    private double percent;
-
-    private boolean isObjType = true;
-
+    @SuppressWarnings("unchecked")
+    public static <T> T getFieldValueOrNull(Object node, String fieldName) {
+        try {
+            Field field = node.getClass().getDeclaredField(fieldName);
+            field.setAccessible(true);
+            return (T) field.get(node);
+        } catch (NoSuchFieldException | IllegalAccessException ignored) {
+        }
+        return null;
+    }
 }

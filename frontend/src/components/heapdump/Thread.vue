@@ -11,46 +11,72 @@
     SPDX-License-Identifier: EPL-2.0
  -->
 <template>
-  <el-table ref="table" :data="threads"
-            :highlight-current-row="false"
-            stripe
-            :header-cell-style="headerCellStyle"
-            :cell-style='cellStyle'
-            row-key="rowKey"
-            lazy
-            v-loading="loading"
-            height="100%"
-            :indent=8
-            :load="loadStackInfo"
-            :span-method="tableSpanMethod">
-    <el-table-column label="Thread / Stack" width="450px" show-overflow-tooltip>
-      <template slot-scope="scope">
+  <div style="height: 100%">
+    <el-row>
+      <el-col :offset="15" :span="9">
+        <el-tooltip :content="$t('jifa.searchTip')" placement="bottom" effect="light">
+          <el-input size="mini"
+                    :placeholder="$t('jifa.searchPlaceholder')"
+                    class="input-with-select"
+                    v-model="searchText"
+                    @keyup.enter.native="doSearch"
+                    clearable>
+            <el-select slot="prepend" style="width: 100px" v-model="searchType" default-first-option>
+              <el-option label="By name" value="by_name"></el-option>
+              <el-option label="By context classloader name" value="by_context_classloader_name"></el-option>
+              <el-option label="By shallow heap size" value="by_shallow_size"></el-option>
+              <el-option label="By retained heap size" value="by_retained_size"></el-option>
+            </el-select>
+
+            <el-button slot="append" :icon="inSearching ? 'el-icon-loading' : 'el-icon-search'"
+                       :disabled="inSearching"
+                       @click="doSearch"/>
+          </el-input>
+        </el-tooltip>
+      </el-col>
+    </el-row>
+
+    <el-table ref="table" :data="threads"
+              :highlight-current-row="false"
+              stripe
+              :header-cell-style="headerCellStyle"
+              :cell-style='cellStyle'
+              row-key="rowKey"
+              lazy
+              @sort-change="sortTable"
+              v-loading="loading"
+              height="100%"
+              :indent=8
+              :load="loadStackInfo"
+              :span-method="tableSpanMethod">
+      <el-table-column label="Thread / Stack" width="450px" show-overflow-tooltip>
+        <template slot-scope="scope">
           <span v-if="scope.row.isThread" @click="$emit('setSelectedObjectId', scope.row.objectId)"
                 style="cursor: pointer">
             <img :src="threadIcon"/> {{scope.row.object}}
           </span>
 
-        <span v-if="scope.row.isStack">
+          <span v-if="scope.row.isStack">
             <img :src="frameIcon"/> {{scope.row.stack}}
           </span>
 
-        <span v-if="scope.row.isLocal" @click="$emit('setSelectedObjectId', scope.row.objectId)"
-              style="cursor: pointer">
+          <span v-if="scope.row.isLocal" @click="$emit('setSelectedObjectId', scope.row.objectId)"
+                style="cursor: pointer">
             <img :src="scope.row.icon">
             <strong>{{ " " +scope.row.prefix + " "}}</strong>
             {{scope.row.label}}
             <span style="font-weight: bold; color: #909399">{{ " " + scope.row.suffix}}</span>
           </span>
 
-        <span v-if="scope.row.isOutbound" @click="$emit('setSelectedObjectId', scope.row.objectId)"
-              style="cursor: pointer">
+          <span v-if="scope.row.isOutbound" @click="$emit('setSelectedObjectId', scope.row.objectId)"
+                style="cursor: pointer">
             <img :src="scope.row.icon">
             <strong>{{ " " +scope.row.prefix + " "}}</strong>
             {{scope.row.label}}
             <span style="font-weight: bold; color: #909399">{{ " " + scope.row.suffix}}</span>
           </span>
 
-        <span v-if="scope.row.isOutboundsSummary">
+          <span v-if="scope.row.isOutboundsSummary">
             <img :src="ICONS.misc.sumIcon" v-if="scope.row.currentSize >= scope.row.totalSize"/>
 
             <img :src="ICONS.misc.sumPlusIcon"
@@ -60,25 +86,28 @@
             {{ scope.row.currentSize }} <strong> / </strong> {{ scope.row.totalSize }}
           </span>
 
-        <span v-if="scope.row.isThreadSummaryItem">
+          <span v-if="scope.row.isThreadSummaryItem">
             <img :src="sumIcon" v-if="currentSize >= totalSize"/>
             <img :src="sumPlusIcon" @dblclick="fetchThreadDetails" style="cursor: pointer" v-else/>
             {{ currentSize }} <strong> / </strong> {{totalSize}}
           </span>
-      </template>
-    </el-table-column>
+        </template>
+      </el-table-column>
 
-    <el-table-column label="Name" prop="name" width="300px" show-overflow-tooltip>
-    </el-table-column>
-    <el-table-column label="Shallow Heap" prop="shallowHeap">
-    </el-table-column>
-    <el-table-column label="Retained Heap" prop="retainedHeap">
-    </el-table-column>
-    <el-table-column label="Context Class Loader" prop="contextClassLoader" width="420px" show-overflow-tooltip>
-    </el-table-column>
-    <el-table-column label="Is Daemon" prop="daemon">
-    </el-table-column>
-  </el-table>
+      <el-table-column label="Name" width="300px" prop="name"  show-overflow-tooltip sortable="custom">
+      </el-table-column>
+      <el-table-column label="Shallow Heap" prop="shallowHeap" sortable="custom">
+      </el-table-column>
+      <el-table-column label="Retained Heap" prop="retainedHeap" sortable="custom">
+      </el-table-column>
+      <el-table-column label="Context Class Loader" prop="contextClassLoader" width="420px" show-overflow-tooltip
+                       sortable="custom">
+      </el-table-column>
+      <el-table-column label="Is Daemon" prop="daemon" sortable="custom">
+      </el-table-column>
+    </el-table>
+
+  </div>
 </template>
 
 <script>
@@ -91,6 +120,22 @@
   export default {
     props: ['file'],
     methods: {
+      sortTable(val) {
+        this.sortBy = val.prop
+        this.nextPage = 1
+        this.totalSize = 0
+        this.threads = []
+        this.ascendingOrder = val.order === 'ascending'
+        this.fetchThreadsData()
+      },
+      doSearch() {
+        this.currentSize = 0
+        this.nextPage = 1
+        this.totalSize = 0
+        this.records = []
+        this.threads = []
+        this.fetchThreadsData()
+      },
       loadStackInfo(tree, treeNode, resolve) {
         if (tree.isThread) {
           this.fetchStackTrace(tree.objectId, resolve)
@@ -234,7 +279,12 @@
       },
       fetchThreadsData() {
         this.loading = true
-        axios.get(heapDumpService(this.file, 'threadsSummary'), {}).then(resp => {
+        axios.get(heapDumpService(this.file, 'threadsSummary'), {
+          params: {
+            searchText: this.searchText,
+            searchType: this.searchType,
+          }
+        }).then(resp => {
           this.shallowHeap = resp.data.shallowHeap
           this.retainedHeap = resp.data.retainedHeap
           this.totalSize = resp.data.totalSize
@@ -252,14 +302,18 @@
         axios.get(heapDumpService(this.file, 'threads'), {
           params: {
             page: this.nextPage,
-            pageSize: this.pageSize
+            pageSize: this.pageSize,
+            sortBy: this.sortBy,
+            ascendingOrder: this.ascendingOrder,
+            searchText: this.searchText,
+            searchType: this.searchType,
           }
         }).then(resp => {
           let res = resp.data.data
           let tmp = []
           this.currentSize += res.length
           for (let i = 0; i < res.length; i++) {
-            tmp.push({
+            let tmp_obj = {
               rowKey: rowKey++,
               isThread: true,
               objectId: res[i].objectId,
@@ -270,7 +324,12 @@
               contextClassLoader: res[i].contextClassLoader,
               daemon: res[i].daemon + '',
               hasChildren: res[i].hasStack
-            })
+            }
+            if(res[i].hasStack){
+              tmp.unshift(tmp_obj)
+            } else {
+              tmp.push(tmp_obj)
+            }
           }
           this.nextPage++
           tmp.forEach(t => this.threads.push(t))
@@ -300,7 +359,16 @@
         shallowHeap: 0,
         retainedHeap: 0,
         cellStyle: {padding: '4px', fontSize: '12px'},
-        headerCellStyle: {padding: 0, 'font-size': '12px', 'font-weight': 'normal'}
+        headerCellStyle: {padding: 0, 'font-size': '12px', 'font-weight': 'normal'},
+
+        // sorting support
+        ascendingOrder: true,
+        sortBy: 'retainedHeap',
+
+        // query support
+        searchText: '',
+        inSearching: false,
+        searchType: 'by_name'
       }
     },
     created() {

@@ -38,7 +38,7 @@ import static org.eclipse.jifa.worker.WorkerGlobal.stringConfig;
 
 public class Worker extends AbstractVerticle {
     private static final Logger LOGGER = LoggerFactory.getLogger(Worker.class);
-    private static CountDownLatch count = new CountDownLatch(Runtime.getRuntime().availableProcessors());
+    private static final CountDownLatch count = new CountDownLatch(Runtime.getRuntime().availableProcessors());
     private static long startTime;
 
     public static void main(String[] args) throws InterruptedException {

@@ -15,7 +15,7 @@ package org.eclipse.jifa.worker.route.heapdump;
 import io.vertx.core.Future;
 import org.eclipse.jifa.common.aux.JifaException;
 import org.eclipse.jifa.common.request.PagingRequest;
-import org.eclipse.jifa.common.util.PageViewBuilder;
+import org.eclipse.jifa.worker.route.PageViewBuilder;
 import org.eclipse.jifa.common.vo.PageView;
 import org.eclipse.jifa.worker.route.MappingPrefix;
 import org.eclipse.jifa.worker.route.ParamKey;

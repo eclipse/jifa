@@ -11,61 +11,87 @@
     SPDX-License-Identifier: EPL-2.0
  -->
 <template xmlns:v-contextmenu="http://www.w3.org/1999/xhtml">
-  <div style="height: 100%; position: relative">
-    <div style="height: 40px; padding-top: 10px" align="center">
-      <el-radio-group v-model="grouping" @change="changeGrouping">
-        <el-radio label="NONE">Object</el-radio>
-        <el-radio label="BY_CLASS">Class</el-radio>
-        <!--<el-radio label="BY_CLASSLOADER">Class Loader</el-radio>-->
-        <!--<el-radio label="BY_PACKAGE">Package</el-radio>-->
-      </el-radio-group>
-    </div>
+  <div style="height: 100%">
+    <el-row>
+      <el-col :span="15">
+        <el-radio-group v-model="grouping" style="margin-top:10px; margin-left: 10px" @change="changeGrouping"
+                        size="mini">
+          <el-radio label="NONE">Object</el-radio>
+          <el-radio label="BY_CLASS">Class</el-radio>
+          <el-radio label="BY_CLASSLOADER">ClassLoader</el-radio>
+          <el-radio label="BY_PACKAGE">Package</el-radio>
+        </el-radio-group>
+      </el-col>
+      <el-col :span="9">
+        <el-tooltip :content="$t('jifa.searchTip')" placement="bottom" effect="light">
+          <el-input size="mini"
+                    :placeholder="$t('jifa.searchPlaceholder')"
+                    class="input-with-select"
+                    v-model="searchText"
+                    @keyup.enter.native="doSearch"
+                    clearable>
+            <el-select slot="prepend" style="width: 100px" v-model="searchType" default-first-option>
+              <el-option label="By name" value="by_name"></el-option>
+              <el-option label="By percent" value="by_percent"></el-option>
+              <el-option label="By shallow heap size" value="by_shallow_size"></el-option>
+              <el-option label="By retained heap size" value="by_retained_size"></el-option>
+            </el-select>
+
+            <el-button slot="append" :icon="inSearching ? 'el-icon-loading' : 'el-icon-search'"
+                       :disabled="inSearching"
+                       @click="doSearch"/>
+          </el-input>
+        </el-tooltip>
+      </el-col>
+    </el-row>
 
     <v-contextmenu ref="contextmenu">
       <v-contextmenu-submenu :title="$t('jifa.heap.ref.object.label')">
         <v-contextmenu-item
-                @click="$emit('outgoingRefsOfObj', contextMenuTargetObjectId, contextMenuTargetObjectLabel)">
+            @click="$emit('outgoingRefsOfObj', contextMenuTargetObjectId, contextMenuTargetObjectLabel)">
           {{$t('jifa.heap.ref.object.outgoing')}}
         </v-contextmenu-item>
         <v-contextmenu-item
-                @click="$emit('incomingRefsOfObj', contextMenuTargetObjectId, contextMenuTargetObjectLabel)">
+            @click="$emit('incomingRefsOfObj', contextMenuTargetObjectId, contextMenuTargetObjectLabel)">
           {{$t('jifa.heap.ref.object.incoming')}}
         </v-contextmenu-item>
       </v-contextmenu-submenu>
       <v-contextmenu-submenu :title="$t('jifa.heap.ref.type.label')">
         <v-contextmenu-item
-                @click="$emit('outgoingRefsOfClass', contextMenuTargetObjectId, contextMenuTargetObjectLabel)">
+            @click="$emit('outgoingRefsOfClass', contextMenuTargetObjectId, contextMenuTargetObjectLabel)">
           {{$t('jifa.heap.ref.type.outgoing')}}
         </v-contextmenu-item>
         <v-contextmenu-item
-                @click="$emit('incomingRefsOfClass', contextMenuTargetObjectId, contextMenuTargetObjectLabel)">
+            @click="$emit('incomingRefsOfClass', contextMenuTargetObjectId, contextMenuTargetObjectLabel)">
           {{$t('jifa.heap.ref.type.incoming')}}
         </v-contextmenu-item>
       </v-contextmenu-submenu>
       <v-contextmenu-item divider></v-contextmenu-item>
       <v-contextmenu-item
-              @click="$emit('pathToGCRootsOfObj', contextMenuTargetObjectId, contextMenuTargetObjectLabel)">
+          @click="$emit('pathToGCRootsOfObj', contextMenuTargetObjectId, contextMenuTargetObjectLabel)">
         {{$t('jifa.heap.pathToGCRoots')}}
       </v-contextmenu-item>
     </v-contextmenu>
 
     <div v-loading="loading" style="position: absolute; top: 40px; left: 0; right: 0; bottom: 0;">
       <el-table
-              ref='recordTable' :data="tableData"
-              :highlight-current-row="true"
-              stripe
-              :header-cell-style="headerCellStyle"
-              :cell-style='cellStyle'
-              row-key="rowKey"
-              :load="loadChildren"
-              height="100%"
-              :span-method="spanMethod"
-              :indent=8
-              lazy
-              fit>
-        <el-table-column label="Class Name" show-overflow-tooltip>
+          ref='recordTable' :data="tableData"
+          :highlight-current-row="true"
+          stripe
+          :header-cell-style="headerCellStyle"
+          :cell-style='cellStyle'
+          row-key="rowKey"
+          :load="loadChildren"
+          @sort-change="sortTable"
+          height="100%"
+          :span-method="spanMethod"
+          :indent=8
+          lazy
+          fit>
+        <el-table-column prop="id" label="Class Name" show-overflow-tooltip sortable="custom">
           <template slot-scope="scope">
-            <span v-if="scope.row.isResult" @click="$emit('setSelectedObjectId', scope.row.objectId)"
+            <span v-if="scope.row.isResult"
+                  @click="canInspect(scope.row)?$emit('setSelectedObjectId', scope.row.objectId):{}"
                   style="cursor: pointer"
                   @contextmenu="contextMenuTargetObjectId = scope.row.objectId; idPathInResultTree = scope.row.idPathInResultTree; contextMenuTargetObjectLabel = scope.row.label"
                   v-contextmenu:contextmenu>
@@ -98,17 +124,17 @@
         <el-table-column/>
         <el-table-column/>
 
-        <el-table-column v-if="grouping!=='NONE'" label="Objects">
+        <el-table-column v-if="grouping!=='NONE'" label="Objects" prop="Objects" sortable="custom">
           <template slot-scope="scope">
             {{ grouping !== "NONE" ? scope.row.objects : ''}}
           </template>
         </el-table-column>
 
-        <el-table-column label="Shallow Heap" prop="shallowHeap">
+        <el-table-column label="Shallow Heap" prop="shallowHeap" sortable="custom">
         </el-table-column>
-        <el-table-column label="Retained Heap" prop="retainedHeap">
+        <el-table-column label="Retained Heap" prop="retainedHeap" sortable="custom">
         </el-table-column>
-        <el-table-column label="Percentage" prop="percent">
+        <el-table-column label="Percentage" prop="percent" sortable="custom">
         </el-table-column>
       </el-table>
     </div>
@@ -130,7 +156,6 @@
         loading: false,
         cellStyle: {padding: '4px', fontSize: '12px'},
         headerCellStyle: {padding: 0, 'font-size': '12px', 'font-weight': 'normal'},
-        grouping: 'NONE',
 
         nextPage: 1,
         pageSize: 25,
@@ -139,6 +164,18 @@
         tableData: [],
         contextMenuTargetObjectId: null,
         contextMenuTargetObjectLabel: null,
+
+        // grouping support
+        grouping: 'NONE',
+
+        // sorting support
+        ascendingOrder: false,
+        sortBy: 'retainedHeap',
+
+        // query support
+        searchText: '',
+        inSearching: false,
+        searchType: 'by_name'
       }
     },
     methods: {
@@ -160,14 +197,33 @@
         this.clear()
         this.fetchNextPageData()
       },
-      getIconWrapper(gCRoot, objectType) {
-        if (this.grouping === 'BY_CLASS') {
-          return ICONS.objects.class
+      sortTable(val) {
+        this.sortBy = val.prop;
+        this.nextPage = 1
+        this.totalSize = 0
+        this.records = []
+        this.ascendingOrder = val.order === 'ascending';
+        this.fetchNextPageData();
+      },
+      canInspect(row) {
+        if (row.isObjType === true) {
+          return true;
+        } else {
+          if (row.objectType == 1) {
+            return true;
+          }
+          return false;
         }
-        return getIcon(gCRoot, objectType)
+      },
+      getIconWrapper(gCRoot, objectType, isObj) {
+        return getIcon(gCRoot, objectType, isObj)
       },
       loadChildren(tree, treeNode, resolve) {
         this.fetchChildren(tree.rowKey, tree.objectId, 1, tree.idPathInResultTree, resolve)
+      },
+      doSearch() {
+        this.clear();
+        this.fetchNextPageData();
       },
       fetchChildren(parentRowKey, objectId, page, idPathInResultTree, resolve) {
         this.loading = true
@@ -177,7 +233,9 @@
             page: page,
             pageSize: this.pageSize,
             grouping: this.grouping,
-            idPathInResultTree: JSON.stringify(idPathInResultTree)
+            idPathInResultTree: JSON.stringify(idPathInResultTree),
+            sortBy: this.sortBy,
+            ascendingOrder: this.ascendingOrder,
           }
         }).then(resp => {
           let loadedLen = 0;
@@ -200,7 +258,9 @@
             loaded.push({
               rowKey: rowKey++,
               objectId: d.objectId,
-              icon: this.getIconWrapper(d.gCRoot, d.objectType),
+              isObjType: d.isObjType,
+              objectType: d.objectType,
+              icon: this.getIconWrapper(d.gCRoot, d.objectType, d.isObjType),
               label: d.label,
               suffix: d.suffix,
               objects: d.objects,
@@ -237,7 +297,11 @@
           params: {
             page: this.nextPage,
             pageSize: this.pageSize,
-            grouping: this.grouping
+            grouping: this.grouping,
+            sortBy: this.sortBy,
+            ascendingOrder: this.ascendingOrder,
+            searchText: this.searchText,
+            searchType: this.searchType,
           }
         }).then(resp => {
           this.totalSize = resp.data.totalSize
@@ -246,7 +310,9 @@
             this.records.push({
               rowKey: rowKey++,
               objectId: d.objectId,
-              icon: this.getIconWrapper(d.gCRoot, d.objectType),
+              isObjType: d.isObjType,
+              objectType: d.objectType,
+              icon: this.getIconWrapper(d.gCRoot, d.objectType, d.isObjType),
               label: d.label,
               suffix: d.suffix,
               objects: d.objects,
