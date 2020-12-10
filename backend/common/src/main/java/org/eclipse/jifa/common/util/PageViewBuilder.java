@@ -17,6 +17,7 @@ import org.eclipse.jifa.common.vo.PageView;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.IntFunction;
@@ -29,6 +30,15 @@ public class PageViewBuilder {
         List<R> result = IntStream.range(paging.from(), paging.to(callback.totalSize()))
                                   .mapToObj(callback::get)
                                   .map(mapper)
+                                  .collect(Collectors.toList());
+        return new PageView<>(paging, callback.totalSize(), result);
+    }
+
+    public static <S, R> PageView<R> build(Callback<S> callback, PagingRequest paging, Function<S, R> mapper, Comparator<R> comparator) {
+        List<R> result = IntStream.range(paging.from(), paging.to(callback.totalSize()))
+                                  .mapToObj(callback::get)
+                                  .map(mapper)
+                                  .sorted(comparator)
                                   .collect(Collectors.toList());
         return new PageView<>(paging, callback.totalSize(), result);
     }
@@ -47,6 +57,16 @@ public class PageViewBuilder {
                               .limit(paging.getPageSize())
                               .map(mapper)
                               .collect(Collectors.toList());
+        return new PageView<>(paging, total.size(), result);
+    }
+
+    public static <S, R> PageView<R> build(Collection<S> total, PagingRequest paging, Function<S, R> mapper, Comparator<R> comparator) {
+        List<R> result = total.stream()
+                               .skip(paging.from())
+                               .limit(paging.getPageSize())
+                               .map(mapper)
+                               .sorted(comparator) // sort after applied mapping function
+                               .collect(Collectors.toList());
         return new PageView<>(paging, total.size(), result);
     }
 

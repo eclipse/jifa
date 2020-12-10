@@ -12,6 +12,15 @@
  -->
 <template xmlns:v-contextmenu="http://www.w3.org/1999/xhtml">
   <div style="height: 100%">
+    <div style="height: 40px; padding-top: 10px" align="left" size="mini">
+      <el-radio-group v-model="groupingBy" @change="fetchNewHistogram">
+        <el-radio label="by_class">Class</el-radio>
+        <el-radio label="by_superclass">SuperClass</el-radio>
+        <el-radio label="by_classloader">ClassLoader</el-radio>
+        <el-radio label="by_package">Package</el-radio>
+      </el-radio-group>
+    </div>
+
     <v-contextmenu ref="contextmenu">
       <v-contextmenu-submenu :title="$t('jifa.heap.ref.object.label')">
         <v-contextmenu-item
@@ -40,21 +49,23 @@
       </v-contextmenu-item>
     </v-contextmenu>
 
-    <el-table :data="tableData"
+    <el-table ref='recordTable' :data="tableData"
               :highlight-current-row="false"
               stripe
+              @sort-change="sortTable"
               :header-cell-style="headerCellStyle"
               :cell-style='cellStyle'
               row-key="rowKey"
+              :load="loadChildren"
               lazy
               :span-method="spanMethod"
               height="100%"
               :indent=8
               v-loading="loading"
     >
-      <el-table-column :label="label">
+      <el-table-column prop="id" :label="label" sortable="custom">
         <template slot-scope="scope">
-          <span v-if="scope.row.isRecord" @click="$emit('setSelectedObjectId', scope.row.objectId)"
+          <span v-if="scope.row.isRecord" @click="scope.row.type!==6?$emit('setSelectedObjectId', scope.row.objectId):{}"
                 @contextmenu="contextMenuTargetObjectId = scope.row.objectId; contextMenuTargetObjectLabel = scope.row.label"
                 v-contextmenu:contextmenu
                 style="cursor: pointer">
@@ -66,6 +77,15 @@
             <img :src="sumPlusIcon" @dblclick="fetchHistogram" style="cursor: pointer" v-else/>
             {{ records.length }} <strong> / </strong> {{totalSize}}
           </span>
+
+          <span v-if="scope.row.isChildrenSummary">
+              <img :src="ICONS.misc.sumIcon" v-if="scope.row.currentSize >= scope.row.totalSize"/>
+              <img :src="ICONS.misc.sumPlusIcon"
+                   @dblclick="fetchChildren(scope.row.parentRowKey, scope.row.objectId, scope.row.nextPage, scope.row.resolve)"
+                   style="cursor: pointer"
+                   v-else/>
+              {{ scope.row.currentSize }} <strong> / </strong> {{ scope.row.totalSize }}
+            </span>
         </template>
       </el-table-column>
 
@@ -80,25 +100,25 @@
       <el-table-column v-if="!generationInfoAvailable"/>
       <el-table-column v-if="!generationInfoAvailable"/>
 
-      <el-table-column label="Objects" prop="numberOfObjects">
+      <el-table-column label="Objects" prop="numberOfObjects" sortable="custom">
       </el-table-column>
 
-      <el-table-column label="Shallow Heap" prop="shallowSize">
+      <el-table-column label="Shallow Heap" prop="shallowSize" sortable="custom">
       </el-table-column>
 
-      <el-table-column label="Objects(Y)" prop="numberOfYoungObjects" v-if="generationInfoAvailable">
+      <el-table-column label="Objects(Y)" prop="numberOfYoungObjects" v-if="generationInfoAvailable" sortable="custom">
       </el-table-column>
 
-      <el-table-column label="Shallow Heap(Y) " prop="shallowSizeOfYoung" v-if="generationInfoAvailable">
+      <el-table-column label="Shallow Heap(Y) " prop="shallowSizeOfYoung" v-if="generationInfoAvailable" sortable="custom">
       </el-table-column>
 
-      <el-table-column label="Objects(O)" prop="numberOfOldObjects" v-if="generationInfoAvailable">
+      <el-table-column label="Objects(O)" prop="numberOfOldObjects" v-if="generationInfoAvailable" sortable="custom">
       </el-table-column>
 
-      <el-table-column label="Shallow Heap(O)" prop="shallowSizeOfOld" v-if="generationInfoAvailable">
+      <el-table-column label="Shallow Heap(O)" prop="shallowSizeOfOld" v-if="generationInfoAvailable" sortable="custom">
       </el-table-column>
 
-      <el-table-column label="Retained Heap">
+      <el-table-column label="Retained Heap" prop="retainedSize" sortable="custom" v-if="this.groupingBy!=='by_package' && this.groupingBy!=='by_superclass'">
         <template slot-scope="scope">
           <span v-if="scope.row.retainedSize < 0">
             >= {{ -scope.row.retainedSize }}
@@ -116,6 +136,7 @@
 <script>
 
   import axios from 'axios'
+  import {ICONS,getIcon} from "./IconHealper";
   import {heapDumpService} from '../../util'
 
   let rowKey = 1
@@ -147,6 +168,8 @@
             groupingBy: this.groupingBy,
             page: this.nextPage,
             pageSize: this.pageSize,
+            sortBy: this.sortBy,
+            ascendingOrder: this.ascendingOrder,
           }
         }).then(resp => {
           let records = resp.data.data
@@ -156,7 +179,8 @@
                 rowKey: rowKey++,
                 objectId: record.objectId,
                 label: record.label,
-                icon: this.classIcon,
+                type : record.type,
+                icon: getIcon(false,record.type,false),
                 numberOfObjects: record.numberOfObjects,
                 shallowSize: record.shallowSize,
 
@@ -167,7 +191,8 @@
                 shallowSizeOfOld: record.shallowSizeOfOld,
 
                 retainedSize: record.retainedSize,
-                isRecord: true
+                isRecord: true,
+                hasChildren: this.groupingBy!=='by_class'
               }))
 
           this.tableData = this.records.concat({
@@ -178,15 +203,108 @@
           this.loading = false
         })
       },
+      fetchNewHistogram(){
+        this.nextPage = 1
+        this.totalSize = 0
+        this.records = []
+        switch (this.groupingBy) {
+          case "by_class":
+            this.label = "Class Name";break;
+          case "by_classloader":
+            this.label = "Class Loader";break;
+          case "by_superclass":
+            this.label = "Super Class";break;
+          case "by_package":
+            this.label = "Package";break;
+          default:
+            throw "should not reach here";
+        }
+        this.fetchHistogram();
+      },
+      sortTable(val){
+        this.sortBy = val.prop;
+        this.ascendingOrder = val.order === 'ascending';
+        this.fetchNewHistogram();
+      },
+      loadChildren(tree, treeNode, resolve) {
+        this.fetchChildren(tree.rowKey, tree.objectId, 1, resolve)
+      },
+      fetchChildren(parentRowKey, objectId, page, resolve) {
+        this.loading = true
+        axios.get(heapDumpService(this.file, 'histogram/children'), {
+          params: {
+            groupingBy: this.groupingBy,
+            page: page,
+            pageSize: this.pageSize,
+            sortBy: this.sortBy,
+            ascendingOrder: this.ascendingOrder,
+            parentObjectId: objectId,
+          }
+        }).then(resp => {
+          let loadedLen = 0;
+          let loaded = this.$refs['recordTable'].store.states.lazyTreeNodeMap[parentRowKey]
+          let callResolve = false
+          if (loaded) {
+            loadedLen = loaded.length
+            if (loadedLen > 0) {
+              loaded.splice(--loadedLen, 1)
+            }
+          } else {
+            loaded = []
+            callResolve = true;
+          }
+
+          let res = resp.data.data
+          res.forEach(record => {
+            loaded.push({
+              rowKey: rowKey++,
+              objectId: record.objectId,
+              label: record.label,
+              type : record.type,
+              icon: getIcon(false,record.type,false),
+              numberOfObjects: record.numberOfObjects,
+              shallowSize: record.shallowSize,
+
+              numberOfYoungObjects: record.numberOfYoungObjects,
+              shallowSizeOfYoung: record.shallowSizeOfYoung,
+
+              numberOfOldObjects: record.numberOfOldObjects,
+              shallowSizeOfOld: record.shallowSizeOfOld,
+
+              retainedSize: record.retainedSize,
+              isRecord: true,
+              hasChildren: this.groupingBy!=='by_class'
+            })
+          })
+
+          loaded.push({
+            rowKey: rowKey++,
+            objectId: objectId,
+            parentRowKey: parentRowKey,
+            isChildrenSummary: true,
+            nextPage: page + 1,
+            currentSize: loadedLen + res.length,
+            totalSize: resp.data.totalSize,
+            resolve: resolve,
+          })
+
+          if (callResolve) {
+            resolve(loaded)
+          }
+          this.loading = false
+        })
+      },
     },
     data() {
       return {
+        ICONS,
         loading: false,
-        classIcon: require('../../assets/heap/objects/class.gif'),
         sumIcon: require('../../assets/heap/misc/sum.gif'),
         sumPlusIcon: require('../../assets/heap/misc/sum_plus.gif'),
         label: 'Class Name',
         groupingBy: 'by_class',
+        sortBy: 'retainedSize',
+        ascendingOrder: true,
         cellStyle: {padding: '4px', fontSize: '12px'},
         headerCellStyle: {padding: 0, 'font-size': '12px', 'font-weight': 'normal'},
 

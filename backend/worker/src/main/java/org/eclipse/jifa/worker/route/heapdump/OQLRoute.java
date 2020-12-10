@@ -42,7 +42,8 @@ import java.util.stream.Collectors;
 class OQLRoute extends HeapBaseRoute {
 
     @RouteMeta(path = "/oql")
-    void oql(Future<Object> future, @ParamKey("file") String file, @ParamKey("oql") String oql,
+    void oql(Future<Object> future, @ParamKey("file") String file, @ParamKey("oql") String oql, @ParamKey(value = "sortBy", mandatory = false) String sortBy,
+             @ParamKey(value = "ascendingOrder", mandatory = false) boolean ascendingOrder,
              PagingRequest pagingRequest) throws Exception {
         OQLQuery query = new OQLQuery();
         ISnapshot snapshot = Analyzer.getOrOpenSnapshotContext(file).getSnapshot();
@@ -68,7 +69,7 @@ class OQLRoute extends HeapBaseRoute {
                 } catch (Exception ex) {
                     throw new JifaException(ex);
                 }
-            })));
+            }, HeapObject.sortBy(sortBy, ascendingOrder))));
         } else if (qr instanceof IResultTable) {
             IResultTable table = (IResultTable) qr;
             Column[] columns = table.getColumns();
@@ -92,7 +93,7 @@ class OQLRoute extends HeapBaseRoute {
                 }
                 IContextObject context = table.getContext(o);
                 return new TableResult.Entry(
-                    context != null ? context.getObjectId() : HeapDumpSupport.ILLEGAL_OBJECT_ID, l);
+                        context != null ? context.getObjectId() : HeapDumpSupport.ILLEGAL_OBJECT_ID, l);
             });
             future.complete(new TableResult(cs, pv));
         } else if (qr instanceof org.eclipse.mat.query.results.TextResult) {

@@ -10,17 +10,11 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-export const OBJECT_TYPE = {
-  CLASS: 1,
-  CLASSLOADER: 2,
-  ARRAY: 3,
-  NORMAL: 4,
-  SUPERCLASS: 5,
-  PACKAGE: 6,
-}
+package org.eclipse.jifa.worker.vo.heapdump;
 
-export const CLASS_TYPE = {
-  NEW: 0,
-  MIXED: 1,
-  OLD_FAD: 2
+public class RecordType {
+    public static int CLASS = 1;
+    public static int CLASS_LOADER = 2;
+    public static int SUPER_CLASS = 5;
+    public static int PACKAGE = 6;
 }

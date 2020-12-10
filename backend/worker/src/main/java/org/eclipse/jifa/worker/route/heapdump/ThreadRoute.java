@@ -65,7 +65,8 @@ class ThreadRoute extends HeapBaseRoute {
     }
 
     @RouteMeta(path = "/threads")
-    void threads(Future<PageView<Info>> future, @ParamKey("file") String file, PagingRequest paging) throws Exception {
+    void threads(Future<PageView<Info>> future, @ParamKey("file") String file,@ParamKey(value = "sortBy", mandatory = false) String sortBy,
+                 @ParamKey(value = "ascendingOrder", mandatory = false) boolean ascendingOrder, PagingRequest paging) throws Exception {
 
         ThreadOverviewQuery query = new ThreadOverviewQuery();
         query.snapshot = Analyzer.getOrOpenSnapshotContext(file).getSnapshot();
@@ -74,15 +75,15 @@ class ThreadRoute extends HeapBaseRoute {
 
 
         future.complete(PageViewBuilder.build(elements, paging, e -> new Info(result.getContext(e).getObjectId(),
-                                                                              (String) result.getColumnValue(e, 0),
-                                                                              (String) result.getColumnValue(e, 1),
-                                                                              ((Bytes) result.getColumnValue(e, 2))
-                                                                                  .getValue(),
-                                                                              ((Bytes) result.getColumnValue(e, 3))
-                                                                                  .getValue(),
-                                                                              (String) result.getColumnValue(e, 4),
-                                                                              result.hasChildren(e),
-                                                                              (Boolean) result.getColumnValue(e, 5))));
+                (String) result.getColumnValue(e, 0),
+                (String) result.getColumnValue(e, 1),
+                ((Bytes) result.getColumnValue(e, 2))
+                        .getValue(),
+                ((Bytes) result.getColumnValue(e, 3))
+                        .getValue(),
+                (String) result.getColumnValue(e, 4),
+                result.hasChildren(e),
+                (Boolean) result.getColumnValue(e, 5)),Info.sortBy(sortBy, ascendingOrder)));
     }
 
     private IResultTree fetchStaceTrace(ISnapshot snapshot, int objectId) throws Exception {
@@ -136,10 +137,10 @@ class ThreadRoute extends HeapBaseRoute {
             List<?> frames = result.getChildren(elements.get(0));
 
             List<StackFrame> res = frames.stream().map(
-                frame -> new StackFrame((String) result.getColumnValue(frame, 0), result.hasChildren(frame)))
-                                         .collect(Collectors.toList());
+                    frame -> new StackFrame((String) result.getColumnValue(frame, 0), result.hasChildren(frame)))
+                    .collect(Collectors.toList());
             res.stream().filter(t -> !t.getStack().contains("Native Method")).findFirst()
-               .ifPresent(sf -> sf.setFirstNonNativeFrame(true));
+                    .ifPresent(sf -> sf.setFirstNonNativeFrame(true));
             future.complete(res);
         } else {
             future.complete(Collections.emptyList());
@@ -177,8 +178,8 @@ class ThreadRoute extends HeapBaseRoute {
                             if (gcRootInfos != null) {
                                 for (GCRootInfo gcRootInfo : gcRootInfos) {
                                     if (gcRootInfo.getContextId() != 0 &&
-                                        (gcRootInfo.getType() & GCRootInfo.Type.BUSY_MONITOR) != 0 &&
-                                        gcRootInfo.getContextId() == objectId) {
+                                            (gcRootInfo.getType() & GCRootInfo.Type.BUSY_MONITOR) != 0 &&
+                                            gcRootInfo.getContextId() == objectId) {
                                         var.setPrefix(Messages.ThreadStackQuery_Label_Local_Blocked_On);
                                     }
                                 }

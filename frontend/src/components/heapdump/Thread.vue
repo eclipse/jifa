@@ -18,6 +18,7 @@
             :cell-style='cellStyle'
             row-key="rowKey"
             lazy
+            @sort-change="sortTable"
             v-loading="loading"
             height="100%"
             :indent=8
@@ -68,15 +69,15 @@
       </template>
     </el-table-column>
 
-    <el-table-column label="Name" prop="name" width="300px" show-overflow-tooltip>
+    <el-table-column label="Name" prop="name" width="300px" show-overflow-tooltip sortable="custom">
     </el-table-column>
-    <el-table-column label="Shallow Heap" prop="shallowHeap">
+    <el-table-column label="Shallow Heap" prop="shallowHeap" sortable="custom">
     </el-table-column>
-    <el-table-column label="Retained Heap" prop="retainedHeap">
+    <el-table-column label="Retained Heap" prop="retainedHeap" sortable="custom">
     </el-table-column>
-    <el-table-column label="Context Class Loader" prop="contextClassLoader" width="420px" show-overflow-tooltip>
+    <el-table-column label="Context Class Loader" prop="contextClassLoader" width="420px" show-overflow-tooltip sortable="custom">
     </el-table-column>
-    <el-table-column label="Is Daemon" prop="daemon">
+    <el-table-column label="Is Daemon" prop="daemon" sortable="custom">
     </el-table-column>
   </el-table>
 </template>
@@ -91,6 +92,14 @@
   export default {
     props: ['file'],
     methods: {
+      sortTable(val){
+        this.sortBy = val.prop
+        this.nextPage = 1
+        this.totalSize = 0
+        this.threads = []
+        this.ascendingOrder = val.order === 'ascending'
+        this.fetchThreadsData()
+      },
       loadStackInfo(tree, treeNode, resolve) {
         if (tree.isThread) {
           this.fetchStackTrace(tree.objectId, resolve)
@@ -252,7 +261,9 @@
         axios.get(heapDumpService(this.file, 'threads'), {
           params: {
             page: this.nextPage,
-            pageSize: this.pageSize
+            pageSize: this.pageSize,
+            sortBy: this.sortBy,
+            ascendingOrder: this.ascendingOrder,
           }
         }).then(resp => {
           let res = resp.data.data
@@ -300,7 +311,9 @@
         shallowHeap: 0,
         retainedHeap: 0,
         cellStyle: {padding: '4px', fontSize: '12px'},
-        headerCellStyle: {padding: 0, 'font-size': '12px', 'font-weight': 'normal'}
+        headerCellStyle: {padding: 0, 'font-size': '12px', 'font-weight': 'normal'},
+        ascendingOrder: true,
+        sortBy: 'retainedHeap',
       }
     },
     created() {

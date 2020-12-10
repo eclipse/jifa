@@ -13,8 +13,14 @@
 package org.eclipse.jifa.worker.vo.heapdump.histogram;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.eclipse.jifa.worker.support.SortTableGenerator;
+
+import java.util.Comparator;
+import java.util.Map;
 
 @Data
+@NoArgsConstructor
 public class Record {
     private long numberOfObjects;
     private long shallowSize;
@@ -43,10 +49,18 @@ public class Record {
         this.shallowSizeOfOld = shallowSizeOfOld;
     }
 
-    public static class Type {
-        public static int CLASS = 1;
-        public static int SUPER_CLASS = 2;
-        public static int CLASS_LOADER = 3;
-        public static int PACKAGE = 4;
+    private static Map<String, Comparator> sortTable = new SortTableGenerator()
+            .add("id", Record::getObjectId)
+            .add("numberOfObjects", Record::getNumberOfObjects)
+            .add("shallowSize", Record::getShallowSize)
+            .add("numberOfYoungObjects", Record::getNumberOfYoungObjects)
+            .add("shallowSizeOfYoung", Record::getShallowSizeOfYoung)
+            .add("numberOfOldObjects", Record::getNumberOfOldObjects)
+            .add("shallowSizeOfOld", Record::getShallowSizeOfOld)
+            .add("retainedSize", Record::getRetainedSize)
+            .build();
+
+    public static Comparator sortBy(String field, boolean ascendingOrder){
+        return ascendingOrder? sortTable.get(field):sortTable.get(field).reversed();
     }
 }

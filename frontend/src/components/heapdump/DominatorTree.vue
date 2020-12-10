@@ -12,12 +12,12 @@
  -->
 <template xmlns:v-contextmenu="http://www.w3.org/1999/xhtml">
   <div style="height: 100%; position: relative">
-    <div style="height: 40px; padding-top: 10px" align="center">
+    <div style="height: 40px; padding-top: 10px" align="left">
       <el-radio-group v-model="grouping" @change="changeGrouping">
         <el-radio label="NONE">Object</el-radio>
         <el-radio label="BY_CLASS">Class</el-radio>
-        <!--<el-radio label="BY_CLASSLOADER">Class Loader</el-radio>-->
-        <!--<el-radio label="BY_PACKAGE">Package</el-radio>-->
+        <el-radio label="BY_CLASSLOADER">ClassLoader</el-radio>
+        <el-radio label="BY_PACKAGE">Package</el-radio>
       </el-radio-group>
     </div>
 
@@ -58,14 +58,15 @@
               :cell-style='cellStyle'
               row-key="rowKey"
               :load="loadChildren"
+              @sort-change="sortTable"
               height="100%"
               :span-method="spanMethod"
               :indent=8
               lazy
               fit>
-        <el-table-column label="Class Name" show-overflow-tooltip>
+        <el-table-column prop="id" label="Class Name" show-overflow-tooltip sortable="custom">
           <template slot-scope="scope">
-            <span v-if="scope.row.isResult" @click="$emit('setSelectedObjectId', scope.row.objectId)"
+            <span v-if="scope.row.isResult" @click="canInspect(scope.row)?$emit('setSelectedObjectId', scope.row.objectId):{}"
                   style="cursor: pointer"
                   @contextmenu="contextMenuTargetObjectId = scope.row.objectId; contextMenuTargetObjectLabel = scope.row.label"
                   v-contextmenu:contextmenu>
@@ -98,17 +99,17 @@
         <el-table-column/>
         <el-table-column/>
 
-        <el-table-column v-if="grouping!=='NONE'" label="Objects">
+        <el-table-column v-if="grouping!=='NONE'" label="Objects" prop="Objects" sortable="custom">
           <template slot-scope="scope">
             {{ grouping !== "NONE" ? scope.row.objects : ''}}
           </template>
         </el-table-column>
 
-        <el-table-column label="Shallow Heap" prop="shallowHeap">
+        <el-table-column label="Shallow Heap" prop="shallowHeap" sortable="custom">
         </el-table-column>
-        <el-table-column label="Retained Heap" prop="retainedHeap">
+        <el-table-column label="Retained Heap" prop="retainedHeap" sortable="custom">
         </el-table-column>
-        <el-table-column label="Percentage" prop="percent">
+        <el-table-column label="Percentage" prop="percent" sortable="custom">
         </el-table-column>
       </el-table>
     </div>
@@ -139,6 +140,8 @@
         tableData: [],
         contextMenuTargetObjectId: null,
         contextMenuTargetObjectLabel: null,
+        ascendingOrder: true,
+        sortBy: 'retainedHeap',
       }
     },
     methods: {
@@ -160,11 +163,23 @@
         this.clear()
         this.fetchNextPageData()
       },
-      getIconWrapper(gCRoot, objectType) {
-        if (this.grouping === 'BY_CLASS') {
-          return ICONS.objects.class
+      sortTable(val){
+        this.sortBy = val.prop;
+        this.nextPage = 1
+        this.totalSize = 0
+        this.records = []
+        this.ascendingOrder = val.order === 'ascending';
+        this.fetchNextPageData();
+      },
+      canInspect(row){
+        if(row.isObjType===true){
+          return true;
+        } else {
+          return false;
         }
-        return getIcon(gCRoot, objectType)
+      },
+      getIconWrapper(gCRoot, objectType, isObj) {
+        return getIcon(gCRoot, objectType, isObj)
       },
       loadChildren(tree, treeNode, resolve) {
         this.fetchChildren(tree.rowKey, tree.objectId, 1, resolve)
@@ -176,7 +191,9 @@
             parentObjectId: objectId,
             page: page,
             pageSize: this.pageSize,
-            grouping: this.grouping
+            grouping: this.grouping,
+            sortBy: this.sortBy,
+            ascendingOrder: this.ascendingOrder,
           }
         }).then(resp => {
           let loadedLen = 0;
@@ -197,7 +214,8 @@
             loaded.push({
               rowKey: rowKey++,
               objectId: d.objectId,
-              icon: this.getIconWrapper(d.gCRoot, d.objectType),
+              isObjType: d.isObjType,
+              icon: this.getIconWrapper(d.gCRoot, d.objectType, d.isObjType),
               label: d.label,
               suffix: d.suffix,
               objects: d.objects,
@@ -232,7 +250,9 @@
           params: {
             page: this.nextPage,
             pageSize: this.pageSize,
-            grouping: this.grouping
+            grouping: this.grouping,
+            sortBy: this.sortBy,
+            ascendingOrder: this.ascendingOrder,
           }
         }).then(resp => {
           this.totalSize = resp.data.totalSize
@@ -241,7 +261,8 @@
             this.records.push({
               rowKey: rowKey++,
               objectId: d.objectId,
-              icon: this.getIconWrapper(d.gCRoot, d.objectType),
+              isObjType: d.isObjType,
+              icon: this.getIconWrapper(d.gCRoot, d.objectType, d.isObjType),
               label: d.label,
               suffix: d.suffix,
               objects: d.objects,
