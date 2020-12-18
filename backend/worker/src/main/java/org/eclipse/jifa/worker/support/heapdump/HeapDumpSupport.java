@@ -12,8 +12,12 @@
  ********************************************************************************/
 package org.eclipse.jifa.worker.support.heapdump;
 
+import org.eclipse.jifa.common.request.PagingRequest;
+import org.eclipse.jifa.common.vo.PageView;
+import org.eclipse.jifa.worker.vo.heapdump.dominatortree.BaseRecord;
 import org.eclipse.mat.SnapshotException;
 import org.eclipse.mat.query.IContextObject;
+import org.eclipse.mat.query.IResultTree;
 import org.eclipse.mat.snapshot.ISnapshot;
 import org.eclipse.mat.snapshot.model.GCRootInfo;
 import org.eclipse.mat.snapshot.model.IObject;
@@ -22,6 +26,7 @@ import org.eclipse.mat.snapshot.query.IHeapObjectArgument;
 import org.eclipse.mat.util.IProgressListener;
 import org.eclipse.mat.util.VoidProgressListener;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -81,5 +86,35 @@ public class HeapDumpSupport {
                 return null;
             }
         };
+    }
+
+    private static Object findObjectInTree(IResultTree tree, List<?> levelElements, int targetId) {
+        if (levelElements != null) {
+            for (Object o : levelElements) {
+                if (tree.getContext(o).getObjectId() == targetId) {
+                    return o;
+                }
+            }
+        }
+        return null;
+    }
+
+    public static Object fetchObjectInResultTree(IResultTree tree, int[] idPathInResultTree) {
+        if (idPathInResultTree == null || idPathInResultTree.length == 0) {
+            return null;
+        }
+
+        // find the object in root tree
+        Object objectInTree = findObjectInTree(tree, tree.getElements(), idPathInResultTree[0]);
+
+        // find the object in children tree
+        for (int i = 1; i < idPathInResultTree.length; i++) {
+            if (objectInTree == null) {
+                return null;
+            }
+            objectInTree = findObjectInTree(tree, tree.getChildren(objectInTree), idPathInResultTree[i]);
+        }
+
+        return objectInTree;
     }
 }

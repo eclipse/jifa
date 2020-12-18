@@ -67,7 +67,7 @@
           <template slot-scope="scope">
             <span v-if="scope.row.isResult" @click="$emit('setSelectedObjectId', scope.row.objectId)"
                   style="cursor: pointer"
-                  @contextmenu="contextMenuTargetObjectId = scope.row.objectId; contextMenuTargetObjectLabel = scope.row.label"
+                  @contextmenu="contextMenuTargetObjectId = scope.row.objectId; idPathInResultTree = scope.row.idPathInResultTree; contextMenuTargetObjectLabel = scope.row.label"
                   v-contextmenu:contextmenu>
               <img :src="scope.row.icon" style="margin-right: 5px"/>
                 {{ scope.row.label }}
@@ -85,7 +85,7 @@
             <span v-if="scope.row.isChildrenSummary">
               <img :src="ICONS.misc.sumIcon" v-if="scope.row.currentSize >= scope.row.totalSize"/>
               <img :src="ICONS.misc.sumPlusIcon"
-                   @dblclick="fetchChildren(scope.row.parentRowKey, scope.row.objectId, scope.row.nextPage, scope.row.resolve)"
+                   @dblclick="fetchChildren(scope.row.parentRowKey, scope.row.objectId, scope.row.nextPage, scope.row.idPathInResultTree, scope.row.resolve)"
                    style="cursor: pointer"
                    v-else/>
               {{ scope.row.currentSize }} <strong> / </strong> {{ scope.row.totalSize }}
@@ -167,16 +167,17 @@
         return getIcon(gCRoot, objectType)
       },
       loadChildren(tree, treeNode, resolve) {
-        this.fetchChildren(tree.rowKey, tree.objectId, 1, resolve)
+        this.fetchChildren(tree.rowKey, tree.objectId, 1, tree.idPathInResultTree, resolve)
       },
-      fetchChildren(parentRowKey, objectId, page, resolve) {
+      fetchChildren(parentRowKey, objectId, page, idPathInResultTree, resolve) {
         this.loading = true
         axios.get(heapDumpService(this.file, 'dominatorTree/children'), {
           params: {
             parentObjectId: objectId,
             page: page,
             pageSize: this.pageSize,
-            grouping: this.grouping
+            grouping: this.grouping,
+            idPathInResultTree: JSON.stringify(idPathInResultTree)
           }
         }).then(resp => {
           let loadedLen = 0;
@@ -194,6 +195,8 @@
 
           let res = resp.data.data
           res.forEach(d => {
+            let idPathInResultTreeCopy = Array.from(idPathInResultTree);
+            idPathInResultTreeCopy.push(d.objectId);
             loaded.push({
               rowKey: rowKey++,
               objectId: d.objectId,
@@ -205,7 +208,8 @@
               retainedHeap: d.retainedSize,
               percent: (d.percent * 100).toFixed(2) + '%',
               hasChildren: true,
-              isResult: true
+              isResult: true,
+              idPathInResultTree: idPathInResultTreeCopy
             })
           })
 
@@ -218,6 +222,7 @@
             currentSize: loadedLen + res.length,
             totalSize: resp.data.totalSize,
             resolve: resolve,
+            idPathInResultTree: idPathInResultTree
           })
 
           if (callResolve) {
@@ -248,8 +253,9 @@
               shallowHeap: d.shallowSize,
               retainedHeap: d.retainedSize,
               percent: (d.percent * 100).toFixed(2) + '%',
-              hasChildren: this.grouping !== 'BY_CLASS',
-              isResult: true
+              hasChildren: true,
+              isResult: true,
+              idPathInResultTree: [d.objectId]
             })
           })
           this.tableData = this.records.concat({
