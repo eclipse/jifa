@@ -42,6 +42,7 @@ public class HeapBaseRoute extends BaseRoute {
         ROUTES.add(PathToGCRootsRoute.class);
         ROUTES.add(CompareRoute.class);
         ROUTES.add(LeakRoute.class);
+        ROUTES.add(MergePathToGCRootsRoute.class);
     }
 
     public static List<Class<? extends HeapBaseRoute>> routes() {

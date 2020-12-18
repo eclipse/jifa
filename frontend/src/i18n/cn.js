@@ -122,6 +122,7 @@ exports.default = {
       },
 
       pathToGCRoots: 'GC 根路径',
+      mergePathToGCRoots: '合并GC 根路径',
     },
   }
 };
