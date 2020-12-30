@@ -48,13 +48,14 @@
               :cell-style='cellStyle'
               row-key="rowKey"
               :load="loadChildren"
+              @sort-change="sortTable"
               lazy
               :span-method="spanMethod"
               height="100%"
               :indent=8
               v-loading="loading"
     >
-      <el-table-column label="Class Name">
+      <el-table-column label="Class Name" prop="id" sortable="custom">
         <template slot-scope="scope">
           <span v-if="scope.row.isRecord" @click="$emit('setSelectedObjectId', scope.row.objectId)"
                 style="cursor: pointer"
@@ -88,10 +89,10 @@
       <el-table-column/>
       <el-table-column/>
 
-      <el-table-column label="Defined Classes" prop="definedClasses">
+      <el-table-column label="Defined Classes" prop="definedClasses" sortable="custom">
       </el-table-column>
 
-      <el-table-column label="No. of Instances" prop="numberOfInstances">
+      <el-table-column label="No. of Instances" prop="numberOfInstances" sortable="custom">
       </el-table-column>
     </el-table>
   </div>
@@ -126,12 +127,21 @@
           }
         })
       },
+      sortTable(val) {
+        this.sortBy = val.prop;
+        this.nextPage = 1
+        this.records = []
+        this.ascendingOrder = val.order === 'ascending';
+        this.fetchClassLoaders();
+      },
       fetchClassLoaders() {
         this.loading = true
         axios.get(heapDumpService(this.file, 'classLoaderExplorer/classLoader'), {
           params: {
             page: this.nextPage,
             pageSize: this.pageSize,
+            sortBy: this.sortBy,
+            ascendingOrder: this.ascendingOrder,
           }
         }).then(resp => {
           let records = resp.data.data
@@ -161,7 +171,6 @@
           this.loading = false
         })
       },
-
       loadChildren(tree, treeNode, resolve) {
         this.fetchChildren(tree.rowKey, tree.objectId, 1, resolve)
       },
@@ -173,6 +182,8 @@
             classLoaderId: objectId,
             page: page,
             pageSize: this.pageSize,
+            sortBy: this.sortBy,
+            ascendingOrder: this.ascendingOrder,
           }
         }).then(resp => {
           let loadedLen = 0;
@@ -250,6 +261,10 @@
 
         contextMenuTargetObjectId: null,
         contextMenuTargetObjectLabel: null,
+
+        // sorting support
+        ascendingOrder: false,
+        sortBy: 'numberOfInstances',
       }
     },
     created() {

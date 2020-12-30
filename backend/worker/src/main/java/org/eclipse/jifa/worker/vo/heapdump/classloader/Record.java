@@ -13,10 +13,22 @@
 package org.eclipse.jifa.worker.vo.heapdump.classloader;
 
 import lombok.Data;
+import org.eclipse.jifa.common.util.ErrorUtil;
+import org.eclipse.jifa.worker.vo.feature.SearchType;
+import org.eclipse.jifa.worker.vo.feature.Searchable;
+import org.eclipse.jifa.worker.vo.feature.SortTableGenerator;
+
+import java.util.Comparator;
+import java.util.Map;
 
 @Data
-public class Record {
+public class Record implements Searchable {
 
+    private static Map<String, Comparator> sortTable = new SortTableGenerator()
+            .add("id", Record::getObjectId)
+            .add("numberOfInstances", Record::getNumberOfInstances)
+            .add("definedClasses", Record::getDefinedClasses)
+            .build();
     private int objectId;
 
     private String prefix;
@@ -30,4 +42,14 @@ public class Record {
     private int definedClasses;
 
     private int numberOfInstances;
+
+    public static Comparator<Record> sortBy(String field, boolean ascendingOrder) {
+        return ascendingOrder ? sortTable.get(field) : sortTable.get(field).reversed();
+    }
+
+    @Override
+    public Object getBySearchType(SearchType type) {
+        ErrorUtil.unimplemented();
+        return null;
+    }
 }

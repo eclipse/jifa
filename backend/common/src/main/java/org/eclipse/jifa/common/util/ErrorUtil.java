@@ -37,4 +37,8 @@ public class ErrorUtil {
     public static void errorWith(ErrorCode code, String detail) {
         throw new JifaException(code, detail);
     }
+
+    public static void unimplemented() {
+        throw new JifaException(ErrorCode.UNSUPPORTED_OPERATION, "unimplemented yet!");
+    }
 }
