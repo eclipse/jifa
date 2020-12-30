@@ -24,13 +24,14 @@ export const ICONS = {
   objects: {
     class_obj: require('../../assets/heap/objects/class_obj.gif'),
     class_obj_gc_root: require('../../assets/heap/objects/class_obj_gc_root.gif'),
+    classloader: require('../../assets/heap/objects/out/classloader_obj.gif'),
     classloader_obj: require('../../assets/heap/objects/classloader_obj.gif'),
     classloader_obj_gc_root: require('../../assets/heap/objects/classloader_obj_gc_root.gif'),
     array_obj: require('../../assets/heap/objects/array_obj.gif'),
     array_obj_gc_root: require('../../assets/heap/objects/array_obj_gc_root.gif'),
     instance_obj: require('../../assets/heap/objects/instance_obj.gif'),
     instance_obj_gc_root: require('../../assets/heap/objects/instance_obj_gc_root.gif'),
-    class_package: require('../../assets/heap/objects/package.gif'),
+    package: require('../../assets/heap/objects/package.gif'),
     superclass: require('../../assets/heap/objects/superclass.gif'),
     class: require('../../assets/heap/objects/class.gif'),
 
@@ -66,61 +67,42 @@ export const ICONS = {
 
 import {CLASS_TYPE, OBJECT_TYPE} from "./CommonType";
 
-export function getIcon(isGCRoot, objType) {
-
-  if (objType === OBJECT_TYPE.CLASS) {
-    return isGCRoot ? ICONS.objects.class_obj_gc_root : ICONS.objects.class_obj;
+function attr_string_of(isGCRoot, type, isObj){
+  let attr;
+  switch (type) {
+    case OBJECT_TYPE.CLASS:
+      attr="class";break;
+    case OBJECT_TYPE.CLASSLOADER:
+      attr="classloader";break;
+    case OBJECT_TYPE.ARRAY:
+      attr="array";break;
+    case OBJECT_TYPE.SUPERCLASS:
+      attr="superclass";break;
+    case OBJECT_TYPE.PACKAGE:
+      attr="package";break;
+    case OBJECT_TYPE.NORMAL:
+    default:
+      attr="instance";break;
   }
-
-  if (objType === OBJECT_TYPE.CLASSLOADER) {
-    return isGCRoot ? ICONS.objects.classloader_obj_gc_root : ICONS.objects.classloader_obj;
+  if(isObj){
+    attr+=(isGCRoot?"_obj_gc_root":"_obj");
   }
-
-  if (objType === OBJECT_TYPE.ARRAY) {
-    return isGCRoot ? ICONS.objects.array_obj_gc_root : ICONS.objects.array_obj;
-  }
-
-  if (objType === OBJECT_TYPE.NORMAL) {
-    return isGCRoot ? ICONS.objects.instance_obj_gc_root : ICONS.objects.instance_obj;
-  }
+  return attr;
+}
+// ES6 master helps you!
+export function getIcon(isGCRoot, type, isObj=true) {
+  let attr = attr_string_of(isGCRoot, type, isObj)
+  return ICONS.objects[attr];
 }
 
-export function getOutboundIcon(isGCRoot, objType) {
-
-  if (objType === OBJECT_TYPE.CLASS) {
-    return isGCRoot ? ICONS.objects.out.class_obj_gc_root : ICONS.objects.out.class_obj;
-  }
-
-  if (objType === OBJECT_TYPE.CLASSLOADER) {
-    return isGCRoot ? ICONS.objects.out.classloader_obj_gc_root : ICONS.objects.out.classloader_obj;
-  }
-
-  if (objType === OBJECT_TYPE.ARRAY) {
-    return isGCRoot ? ICONS.objects.out.array_obj_gc_root : ICONS.objects.out.array_obj;
-  }
-
-  if (objType === OBJECT_TYPE.NORMAL) {
-    return isGCRoot ? ICONS.objects.out.instance_obj_gc_root : ICONS.objects.out.instance_obj;
-  }
+export function getOutboundIcon(isGCRoot, objType, isObj=true) {
+  let attr = attr_string_of(isGCRoot, objType, isObj)
+  return ICONS.objects.out[attr];
 }
 
-export function getInboundIcon(isGCRoot, objType) {
-
-  if (objType === OBJECT_TYPE.CLASS) {
-    return isGCRoot ? ICONS.objects.in.class_obj_gc_root : ICONS.objects.in.class_obj;
-  }
-
-  if (objType === OBJECT_TYPE.CLASSLOADER) {
-    return isGCRoot ? ICONS.objects.in.classloader_obj_gc_root : ICONS.objects.in.classloader_obj;
-  }
-
-  if (objType === OBJECT_TYPE.ARRAY) {
-    return isGCRoot ? ICONS.objects.in.array_obj_gc_root : ICONS.objects.in.array_obj;
-  }
-
-  if (objType === OBJECT_TYPE.NORMAL) {
-    return isGCRoot ? ICONS.objects.in.instance_obj_gc_root : ICONS.objects.in.instance_obj;
-  }
+export function getInboundIcon(isGCRoot, objType,  isObj=true) {
+  let attr = attr_string_of(isGCRoot, objType, isObj)
+  return ICONS.objects.in[attr];
 }
 
 export function getClassRefInboundIcon(type) {

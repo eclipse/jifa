@@ -13,9 +13,16 @@
 package org.eclipse.jifa.worker.vo.heapdump.thread;
 
 import lombok.Data;
+import org.eclipse.jifa.common.util.ErrorUtil;
+import org.eclipse.jifa.worker.vo.feature.SearchType;
+import org.eclipse.jifa.worker.vo.feature.Searchable;
+import org.eclipse.jifa.worker.vo.feature.SortTableGenerator;
+
+import java.util.Comparator;
+import java.util.Map;
 
 @Data
-public class Info {
+public class Info implements Searchable {
 
     private int objectId;
 
@@ -43,5 +50,36 @@ public class Info {
         this.contextClassLoader = contextClassLoader;
         this.hasStack = hasStack;
         this.daemon = daemon;
+    }
+
+
+    private static Map<String, Comparator> sortTable = new SortTableGenerator()
+            .add("id", Info::getObjectId)
+            .add("shallowHeap", Info::getShallowSize)
+            .add("retainedHeap", Info::getRetainedSize)
+            .add("daemon", Info::isDaemon)
+            .add("contextClassLoader", Info::getContextClassLoader)
+            .add("name", Info::getName)
+            .build();
+
+    public static Comparator<Info> sortBy(String field, boolean ascendingOrder) {
+        return ascendingOrder ? sortTable.get(field) : sortTable.get(field).reversed();
+    }
+
+    @Override
+    public Object getBySearchType(SearchType type) {
+        switch (type) {
+            case BY_NAME:
+                return getName();
+            case BY_SHALLOW_SIZE:
+                return getShallowSize();
+            case BY_RETAINED_SIZE:
+                return getRetainedSize();
+            case BY_CONTEXT_CLASSLOADER_NAME:
+                return getContextClassLoader();
+            default:
+                ErrorUtil.shouldNotReachHere();
+        }
+        return null;
     }
 }

@@ -16,7 +16,7 @@ import io.vertx.core.Future;
 import org.eclipse.jifa.common.enums.FileTransferState;
 import org.eclipse.jifa.common.enums.FileType;
 import org.eclipse.jifa.common.request.PagingRequest;
-import org.eclipse.jifa.common.util.PageViewBuilder;
+import org.eclipse.jifa.worker.route.PageViewBuilder;
 import org.eclipse.jifa.common.vo.FileInfo;
 import org.eclipse.jifa.common.vo.PageView;
 import org.eclipse.jifa.worker.route.ParamKey;

@@ -60,8 +60,8 @@
 
     <div align="left" style="height: 25px; margin-bottom: 5px">
       <a href="https://help.eclipse.org/oxygen/index.jsp?topic=%2Forg.eclipse.mat.ui.help%2Freference%2Foqlsyntax.html&cp=66_4_2"
-         target="_blank" style="font-size: 12px; font-weight: bold; color: #909399">
-        OQL Help
+         target="_blank" style="font-size: 12px; font-weight: bold; color: #909399; text-decoration: underline">
+        > Click to get detailed OQL Help documents.
       </a>
     </div>
 
@@ -74,10 +74,11 @@
                 :cell-style='cellStyle'
                 row-key="rowKey"
                 lazy
+                @sort-change="sortTree"
                 :indent=8
                 height="100%"
                 :load="loadOutbounds">
-        <el-table-column label="Class Name" width="800px" show-overflow-tooltip>
+        <el-table-column label="Class Name" width="800px" show-overflow-tooltip prop="label" sortable="custom">
           <template slot-scope="scope">
             <span v-if="scope.row.isResult" @click="$emit('setSelectedObjectId', scope.row.objectId)"
                   style="cursor: pointer"
@@ -107,9 +108,9 @@
             </span>
           </template>
         </el-table-column>
-        <el-table-column label="Shallow Heap" prop="shallowHeap">
+        <el-table-column label="Shallow Heap" prop="shallowHeap" sortable="custom">
         </el-table-column>
-        <el-table-column label="Retained Heap" prop="retainedHeap">
+        <el-table-column label="Retained Heap" prop="retainedHeap" sortable="custom">
         </el-table-column>
       </el-table>
 
@@ -196,7 +197,9 @@
         isTableResult: false,
         isTextResult: false,
 
-        historyOQLs: []
+        historyOQLs: [],
+        treeSortBy:'retainedHeap',
+        treeAscendingOrder:true,
       }
     },
     methods: {
@@ -205,6 +208,17 @@
         this.isTableResult = type === TABLE
         this.isTextResult = type === TEXT
       },
+
+      sortTree(val){
+        if (this.oql) {
+          this.treeSortBy = val.prop;
+          this.treeAscendingOrder = val.order === 'ascending';
+          this.searching = true
+          this.clear()
+          this.fetchResult(this.oql)
+        }
+      },
+
       fetchResult(oql) {
         if (!oql || oql.length === 0) {
           return
@@ -215,6 +229,8 @@
             oql: oql,
             page: this.nextPage,
             pageSize: this.pageSize,
+            sortBy: this.treeSortBy,
+            ascendingOrder: this.treeAscendingOrder
           }
         }).then(resp => {
           this.adjustDataByResultType(resp.data.type)

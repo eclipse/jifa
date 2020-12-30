@@ -17,8 +17,8 @@ import java.util.List;
 
 import org.eclipse.jifa.common.aux.JifaException;
 import org.eclipse.jifa.common.request.PagingRequest;
-import org.eclipse.jifa.common.util.PageViewBuilder;
 import org.eclipse.jifa.common.vo.PageView;
+import org.eclipse.jifa.worker.route.PageViewBuilder;
 import org.eclipse.jifa.worker.route.ParamKey;
 import org.eclipse.jifa.worker.route.RouteMeta;
 import org.eclipse.jifa.worker.support.Analyzer;
@@ -75,8 +75,8 @@ class MergePathToGCRootsRoute extends HeapBaseRoute {
     }
 
     private PageView<MergePathToGCRootsTreeNode> buildRecords(ISnapshot snapshot,
-            MultiplePath2GCRootsQuery.Tree tree,
-            PagingRequest pagingRequest, List<?> elements) {
+                                                              MultiplePath2GCRootsQuery.Tree tree,
+                                                              PagingRequest pagingRequest, List<?> elements) {
         return PageViewBuilder.build(elements, pagingRequest, element -> {
             try {
                 MergePathToGCRootsTreeNode record = new MergePathToGCRootsTreeNode();

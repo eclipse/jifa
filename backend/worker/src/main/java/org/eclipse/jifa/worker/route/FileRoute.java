@@ -26,7 +26,6 @@ import org.eclipse.jifa.common.enums.FileType;
 import org.eclipse.jifa.common.enums.ProgressState;
 import org.eclipse.jifa.common.request.PagingRequest;
 import org.eclipse.jifa.common.util.HTTPRespGuarder;
-import org.eclipse.jifa.common.util.PageViewBuilder;
 import org.eclipse.jifa.common.vo.FileInfo;
 import org.eclipse.jifa.common.vo.PageView;
 import org.eclipse.jifa.common.vo.TransferProgress;
