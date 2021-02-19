@@ -10,13 +10,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-rootProject.name = 'Jifa'
+plugins {
+    id 'java'
+}
 
-include ':backend'
-include ':backend:common'
-include ':backend:master'
-include ':backend:worker'
-include ':backend:heap-dump-analyzer'
-include ':backend:heap-dump-analyzer:api'
-include ':backend:heap-dump-analyzer:impl'
-include ':frontend'

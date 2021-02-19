@@ -92,8 +92,8 @@ class InspectorRoute extends HeapBaseRoute {
         view.setGcRootInfo(
             gcRootInfo != null ? "GC root: " + GCRootInfo.getTypeSetAsString(object.getGCRootInfo()) : "no GC root");
 
-        HeapLayout heapLayout = snapshot.getSnapshotInfo().getHeapLayout();
-        view.setLocationType(ObjectView.locationTypeOf(heapLayout.genOf(view.getObjectAddress())));
+//        HeapLayout heapLayout = snapshot.getSnapshotInfo().getHeapLayout();
+//        view.setLocationType(ObjectView.locationTypeOf(heapLayout.genOf(view.getObjectAddress())));
         future.complete(view);
     }
 

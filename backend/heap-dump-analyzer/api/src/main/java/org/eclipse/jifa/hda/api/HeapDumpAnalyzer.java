@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -10,13 +10,12 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-rootProject.name = 'Jifa'
+package org.eclipse.jifa.hda.api;
 
-include ':backend'
-include ':backend:common'
-include ':backend:master'
-include ':backend:worker'
-include ':backend:heap-dump-analyzer'
-include ':backend:heap-dump-analyzer:api'
-include ':backend:heap-dump-analyzer:impl'
-include ':frontend'
+import java.io.File;
+import java.util.Map;
+
+public interface HeapDumpAnalyzer {
+
+    void open(File file, Map<String, String> arguments);
+}

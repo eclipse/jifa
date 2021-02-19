@@ -211,7 +211,7 @@ class ThreadRoute extends HeapBaseRoute {
                                     if (gcRootInfo.getContextId() != 0 &&
                                             (gcRootInfo.getType() & GCRootInfo.Type.BUSY_MONITOR) != 0 &&
                                             gcRootInfo.getContextId() == objectId) {
-                                        var.setPrefix(Messages.ThreadStackQuery_Label_Local_Blocked_On);
+//                                        var.setPrefix(Messages.ThreadStackQuery_Label_Local_Blocked_On);
                                     }
                                 }
                             }

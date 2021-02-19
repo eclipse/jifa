@@ -17,7 +17,7 @@ import org.eclipse.mat.inspections.ClassLoaderExplorerQuery;
 import org.eclipse.mat.inspections.LeakHunterQuery;
 import org.eclipse.mat.inspections.OQLQuery;
 import org.eclipse.mat.internal.snapshot.SnapshotQueryContext;
-import org.eclipse.mat.internal.snapshot.inspections.OldObjRefYoungObjQuery;
+//import org.eclipse.mat.internal.snapshot.inspections.OldObjRefYoungObjQuery;
 import org.eclipse.mat.query.Column;
 import org.eclipse.mat.query.IResult;
 import org.eclipse.mat.query.IResultTable;
@@ -147,19 +147,19 @@ public class SnapshotContext {
 
     @Data
     public class OldObjRefYoungObj {
-        private OldObjRefYoungObjQuery.Tree result;
-        private List<?> records;
-        private int refCount;
+//        private OldObjRefYoungObjQuery.Tree result;
+//        private List<?> records;
+//        private int refCount;
 
         OldObjRefYoungObj() throws Exception {
-            OldObjRefYoungObjQuery query = new OldObjRefYoungObjQuery();
-            query.snapshot = snapshot;
-            query.groupBy = OldObjRefYoungObjQuery.Grouping.BY_CLASS;
-            result = query.execute(HeapDumpSupport.VOID_LISTENER);
-            records = result.getElements();
-            for (Object record : records) {
-                refCount += (int) result.getColumnValue(record, 1);
-            }
+//            OldObjRefYoungObjQuery query = new OldObjRefYoungObjQuery();
+//            query.snapshot = snapshot;
+//            query.groupBy = OldObjRefYoungObjQuery.Grouping.BY_CLASS;
+//            result = query.execute(HeapDumpSupport.VOID_LISTENER);
+//            records = result.getElements();
+//            for (Object record : records) {
+//                refCount += (int) result.getColumnValue(record, 1);
+//            }
         }
     }
 

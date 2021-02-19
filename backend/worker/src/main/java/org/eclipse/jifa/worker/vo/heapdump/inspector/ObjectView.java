@@ -13,7 +13,7 @@
 package org.eclipse.jifa.worker.vo.heapdump.inspector;
 
 import lombok.Data;
-import org.eclipse.mat.snapshot.model.HeapLayout;
+//import org.eclipse.mat.snapshot.model.HeapLayout;
 
 @Data
 public class ObjectView {
@@ -39,12 +39,12 @@ public class ObjectView {
     private String gcRootInfo;
     private int locationType;
 
-    public static int locationTypeOf(HeapLayout.Generation gen) {
-        if (gen == HeapLayout.Generation.YOUNG) {
-            return YOUNG;
-        } else if (gen == HeapLayout.Generation.OLD) {
-            return OLD;
-        }
-        return OTHER;
-    }
+//    public static int locationTypeOf(HeapLayout.Generation gen) {
+//        if (gen == HeapLayout.Generation.YOUNG) {
+//            return YOUNG;
+//        } else if (gen == HeapLayout.Generation.OLD) {
+//            return OLD;
+//        }
+//        return OTHER;
+//    }
 }

@@ -12,24 +12,47 @@
  ********************************************************************************/
 package org.eclipse.jifa.worker;
 
-import io.vertx.core.*;
+import io.vertx.core.AbstractVerticle;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.DeploymentOptions;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.VertxOptions;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.AbstractUser;
 import io.vertx.ext.auth.AuthProvider;
 import io.vertx.ext.auth.User;
 import io.vertx.ext.web.Router;
-import io.vertx.ext.web.handler.*;
+import io.vertx.ext.web.handler.AuthHandler;
+import io.vertx.ext.web.handler.BasicAuthHandler;
+import io.vertx.ext.web.handler.BodyHandler;
+import io.vertx.ext.web.handler.CorsHandler;
+import io.vertx.ext.web.handler.StaticHandler;
 import org.eclipse.jifa.common.JifaHooks;
 import org.eclipse.jifa.common.aux.JifaException;
 import org.eclipse.jifa.common.util.FileUtil;
+import org.eclipse.jifa.hda.api.HeapDumpAnalyzer;
 import org.eclipse.jifa.worker.route.RouteFiller;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleException;
+import org.osgi.framework.Constants;
+import org.osgi.framework.ServiceReference;
+import org.osgi.framework.launch.Framework;
+import org.osgi.framework.launch.FrameworkFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.ServiceLoader;
 import java.util.concurrent.CountDownLatch;
 
 import static org.eclipse.jifa.worker.Constant.ConfigKey.*;
@@ -41,8 +64,10 @@ public class Worker extends AbstractVerticle {
     private static final CountDownLatch count = new CountDownLatch(Runtime.getRuntime().availableProcessors());
     private static long startTime;
 
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) throws InterruptedException, BundleException {
         startTime = System.currentTimeMillis();
+
+        initMatEnv();
 
         JsonObject vertxConfig = new JsonObject(
             FileUtil.content(Worker.class.getClassLoader().getResourceAsStream(DEFAULT_VERTX_CONFIG_FILE)));
@@ -55,6 +80,40 @@ public class Worker extends AbstractVerticle {
             Runtime.getRuntime().availableProcessors()));
 
         count.await();
+    }
+
+    private static void initMatEnv() throws BundleException {
+        ServiceLoader<FrameworkFactory> factoryLoader = ServiceLoader.load(FrameworkFactory.class);
+        Map<String, String> m = new HashMap<>();
+        m.put(Constants.FRAMEWORK_STORAGE_CLEAN, Constants.FRAMEWORK_STORAGE_CLEAN_ONFIRSTINIT);
+        m.put(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, "org.eclipse.jifa.hda.api");
+        Framework framework = factoryLoader.iterator().next().newFramework(m);
+
+        framework.start();
+
+        File[] files = Objects.requireNonNull(new File(System.getProperty("mat-deps")).listFiles());
+        List<Bundle> bundles = new ArrayList<>();
+        for (File file : files) {
+            String name = file.getName();
+            if (name.endsWith(".jar") && !name.contains("org.eclipse.osgi_")) {
+                Bundle b = framework.getBundleContext().installBundle(file.toURI().toString());
+                bundles.add(b);
+            }
+        }
+
+        for (Bundle bundle : bundles) {
+            bundle.start();
+        }
+        ServiceReference<HeapDumpAnalyzer> serviceReference =
+            framework.getBundleContext().getServiceReference(HeapDumpAnalyzer.class);
+        HeapDumpAnalyzer service = framework.getBundleContext().getService(serviceReference);
+        String testDump = System.getProperty("testDump");
+        if (testDump != null) {
+            File file = new File(testDump);
+            if (file.exists()) {
+                service.open(fileActivator.java, new HashMap<>());
+            }
+        }
     }
 
     private static int randomPort() {
@@ -121,7 +180,8 @@ public class Worker extends AbstractVerticle {
 
         String staticRoot = System.getProperty(WEB_ROOT_KEY, "webroot");
 
-        String uploadDir = config().containsKey(SERVER_UPLOAD_DIR_KEY) ? config().getString(SERVER_UPLOAD_DIR_KEY) : null;
+        String uploadDir =
+            config().containsKey(SERVER_UPLOAD_DIR_KEY) ? config().getString(SERVER_UPLOAD_DIR_KEY) : null;
 
         JifaHooks hooks = findHooks();
 
@@ -148,9 +208,9 @@ public class Worker extends AbstractVerticle {
                 // non-api
                 String staticPattern = "^(?!" + WorkerGlobal.stringConfig(Constant.ConfigKey.API_PREFIX) + ").*$";
                 router.routeWithRegex(staticPattern)
-                        .handler(staticHandler)
-                        // route to "/" if not found
-                        .handler(context -> context.reroute("/"));
+                      .handler(staticHandler)
+                      // route to "/" if not found
+                      .handler(context -> context.reroute("/"));
             }
 
             // cors

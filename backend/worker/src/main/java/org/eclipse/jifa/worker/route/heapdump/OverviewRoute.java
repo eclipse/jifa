@@ -36,7 +36,7 @@ class OverviewRoute extends HeapBaseRoute {
                                       snapshotInfo.getCreationDate().getTime(), snapshotInfo.getNumberOfObjects(),
                                       snapshotInfo.getNumberOfGCRoots(), snapshotInfo.getNumberOfClasses(),
                                       snapshotInfo.getNumberOfClassLoaders(), snapshotInfo.getUsedHeapSize(),
-                                      snapshotInfo.layoutAvailable());
+                                      false);
         future.complete(details);
     }
 

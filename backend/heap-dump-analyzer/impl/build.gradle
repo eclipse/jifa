@@ -1,0 +1,38 @@
+/********************************************************************************
+ * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ ********************************************************************************/
+plugins {
+    id 'java'
+    id "de.undercouch.download"
+}
+
+jar {
+    manifest {
+        attributes(
+                "Bundle-SymbolicName": "org.eclipse.jifa.hda.impl; singleton:=true",
+                "Require-Bundle": "org.eclipse.mat.api;bundle-version=\"1.10.0\",org.eclipse.osgi",
+                "Bundle-Activator": "org.eclipse.jifa.hda.impl.Activator",
+                "Bundle-Version": "1.0"
+        )
+    }
+}
+
+dependencies {
+    compile project(':backend:heap-dump-analyzer:api')
+
+    compileOnly files("/Users/denghui.ddh/Downloads/mat-plugins/11/osgi/org.eclipse.osgi_3.15.200.v20200214-1600.jar" as String)
+
+    compileOnly files("${project.rootDir}/mat-deps/org.eclipse.mat.report_1.11.0.202012021418.jar" as String)
+    compileOnly files("${project.rootDir}/mat-deps/org.eclipse.mat.api_1.11.0.202012021418.jar" as String)
+    compileOnly files("${project.rootDir}/mat-deps/org.eclipse.mat.parser_1.11.0.202012021418.jar" as String)
+    compileOnly files("${project.rootDir}/mat-deps/org.eclipse.mat.hprof_1.11.0.202012021418.jar" as String)
+}
