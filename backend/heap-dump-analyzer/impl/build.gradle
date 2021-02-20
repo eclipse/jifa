@@ -29,7 +29,7 @@ jar {
 dependencies {
     compile project(':backend:heap-dump-analyzer:api')
 
-    compileOnly files("/Users/denghui.ddh/Downloads/mat-plugins/11/osgi/org.eclipse.osgi_3.15.200.v20200214-1600.jar" as String)
+    compileOnly files("${project.rootDir}/mat-deps/org.eclipse.osgi_3.15.200.v20200214-1600.jar" as String)
 
     compileOnly files("${project.rootDir}/mat-deps/org.eclipse.mat.report_1.11.0.202012021418.jar" as String)
     compileOnly files("${project.rootDir}/mat-deps/org.eclipse.mat.api_1.11.0.202012021418.jar" as String)

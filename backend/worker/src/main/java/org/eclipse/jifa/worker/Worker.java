@@ -111,7 +111,7 @@ public class Worker extends AbstractVerticle {
         if (testDump != null) {
             File file = new File(testDump);
             if (file.exists()) {
-                service.open(fileActivator.java, new HashMap<>());
+                service.open(file, new HashMap<>());
             }
         }
     }
