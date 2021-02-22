@@ -1,5 +1,5 @@
 <!--
-    Copyright (c) 2020 Contributors to the Eclipse Foundation
+    Copyright (c) 2020, 2021 Contributors to the Eclipse Foundation
 
     See the NOTICE file(s) distributed with this work for additional
     information regarding copyright ownership.
@@ -21,14 +21,14 @@
           </div>
         </div>
       </el-collapse-item>
-      <el-collapse-item v-for="(record) in records" v-bind:key="record.name" :title="record.name" :name="record.name">
+      <el-collapse-item v-for="(item) in records" v-bind:key="item.name" :title="item.name" :name="item.name">
         <el-tabs tab-position="left">
           <el-tab-pane :label="$t('jifa.heap.description')">
-            <div v-html="record.desc"></div>
+            <div v-html="item.desc"></div>
           </el-tab-pane>
-          <el-tab-pane v-if="record.paths" :label="$t('jifa.heap.detail')">
+          <el-tab-pane v-if="item.paths" :label="$t('jifa.heap.detail')">
             <el-tree
-                    :data="record.paths"
+                    :data="item.paths"
                     node-key="objectId"
             >
               <span class="custom-tree-node" style="font-size: 12px" slot-scope="{ node, data }"

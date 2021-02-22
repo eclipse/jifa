@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2021 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -13,103 +13,35 @@
 package org.eclipse.jifa.worker.route.heapdump;
 
 import io.vertx.core.Future;
-import org.eclipse.jifa.common.aux.JifaException;
 import org.eclipse.jifa.common.request.PagingRequest;
-import org.eclipse.jifa.worker.route.PageViewBuilder;
 import org.eclipse.jifa.common.vo.PageView;
+import org.eclipse.jifa.hda.api.Model;
 import org.eclipse.jifa.worker.route.ParamKey;
 import org.eclipse.jifa.worker.route.RouteMeta;
-import org.eclipse.jifa.worker.support.Analyzer;
-import org.eclipse.jifa.worker.support.heapdump.SnapshotContext;
-import org.eclipse.jifa.worker.vo.heapdump.classloader.Record;
-import org.eclipse.jifa.worker.vo.heapdump.classloader.Summary;
-import org.eclipse.mat.query.IDecorator;
-import org.eclipse.mat.query.IResultTree;
-import org.eclipse.mat.query.IStructuredResult;
-import org.eclipse.mat.snapshot.model.IClass;
 
-import java.lang.reflect.Field;
-import java.util.Map;
-
-import static org.eclipse.jifa.common.util.Assertion.ASSERT;
+import static org.eclipse.jifa.worker.support.Analyzer.getOrOpenAnalysisContext;
+import static org.eclipse.jifa.worker.support.hda.AnalysisEnv.HEAP_DUMP_ANALYZER;
 
 class ClassLoaderRoute extends HeapBaseRoute {
 
-    private static final Field NODE_PARENT_FIELD;
-    private static final Field PARENT_NODE_FIELD;
-
-    static {
-        try {
-            NODE_PARENT_FIELD =
-                Class.forName("org.eclipse.mat.inspections.ClassLoaderExplorerQuery$Node").getDeclaredField("parent");
-            NODE_PARENT_FIELD.setAccessible(true);
-
-            PARENT_NODE_FIELD =
-                Class.forName("org.eclipse.mat.inspections.ClassLoaderExplorerQuery$Parent").getDeclaredField("node");
-            PARENT_NODE_FIELD.setAccessible(true);
-        } catch (Exception e) {
-            throw new JifaException(e);
-        }
-    }
-
     @RouteMeta(path = "/classLoaderExplorer/summary")
-    void summary(Future<Summary> future, @ParamKey("file") String file) throws Exception {
-
-        SnapshotContext.ClassLoaderExplorer explorer = Analyzer.getOrOpenSnapshotContext(file).classLoaderExplorer();
-        Summary summary = new Summary();
-        summary.setTotalSize(explorer.getRecords().size());
-        summary.setDefinedClasses(explorer.getDefinedClasses());
-        summary.setNumberOfInstances(explorer.getNumberOfInstances());
-        future.complete(summary);
+    void summary(Future<Model.ClassLoader.Summary> future, @ParamKey("file") String file) {
+        future.complete(HEAP_DUMP_ANALYZER.getSummaryOfClassLoaders(getOrOpenAnalysisContext(file)));
     }
 
     @RouteMeta(path = "/classLoaderExplorer/classLoader")
-    void classLoaders(Future<PageView<Record>> future, @ParamKey("file") String file,
-                      PagingRequest pagingRequest) throws Exception {
-        SnapshotContext.ClassLoaderExplorer explorer = Analyzer.getOrOpenSnapshotContext(file).classLoaderExplorer();
-        IStructuredResult resultContext = (IStructuredResult) explorer.getResultContext();
-        future.complete(PageViewBuilder.build(explorer.getRecords(), pagingRequest, e -> {
-            try {
-                Record r = new Record();
-                r.setObjectId(resultContext.getContext(e).getObjectId());
-                r.setPrefix(((IDecorator) resultContext).prefix(e));
-                r.setLabel((String) resultContext.getColumnValue(e, 0));
-                r.setDefinedClasses((Integer) resultContext.getColumnValue(e, 1));
-                r.setNumberOfInstances((Integer) resultContext.getColumnValue(e, 2));
-                r.setClassLoader(true);
-                r.setHasParent(NODE_PARENT_FIELD.get(e) != null);
-                return r;
-            } catch (Exception ex) {
-                throw new JifaException(ex);
-            }
-        }));
+    void classLoaders(Future<PageView<Model.ClassLoader.Item>> future, @ParamKey("file") String file, PagingRequest pagingRequest) {
+        future.complete(HEAP_DUMP_ANALYZER.getClassLoaders(getOrOpenAnalysisContext(file),
+                                                           pagingRequest.getPage(),
+                                                           pagingRequest.getPageSize()));
     }
 
     @RouteMeta(path = "/classLoaderExplorer/children")
-    void children(Future<PageView<Record>> future, @ParamKey("file") String file,
-                  @ParamKey("classLoaderId") int classLoaderId, PagingRequest pagingRequest) throws Exception {
-
-        SnapshotContext.ClassLoaderExplorer explorer = Analyzer.getOrOpenSnapshotContext(file).classLoaderExplorer();
-        IResultTree resultContext = (IResultTree) explorer.getResultContext();
-        Map<Integer, Object> classLoaderIdMap = explorer.getClassLoaderIdMap();
-        Object classLoaderNode = classLoaderIdMap.get(classLoaderId);
-        ASSERT.notNull(classLoaderNode, "Illegal classLoaderId");
-        future.complete(PageViewBuilder.build(resultContext.getChildren(classLoaderNode), pagingRequest, e -> {
-            try {
-                Record r = new Record();
-                r.setObjectId(resultContext.getContext(e).getObjectId());
-                r.setPrefix(((IDecorator) resultContext).prefix(e));
-                r.setLabel((String) resultContext.getColumnValue(e, 0));
-                r.setNumberOfInstances((Integer) resultContext.getColumnValue(e, 2));
-                if (!(e instanceof IClass)) {
-                    r.setClassLoader(true);
-                    r.setDefinedClasses((Integer) resultContext.getColumnValue(e, 1));
-                    r.setHasParent(NODE_PARENT_FIELD.get(PARENT_NODE_FIELD.get(e)) != null);
-                }
-                return r;
-            } catch (Exception ex) {
-                throw new JifaException(ex);
-            }
-        }));
+    void children(Future<PageView<Model.ClassLoader.Item>> future, @ParamKey("file") String file,
+                  @ParamKey("classLoaderId") int classLoaderId, PagingRequest pagingRequest) {
+        future.complete(HEAP_DUMP_ANALYZER.getChildrenOfClassLoader(getOrOpenAnalysisContext(file),
+                                                                    classLoaderId,
+                                                                    pagingRequest.getPage(),
+                                                                    pagingRequest.getPageSize()));
     }
 }

@@ -10,8 +10,8 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-package org.eclipse.jifa.worker.route;
+package org.eclipse.jifa.common.vo.support;
 
-public abstract class BaseRoute {
-
+public interface Searchable {
+    Object getBySearchType(SearchType type);
 }

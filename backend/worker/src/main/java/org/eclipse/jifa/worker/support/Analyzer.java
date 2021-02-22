@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2021 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -20,9 +20,9 @@ import org.eclipse.jifa.common.enums.FileType;
 import org.eclipse.jifa.common.enums.ProgressState;
 import org.eclipse.jifa.common.util.ErrorUtil;
 import org.eclipse.jifa.common.util.FileUtil;
-import org.eclipse.jifa.worker.support.heapdump.SnapshotContext;
-import org.eclipse.mat.snapshot.SnapshotFactory;
-import org.eclipse.mat.util.IProgressListener;
+import org.eclipse.jifa.hda.api.AnalysisContext;
+import org.eclipse.jifa.hda.api.DefaultProgressListener;
+import org.eclipse.jifa.hda.api.ProgressListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,12 +33,12 @@ import java.util.Map;
 
 import static org.eclipse.jifa.common.enums.FileType.HEAP_DUMP;
 import static org.eclipse.jifa.common.util.Assertion.ASSERT;
-import static org.eclipse.jifa.worker.support.heapdump.HeapDumpSupport.VOID_LISTENER;
+import static org.eclipse.jifa.worker.support.hda.AnalysisEnv.HEAP_DUMP_ANALYZER;
 
 public class Analyzer {
     private static final Logger LOGGER = LoggerFactory.getLogger(Analyzer.class);
 
-    private Map<String, AnalysisProgressListener> listeners;
+    private Map<String, ProgressListener> listeners;
     private Cache<String, Object> cache;
 
     private Analyzer() {
@@ -67,15 +67,15 @@ public class Analyzer {
         }
     }
 
-    private static SnapshotContext getOrOpenSnapshotContext(String heapFile,
-                                                            Map<String, String> option, IProgressListener listener) {
-        return getOrBuild(heapFile, key -> new SnapshotContext(
-            SnapshotFactory.openSnapshot(new File(FileSupport.filePath(HEAP_DUMP, heapFile)), option,
-                                         listener)));
+    private static AnalysisContext getOrOpenAnalysisContext(String dump, Map<String, String> options,
+                                                            ProgressListener listener) {
+
+        return getOrBuild(dump, key -> HEAP_DUMP_ANALYZER
+            .open(new File(FileSupport.filePath(HEAP_DUMP, dump)), options, listener));
     }
 
-    public static SnapshotContext getOrOpenSnapshotContext(String heapFile) {
-        return getOrOpenSnapshotContext(heapFile, Collections.emptyMap(), VOID_LISTENER);
+    public static AnalysisContext getOrOpenAnalysisContext(String dump) {
+        return getOrOpenAnalysisContext(dump, Collections.emptyMap(), ProgressListener.NoOpProgressListener);
     }
 
     public static Analyzer getInstance() {
@@ -94,7 +94,7 @@ public class Analyzer {
     }
 
     public void analyze(Future<Void> future, FileType fileType, String fileName, Map<String, String> options) {
-        AnalysisProgressListener progressListener;
+        ProgressListener progressListener;
 
         if (getCacheValueIfPresent(fileName) != null ||
             new File(FileSupport.errorLogPath(fileType, fileName)).exists()) {
@@ -102,7 +102,7 @@ public class Analyzer {
             return;
         }
 
-        progressListener = new AnalysisProgressListener();
+        progressListener = new DefaultProgressListener();
         boolean success = putFileListener(fileName, progressListener);
         future.complete();
 
@@ -110,7 +110,7 @@ public class Analyzer {
             try {
                 switch (fileType) {
                     case HEAP_DUMP:
-                        getOrOpenSnapshotContext(fileName, options, progressListener);
+                        getOrOpenAnalysisContext(fileName, options, progressListener);
                         break;
                     default:
                         break;
@@ -148,7 +148,7 @@ public class Analyzer {
     }
 
     public org.eclipse.jifa.common.vo.Progress pollProgress(FileType fileType, String fileName) {
-        AnalysisProgressListener progressListener = getFileListener(fileName);
+        ProgressListener progressListener = getFileListener(fileName);
 
         if (progressListener == null) {
             org.eclipse.jifa.common.vo.Progress progress = buildProgressIfFinished(fileType, fileName);
@@ -175,18 +175,18 @@ public class Analyzer {
 
     private synchronized void clearCacheValue(String key) {
         Object value = cache.getIfPresent(key);
-        if (value instanceof SnapshotContext) {
-            SnapshotFactory.dispose(((SnapshotContext) value).getSnapshot());
+        if (value instanceof AnalysisContext) {
+            HEAP_DUMP_ANALYZER.dispose((AnalysisContext) value);
         }
         cache.invalidate(key);
         LOGGER.info("Clear cache: {}", key);
     }
 
-    private synchronized AnalysisProgressListener getFileListener(String fileName) {
+    private synchronized ProgressListener getFileListener(String fileName) {
         return listeners.get(fileName);
     }
 
-    private synchronized boolean putFileListener(String fileName, AnalysisProgressListener listener) {
+    private synchronized boolean putFileListener(String fileName, ProgressListener listener) {
         if (listeners.containsKey(fileName)) {
             return false;
         }

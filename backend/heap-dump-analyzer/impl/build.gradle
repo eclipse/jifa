@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2021 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,9 +18,11 @@ plugins {
 jar {
     manifest {
         attributes(
-                "Bundle-SymbolicName": "org.eclipse.jifa.hda.impl; singleton:=true",
-                "Require-Bundle": "org.eclipse.mat.api;bundle-version=\"1.10.0\",org.eclipse.osgi",
+                "Bundle-SymbolicName": "org.eclipse.jifa.hda.implementation; singleton:=true",
+                "Require-Bundle": "org.eclipse.mat.api;bundle-version=\"1.10.0\",org.eclipse.mat.parser;bundle-version=\"1.10.0\",org.eclipse.osgi",
                 "Bundle-Activator": "org.eclipse.jifa.hda.impl.Activator",
+                "Import-Package":
+                    "org.eclipse.mat.snapshot,org.eclipse.mat.util,org.eclipse.mat.query,org.eclipse.mat.parser.model",
                 "Bundle-Version": "1.0"
         )
     }
@@ -28,8 +30,12 @@ jar {
 
 dependencies {
     compile project(':backend:heap-dump-analyzer:api')
+    compile project(':backend:common')
+
+    compileOnly project(':backend:worker')
 
     compileOnly files("${project.rootDir}/mat-deps/org.eclipse.osgi_3.15.200.v20200214-1600.jar" as String)
+    compileOnly files("${project.rootDir}/mat-deps/org.eclipse.equinox.registry_3.8.700.v20200121-1457.jar" as String)
 
     compileOnly files("${project.rootDir}/mat-deps/org.eclipse.mat.report_1.11.0.202012021418.jar" as String)
     compileOnly files("${project.rootDir}/mat-deps/org.eclipse.mat.api_1.11.0.202012021418.jar" as String)

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2021 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -20,6 +20,13 @@ import java.util.List;
 @Data
 public class PageView<T> {
 
+    public static final PageView<?> EMPTY = new PageView<>(null, 0, null);
+
+    @SuppressWarnings("unchecked")
+    public static <T> PageView<T> empty() {
+        return (PageView<T>) EMPTY;
+    }
+
     private List<T> data;
 
     private int page;
@@ -38,6 +45,6 @@ public class PageView<T> {
     }
 
     public PageView() {
-
     }
+
 }

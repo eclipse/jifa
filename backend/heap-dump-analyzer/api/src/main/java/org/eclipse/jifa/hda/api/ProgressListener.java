@@ -10,22 +10,28 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-package org.eclipse.jifa.hda.impl;
 
-import org.eclipse.jifa.hda.api.HeapDumpAnalyzer;
-import org.osgi.framework.BundleActivator;
-import org.osgi.framework.BundleContext;
+package org.eclipse.jifa.hda.api;
 
-import java.util.Hashtable;
+public interface ProgressListener {
 
-public class Activator implements BundleActivator {
+    ProgressListener NoOpProgressListener = new NoOpProgressListener();
 
-    @Override
-    public void start(BundleContext bundleContext) {
-        bundleContext.registerService(HeapDumpAnalyzer.class, new HeapDumpAnalyzerImpl(), new Hashtable<>());
-    }
+    void beginTask(String s, int i);
 
-    @Override
-    public void stop(BundleContext bundleContext) {
+    void subTask(String s);
+
+    void worked(int i);
+
+    void sendUserMessage(Level level, String s, Throwable throwable);
+
+    String log();
+
+    double percent();
+
+    enum Level {
+        INFO,
+        WARNING,
+        ERROR;
     }
 }

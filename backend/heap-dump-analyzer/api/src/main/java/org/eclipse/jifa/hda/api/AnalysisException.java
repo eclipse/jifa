@@ -10,22 +10,15 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-package org.eclipse.jifa.hda.impl;
 
-import org.eclipse.jifa.hda.api.HeapDumpAnalyzer;
-import org.osgi.framework.BundleActivator;
-import org.osgi.framework.BundleContext;
+package org.eclipse.jifa.hda.api;
 
-import java.util.Hashtable;
-
-public class Activator implements BundleActivator {
-
-    @Override
-    public void start(BundleContext bundleContext) {
-        bundleContext.registerService(HeapDumpAnalyzer.class, new HeapDumpAnalyzerImpl(), new Hashtable<>());
+public class AnalysisException extends RuntimeException {
+    public AnalysisException(String message) {
+        super(message);
     }
 
-    @Override
-    public void stop(BundleContext bundleContext) {
+    public AnalysisException(Throwable cause) {
+        super(cause);
     }
 }

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2021 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -14,56 +14,25 @@ package org.eclipse.jifa.worker.route.heapdump;
 
 import io.vertx.core.Future;
 import org.eclipse.jifa.common.request.PagingRequest;
-import org.eclipse.jifa.worker.route.PageViewBuilder;
 import org.eclipse.jifa.common.vo.PageView;
 import org.eclipse.jifa.worker.route.ParamKey;
 import org.eclipse.jifa.worker.route.RouteMeta;
-import org.eclipse.jifa.worker.support.Analyzer;
-import org.eclipse.jifa.worker.support.heapdump.SnapshotContext;
-import org.eclipse.jifa.worker.vo.heapdump.directbytebuffer.Record;
-import org.eclipse.jifa.worker.vo.heapdump.directbytebuffer.Summary;
-import org.eclipse.mat.query.IResultTable;
+
+import static org.eclipse.jifa.hda.api.Model.DirectByteBuffer;
+import static org.eclipse.jifa.worker.support.Analyzer.getOrOpenAnalysisContext;
+import static org.eclipse.jifa.worker.support.hda.AnalysisEnv.HEAP_DUMP_ANALYZER;
 
 class DirectByteBufferRoute extends HeapBaseRoute {
 
     @RouteMeta(path = "/directByteBuffer/summary")
-    void summary(Future<Summary> future, @ParamKey("file") String file) throws Exception {
-
-        SnapshotContext.DirectByteBuffer data = Analyzer.getOrOpenSnapshotContext(file).directByteBuffer();
-
-        Summary summary = new Summary();
-        summary.setTotalSize(data.getTotalSize());
-        summary.setPosition(data.getPosition());
-        summary.setLimit(data.getLimit());
-        summary.setCapacity(data.getCapacity());
-        future.complete(summary);
+    void summary(Future<DirectByteBuffer.Summary> future, @ParamKey("file") String file) {
+        future.complete(HEAP_DUMP_ANALYZER.getSummaryOfDirectByteBuffers(getOrOpenAnalysisContext(file)));
     }
 
     @RouteMeta(path = "/directByteBuffer/records")
-    void record(Future<PageView<Record>> future, @ParamKey("file") String file,
-                PagingRequest pagingRequest) throws Exception {
-
-        SnapshotContext.DirectByteBuffer data = Analyzer.getOrOpenSnapshotContext(file).directByteBuffer();
-        IResultTable resultContext = data.getResultContext();
-
-        future.complete(PageViewBuilder.build(new PageViewBuilder.Callback<Object>() {
-            @Override
-            public int totalSize() {
-                return data.getTotalSize();
-            }
-
-            @Override
-            public Object get(int index) {
-                return data.getResultContext().getRow(index);
-            }
-        }, pagingRequest, row -> {
-            Record record = new Record();
-            record.setObjectId(resultContext.getContext(row).getObjectId());
-            record.setLabel(data.label(row));
-            record.setPosition(data.position(row));
-            record.setLimit(data.limit(row));
-            record.setCapacity(data.capacity(row));
-            return record;
-        }));
+    void record(Future<PageView<DirectByteBuffer.Item>> future, @ParamKey("file") String file,
+                PagingRequest pagingRequest) {
+        future.complete(HEAP_DUMP_ANALYZER.getDirectByteBuffers(getOrOpenAnalysisContext(file), pagingRequest.getPage()
+            , pagingRequest.getPageSize()));
     }
 }

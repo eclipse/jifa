@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2021 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -30,12 +30,6 @@ dependencies {
 
     compile files("${project.rootDir}/mat-deps/org.eclipse.osgi_3.15.200.v20200214-1600.jar" as String)
 
-    // FIXME: mat deps should be removed
-    compile files("${project.rootDir}/mat-deps/org.eclipse.mat.report_1.11.0.202012021418.jar" as String)
-    compile files("${project.rootDir}/mat-deps/org.eclipse.mat.api_1.11.0.202012021418.jar" as String)
-    compile files("${project.rootDir}/mat-deps/org.eclipse.mat.parser_1.11.0.202012021418.jar" as String)
-    compile files("${project.rootDir}/mat-deps/org.eclipse.mat.hprof_1.11.0.202012021418.jar" as String)
-
     testCompile 'junit:junit:4.12'
     testCompile group: 'io.vertx', name: 'vertx-unit', version: "${vertx_version}"
 }
@@ -51,6 +45,6 @@ test {
 }
 
 build.dependsOn rootProject.downloadMatJar
-applicationDefaultJvmArgs = ["-Dmat-deps=${rootProject.rootDir}/mat-deps", "-DtestDump=${rootProject.rootDir}/tmp/test.bin"]
+applicationDefaultJvmArgs = ["-Dmat-deps=${rootProject.rootDir}/mat-deps"]
 run.dependsOn ':backend:heap-dump-analyzer:prepareMaterials'
 mainClassName = 'org.eclipse.jifa.worker.Worker'

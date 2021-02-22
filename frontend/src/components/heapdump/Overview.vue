@@ -1,5 +1,5 @@
 <!--
-    Copyright (c) 2020 Contributors to the Eclipse Foundation
+    Copyright (c) 2020, 2021 Contributors to the Eclipse Foundation
 
     See the NOTICE file(s) distributed with this work for additional
     information regarding copyright ownership.
@@ -29,11 +29,11 @@
                              v-if="this.selectedBigObject && this.selectedBigObject.objectId >=0">
         <v-contextmenu-submenu :title="$t('jifa.heap.ref.type.label')">
           <v-contextmenu-item
-                  @click="$emit('outgoingRefsOfClass', contextMenuTargetObjectId, contextMenuTargetObjectLabel)">
+                  @click="$emit('outgoingRefsOfClass', selectedBigObject.objectId, selectedBigObject.label)">
             {{$t('jifa.heap.ref.type.outgoing')}}
           </v-contextmenu-item>
           <v-contextmenu-item
-                  @click="$emit('incomingRefsOfClass', selectedBigObject.objectId, selectedBigObject.label())">
+                  @click="$emit('incomingRefsOfClass', selectedBigObject.objectId, selectedBigObject.label)">
             {{$t('jifa.heap.ref.type.incoming')}}
           </v-contextmenu-item>
         </v-contextmenu-submenu>
