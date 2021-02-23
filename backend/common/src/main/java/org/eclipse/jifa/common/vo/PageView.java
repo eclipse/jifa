@@ -15,12 +15,13 @@ package org.eclipse.jifa.common.vo;
 import lombok.Data;
 import org.eclipse.jifa.common.request.PagingRequest;
 
+import java.util.Collections;
 import java.util.List;
 
 @Data
 public class PageView<T> {
 
-    public static final PageView<?> EMPTY = new PageView<>(null, 0, null);
+    public static final PageView<?> EMPTY = new PageView<>(null, 0, Collections.emptyList());
 
     @SuppressWarnings("unchecked")
     public static <T> PageView<T> empty() {

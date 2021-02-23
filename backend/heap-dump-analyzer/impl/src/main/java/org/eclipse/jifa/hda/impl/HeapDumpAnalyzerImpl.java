@@ -255,6 +255,7 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
             ISnapshot snapshot = context.snapshot;
             IObject object = snapshot.getObject(objectId);
 
+            view.setObjectAddress(object.getObjectAddress());
             IClass iClass = object instanceof IClass ? (IClass) object : object.getClazz();
             view.setName(iClass.getName());
             view.setObjectType(typeOf(object));
@@ -1490,7 +1491,7 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
                     if (children != null) {
                         //noinspection unchecked
                         return PageViewBuilder.<HistogramRecord, Model.Histogram.Item>fromList(
-                            (List<HistogramRecord>) st.getElements())
+                            (List<HistogramRecord>) children)
                             .paging(new PagingRequest(page, pageSize))
                             .map(e -> {
                                 Model.Histogram.Item item = new Model.Histogram.Item();
@@ -1757,7 +1758,7 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
             IResultTree tree = queryByCommand(context, "dominator_tree -groupBy " + groupBy.name(), args);
             switch (groupBy) {
                 case NONE:
-                    Object parent = Helper.fetchObjectInResultTree(tree, new int[] {parentObjectId});
+                    Object parent = Helper.fetchObjectInResultTree(tree, idPathInResultTree);
                     return
                         buildDefaultItems(context.snapshot, tree, tree.getChildren(parent), ascendingOrder, sortBy,
                                           null, null, new PagingRequest(page, pageSize));
