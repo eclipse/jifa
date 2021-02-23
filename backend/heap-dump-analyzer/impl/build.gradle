@@ -12,7 +12,6 @@
  ********************************************************************************/
 plugins {
     id 'java'
-    id "de.undercouch.download"
 }
 
 jar {
@@ -34,11 +33,11 @@ dependencies {
 
     compileOnly project(':backend:worker')
 
-    compileOnly files("${project.rootDir}/mat-deps/org.eclipse.osgi_3.15.200.v20200214-1600.jar" as String)
-    compileOnly files("${project.rootDir}/mat-deps/org.eclipse.equinox.registry_3.8.700.v20200121-1457.jar" as String)
+    compileOnly files("${project.rootDir}/mat-deps/org.eclipse.osgi.jar" as String)
+    compileOnly files("${project.rootDir}/mat-deps/org.eclipse.equinox.registry.jar" as String)
 
-    compileOnly files("${project.rootDir}/mat-deps/org.eclipse.mat.report_1.11.0.202012021418.jar" as String)
-    compileOnly files("${project.rootDir}/mat-deps/org.eclipse.mat.api_1.11.0.202012021418.jar" as String)
-    compileOnly files("${project.rootDir}/mat-deps/org.eclipse.mat.parser_1.11.0.202012021418.jar" as String)
-    compileOnly files("${project.rootDir}/mat-deps/org.eclipse.mat.hprof_1.11.0.202012021418.jar" as String)
+    compileOnly files("${project.rootDir}/mat-deps/org.eclipse.mat.report.jar" as String)
+    compileOnly files("${project.rootDir}/mat-deps/org.eclipse.mat.api.jar" as String)
+    compileOnly files("${project.rootDir}/mat-deps/org.eclipse.mat.parser.jar" as String)
+    compileOnly files("${project.rootDir}/mat-deps/org.eclipse.mat.hprof.jar" as String)
 }

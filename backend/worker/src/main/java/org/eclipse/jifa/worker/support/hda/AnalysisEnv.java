@@ -69,7 +69,7 @@ public class AnalysisEnv {
             for (File file : files) {
                 String name = file.getName();
                 // org.eclipse.osgi is the system bundle
-                if (name.endsWith(".jar") && !name.contains("org.eclipse.osgi_")) {
+                if (name.endsWith(".jar") && !name.equals("org.eclipse.osgi.jar")) {
                     Bundle b = framework.getBundleContext().installBundle(file.toURI().toString());
                     bundles.add(b);
                 }

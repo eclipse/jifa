@@ -10,33 +10,45 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-subprojects {
-    apply plugin: 'java'
+plugins {
+    id "de.undercouch.download"
+    id 'com.diffplug.p2.asmaven' version '3.26.0'
 }
 
-task downloadDepsOfMAT(type: Download) {
-    def download_url = 'https://ftp.yz.yamagata-u.ac.jp/pub/eclipse/hawk/2.0.0/core/plugins'
-    src([
-            "${download_url}/com.ibm.icu_64.2.0.v20190507-1337.jar",
-            "${download_url}/org.eclipse.core.commands_3.9.700.v20191217-1850.jar",
-            "${download_url}/org.eclipse.core.contenttype_3.7.600.v20200124-1609.jar",
-            "${download_url}/org.eclipse.core.jobs_3.10.700.v20200106-1020.jar",
-            "${download_url}/org.eclipse.core.runtime_3.17.100.v20200203-0917.jar",
-            "${download_url}/org.eclipse.equinox.app_1.4.400.v20191212-0743.jar",
-            "${download_url}/org.eclipse.equinox.common_3.11.0.v20200206-0817.jar",
-            "${download_url}/org.eclipse.equinox.preferences_3.7.700.v20191213-1901.jar",
-            "${download_url}/org.eclipse.equinox.registry_3.8.700.v20200121-1457.jar",
+p2AsMaven {
+    group 'eclipse-deps', {
+        repoEclipse '4.8'
+        iu          'com.ibm.icu'
+        iu          'org.eclipse.core.commands'
+        iu          'org.eclipse.core.contenttype'
+        iu          'org.eclipse.core.jobs'
+        iu          'org.eclipse.core.runtime'
+        iu          'org.eclipse.equinox.app'
+        iu          'org.eclipse.equinox.common'
+        iu          'org.eclipse.equinox.preferences'
+        iu          'org.eclipse.equinox.registry'
+        iu          'org.eclipse.osgi'
+        append      true
+    }
 
-            "${download_url}/org.eclipse.osgi_3.15.200.v20200214-1600.jar",
+    group 'eclipse-mat', {
+        repo 'http://download.eclipse.org/mat/1.11.0/update-site/'
+        iu   'org.eclipse.mat.api'
+        iu   'org.eclipse.mat.hprof'
+        iu   'org.eclipse.mat.parser'
+        iu   'org.eclipse.mat.report'
+        append true
+    }
+}
 
-            'https://download.eclipse.org/mat/1.11.0/update-site/plugins/org.eclipse.mat.report_1.11.0.202012021418.jar',
-            'https://download.eclipse.org/mat/1.11.0/update-site/plugins/org.eclipse.mat.api_1.11.0.202012021418.jar',
-            'https://download.eclipse.org/mat/1.11.0/update-site/plugins/org.eclipse.mat.parser_1.11.0.202012021418.jar',
-            'https://download.eclipse.org/mat/1.11.0/update-site/plugins/org.eclipse.mat.hprof_1.11.0.202012021418.jar',
-    ])
-
-    dest "${project.rootDir}/mat-deps"
-    overwrite false
+task copyMATJar() {
+    copy {
+        from "${project.rootDir}/backend/heap-dump-analyzer/build/p2asmaven/p2/eclipse-deps/plugins"
+        from "${project.rootDir}/backend/heap-dump-analyzer/build/p2asmaven/p2/eclipse-mat/plugins"
+        into "${project.rootDir}/mat-deps"
+        include '*.jar'
+        rename '(.+)_(.+)', '$1.jar'
+    }
 }
 
 task copyImplJar(dependsOn: ':backend:heap-dump-analyzer:impl:build') {
@@ -47,7 +59,7 @@ task copyImplJar(dependsOn: ':backend:heap-dump-analyzer:impl:build') {
 }
 
 copyImplJar.configure {
-    shouldRunAfter downloadDepsOfMAT
+    shouldRunAfter copyMATJar
 }
 
-task prepareMaterials(dependsOn: [downloadDepsOfMAT, copyImplJar])
+task prepareMaterials(dependsOn: [copyMATJar, copyImplJar])
