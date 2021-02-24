@@ -1,5 +1,5 @@
 <!--
-    Copyright (c) 2020, 2021 Contributors to the Eclipse Foundation
+    Copyright (c) 2020 Contributors to the Eclipse Foundation
 
     See the NOTICE file(s) distributed with this work for additional
     information regarding copyright ownership.
@@ -200,23 +200,23 @@
           let records = resp.data.data
           this.totalSize = resp.data.totalSize
           console.log(records)
-          records.forEach(item =>
+          records.forEach(record =>
               this.records.push({
                 rowKey: rowKey++,
-                objectId: item.objectId,
-                label: item.label,
-                type : item.type,
-                icon: getIcon(false,item.type,false),
-                numberOfObjects: item.numberOfObjects,
-                shallowSize: item.shallowSize,
+                objectId: record.objectId,
+                label: record.label,
+                type : record.type,
+                icon: getIcon(false,record.type,false),
+                numberOfObjects: record.numberOfObjects,
+                shallowSize: record.shallowSize,
 
-                numberOfYoungObjects: item.numberOfYoungObjects,
-                shallowSizeOfYoung: item.shallowSizeOfYoung,
+                numberOfYoungObjects: record.numberOfYoungObjects,
+                shallowSizeOfYoung: record.shallowSizeOfYoung,
 
-                numberOfOldObjects: item.numberOfOldObjects,
-                shallowSizeOfOld: item.shallowSizeOfOld,
+                numberOfOldObjects: record.numberOfOldObjects,
+                shallowSizeOfOld: record.shallowSizeOfOld,
 
-                retainedSize: item.retainedSize,
+                retainedSize: record.retainedSize,
                 isRecord: true,
                 hasChildren: this.groupingBy!=='by_class'
               }))
@@ -281,23 +281,23 @@
           }
 
           let res = resp.data.data
-          res.forEach(item => {
+          res.forEach(record => {
             loaded.push({
               rowKey: rowKey++,
-              objectId: item.objectId,
-              label: item.label,
-              type : item.type,
-              icon: getIcon(false,item.type,false),
-              numberOfObjects: item.numberOfObjects,
-              shallowSize: item.shallowSize,
+              objectId: record.objectId,
+              label: record.label,
+              type : record.type,
+              icon: getIcon(false,record.type,false),
+              numberOfObjects: record.numberOfObjects,
+              shallowSize: record.shallowSize,
 
-              numberOfYoungObjects: item.numberOfYoungObjects,
-              shallowSizeOfYoung: item.shallowSizeOfYoung,
+              numberOfYoungObjects: record.numberOfYoungObjects,
+              shallowSizeOfYoung: record.shallowSizeOfYoung,
 
-              numberOfOldObjects: item.numberOfOldObjects,
-              shallowSizeOfOld: item.shallowSizeOfOld,
+              numberOfOldObjects: record.numberOfOldObjects,
+              shallowSizeOfOld: record.shallowSizeOfOld,
 
-              retainedSize: item.retainedSize,
+              retainedSize: record.retainedSize,
               isRecord: true,
               hasChildren: this.groupingBy!=='by_class'
             })

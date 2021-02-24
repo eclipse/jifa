@@ -1,5 +1,5 @@
 <!--
-    Copyright (c) 2020, 2021 Contributors to the Eclipse Foundation
+    Copyright (c) 2020 Contributors to the Eclipse Foundation
 
     See the NOTICE file(s) distributed with this work for additional
     information regarding copyright ownership.
@@ -93,13 +93,13 @@
           }
         }).then(resp => {
           let records = resp.data.data
-          records.forEach(item => this.records.push({
+          records.forEach(record => this.records.push({
             rowKey: rowKey++,
 
-            objectId: item.objectId,
-            className: item.className,
-            objects: item.objects,
-            shallowSize: item.shallowSize,
+            objectId: record.objectId,
+            className: record.className,
+            objects: record.objects,
+            shallowSize: record.shallowSize,
 
             isRecord: true,
           }))
