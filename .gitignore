@@ -22,3 +22,4 @@ backend/config/jifa-ssh-key
 backend/config/jifa-ssh-key.pub
 
 *.hprof
+.log

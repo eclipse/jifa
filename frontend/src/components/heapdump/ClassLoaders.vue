@@ -1,5 +1,5 @@
 <!--
-    Copyright (c) 2020 Contributors to the Eclipse Foundation
+    Copyright (c) 2020, 2021 Contributors to the Eclipse Foundation
 
     See the NOTICE file(s) distributed with this work for additional
     information regarding copyright ownership.
@@ -135,18 +135,18 @@
           }
         }).then(resp => {
           let records = resp.data.data
-          records.forEach(record => this.records.push({
+          records.forEach(item => this.records.push({
             rowKey: rowKey++,
 
-            objectId: record.objectId,
-            prefix: record.prefix,
-            label: record.label,
-            classLoader: record.classLoader,
-            hasParent: record.hasParent,
-            definedClasses: record.definedClasses,
-            numberOfInstances: record.numberOfInstances,
+            objectId: item.objectId,
+            prefix: item.prefix,
+            label: item.label,
+            classLoader: item.classLoader,
+            hasParent: item.hasParent,
+            definedClasses: item.definedClasses,
+            numberOfInstances: item.numberOfInstances,
 
-            hasChildren: record.classLoader,
+            hasChildren: item.classLoader,
             isRecord: true,
           }))
 
@@ -189,19 +189,19 @@
           }
 
           let res = resp.data.data
-          res.forEach(record => {
+          res.forEach(item => {
             loaded.push({
               rowKey: rowKey++,
 
-              objectId: record.objectId,
-              prefix: record.prefix,
-              label: record.label,
-              classLoader: record.classLoader,
-              hasParent: record.hasParent,
-              definedClasses: record.classLoader ? record.definedClasses : null,
-              numberOfInstances: record.numberOfInstances,
+              objectId: item.objectId,
+              prefix: item.prefix,
+              label: item.label,
+              classLoader: item.classLoader,
+              hasParent: item.hasParent,
+              definedClasses: item.classLoader ? item.definedClasses : null,
+              numberOfInstances: item.numberOfInstances,
 
-              hasChildren: record.classLoader,
+              hasChildren: item.classLoader,
 
               isRecord: true,
             })

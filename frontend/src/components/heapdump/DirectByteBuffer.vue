@@ -1,5 +1,5 @@
 <!--
-    Copyright (c) 2020 Contributors to the Eclipse Foundation
+    Copyright (c) 2020, 2021 Contributors to the Eclipse Foundation
 
     See the NOTICE file(s) distributed with this work for additional
     information regarding copyright ownership.
@@ -86,7 +86,7 @@
         this.loading = true
         axios.get(heapDumpService(this.file, 'directByteBuffer/summary')).then(resp => {
           this.totalSize = resp.data.totalSize
-          this.position = resp.data.position
+          this.position = "-"
           this.limit = resp.data.limit
           this.capacity = resp.data.capacity
           if (this.totalSize > 0) {
@@ -105,14 +105,14 @@
           }
         }).then(resp => {
           let records = resp.data.data
-          records.forEach(record => this.records.push({
+          records.forEach(item => this.records.push({
             rowKey: rowKey++,
 
-            objectId: record.objectId,
-            label: record.label,
-            position: record.position,
-            limit: record.limit,
-            capacity: record.capacity,
+            objectId: item.objectId,
+            label: item.label,
+            position: item.position,
+            limit: item.limit,
+            capacity: item.capacity,
 
             isRecord: true,
           }))

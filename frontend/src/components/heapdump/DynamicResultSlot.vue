@@ -1,5 +1,5 @@
 <!--
-    Copyright (c) 2020 Contributors to the Eclipse Foundation
+    Copyright (c) 2020, 2021 Contributors to the Eclipse Foundation
 
     See the NOTICE file(s) distributed with this work for additional
     information regarding copyright ownership.
@@ -409,16 +409,16 @@
           }
 
           let res = resp.data.data
-          res.forEach(record => {
+          res.forEach(item => {
             loaded.push({
               rowKey: rowKey++,
-              label: record.label,
+              label: item.label,
               hasChildren: true,
-              objectId: record.objectId,
-              objectIds: record.objectIds,
-              objects: record.objects,
-              shallowHeap: record.shallowSize,
-              icon: outbound ? getClassRefOutboundIcon(record.type) : getClassRefInboundIcon(record.type),
+              objectId: item.objectId,
+              objectIds: item.objectIds,
+              objects: item.objects,
+              shallowHeap: item.shallowSize,
+              icon: outbound ? getClassRefOutboundIcon(item.type) : getClassRefInboundIcon(item.type),
               isResult: true
             })
           })
@@ -461,17 +461,17 @@
           }
         }).then((resp) => {
               let topItems = [];
-              let record = resp.data
+              let item = resp.data
               topItems.push(
                   {
                     rowKey: rowKey++,
-                    label: record.label,
+                    label: item.label,
                     hasChildren: true,
-                    objectId: record.objectId,
-                    objectIds: record.objectIds,
-                    objects: record.objects,
-                    shallowHeap: record.shallowSize,
-                    icon: outbound ? getClassRefOutboundIcon(record.type) : ICONS.objects.class,
+                    objectId: item.objectId,
+                    objectIds: item.objectIds,
+                    objects: item.objects,
+                    shallowHeap: item.shallowSize,
+                    icon: outbound ? getClassRefOutboundIcon(item.type) : ICONS.objects.class,
                     isResult: true
                   }
               )

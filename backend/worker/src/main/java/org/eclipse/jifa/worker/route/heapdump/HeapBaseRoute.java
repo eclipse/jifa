@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2021 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -21,7 +21,7 @@ import java.util.List;
 @MappingPrefix("/heap-dump/:file")
 public class HeapBaseRoute extends BaseRoute {
 
-    private static List<Class<? extends HeapBaseRoute>> ROUTES = new ArrayList<>();
+    private static final List<Class<? extends HeapBaseRoute>> ROUTES = new ArrayList<>();
 
     static {
         ROUTES.add(OverviewRoute.class);
@@ -44,6 +44,7 @@ public class HeapBaseRoute extends BaseRoute {
         ROUTES.add(LeakRoute.class);
         ROUTES.add(MergePathToGCRootsRoute.class);
     }
+
 
     public static List<Class<? extends HeapBaseRoute>> routes() {
         return ROUTES;

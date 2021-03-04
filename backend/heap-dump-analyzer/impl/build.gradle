@@ -1,0 +1,43 @@
+/********************************************************************************
+ * Copyright (c) 2020, 2021 Contributors to the Eclipse Foundation
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ ********************************************************************************/
+plugins {
+    id 'java'
+}
+
+jar {
+    manifest {
+        attributes(
+                "Bundle-SymbolicName": "org.eclipse.jifa.hda.implementation; singleton:=true",
+                "Require-Bundle": "org.eclipse.mat.api;bundle-version=\"1.10.0\",org.eclipse.mat.parser;bundle-version=\"1.10.0\",org.eclipse.osgi",
+                "Bundle-Activator": "org.eclipse.jifa.hda.impl.Activator",
+                "Import-Package":
+                    "org.eclipse.mat.snapshot,org.eclipse.mat.util,org.eclipse.mat.query,org.eclipse.mat.parser.model",
+                "Bundle-Version": "1.0"
+        )
+    }
+}
+
+dependencies {
+    compile project(':backend:heap-dump-analyzer:api')
+    compile project(':backend:common')
+
+    compileOnly project(':backend:worker')
+
+    compileOnly files("${project.rootDir}/mat-deps/org.eclipse.osgi.jar" as String)
+    compileOnly files("${project.rootDir}/mat-deps/org.eclipse.equinox.registry.jar" as String)
+
+    compileOnly files("${project.rootDir}/mat-deps/org.eclipse.mat.report.jar" as String)
+    compileOnly files("${project.rootDir}/mat-deps/org.eclipse.mat.api.jar" as String)
+    compileOnly files("${project.rootDir}/mat-deps/org.eclipse.mat.parser.jar" as String)
+    compileOnly files("${project.rootDir}/mat-deps/org.eclipse.mat.hprof.jar" as String)
+}

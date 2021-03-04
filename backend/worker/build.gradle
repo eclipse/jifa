@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2021 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -16,6 +16,7 @@ plugins {
 
 dependencies {
     compile project(':backend:common')
+    compile project(':backend:heap-dump-analyzer:api')
 
     compile group: 'io.vertx', name: 'vertx-core', version: "${vertx_version}"
     compile group: 'io.vertx', name: 'vertx-config', version: "${vertx_version}"
@@ -27,7 +28,7 @@ dependencies {
 
     compile 'com.amazonaws:aws-java-sdk-s3:1.11.882'
 
-    compile files("${project.rootDir}/mat.jar" as String)
+    compile files("${project.rootDir}/mat-deps/org.eclipse.osgi.jar" as String)
 
     testCompile 'junit:junit:4.12'
     testCompile group: 'io.vertx', name: 'vertx-unit', version: "${vertx_version}"
@@ -44,4 +45,6 @@ test {
 }
 
 build.dependsOn rootProject.downloadMatJar
+applicationDefaultJvmArgs = ["-Dmat-deps=${rootProject.rootDir}/mat-deps"]
+run.dependsOn ':backend:heap-dump-analyzer:prepareMaterials'
 mainClassName = 'org.eclipse.jifa.worker.Worker'

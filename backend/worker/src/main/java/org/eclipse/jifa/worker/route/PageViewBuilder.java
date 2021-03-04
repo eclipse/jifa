@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2021 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -14,7 +14,7 @@ package org.eclipse.jifa.worker.route;
 
 import org.eclipse.jifa.common.request.PagingRequest;
 import org.eclipse.jifa.common.vo.PageView;
-import org.eclipse.jifa.worker.vo.feature.Searchable;
+import org.eclipse.jifa.common.vo.support.Searchable;
 
 import java.util.Arrays;
 import java.util.Collection;

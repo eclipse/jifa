@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2021 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -12,18 +12,30 @@
  ********************************************************************************/
 package org.eclipse.jifa.worker;
 
-import io.vertx.core.*;
+import io.vertx.core.AbstractVerticle;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.DeploymentOptions;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.VertxOptions;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.AbstractUser;
 import io.vertx.ext.auth.AuthProvider;
 import io.vertx.ext.auth.User;
 import io.vertx.ext.web.Router;
-import io.vertx.ext.web.handler.*;
+import io.vertx.ext.web.handler.AuthHandler;
+import io.vertx.ext.web.handler.BasicAuthHandler;
+import io.vertx.ext.web.handler.BodyHandler;
+import io.vertx.ext.web.handler.CorsHandler;
+import io.vertx.ext.web.handler.StaticHandler;
 import org.eclipse.jifa.common.JifaHooks;
 import org.eclipse.jifa.common.aux.JifaException;
 import org.eclipse.jifa.common.util.FileUtil;
 import org.eclipse.jifa.worker.route.RouteFiller;
+import org.eclipse.jifa.worker.support.hda.AnalysisEnv;
+import org.osgi.framework.BundleException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,8 +53,13 @@ public class Worker extends AbstractVerticle {
     private static final CountDownLatch count = new CountDownLatch(Runtime.getRuntime().availableProcessors());
     private static long startTime;
 
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) throws InterruptedException, BundleException {
         startTime = System.currentTimeMillis();
+
+        if (!AnalysisEnv.INITIALIZED) {
+            System.err.println("Heap dump analysis env initialized failed");
+            return;
+        }
 
         JsonObject vertxConfig = new JsonObject(
             FileUtil.content(Worker.class.getClassLoader().getResourceAsStream(DEFAULT_VERTX_CONFIG_FILE)));
@@ -121,7 +138,8 @@ public class Worker extends AbstractVerticle {
 
         String staticRoot = System.getProperty(WEB_ROOT_KEY, "webroot");
 
-        String uploadDir = config().containsKey(SERVER_UPLOAD_DIR_KEY) ? config().getString(SERVER_UPLOAD_DIR_KEY) : null;
+        String uploadDir =
+            config().containsKey(SERVER_UPLOAD_DIR_KEY) ? config().getString(SERVER_UPLOAD_DIR_KEY) : null;
 
         JifaHooks hooks = findHooks();
 
@@ -148,9 +166,9 @@ public class Worker extends AbstractVerticle {
                 // non-api
                 String staticPattern = "^(?!" + WorkerGlobal.stringConfig(Constant.ConfigKey.API_PREFIX) + ").*$";
                 router.routeWithRegex(staticPattern)
-                        .handler(staticHandler)
-                        // route to "/" if not found
-                        .handler(context -> context.reroute("/"));
+                      .handler(staticHandler)
+                      // route to "/" if not found
+                      .handler(context -> context.reroute("/"));
             }
 
             // cors

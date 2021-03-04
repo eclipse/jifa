@@ -23,10 +23,8 @@ import org.eclipse.jifa.common.enums.ProgressState;
 import org.eclipse.jifa.common.vo.PageView;
 import org.eclipse.jifa.common.vo.Progress;
 import org.eclipse.jifa.common.vo.Result;
+import org.eclipse.jifa.hda.api.Model;
 import org.eclipse.jifa.worker.WorkerGlobal;
-import org.eclipse.jifa.worker.vo.heapdump.classloader.Record;
-import org.eclipse.jifa.worker.vo.heapdump.inspector.ObjectView;
-import org.eclipse.jifa.worker.vo.heapdump.thread.Info;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,8 +37,9 @@ import static org.eclipse.jifa.common.util.GsonHolder.GSON;
 
 public class HeapDumpRouteSuite extends Base {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(HeapDumpRouteSuite.class);
+
     static TestContext context;
-    private static Logger LOGGER = LoggerFactory.getLogger(HeapDumpRouteSuite.class);
 
     public static void test(TestContext c) throws Exception {
         context = c;
@@ -82,9 +81,9 @@ public class HeapDumpRouteSuite extends Base {
                 req -> req.addQueryParam("page", "1")
                         .addQueryParam("pageSize", "10"),
                 resp -> {
-                    Type type = new TypeToken<PageView<Record>>() {
+                    Type type = new TypeToken<PageView<Model.ClassLoader.Item>>() {
                     }.getType();
-                    PageView<Record> result = GSON.fromJson(resp.bodyAsString(), type);
+                    PageView<Model.ClassLoader.Item> result = GSON.fromJson(resp.bodyAsString(), type);
                     holder.id = result.getData().get(0).getObjectId();
                 });
         testGet("/classLoaderExplorer/children",
@@ -143,8 +142,8 @@ public class HeapDumpRouteSuite extends Base {
         testGet("/inspector/objectView",
                 req -> req.addQueryParam("objectId", String.valueOf(holder.id)),
                 resp -> {
-                    ObjectView objectView = GSON.fromJson(resp.bodyAsString(), ObjectView.class);
-                    holder.objectAddress = objectView.getObjectAddress();
+                    Model.InspectorView view = GSON.fromJson(resp.bodyAsString(), Model.InspectorView.class);
+                    holder.objectAddress = view.getObjectAddress();
                 });
         testGet("/inspector/addressToId",
                 (PreProcessor) req -> req.addQueryParam("objectAddress", String.valueOf(holder.objectAddress)));
@@ -201,9 +200,9 @@ public class HeapDumpRouteSuite extends Base {
                         .addQueryParam("ascendingOrder", "true")
                         .addQueryParam("pageSize", "10"),
                 resp -> {
-                    Type type = new TypeToken<PageView<Info>>() {
+                    Type type = new TypeToken<PageView<Model.Thread.Item>>() {
                     }.getType();
-                    PageView<Info> result = GSON.fromJson(resp.bodyAsString(), type);
+                    PageView<Model.Thread.Item> result = GSON.fromJson(resp.bodyAsString(), type);
                     holder.id = result.getData().get(0).getObjectId();
                 }
         );
