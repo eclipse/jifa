@@ -42,6 +42,7 @@ compileJava {
 
 test {
     useJUnit()
+    systemProperty "mat-deps", "${rootProject.rootDir}/mat-deps"
 }
 
 applicationDefaultJvmArgs = ["-Dmat-deps=${rootProject.rootDir}/mat-deps"]
