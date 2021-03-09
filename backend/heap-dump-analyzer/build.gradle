@@ -47,17 +47,17 @@ p2AsMaven {
 }
 
 task copyMATJar(type: Copy) {
-    from "${project.rootDir}/backend/heap-dump-analyzer/build/p2asmaven/p2/eclipse-deps/plugins"
-    from "${project.rootDir}/backend/heap-dump-analyzer/build/p2asmaven/p2/eclipse-mat/plugins"
-    from "${project.rootDir}/backend/heap-dump-analyzer/build/p2asmaven/token-eclipse-mat"
-    into "${project.rootDir}/mat-deps"
+    from "${rootProject.rootDir}/backend/heap-dump-analyzer/build/p2asmaven/p2/eclipse-deps/plugins"
+    from "${rootProject.rootDir}/backend/heap-dump-analyzer/build/p2asmaven/p2/eclipse-mat/plugins"
+    from "${rootProject.rootDir}/backend/heap-dump-analyzer/build/p2asmaven/token-eclipse-mat"
+    into "${rootProject.rootDir}/mat-deps"
     include '*.jar'
     rename '(.+)_(.+)', '$1.jar'
 }
 
 task copyImplJar(type: Copy) {
     from 'impl/build/libs/impl-1.0.jar'
-    into "${project.rootDir}/mat-deps"
+    into "${rootProject.rootDir}/mat-deps"
 }
 
 copyImplJar.dependsOn(':backend:heap-dump-analyzer:impl:build')
