@@ -10,10 +10,6 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-plugins {
-    id "de.undercouch.download" version "3.4.3"
-}
-
 allprojects {
     repositories {
         maven {
@@ -27,14 +23,6 @@ allprojects {
 subprojects {
     apply plugin: 'idea'
     version = '1.0'
-}
-
-apply plugin: 'de.undercouch.download'
-
-task downloadMatJar(type: Download) {
-    src 'https://raw.githubusercontent.com/wiki/eclipse/jifa/resources/mat.jar'
-    dest "${project.rootDir}/mat.jar"
-    overwrite false
 }
 
 task deleteSSHConfig(type: Delete) {

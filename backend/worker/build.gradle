@@ -44,7 +44,6 @@ test {
     useJUnit()
 }
 
-build.dependsOn rootProject.downloadMatJar
 applicationDefaultJvmArgs = ["-Dmat-deps=${rootProject.rootDir}/mat-deps"]
 run.dependsOn ':backend:heap-dump-analyzer:prepareMaterials'
 mainClassName = 'org.eclipse.jifa.worker.Worker'
