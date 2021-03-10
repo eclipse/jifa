@@ -60,9 +60,14 @@ public class TestRoutes {
 
     @After
     public void tearDown(TestContext context) {
+        System.out.println(context);
         try {
-            System.out.println(context);
             FileUtils.deleteDirectory(new File(WorkerGlobal.workspace()));
+        } catch (Throwable t) {
+            LOGGER.error("Error", t);
+        }
+
+        try {
             WorkerGlobal.VERTX.close(context.asyncAssertSuccess());
         } catch (Throwable t) {
             LOGGER.error("Error", t);
