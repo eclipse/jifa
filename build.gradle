@@ -77,4 +77,23 @@ task buildJifa{
     dependsOn copySSHConfig, copyMasterDist, copyWorkerDist, compressFrontendDist
 }
 
+class TaskListener implements TaskExecutionListener{
+
+    @Override
+    void beforeExecute(Task task) {
+        println "===== " + task.name + " Start ====="
+    }
+
+    @Override
+    void afterExecute(Task task, TaskState state) {
+        println "===== " + task.name + " End ====="
+    }
+}
+
+def verbose = true
+
+if (verbose) {
+    project.gradle.addListener(new TaskListener())
+}
+
 defaultTasks 'buildJifa'

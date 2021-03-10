@@ -45,9 +45,11 @@ test {
 }
 
 applicationDefaultJvmArgs = ["-Dmat-deps=${rootProject.rootDir}/mat-deps"]
-run.dependsOn ':backend:heap-dump-analyzer:prepareMaterials'
 mainClassName = 'org.eclipse.jifa.worker.Worker'
 
 test {
     jvmArgs "-Dmat-deps=${rootProject.rootDir}/mat-deps"
 }
+
+build.dependsOn=[':backend:heap-dump-analyzer:prepareMatMaterials', ':backend:heap-dump-analyzer:prepareHeapDumpAnalyzerImpl']
+run.dependsOn=[':backend:heap-dump-analyzer:prepareMatMaterials', ':backend:heap-dump-analyzer:prepareHeapDumpAnalyzerImpl']

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2021 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -11,54 +11,60 @@
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
 plugins {
-    id 'com.diffplug.p2.asmaven' version '3.26.0'
+    id 'com.diffplug.p2.asmaven' version '3.27.0'
 }
 
 p2AsMaven {
     group 'eclipse-deps', {
         repoEclipse '4.8'
-        iu     'com.ibm.icu'
-        iu     'org.eclipse.core.commands'
-        iu     'org.eclipse.core.contenttype'
-        iu     'org.eclipse.core.jobs'
-        iu     'org.eclipse.core.runtime'
-        iu     'org.eclipse.equinox.app'
-        iu     'org.eclipse.equinox.common'
-        iu     'org.eclipse.equinox.preferences'
-        iu     'org.eclipse.equinox.registry'
-        iu     'org.eclipse.osgi'
-        append true
+        iu            'com.ibm.icu'
+        iu            'org.eclipse.core.commands'
+        iu            'org.eclipse.core.contenttype'
+        iu            'org.eclipse.core.jobs'
+        iu            'org.eclipse.core.runtime'
+        iu            'org.eclipse.equinox.app'
+        iu            'org.eclipse.equinox.common'
+        iu            'org.eclipse.equinox.preferences'
+        iu            'org.eclipse.equinox.registry'
+        iu            'org.eclipse.osgi'
+        append        true
+        slicingOption 'includeFeatures', 'false'
+        slicingOption 'includeNonGreedy', 'false'
+        slicingOption 'includeOptional', 'false'
     }
 
     group 'eclipse-mat', {
-        repo   'http://download.eclipse.org/mat/1.11.0/update-site/'
-        iu     'org.eclipse.mat.api'
-        iu     'org.eclipse.mat.hprof'
-        iu     'org.eclipse.mat.parser'
-        iu     'org.eclipse.mat.report'
-        append true
+        repo          'http://download.eclipse.org/mat/1.11.0/update-site/'
+        iu            'org.eclipse.mat.api'
+        iu            'org.eclipse.mat.hprof'
+        iu            'org.eclipse.mat.parser'
+        iu            'org.eclipse.mat.report'
+        append        true
+        slicingOption 'includeFeatures', 'false'
+        slicingOption 'includeNonGreedy', 'false'
+        slicingOption 'includeOptional', 'false'
     }
 }
 
-task copyMATJar() {
-    copy {
-        from "${project.rootDir}/backend/heap-dump-analyzer/build/p2asmaven/p2/eclipse-deps/plugins"
-        from "${project.rootDir}/backend/heap-dump-analyzer/build/p2asmaven/p2/eclipse-mat/plugins"
-        into "${project.rootDir}/mat-deps"
-        include '*.jar'
-        rename '(.+)_(.+)', '$1.jar'
-    }
+task copyMATJar(type: Copy) {
+    from "${project.rootDir}/backend/heap-dump-analyzer/build/p2asmaven/p2/eclipse-deps/plugins"
+    from "${project.rootDir}/backend/heap-dump-analyzer/build/p2asmaven/p2/eclipse-mat/plugins"
+    from "${project.rootDir}/backend/heap-dump-analyzer/build/p2asmaven/token-eclipse-mat"
+    into "${project.rootDir}/mat-deps"
+    include '*.jar'
+    rename '(.+)_(.+)', '$1.jar'
 }
 
-task copyImplJar(dependsOn: ':backend:heap-dump-analyzer:impl:build') {
-    copy {
-        from 'impl/build/libs/impl-1.0.jar'
-        into "${project.rootDir}/mat-deps"
-    }
+task copyImplJar(type: Copy) {
+    from 'impl/build/libs/impl-1.0.jar'
+    into "${project.rootDir}/mat-deps"
 }
 
-copyImplJar.configure {
-    shouldRunAfter copyMATJar
-}
+copyImplJar.dependsOn(':backend:heap-dump-analyzer:impl:build')
 
-task prepareMaterials(dependsOn: [copyMATJar, copyImplJar])
+task prepareMatMaterials(dependsOn: [copyMATJar])
+task prepareHeapDumpAnalyzerImpl(dependsOn: [copyImplJar])
+
+prepareHeapDumpAnalyzerImpl.configure {
+    shouldRunAfter prepareMatMaterials
+}
