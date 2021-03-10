@@ -16,6 +16,7 @@ import org.eclipse.jifa.common.aux.JifaException;
 import org.eclipse.jifa.hda.api.AnalysisContext;
 import org.eclipse.jifa.hda.api.HeapDumpAnalyzer;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.wiring.BundleRevision;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.Constants;
 import org.osgi.framework.launch.Framework;
@@ -76,7 +77,9 @@ public class AnalysisEnv {
             }
 
             for (Bundle bundle : bundles) {
-                bundle.start();
+                if (!isFragment(bundle)) {
+                    bundle.start();
+                }
             }
         } catch (BundleException be) {
             throw new JifaException(be);
@@ -88,4 +91,7 @@ public class AnalysisEnv {
         assert HEAP_DUMP_ANALYZER != null;
     }
 
+    static boolean isFragment(Bundle bundle) {
+        return (bundle.adapt(BundleRevision.class).getTypes() & BundleRevision.TYPE_FRAGMENT) != 0;
+    }
 }
