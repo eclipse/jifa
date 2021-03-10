@@ -90,7 +90,7 @@ class TaskListener implements TaskExecutionListener{
     }
 }
 
-def verbose = true
+def verbose = false
 
 if (verbose) {
     project.gradle.addListener(new TaskListener())
