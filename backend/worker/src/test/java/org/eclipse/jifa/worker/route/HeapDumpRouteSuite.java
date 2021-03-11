@@ -116,6 +116,7 @@ public class HeapDumpRouteSuite extends Base {
                         .addQueryParam("ascendingOrder", "true")
                         .addQueryParam("pageSize", "10")
                         .addQueryParam("grouping", "NONE")
+                        .addQueryParam("idPathInResultTree", "[" + holder.id + "]")
                         .addQueryParam("parentObjectId", String.valueOf(holder.id)));
 
         // gc root
