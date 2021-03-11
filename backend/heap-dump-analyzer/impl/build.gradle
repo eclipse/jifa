@@ -31,8 +31,6 @@ dependencies {
     compile project(':backend:heap-dump-analyzer:api')
     compile project(':backend:common')
 
-    compileOnly project(':backend:worker')
-
     compileOnly files("${project.rootDir}/mat-deps/org.eclipse.osgi.jar" as String)
     compileOnly files("${project.rootDir}/mat-deps/org.eclipse.equinox.registry.jar" as String)
 

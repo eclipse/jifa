@@ -23,7 +23,7 @@ import org.eclipse.jifa.hda.api.AnalysisException;
 import org.eclipse.jifa.hda.api.HeapDumpAnalyzer;
 import org.eclipse.jifa.hda.api.Model;
 import org.eclipse.jifa.hda.api.ProgressListener;
-import org.eclipse.jifa.worker.route.PageViewBuilder;
+import org.eclipse.jifa.common.util.PageViewBuilder;
 import org.eclipse.mat.SnapshotException;
 import org.eclipse.mat.internal.snapshot.SnapshotQueryContext;
 import org.eclipse.mat.parser.model.ClassImpl;
