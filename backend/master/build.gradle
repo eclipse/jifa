@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2021 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,30 +18,30 @@ group 'org.eclipse.jifa'
 version '1.0'
 
 dependencies {
-    compile project(':backend:common')
+    implementation project(':backend:common')
 
-    compile group: 'io.vertx', name: 'vertx-core', version: "${vertx_version}"
-    compile group: 'io.vertx', name: 'vertx-config', version: "${vertx_version}"
-    compile group: 'io.vertx', name: 'vertx-service-proxy', version: "${vertx_version}"
+    implementation group: 'io.vertx', name: 'vertx-core', version: "${vertx_version}"
+    implementation group: 'io.vertx', name: 'vertx-config', version: "${vertx_version}"
+    implementation group: 'io.vertx', name: 'vertx-service-proxy', version: "${vertx_version}"
     compileOnly group: 'io.vertx', name: 'vertx-codegen', version: "${vertx_version}", classifier: 'processor'
 
-    compile group: 'io.vertx', name: 'vertx-rx-java2', version: "${vertx_version}"
-    compile group: 'io.vertx', name: 'vertx-rx-java2-gen', version: "${vertx_version}"
+    implementation group: 'io.vertx', name: 'vertx-rx-java2', version: "${vertx_version}"
+    implementation group: 'io.vertx', name: 'vertx-rx-java2-gen', version: "${vertx_version}"
 
-    compile group: 'io.vertx', name: 'vertx-web', version: "${vertx_version}"
-    compile group: 'io.vertx', name: 'vertx-auth-jwt', version: "${vertx_version}"
-    compile group: 'io.vertx', name: 'vertx-web-client', version: "${vertx_version}"
-    compile group: 'io.vertx', name: 'vertx-auth-common', version: "${vertx_version}"
-    compile group: 'io.vertx', name: 'vertx-jdbc-client', version: "${vertx_version}"
+    implementation group: 'io.vertx', name: 'vertx-web', version: "${vertx_version}"
+    implementation group: 'io.vertx', name: 'vertx-auth-jwt', version: "${vertx_version}"
+    implementation group: 'io.vertx', name: 'vertx-web-client', version: "${vertx_version}"
+    implementation group: 'io.vertx', name: 'vertx-auth-common', version: "${vertx_version}"
+    implementation group: 'io.vertx', name: 'vertx-jdbc-client', version: "${vertx_version}"
 
-    compile group: 'mysql', name: 'mysql-connector-java', version: '8.0.15'
+    implementation group: 'mysql', name: 'mysql-connector-java', version: '8.0.15'
 
-    testCompile group: 'junit', name: 'junit', version: "4.12"
-    testCompile group: 'io.vertx', name: 'vertx-unit', version: "3.7.1"
+    testImplementation group: 'junit', name: 'junit', version: "4.12"
+    testImplementation group: 'io.vertx', name: 'vertx-unit', version: "3.7.1"
 }
 
 application {
-    mainClassName = 'io.vertx.core.Launcher'
+    getMainClass().set('io.vertx.core.Launcher')
 }
 
 sourceSets {

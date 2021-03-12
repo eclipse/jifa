@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2021 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -26,41 +26,41 @@ subprojects {
 }
 
 task deleteSSHConfig(type: Delete) {
-    delete "${project.rootDir}/backend/config/jifa-ssh-key", "${project.rootDir}/backend/config/jifa-ssh-key.pub"
+    delete "${rootProject.rootDir}/backend/config/jifa-ssh-key", "${rootProject.rootDir}/backend/config/jifa-ssh-key.pub"
 }
 
 task generateSSHConfig(dependsOn: deleteSSHConfig, type: Exec) {
-    commandLine "ssh-keygen", "-b", "2048", "-t", "rsa", "-f", "${project.rootDir}/backend/config/jifa-ssh-key", "-q", "-N", "\"\""
+    commandLine "ssh-keygen", "-b", "2048", "-t", "rsa", "-f", "${rootProject.rootDir}/backend/config/jifa-ssh-key", "-q", "-N", "\"\""
 }
 
 task copySSHConfig(dependsOn: generateSSHConfig, type: Copy) {
-    from "${project.rootDir}/backend/config/jifa-ssh-key" as Object,
-            "${project.rootDir}/backend/config/jifa-ssh-key.pub" as Object
-    into "${project.rootDir}/deploy/config" as Object
+    from "${rootProject.rootDir}/backend/config/jifa-ssh-key" as Object,
+            "${rootProject.rootDir}/backend/config/jifa-ssh-key.pub" as Object
+    into "${rootProject.rootDir}/deploy/config" as Object
 }
 
 task copyMasterDist(type: Copy, dependsOn: ':backend:master:build') {
-    from "${project.rootDir}/backend/master/build/distributions/master-1.0.zip" as Object
-    into "${project.rootDir}/deploy" as Object
+    from "${rootProject.rootDir}/backend/master/build/distributions/master-1.0.zip" as Object
+    into "${rootProject.rootDir}/deploy" as Object
 }
 
 task copyWorkerDist(type: Copy, dependsOn: ':backend:worker:build') {
-    from "${project.rootDir}/backend/worker/build/distributions/worker-1.0.zip" as Object
-    into "${project.rootDir}/deploy" as Object
+    from "${rootProject.rootDir}/backend/worker/build/distributions/worker-1.0.zip" as Object
+    into "${rootProject.rootDir}/deploy" as Object
 }
 
 task compressFrontendDist(type: Zip) {
-    from "${project.rootDir}/frontend/build"
-    destinationDir file("${project.rootDir}/deploy")
-    baseName 'frontend'
-    version '1.0'
-    extension 'zip'
+    from "${rootProject.rootDir}/frontend/build"
+    destinationDirectory = file("${rootProject.rootDir}/deploy")
+    archiveBaseName = 'frontend'
+    archiveVersion = '1.0'
+    archiveExtension = 'zip'
 }
 
 task buildWorker {
     doFirst {
         ant.replaceregexp(match:'workerOnly.*?,', replace:'workerOnly:true,', flags:'g', byline:true) {
-            fileset(dir: "${project.rootDir}/frontend/src", includes: 'config.js')
+            fileset(dir: "${rootProject.rootDir}/frontend/src", includes: 'config.js')
         }
     }
     dependsOn ':frontend:build'

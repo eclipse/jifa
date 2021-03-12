@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
 plugins {
-    id 'java'
+    id 'java-library'
 }
 
 jar {
@@ -28,14 +28,15 @@ jar {
 }
 
 dependencies {
-    compile project(':backend:heap-dump-analyzer:api')
-    compile project(':backend:common')
+    implementation project(':backend:heap-dump-analyzer:api')
+    implementation project(':backend:common')
 
-    compileOnly files("${project.rootDir}/mat-deps/org.eclipse.osgi.jar" as String)
-    compileOnly files("${project.rootDir}/mat-deps/org.eclipse.equinox.registry.jar" as String)
+    compileOnly files("${rootProject.rootDir}/mat-deps/org.eclipse.osgi.jar" as String)
+    compileOnly files("${rootProject.rootDir}/mat-deps/org.eclipse.equinox.registry.jar" as String)
 
-    compileOnly files("${project.rootDir}/mat-deps/org.eclipse.mat.report.jar" as String)
-    compileOnly files("${project.rootDir}/mat-deps/org.eclipse.mat.api.jar" as String)
-    compileOnly files("${project.rootDir}/mat-deps/org.eclipse.mat.parser.jar" as String)
-    compileOnly files("${project.rootDir}/mat-deps/org.eclipse.mat.hprof.jar" as String)
+    compileOnly files("${rootProject.rootDir}/mat-deps/org.eclipse.mat.report.jar" as String)
+    compileOnly files("${rootProject.rootDir}/mat-deps/org.eclipse.mat.api.jar" as String)
+    compileOnly files("${rootProject.rootDir}/mat-deps/org.eclipse.mat.parser.jar" as String)
+    compileOnly files("${rootProject.rootDir}/mat-deps/org.eclipse.mat.hprof.jar" as String)
 }
+

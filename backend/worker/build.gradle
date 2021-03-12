@@ -15,34 +15,25 @@ plugins {
 }
 
 dependencies {
-    compile project(':backend:common')
-    compile project(':backend:heap-dump-analyzer:api')
+    implementation project(':backend:common')
+    implementation project(':backend:heap-dump-analyzer:api')
 
-    compile group: 'io.vertx', name: 'vertx-core', version: "${vertx_version}"
-    compile group: 'io.vertx', name: 'vertx-config', version: "${vertx_version}"
-    compile group: 'io.vertx', name: 'vertx-web-client', version: "${vertx_version}"
+    implementation group: 'io.vertx', name: 'vertx-core', version: "${vertx_version}"
+    implementation group: 'io.vertx', name: 'vertx-config', version: "${vertx_version}"
+    implementation group: 'io.vertx', name: 'vertx-web-client', version: "${vertx_version}"
 
-    compile 'com.hierynomus:sshj:0.30.0'
+    implementation 'com.hierynomus:sshj:0.30.0'
 
-    compile 'com.aliyun.oss:aliyun-sdk-oss:2.8.3'
+    implementation 'com.aliyun.oss:aliyun-sdk-oss:2.8.3'
 
-    compile 'com.amazonaws:aws-java-sdk-s3:1.11.882'
+    implementation 'com.amazonaws:aws-java-sdk-s3:1.11.882'
 
-    compile files("${project.rootDir}/mat-deps/org.eclipse.osgi.jar" as String)
+    implementation files("${rootProject.rootDir}/mat-deps/org.eclipse.osgi.jar" as String)
 
-    testCompile 'junit:junit:4.12'
-    testCompile group: 'io.vertx', name: 'vertx-unit', version: "${vertx_version}"
+    testImplementation 'junit:junit:4.12'
+    testImplementation group: 'io.vertx', name: 'vertx-unit', version: "${vertx_version}"
 }
 
-compileJava {
-    options.encoding = "UTF-8"
-    targetCompatibility = JavaVersion.VERSION_1_8
-    sourceCompatibility = JavaVersion.VERSION_1_8
-}
-
-test {
-    useJUnit()
-}
 
 applicationDefaultJvmArgs = ["-Dmat-deps=${rootProject.rootDir}/mat-deps"]
 mainClassName = 'org.eclipse.jifa.worker.Worker'
