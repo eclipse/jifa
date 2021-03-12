@@ -53,7 +53,7 @@ public class Worker extends AbstractVerticle {
     private static final CountDownLatch count = new CountDownLatch(Runtime.getRuntime().availableProcessors());
     private static long startTime;
 
-    public static void main(String[] args) throws InterruptedException, BundleException {
+    public static void main(String[] args) throws InterruptedException {
         startTime = System.currentTimeMillis();
 
         if (!AnalysisEnv.INITIALIZED) {

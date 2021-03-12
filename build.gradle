@@ -52,9 +52,9 @@ task copyWorkerDist(type: Copy, dependsOn: ':backend:worker:build') {
 task compressFrontendDist(type: Zip) {
     from "${rootProject.rootDir}/frontend/build"
     destinationDirectory = file("${rootProject.rootDir}/deploy")
-    archiveBaseName = 'frontend'
-    archiveVersion = '1.0'
-    archiveExtension = 'zip'
+    archiveBaseName.set('frontend')
+    archiveVersion.set('1.0')
+    archiveExtension.set('zip')
 }
 
 task buildWorker {
@@ -90,10 +90,8 @@ class TaskListener implements TaskExecutionListener{
     }
 }
 
-def verbose = false
-
-if (verbose) {
-    project.gradle.addListener(new TaskListener())
+if (project.properties.containsKey("verbose")) {
+    gradle.addListener(new TaskListener())
 }
 
 defaultTasks 'buildJifa'

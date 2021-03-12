@@ -17,3 +17,7 @@ plugins {
 dependencies {
     implementation project(':backend:common')
 }
+
+jar {
+    archiveBaseName.set("heap-dump-analyzer-api")
+}

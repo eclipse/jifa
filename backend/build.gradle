@@ -11,32 +11,54 @@
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
 
-["common", "worker", "master", "heap-dump-analyzer:api", "heap-dump-analyzer:impl"].each { name ->
-    project("$name") {
-        apply plugin: 'java'
-        compileJava {
-            options.encoding = "UTF-8"
-            targetCompatibility = JavaVersion.VERSION_1_8
-            sourceCompatibility = JavaVersion.VERSION_1_8
+
+def COMMON = 'common'
+def WORKER = 'worker'
+def MASTER = 'master'
+def HEAP_DUMP_ANALYZER_API = 'heap-dump-analyzer:api'
+def HEAP_DUMP_ANALYZER_IMPL = 'heap-dump-analyzer:impl'
+def HEAP_DUMP_ANALYZER_ECLIPSE_MAT_DEPS = 'heap-dump-analyzer:eclipse-mat-deps'
+
+[COMMON, WORKER, MASTER, HEAP_DUMP_ANALYZER_API, HEAP_DUMP_ANALYZER_IMPL].each {
+    name ->
+        project("$name") {
+            apply plugin: 'java'
+            compileJava {
+                options.encoding = "UTF-8"
+                targetCompatibility = JavaVersion.VERSION_1_8
+                sourceCompatibility = JavaVersion.VERSION_1_8
+            }
+            test {
+                useJUnit()
+            }
         }
-        test {
-            useJUnit()
-        }
-    }
 }
 
-["common", "worker", "master", "heap-dump-analyzer:api"].each { name ->
-    project("$name") {
-        ext {
-            vertx_version = '3.9.2'
-        }
+[COMMON, WORKER, MASTER, HEAP_DUMP_ANALYZER_API].each {
+    name ->
+        project("$name") {
+            ext {
+                vertx_version = '3.9.2'
+            }
 
-        dependencies {
-            compileOnly 'org.projectlombok:lombok:1.18.6'
-            annotationProcessor 'org.projectlombok:lombok:1.18.6'
+            dependencies {
+                compileOnly 'org.projectlombok:lombok:1.18.6'
+                annotationProcessor 'org.projectlombok:lombok:1.18.6'
 
-            testCompileOnly 'org.projectlombok:lombok:1.18.6'
-            testAnnotationProcessor 'org.projectlombok:lombok:1.18.6'
+                testCompileOnly 'org.projectlombok:lombok:1.18.6'
+                testAnnotationProcessor 'org.projectlombok:lombok:1.18.6'
+            }
         }
-    }
+}
+
+def deps_dir_name = "mat-deps"
+def deps_dir_path = project(HEAP_DUMP_ANALYZER_ECLIPSE_MAT_DEPS).projectDir.parentFile.path + File.separator + deps_dir_name
+[HEAP_DUMP_ANALYZER_ECLIPSE_MAT_DEPS, HEAP_DUMP_ANALYZER_IMPL, WORKER].each {
+    name ->
+        project("$name") {
+            ext {
+                mat_deps_dir_name = deps_dir_name
+                mat_deps_dir_path = deps_dir_path
+            }
+        }
 }

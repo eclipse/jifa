@@ -21,22 +21,30 @@ jar {
                 "Require-Bundle": "org.eclipse.mat.api;bundle-version=\"1.10.0\",org.eclipse.mat.parser;bundle-version=\"1.10.0\",org.eclipse.osgi",
                 "Bundle-Activator": "org.eclipse.jifa.hda.impl.Activator",
                 "Import-Package":
-                    "org.eclipse.mat.snapshot,org.eclipse.mat.util,org.eclipse.mat.query,org.eclipse.mat.parser.model",
+                        "org.eclipse.mat.snapshot,org.eclipse.mat.util,org.eclipse.mat.query,org.eclipse.mat.parser.model",
                 "Bundle-Version": "1.0"
         )
     }
+
+    archiveBaseName.set("heap-dump-analyzer-impl")
 }
 
 dependencies {
     implementation project(':backend:heap-dump-analyzer:api')
     implementation project(':backend:common')
 
-    compileOnly files("${rootProject.rootDir}/mat-deps/org.eclipse.osgi.jar" as String)
-    compileOnly files("${rootProject.rootDir}/mat-deps/org.eclipse.equinox.registry.jar" as String)
-
-    compileOnly files("${rootProject.rootDir}/mat-deps/org.eclipse.mat.report.jar" as String)
-    compileOnly files("${rootProject.rootDir}/mat-deps/org.eclipse.mat.api.jar" as String)
-    compileOnly files("${rootProject.rootDir}/mat-deps/org.eclipse.mat.parser.jar" as String)
-    compileOnly files("${rootProject.rootDir}/mat-deps/org.eclipse.mat.hprof.jar" as String)
+    def prefix = "${mat_deps_dir_path}${File.separator}"
+    implementation files(
+            "${prefix}org.eclipse.osgi.jar",
+            "${prefix}org.eclipse.equinox.registry.jar",
+            "${prefix}org.eclipse.mat.report.jar",
+            "${prefix}org.eclipse.mat.api.jar",
+            "${prefix}org.eclipse.mat.parser.jar",
+            "${prefix}org.eclipse.mat.hprof.jar")
 }
 
+task installJar(type: Copy, dependsOn: jar) {
+    from "${buildDir}${File.separator}libs"
+    into "${mat_deps_dir_path}"
+    include '*.jar'
+}

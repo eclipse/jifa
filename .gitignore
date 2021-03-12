@@ -14,7 +14,7 @@ gradle-app.setting
 # Avoid ignoring Gradle wrapper jar file (.jar files are usually ignored)
 !gradle-wrapper.jar
 
-backend/master/file-uploads/
+file-uploads
 backend/master/src/main/generated/**
 deploy/
 
@@ -25,3 +25,4 @@ backend/config/jifa-ssh-key.pub
 .log
 
 mat-deps
+*.iml

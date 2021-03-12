@@ -14,6 +14,8 @@ plugins {
     id 'application'
 }
 
+def osgi_jar = "org.eclipse.osgi.jar"
+
 dependencies {
     implementation project(':backend:common')
     implementation project(':backend:heap-dump-analyzer:api')
@@ -28,19 +30,61 @@ dependencies {
 
     implementation 'com.amazonaws:aws-java-sdk-s3:1.11.882'
 
-    implementation files("${rootProject.rootDir}/mat-deps/org.eclipse.osgi.jar" as String)
+    compileOnly files("${mat_deps_dir_path}${File.separator}${osgi_jar}")
 
     testImplementation 'junit:junit:4.12'
     testImplementation group: 'io.vertx', name: 'vertx-unit', version: "${vertx_version}"
 }
 
-
-applicationDefaultJvmArgs = ["-Dmat-deps=${rootProject.rootDir}/mat-deps"]
-mainClassName = 'org.eclipse.jifa.worker.Worker'
-
-test {
-    jvmArgs "-Dmat-deps=${rootProject.rootDir}/mat-deps"
+['run', 'test', 'startScripts'].each { n ->
+    tasks[n].dependsOn(':backend:heap-dump-analyzer:impl:installJar')
 }
 
-build.dependsOn=[':backend:heap-dump-analyzer:prepareMatMaterials', ':backend:heap-dump-analyzer:prepareHeapDumpAnalyzerImpl']
-run.dependsOn=[':backend:heap-dump-analyzer:prepareMatMaterials', ':backend:heap-dump-analyzer:prepareHeapDumpAnalyzerImpl']
+run {
+    jvmArgs("-Dmat-deps=${mat_deps_dir_path}")
+    classpath "${mat_deps_dir_path}${File.separator}${osgi_jar}"
+}
+
+test {
+    jvmArgs("-Dmat-deps=${mat_deps_dir_path}")
+    classpath += files("${mat_deps_dir_path}${File.separator}${osgi_jar}")
+}
+
+application {
+    mainClass.set('org.eclipse.jifa.worker.Worker')
+
+    applicationDistribution.from("${mat_deps_dir_path}") {
+        include "*.jar"
+        into "${mat_deps_dir_name}"
+    }
+}
+
+startScripts {
+    // workaround
+    setDefaultJvmOpts(['THE_DEFAULT_JVM_OPTS'])
+    classpath += files("${osgi_jar}")
+
+    doLast {
+        unixScript.text = unixScript.text.replace(
+                'THE_DEFAULT_JVM_OPTS', '-D' + "${mat_deps_dir_name}" + '=$APP_HOME/' + "${mat_deps_dir_name}"
+        )
+
+        unixScript.text = unixScript.text.replace(
+                '$APP_HOME/lib/' + "${osgi_jar}", '$APP_HOME/' + "${mat_deps_dir_name}/${osgi_jar}"
+        )
+
+        windowsScript.text = windowsScript.text.replace(
+                'THE_DEFAULT_JVM_OPTS', '-D' + "${mat_deps_dir_name}" + '=%APP_HOME%\\' + "${mat_deps_dir_name}"
+        )
+
+        windowsScript.text = windowsScript.text.replace(
+                '%APP_HOME%\\lib\\' + "${osgi_jar}", '%APP_HOME%\\' + "${mat_deps_dir_name}\\${osgi_jar}"
+        )
+    }
+}
+
+clean {
+    doFirst {
+        delete files("${projectDir}${File.separator}file-uploads", "${projectDir}${File.separator}workspace")
+    }
+}

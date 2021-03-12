@@ -55,8 +55,7 @@ public class AnalysisEnv {
             commonBase + ".request",
             commonBase + ".util",
             commonBase + ".vo",
-            "org.eclipse.jifa.worker.route",
-            "org.eclipse.jifa.common.vo.support",
+            commonBase + ".vo.support"
         };
         m.put(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, String.join(",", extras));
         Framework framework = factoryLoader.iterator().next().newFramework(m);
