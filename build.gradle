@@ -64,17 +64,21 @@ task buildWorker {
         }
     }
     dependsOn ':frontend:build'
-    dependsOn ':backend:common:build'
     dependsOn ':backend:worker:build'
     dependsOn copySSHConfig, copyWorkerDist, compressFrontendDist
 }
 
 task buildJifa{
     dependsOn ':frontend:build'
-    dependsOn ':backend:common:build'
     dependsOn ':backend:master:build'
     dependsOn ':backend:worker:build'
     dependsOn copySSHConfig, copyMasterDist, copyWorkerDist, compressFrontendDist
+}
+
+task clean {
+    doFirst {
+        delete files("${projectDir}${File.separator}deploy")
+    }
 }
 
 class TaskListener implements TaskExecutionListener{
