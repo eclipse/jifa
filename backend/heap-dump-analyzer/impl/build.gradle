@@ -33,7 +33,7 @@ dependencies {
     implementation project(':backend:heap-dump-analyzer:api')
     implementation project(':backend:common')
 
-    def prefix = "${mat_deps_dir_path}${File.separator}"
+    def prefix = "${mat_deps_dir_path}/"
     implementation files(
             "${prefix}org.eclipse.osgi.jar",
             "${prefix}org.eclipse.equinox.registry.jar",
@@ -44,7 +44,7 @@ dependencies {
 }
 
 task installJar(type: Copy, dependsOn: jar) {
-    from "${buildDir}${File.separator}libs"
+    from "${buildDir}/libs"
     into "${mat_deps_dir_path}"
     include '*.jar'
 }

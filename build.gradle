@@ -77,7 +77,7 @@ task buildJifa{
 
 task clean {
     doFirst {
-        delete files("${projectDir}${File.separator}deploy")
+        delete files("${projectDir}/deploy")
     }
 }
 

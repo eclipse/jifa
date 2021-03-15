@@ -50,8 +50,8 @@ p2AsMaven {
 afterEvaluate {
     copy {
         from files(
-                "${buildDir}${File.separator}p2asmaven${File.separator}p2${File.separator}eclipse-deps${File.separator}plugins",
-                "${buildDir}${File.separator}p2asmaven${File.separator}p2${File.separator}eclipse-mat${File.separator}plugins")
+                "${buildDir}/p2asmaven/p2/eclipse-deps/plugins",
+                "${buildDir}/p2asmaven/p2/eclipse-mat/plugins")
         into "${mat_deps_dir_path}"
         include '*.jar'
         rename '(.+)_(.+)', '$1.jar'
@@ -60,7 +60,7 @@ afterEvaluate {
 
 task clean {
     doFirst {
-        delete files("${mat_deps_dir_path}", "${projectDir}${File.separator}workspace")
+        delete files("${mat_deps_dir_path}", "${projectDir}/workspace")
     }
 }
 

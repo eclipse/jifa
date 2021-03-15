@@ -52,7 +52,7 @@ def HEAP_DUMP_ANALYZER_ECLIPSE_MAT_DEPS = 'heap-dump-analyzer:eclipse-mat-deps'
 }
 
 def deps_dir_name = "mat-deps"
-def deps_dir_path = project(HEAP_DUMP_ANALYZER_ECLIPSE_MAT_DEPS).projectDir.parentFile.path + File.separator + deps_dir_name
+def deps_dir_path = project(HEAP_DUMP_ANALYZER_ECLIPSE_MAT_DEPS).projectDir.parentFile.path + '/' + deps_dir_name
 [HEAP_DUMP_ANALYZER_ECLIPSE_MAT_DEPS, HEAP_DUMP_ANALYZER_IMPL, WORKER].each {
     name ->
         project("$name") {
