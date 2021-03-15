@@ -58,6 +58,16 @@ export default class JifaGlobal {
   static get_authorization_header() {
     return axios.defaults.headers.common['Authorization']
   }
+
+  static init_locale(i18n, def) {
+    let locale = window.localStorage.getItem("jifa_i18n")
+    i18n.locale = locale ? locale : def;
+  }
+
+  static set_locale(i18n, v) {
+    window.localStorage.setItem("jifa_i18n", v)
+    i18n.locale = v
+  }
 }
 
 

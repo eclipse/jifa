@@ -33,7 +33,7 @@
       <b-nav-item-dropdown>
         <template v-slot:button-content>{{currentLanguage}}</template>
         <b-dropdown-item href="#" v-for="lang in supportLanguages" :key="lang.label"
-                         @click="$i18n.locale=lang.value; currentLanguage=lang.label">
+                         @click="$jifa.set_locale($i18n, lang.value); currentLanguage=lang.label">
           {{lang.label}}
         </b-dropdown-item>
       </b-nav-item-dropdown>

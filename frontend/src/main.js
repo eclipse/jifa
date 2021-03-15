@@ -49,6 +49,7 @@ export default new Vue({
   render: h => h(Jifa),
   created() {
     this.$jifa.init_authorization_header()
+    this.$jifa.init_locale(this.$i18n, 'en')
     // eslint-disable-next-line no-console
     console.log(this.$t("jifa.consoleMsg"))
   }
