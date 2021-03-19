@@ -47,6 +47,12 @@ def HEAP_DUMP_ANALYZER_ECLIPSE_MAT_DEPS = 'heap-dump-analyzer:eclipse-mat-deps'
 
                 testCompileOnly 'org.projectlombok:lombok:1.18.6'
                 testAnnotationProcessor 'org.projectlombok:lombok:1.18.6'
+
+                constraints {
+                    implementation('io.netty:netty-codec-http:4.1.53.Final') {
+                        because 'https://snyk.io/vuln/SNYK-JAVA-IONETTY-1020439'
+                    }
+                }
             }
         }
 }
