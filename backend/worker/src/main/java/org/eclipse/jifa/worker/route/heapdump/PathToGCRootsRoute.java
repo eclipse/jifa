@@ -12,7 +12,7 @@
  ********************************************************************************/
 package org.eclipse.jifa.worker.route.heapdump;
 
-import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import org.eclipse.jifa.worker.route.ParamKey;
 import org.eclipse.jifa.worker.route.RouteMeta;
 import org.eclipse.jifa.worker.support.Analyzer;
@@ -24,11 +24,11 @@ import static org.eclipse.jifa.hda.api.Model.GCRootPath;
 class PathToGCRootsRoute extends HeapBaseRoute {
 
     @RouteMeta(path = "/pathToGCRoots")
-    void path(Future<GCRootPath.Item> future, @ParamKey("file") String file, @ParamKey("origin") int origin,
+    void path(Promise<GCRootPath.Item> promise, @ParamKey("file") String file, @ParamKey("origin") int origin,
               @ParamKey("skip") int skip, @ParamKey("count") int count) {
 
         ASSERT.isTrue(origin >= 0).isTrue(skip >= 0).isTrue(count > 0);
-        future.complete(AnalysisEnv.HEAP_DUMP_ANALYZER.getPathToGCRoots(Analyzer.getOrOpenAnalysisContext(file),
+        promise.complete(AnalysisEnv.HEAP_DUMP_ANALYZER.getPathToGCRoots(Analyzer.getOrOpenAnalysisContext(file),
                                                                         origin, skip, count));
     }
 }

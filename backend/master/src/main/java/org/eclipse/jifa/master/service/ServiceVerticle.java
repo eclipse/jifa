@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2021 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -14,7 +14,7 @@ package org.eclipse.jifa.master.service;
 
 import com.alibaba.druid.pool.DruidDataSource;
 import io.reactivex.Single;
-import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.reactivex.core.AbstractVerticle;
 import io.vertx.reactivex.ext.jdbc.JDBCClient;
 import org.eclipse.jifa.master.Constant;
@@ -27,7 +27,7 @@ public class ServiceVerticle extends AbstractVerticle implements Constant {
     private static final Logger LOGGER = LoggerFactory.getLogger(ServiceVerticle.class);
 
     @Override
-    public void start(Future<Void> startFuture) {
+    public void start(Promise <Void> startFuture) {
 
         vertx.rxExecuteBlocking(future -> {
             // init Data source

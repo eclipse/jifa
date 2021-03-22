@@ -41,7 +41,7 @@ dependencies {
 }
 
 application {
-    getMainClass().set('io.vertx.core.Launcher')
+    getMainClass().set('org.eclipse.jifa.master.Master')
 }
 
 sourceSets {
@@ -67,11 +67,5 @@ task runVertxCodeGen(type: JavaCompile, group: 'build') {
 }
 
 compileJava {
-    options.encoding = "UTF-8"
-    targetCompatibility = JavaVersion.VERSION_1_8
-    sourceCompatibility = JavaVersion.VERSION_1_8
     dependsOn runVertxCodeGen
 }
-
-mainClassName = 'org.eclipse.jifa.master.Master'
-

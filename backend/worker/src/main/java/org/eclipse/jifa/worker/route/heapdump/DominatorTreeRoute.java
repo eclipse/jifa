@@ -12,7 +12,7 @@
  ********************************************************************************/
 package org.eclipse.jifa.worker.route.heapdump;
 
-import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import org.eclipse.jifa.common.request.PagingRequest;
 import org.eclipse.jifa.common.vo.PageView;
 import org.eclipse.jifa.common.vo.support.SearchType;
@@ -26,14 +26,14 @@ import static org.eclipse.jifa.worker.support.hda.AnalysisEnv.HEAP_DUMP_ANALYZER
 class DominatorTreeRoute extends HeapBaseRoute {
 
     @RouteMeta(path = "/dominatorTree/roots")
-    void roots(Future<PageView<? extends DominatorTree.Item>> future, @ParamKey("file") String file,
+    void roots(Promise<PageView<? extends DominatorTree.Item>> promise, @ParamKey("file") String file,
                @ParamKey("grouping") DominatorTree.Grouping grouping,
                @ParamKey(value = "sortBy", mandatory = false) String sortBy,
                @ParamKey(value = "ascendingOrder", mandatory = false) boolean ascendingOrder,
                @ParamKey(value = "searchText", mandatory = false) String searchText,
                @ParamKey(value = "searchType", mandatory = false) SearchType searchType,
                PagingRequest pagingRequest) {
-        future.complete(HEAP_DUMP_ANALYZER
+        promise.complete(HEAP_DUMP_ANALYZER
                             .getRootsOfDominatorTree(getOrOpenAnalysisContext(file), grouping, sortBy,
                                                      ascendingOrder, searchText, searchType,
                                                      pagingRequest.getPage(),
@@ -41,14 +41,14 @@ class DominatorTreeRoute extends HeapBaseRoute {
     }
 
     @RouteMeta(path = "/dominatorTree/children")
-    void children(Future<PageView<? extends DominatorTree.Item>> future, @ParamKey("file") String file,
+    void children(Promise<PageView<? extends DominatorTree.Item>> promise, @ParamKey("file") String file,
                   @ParamKey("grouping") DominatorTree.Grouping grouping,
                   @ParamKey(value = "sortBy", mandatory = false) String sortBy,
                   @ParamKey(value = "ascendingOrder", mandatory = false) boolean ascendingOrder,
                   PagingRequest pagingRequest,
                   @ParamKey("parentObjectId") int parentObjectId, @ParamKey(value = "idPathInResultTree",
                                                                             mandatory = false) int[] idPathInResultTree) {
-        future.complete(HEAP_DUMP_ANALYZER
+        promise.complete(HEAP_DUMP_ANALYZER
                             .getChildrenOfDominatorTree(getOrOpenAnalysisContext(file), grouping, sortBy,
                                                         ascendingOrder,
                                                         parentObjectId,

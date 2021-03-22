@@ -13,19 +13,15 @@
 package org.eclipse.jifa.worker;
 
 import io.vertx.core.AbstractVerticle;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.DeploymentOptions;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.auth.AbstractUser;
-import io.vertx.ext.auth.AuthProvider;
 import io.vertx.ext.auth.User;
 import io.vertx.ext.web.Router;
-import io.vertx.ext.web.handler.AuthHandler;
+import io.vertx.ext.web.handler.AuthenticationHandler;
 import io.vertx.ext.web.handler.BasicAuthHandler;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.CorsHandler;
@@ -35,7 +31,6 @@ import org.eclipse.jifa.common.aux.JifaException;
 import org.eclipse.jifa.common.util.FileUtil;
 import org.eclipse.jifa.worker.route.RouteFiller;
 import org.eclipse.jifa.worker.support.hda.AnalysisEnv;
-import org.osgi.framework.BundleException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -85,6 +80,7 @@ public class Worker extends AbstractVerticle {
         }
     }
 
+    @SuppressWarnings("unchecked")
     JifaHooks findHooks() {
         JifaHooks hook = null;
 
@@ -104,28 +100,15 @@ public class Worker extends AbstractVerticle {
     }
 
     private void setupBasicAuthHandler(Router router) {
-        AuthHandler authHandler = BasicAuthHandler.create((authInfo, resultHandler) -> {
-            Future<User> result = Future.future();
+        AuthenticationHandler authHandler = BasicAuthHandler.create((authInfo, resultHandler) -> {
+            Promise<User> promise = Promise.promise();
             if (stringConfig(BASIC_AUTH, USERNAME).equals(authInfo.getString(USERNAME)) &&
                 stringConfig(BASIC_AUTH, PASSWORD).equals(authInfo.getString(PASSWORD))) {
-                result.complete(new AbstractUser() {
-                    @Override
-                    public JsonObject principal() {
-                        return null;
-                    }
-
-                    @Override
-                    public void setAuthProvider(AuthProvider authProvider) {
-                    }
-
-                    @Override
-                    protected void doIsPermitted(String permission, Handler<AsyncResult<Boolean>> resultHandler) {
-                    }
-                });
+                promise.complete(User.create(authInfo));
             } else {
-                result.fail(new JifaException("Illegal User"));
+                promise.fail(new JifaException("Illegal User"));
             }
-            resultHandler.handle(result);
+            resultHandler.handle(promise.future());
         });
         router.route().handler(authHandler);
     }

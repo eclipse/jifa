@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2021 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -13,7 +13,8 @@
 package org.eclipse.jifa.worker.route;
 
 import com.google.gson.Gson;
-import io.vertx.core.Future;
+import io.vertx.core.Promise;
+import io.vertx.core.Promise;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.RoutingContext;
@@ -121,9 +122,9 @@ class RouterAnnotationProcessor {
         return false;
     }
 
-    static boolean processFuture(List<Object> arguments, RoutingContext context, Method method, Parameter param) {
-        if (param.getType().equals(Future.class)) {
-            arguments.add(newFuture(context));
+    static boolean processPromise(List<Object> arguments, RoutingContext context, Method method, Parameter param) {
+        if (param.getType().equals(Promise.class)) {
+            arguments.add(newPromise(context));
             return true;
         }
         return false;
@@ -158,15 +159,18 @@ class RouterAnnotationProcessor {
         return f.apply(value);
     }
 
-    private static <T> Future<T> newFuture(io.vertx.ext.web.RoutingContext rc) {
-        Future<T> future = Future.future();
-        future.setHandler(event -> {
-            if (event.succeeded()) {
-                HTTPRespGuarder.ok(rc, event.result());
-            } else {
-                HTTPRespGuarder.fail(rc, event.cause());
+
+    private static <T> Promise<T> newPromise(io.vertx.ext.web.RoutingContext rc) {
+        Promise<T> promise = Promise.promise();
+        promise.future().onComplete(
+            event -> {
+                if (event.succeeded()) {
+                    HTTPRespGuarder.ok(rc, event.result());
+                } else {
+                    HTTPRespGuarder.fail(rc, event.cause());
+                }
             }
-        });
-        return future;
+        );
+        return promise;
     }
 }

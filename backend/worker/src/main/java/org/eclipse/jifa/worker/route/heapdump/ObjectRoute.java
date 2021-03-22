@@ -12,7 +12,7 @@
  ********************************************************************************/
 package org.eclipse.jifa.worker.route.heapdump;
 
-import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import org.eclipse.jifa.hda.api.Model;
 import org.eclipse.jifa.worker.route.ParamKey;
 import org.eclipse.jifa.worker.route.RouteMeta;
@@ -24,8 +24,8 @@ import static org.eclipse.jifa.worker.support.hda.AnalysisEnv.HEAP_DUMP_ANALYZER
 class ObjectRoute extends HeapBaseRoute {
 
     @RouteMeta(path = "/object")
-    void info(Future<Model.JavaObject> future, @ParamKey("file") String file, @ParamKey("objectId") int objectId) {
+    void info(Promise<Model.JavaObject> promise, @ParamKey("file") String file, @ParamKey("objectId") int objectId) {
         ASSERT.isTrue(objectId >= 0, "Object id must be greater than or equal to 0");
-        future.complete(HEAP_DUMP_ANALYZER.getObjectInfo(getOrOpenAnalysisContext(file), objectId));
+        promise.complete(HEAP_DUMP_ANALYZER.getObjectInfo(getOrOpenAnalysisContext(file), objectId));
     }
 }

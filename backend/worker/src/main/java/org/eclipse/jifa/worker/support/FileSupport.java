@@ -27,7 +27,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 
-import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.common.StreamCopier;
 import net.schmizz.sshj.xfer.FileSystemFile;
@@ -278,13 +278,13 @@ public class FileSupport {
     }
 
     public static void transferBySCP(String user, String hostname, String src, FileType fileType, String fileName,
-                                     TransferListener transferProgressListener, Future<TransferringFile> future) {
-        transferBySCP(user, null, hostname, src, fileType, fileName, transferProgressListener, future);
+                                     TransferListener transferProgressListener, Promise<TransferringFile> promise) {
+        transferBySCP(user, null, hostname, src, fileType, fileName, transferProgressListener, promise);
     }
 
     public static void transferBySCP(String user, String pwd, String hostname, String src, FileType fileType,
                                      String fileName, TransferListener transferProgressListener,
-                                     Future<TransferringFile> future) {
+                                     Promise<TransferringFile> promise) {
         transferProgressListener.updateState(ProgressState.IN_PROGRESS);
         SSHClient ssh = new SSHClient();
         ssh.addHostKeyVerifier((h, port, key) -> true);
@@ -309,14 +309,14 @@ public class FileSupport {
                 }
             });
             SCPDownloadClient downloadClient = transfer.newSCPDownloadClient();
-            future.complete(new TransferringFile(fileName));
+            promise.complete(new TransferringFile(fileName));
             // do not copy dir now
             downloadClient.setRecursiveMode(false);
             downloadClient.copy(src, new FileSystemFile(FileSupport.filePath(fileType, fileName)));
             transferProgressListener.updateState(ProgressState.SUCCESS);
         } catch (Exception e) {
             LOGGER.error("SSH transfer failed");
-            handleTransferError(fileName, transferProgressListener, future, e);
+            handleTransferError(fileName, transferProgressListener, promise, e);
         } finally {
             try {
                 ssh.disconnect();
@@ -327,14 +327,14 @@ public class FileSupport {
     }
 
     public static void transferByURL(String url, FileType fileType, String fileName, TransferListener listener,
-                                     Future<TransferringFile> future) {
+                                     Promise<TransferringFile> promise) {
         InputStream in = null;
         OutputStream out = null;
         String filePath = FileSupport.filePath(fileType, fileName);
         try {
             URLConnection conn = new URL(url).openConnection();
             listener.updateState(ProgressState.IN_PROGRESS);
-            future.complete(new TransferringFile(fileName));
+            promise.complete(new TransferringFile(fileName));
             listener.setTotalSize(conn.getContentLength());
             in = conn.getInputStream();
             out = new FileOutputStream(filePath);
@@ -347,7 +347,7 @@ public class FileSupport {
             listener.updateState(ProgressState.SUCCESS);
         } catch (Exception e) {
             LOGGER.error("URL transfer failed");
-            handleTransferError(fileName, listener, future, e);
+            handleTransferError(fileName, listener, promise, e);
         } finally {
             try {
                 if (in != null) {
@@ -365,14 +365,14 @@ public class FileSupport {
     public static void transferByOSS(String endpoint, String accessKeyId, String accessKeySecret, String bucketName,
                                      String objectName, FileType fileType, String fileName,
                                      TransferListener transferProgressListener,
-                                     Future<TransferringFile> future) {
+                                     Promise<TransferringFile> promise) {
         OSSClient ossClient = null;
         try {
             ossClient = new OSSClient(endpoint, accessKeyId, accessKeySecret);
 
             ObjectMetadata meta = ossClient.getObjectMetadata(bucketName, objectName);
             transferProgressListener.setTotalSize(meta.getContentLength());
-            future.complete(new TransferringFile(fileName));
+            promise.complete(new TransferringFile(fileName));
 
             DownloadFileRequest downloadFileRequest = new DownloadFileRequest(bucketName, objectName);
             downloadFileRequest.setDownloadFile(new File(FileSupport.filePath(fileType, fileName)).getAbsolutePath());
@@ -401,7 +401,7 @@ public class FileSupport {
             transferProgressListener.updateState(ProgressState.SUCCESS);
         } catch (Throwable t) {
             LOGGER.error("OSS transfer failed");
-            handleTransferError(fileName, transferProgressListener, future, t);
+            handleTransferError(fileName, transferProgressListener, promise, t);
         } finally {
             if (ossClient != null) {
                 ossClient.shutdown();
@@ -412,7 +412,7 @@ public class FileSupport {
     public static void transferByS3(String endpoint, String accessKey, String secretKey, String bucketName,
                                     String objectName, FileType fileType, String fileName,
                                     TransferListener transferProgressListener,
-                                    Future<TransferringFile> future) {
+                                    Promise<TransferringFile> promise) {
         AmazonS3 s3Client = null;
         try {
             AWSCredentials credentials = new BasicAWSCredentials(accessKey, secretKey);
@@ -447,12 +447,12 @@ public class FileSupport {
             com.amazonaws.services.s3.model.ObjectMetadata objectMetadata =
                 s3Client.getObjectMetadata(bucketName, objectName);
             transferProgressListener.setTotalSize(objectMetadata.getContentLength());
-            future.complete(new TransferringFile(fileName));
+            promise.complete(new TransferringFile(fileName));
             s3Client.getObject(getObjectRequest, new File(FileSupport.filePath(fileType, fileName)));
             transferProgressListener.updateState(ProgressState.SUCCESS);
         } catch (Throwable t) {
             LOGGER.error("S3 transfer failed");
-            handleTransferError(fileName, transferProgressListener, future, t);
+            handleTransferError(fileName, transferProgressListener, promise, t);
         } finally {
             if (s3Client != null) {
                 s3Client.shutdown();
@@ -461,8 +461,8 @@ public class FileSupport {
     }
 
     private static void handleTransferError(String fileName, TransferListener transferProgressListener,
-                                            Future<TransferringFile> future, Throwable t) {
-        if (future.isComplete()) {
+                                            Promise<TransferringFile> promise, Throwable t) {
+        if (promise.future().isComplete()) {
             transferProgressListener.updateState(ProgressState.ERROR);
             Throwable cause = t;
             while (cause.getCause() != null) {

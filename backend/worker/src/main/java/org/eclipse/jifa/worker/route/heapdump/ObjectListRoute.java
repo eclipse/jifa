@@ -12,7 +12,7 @@
  ********************************************************************************/
 package org.eclipse.jifa.worker.route.heapdump;
 
-import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import org.eclipse.jifa.common.request.PagingRequest;
 import org.eclipse.jifa.common.vo.PageView;
 import org.eclipse.jifa.hda.api.Model;
@@ -26,23 +26,23 @@ import static org.eclipse.jifa.worker.support.hda.AnalysisEnv.HEAP_DUMP_ANALYZER
 class ObjectListRoute extends HeapBaseRoute {
 
     @RouteMeta(path = "/outbounds")
-    void outbounds(Future<PageView<Model.JavaObject>> future, @ParamKey("file") String file,
+    void outbounds(Promise<PageView<Model.JavaObject>> promise, @ParamKey("file") String file,
                    PagingRequest pagingRequest,
                    @ParamKey("objectId") int objectId) {
 
         ASSERT.isTrue(objectId >= 0, "Object id must be greater than or equal to 0");
-        future.complete(HEAP_DUMP_ANALYZER.getOutboundOfObject(getOrOpenAnalysisContext(file),
+        promise.complete(HEAP_DUMP_ANALYZER.getOutboundOfObject(getOrOpenAnalysisContext(file),
                                                                objectId,
                                                                pagingRequest.getPage(),
                                                                pagingRequest.getPageSize()));
     }
 
     @RouteMeta(path = "/inbounds")
-    void inbounds(Future<PageView<Model.JavaObject>> future, @ParamKey("file") String file, PagingRequest pagingRequest,
+    void inbounds(Promise<PageView<Model.JavaObject>> promise, @ParamKey("file") String file, PagingRequest pagingRequest,
                   @ParamKey("objectId") int objectId) {
 
         ASSERT.isTrue(objectId >= 0, "Object id must be greater than or equal to 0");
-        future.complete(HEAP_DUMP_ANALYZER.getInboundOfObject(getOrOpenAnalysisContext(file),
+        promise.complete(HEAP_DUMP_ANALYZER.getInboundOfObject(getOrOpenAnalysisContext(file),
                                                               objectId,
                                                               pagingRequest.getPage(),
                                                               pagingRequest.getPageSize()));

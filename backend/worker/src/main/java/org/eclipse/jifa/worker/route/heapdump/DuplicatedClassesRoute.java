@@ -12,7 +12,7 @@
  ********************************************************************************/
 package org.eclipse.jifa.worker.route.heapdump;
 
-import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import org.eclipse.jifa.common.request.PagingRequest;
 import org.eclipse.jifa.common.vo.PageView;
 import org.eclipse.jifa.common.vo.support.SearchType;
@@ -26,19 +26,19 @@ import static org.eclipse.jifa.worker.support.hda.AnalysisEnv.HEAP_DUMP_ANALYZER
 class DuplicatedClassesRoute extends HeapBaseRoute {
 
     @RouteMeta(path = "/duplicatedClasses/classes")
-    void classRecords(Future<PageView<DuplicatedClass.ClassItem>> future, @ParamKey("file") String file,
+    void classRecords(Promise<PageView<DuplicatedClass.ClassItem>> promise, @ParamKey("file") String file,
                       @ParamKey(value = "searchText", mandatory = false) String searchText,
                       @ParamKey(value = "searchType", mandatory = false) SearchType searchType,
                       PagingRequest pagingRequest) {
-        future.complete(HEAP_DUMP_ANALYZER.getDuplicatedClasses(getOrOpenAnalysisContext(file)
+        promise.complete(HEAP_DUMP_ANALYZER.getDuplicatedClasses(getOrOpenAnalysisContext(file)
             , searchText, searchType, pagingRequest.getPage(), pagingRequest.getPageSize()));
     }
 
     @RouteMeta(path = "/duplicatedClasses/classLoaders")
-    void classLoaderRecords(Future<PageView<DuplicatedClass.ClassLoaderItem>> future, @ParamKey("file") String file,
+    void classLoaderRecords(Promise<PageView<DuplicatedClass.ClassLoaderItem>> promise, @ParamKey("file") String file,
                             @ParamKey("index") int index,
                             PagingRequest pagingRequest) {
-        future.complete(HEAP_DUMP_ANALYZER.getClassloadersOfDuplicatedClass(getOrOpenAnalysisContext(file)
+        promise.complete(HEAP_DUMP_ANALYZER.getClassloadersOfDuplicatedClass(getOrOpenAnalysisContext(file)
             , index, pagingRequest.getPage(), pagingRequest.getPageSize()));
     }
 }

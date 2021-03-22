@@ -12,7 +12,7 @@
  ********************************************************************************/
 package org.eclipse.jifa.worker.route.heapdump;
 
-import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import org.eclipse.jifa.hda.api.Model;
 import org.eclipse.jifa.worker.route.ParamKey;
 import org.eclipse.jifa.worker.route.RouteMeta;
@@ -22,7 +22,7 @@ import org.eclipse.jifa.worker.support.hda.AnalysisEnv;
 class LeakRoute extends HeapBaseRoute {
 
     @RouteMeta(path = "/leak/report")
-    void report(Future<Model.LeakReport> future, @ParamKey("file") String file) {
-        future.complete(AnalysisEnv.HEAP_DUMP_ANALYZER.getLeakReport(Analyzer.getOrOpenAnalysisContext(file)));
+    void report(Promise<Model.LeakReport> promise, @ParamKey("file") String file) {
+        promise.complete(AnalysisEnv.HEAP_DUMP_ANALYZER.getLeakReport(Analyzer.getOrOpenAnalysisContext(file)));
     }
 }

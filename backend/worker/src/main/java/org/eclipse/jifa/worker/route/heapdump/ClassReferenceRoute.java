@@ -12,7 +12,7 @@
  ********************************************************************************/
 package org.eclipse.jifa.worker.route.heapdump;
 
-import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import org.eclipse.jifa.common.request.PagingRequest;
 import org.eclipse.jifa.common.vo.PageView;
 import org.eclipse.jifa.hda.api.Model;
@@ -25,33 +25,33 @@ import static org.eclipse.jifa.worker.support.hda.AnalysisEnv.HEAP_DUMP_ANALYZER
 class ClassReferenceRoute extends HeapBaseRoute {
 
     @RouteMeta(path = "/classReference/inbounds/class")
-    void inboundsClassInfo(Future<Model.ClassReferrer.Item> future, @ParamKey("file") String file,
+    void inboundsClassInfo(Promise<Model.ClassReferrer.Item> promise, @ParamKey("file") String file,
                            @ParamKey("objectId") int objectId) {
 
-        future.complete(HEAP_DUMP_ANALYZER.getInboundClassOfClassReference(getOrOpenAnalysisContext(file), objectId));
+        promise.complete(HEAP_DUMP_ANALYZER.getInboundClassOfClassReference(getOrOpenAnalysisContext(file), objectId));
     }
 
     @RouteMeta(path = "/classReference/outbounds/class")
-    void outboundsClassInfo(Future<Model.ClassReferrer.Item> future, @ParamKey("file") String file,
+    void outboundsClassInfo(Promise<Model.ClassReferrer.Item> promise, @ParamKey("file") String file,
                             @ParamKey("objectId") int objectId) {
 
-        future.complete(HEAP_DUMP_ANALYZER.getOutboundClassOfClassReference(getOrOpenAnalysisContext(file), objectId));
+        promise.complete(HEAP_DUMP_ANALYZER.getOutboundClassOfClassReference(getOrOpenAnalysisContext(file), objectId));
     }
 
     @RouteMeta(path = "/classReference/inbounds/children")
-    void inboundsChildren(Future<PageView<Model.ClassReferrer.Item>> future, @ParamKey("file") String file,
+    void inboundsChildren(Promise<PageView<Model.ClassReferrer.Item>> promise, @ParamKey("file") String file,
                           PagingRequest pagingRequest,
                           @ParamKey("objectIds") int[] objectIds) {
-        future.complete(
+        promise.complete(
             HEAP_DUMP_ANALYZER.getInboundsOfClassReference(getOrOpenAnalysisContext(file), objectIds,
                                                            pagingRequest.getPage(), pagingRequest.getPageSize()));
     }
 
     @RouteMeta(path = "/classReference/outbounds/children")
-    void outboundsChildren(Future<PageView<Model.ClassReferrer.Item>> future, @ParamKey("file") String file,
+    void outboundsChildren(Promise<PageView<Model.ClassReferrer.Item>> promise, @ParamKey("file") String file,
                            PagingRequest pagingRequest,
                            @ParamKey("objectIds") int[] objectIds) {
-        future.complete(
+        promise.complete(
             HEAP_DUMP_ANALYZER.getOutboundsOfClassReference(getOrOpenAnalysisContext(file), objectIds,
                                                             pagingRequest.getPage(), pagingRequest.getPageSize()));
     }

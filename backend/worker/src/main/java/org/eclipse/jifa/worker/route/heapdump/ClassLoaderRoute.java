@@ -12,7 +12,7 @@
  ********************************************************************************/
 package org.eclipse.jifa.worker.route.heapdump;
 
-import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import org.eclipse.jifa.common.request.PagingRequest;
 import org.eclipse.jifa.common.vo.PageView;
 import org.eclipse.jifa.hda.api.Model;
@@ -25,21 +25,22 @@ import static org.eclipse.jifa.worker.support.hda.AnalysisEnv.HEAP_DUMP_ANALYZER
 class ClassLoaderRoute extends HeapBaseRoute {
 
     @RouteMeta(path = "/classLoaderExplorer/summary")
-    void summary(Future<Model.ClassLoader.Summary> future, @ParamKey("file") String file) {
-        future.complete(HEAP_DUMP_ANALYZER.getSummaryOfClassLoaders(getOrOpenAnalysisContext(file)));
+    void summary(Promise<Model.ClassLoader.Summary> promise, @ParamKey("file") String file) {
+        promise.complete(HEAP_DUMP_ANALYZER.getSummaryOfClassLoaders(getOrOpenAnalysisContext(file)));
     }
 
     @RouteMeta(path = "/classLoaderExplorer/classLoader")
-    void classLoaders(Future<PageView<Model.ClassLoader.Item>> future, @ParamKey("file") String file, PagingRequest pagingRequest) {
-        future.complete(HEAP_DUMP_ANALYZER.getClassLoaders(getOrOpenAnalysisContext(file),
+    void classLoaders(Promise<PageView<Model.ClassLoader.Item>> promise, @ParamKey("file") String file,
+                      PagingRequest pagingRequest) {
+        promise.complete(HEAP_DUMP_ANALYZER.getClassLoaders(getOrOpenAnalysisContext(file),
                                                            pagingRequest.getPage(),
                                                            pagingRequest.getPageSize()));
     }
 
     @RouteMeta(path = "/classLoaderExplorer/children")
-    void children(Future<PageView<Model.ClassLoader.Item>> future, @ParamKey("file") String file,
+    void children(Promise<PageView<Model.ClassLoader.Item>> promise, @ParamKey("file") String file,
                   @ParamKey("classLoaderId") int classLoaderId, PagingRequest pagingRequest) {
-        future.complete(HEAP_DUMP_ANALYZER.getChildrenOfClassLoader(getOrOpenAnalysisContext(file),
+        promise.complete(HEAP_DUMP_ANALYZER.getChildrenOfClassLoader(getOrOpenAnalysisContext(file),
                                                                     classLoaderId,
                                                                     pagingRequest.getPage(),
                                                                     pagingRequest.getPageSize()));

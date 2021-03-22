@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020, 2021 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -12,18 +12,17 @@
  ********************************************************************************/
 package org.eclipse.jifa.worker.route;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+public enum HttpMethod {
+    GET(io.vertx.core.http.HttpMethod.GET),
+    POST(io.vertx.core.http.HttpMethod.POST);
 
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
-public @interface RouteMeta {
+    private final io.vertx.core.http.HttpMethod method;
 
-    HttpMethod method() default HttpMethod.GET;
+    HttpMethod(io.vertx.core.http.HttpMethod method) {
+        this.method = method;
+    }
 
-    String path();
-
-    String[] contentType() default {"application/json; charset=utf-8"};
+    public io.vertx.core.http.HttpMethod toVertx() {
+        return method;
+    }
 }

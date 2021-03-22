@@ -12,7 +12,7 @@
  ********************************************************************************/
 package org.eclipse.jifa.worker.route.heapdump;
 
-import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import org.eclipse.jifa.common.request.PagingRequest;
 import org.eclipse.jifa.common.vo.PageView;
 import org.eclipse.jifa.common.vo.support.SearchType;
@@ -26,7 +26,7 @@ import static org.eclipse.jifa.worker.support.hda.AnalysisEnv.HEAP_DUMP_ANALYZER
 class HistogramRoute extends HeapBaseRoute {
 
     @RouteMeta(path = "/histogram")
-    void histogram(Future<PageView<Model.Histogram.Item>> future, @ParamKey("file") String file,
+    void histogram(Promise<PageView<Model.Histogram.Item>> promise, @ParamKey("file") String file,
                    @ParamKey("groupingBy") Model.Histogram.Grouping groupingBy,
                    @ParamKey(value = "ids", mandatory = false) int[] ids,
                    @ParamKey(value = "sortBy", mandatory = false) String sortBy,
@@ -34,21 +34,21 @@ class HistogramRoute extends HeapBaseRoute {
                    @ParamKey(value = "searchText", mandatory = false) String searchText,
                    @ParamKey(value = "searchType", mandatory = false) SearchType searchType,
                    PagingRequest pagingRequest) {
-        future.complete(HEAP_DUMP_ANALYZER.getHistogram(getOrOpenAnalysisContext(file), groupingBy,
+        promise.complete(HEAP_DUMP_ANALYZER.getHistogram(getOrOpenAnalysisContext(file), groupingBy,
                                                         ids, sortBy, ascendingOrder, searchText,
                                                         searchType, pagingRequest.getPage(),
                                                         pagingRequest.getPageSize()));
     }
 
     @RouteMeta(path = "/histogram/children")
-    void children(Future<PageView<Model.Histogram.Item>> future, @ParamKey("file") String file,
+    void children(Promise<PageView<Model.Histogram.Item>> promise, @ParamKey("file") String file,
                   @ParamKey("groupingBy") Model.Histogram.Grouping groupingBy,
                   @ParamKey(value = "ids", mandatory = false) int[] ids,
                   @ParamKey(value = "sortBy", mandatory = false) String sortBy,
                   @ParamKey(value = "ascendingOrder", mandatory = false) boolean ascendingOrder,
                   @ParamKey("parentObjectId") int parentObjectId,
                   PagingRequest pagingRequest) {
-        future.complete(HEAP_DUMP_ANALYZER
+        promise.complete(HEAP_DUMP_ANALYZER
                             .getChildrenOfHistogram(getOrOpenAnalysisContext(file), groupingBy, ids,
                                                     sortBy, ascendingOrder, parentObjectId,
                                                     pagingRequest.getPage(), pagingRequest.getPageSize()));

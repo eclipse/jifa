@@ -12,7 +12,7 @@
  ********************************************************************************/
 package org.eclipse.jifa.worker.route.heapdump;
 
-import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import org.eclipse.jifa.common.request.PagingRequest;
 import org.eclipse.jifa.common.vo.PageView;
 import org.eclipse.jifa.hda.api.Model;
@@ -28,23 +28,23 @@ import static org.eclipse.jifa.hda.api.Model.GCRoot;
 class GCRootRoute extends HeapBaseRoute {
 
     @RouteMeta(path = "/GCRoots")
-    void roots(Future<List<GCRoot.Item>> future, @ParamKey("file") String file) {
-        future.complete(AnalysisEnv.HEAP_DUMP_ANALYZER.getGCRoots(Analyzer.getOrOpenAnalysisContext(file)));
+    void roots(Promise<List<GCRoot.Item>> promise, @ParamKey("file") String file) {
+        promise.complete(AnalysisEnv.HEAP_DUMP_ANALYZER.getGCRoots(Analyzer.getOrOpenAnalysisContext(file)));
     }
 
     @RouteMeta(path = "/GCRoots/classes")
-    void classes(Future<PageView<GCRoot.Item>> future, @ParamKey("file") String file,
+    void classes(Promise<PageView<GCRoot.Item>> promise, @ParamKey("file") String file,
                  @ParamKey("rootTypeIndex") int rootTypeIndex, PagingRequest pagingRequest) {
-        future.complete(AnalysisEnv.HEAP_DUMP_ANALYZER.getClassesOfGCRoot(Analyzer.getOrOpenAnalysisContext(file),
+        promise.complete(AnalysisEnv.HEAP_DUMP_ANALYZER.getClassesOfGCRoot(Analyzer.getOrOpenAnalysisContext(file),
                                                                           rootTypeIndex, pagingRequest.getPage(),
                                                                           pagingRequest.getPageSize()));
     }
 
     @RouteMeta(path = "/GCRoots/class/objects")
-    void objects(Future<PageView<Model.JavaObject>> future, @ParamKey("file") String file,
+    void objects(Promise<PageView<Model.JavaObject>> promise, @ParamKey("file") String file,
                  @ParamKey("rootTypeIndex") int rootTypeIndex, @ParamKey("classIndex") int classIndex,
                  PagingRequest pagingRequest) {
-        future.complete(AnalysisEnv.HEAP_DUMP_ANALYZER.getObjectsOfGCRoot(Analyzer.getOrOpenAnalysisContext(file),
+        promise.complete(AnalysisEnv.HEAP_DUMP_ANALYZER.getObjectsOfGCRoot(Analyzer.getOrOpenAnalysisContext(file),
                                                                           rootTypeIndex, classIndex,
                                                                           pagingRequest.getPage(),
                                                                           pagingRequest.getPageSize()));

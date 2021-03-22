@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2021 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -16,7 +16,7 @@ import io.reactivex.Single;
 import io.vertx.config.ConfigRetrieverOptions;
 import io.vertx.config.ConfigStoreOptions;
 import io.vertx.core.DeploymentOptions;
-import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.config.ConfigRetriever;
 import io.vertx.reactivex.core.AbstractVerticle;
@@ -38,7 +38,7 @@ public class Master extends AbstractVerticle implements Constant {
     }
 
     @Override
-    public void start(Future<Void> startFuture) {
+    public void start(Promise<Void> startFuture) {
 
         String mc = System.getProperty("jifa.master.config", DEV_CONF);
         DEV_MODE = DEV_CONF.endsWith(mc);

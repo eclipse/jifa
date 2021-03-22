@@ -27,6 +27,7 @@ def HEAP_DUMP_ANALYZER_ECLIPSE_MAT_DEPS = 'heap-dump-analyzer:eclipse-mat-deps'
                 options.encoding = "UTF-8"
                 targetCompatibility = JavaVersion.VERSION_1_8
                 sourceCompatibility = JavaVersion.VERSION_1_8
+                options.compilerArgs << "-Xlint:deprecation"
             }
             test {
                 useJUnit()
@@ -38,7 +39,7 @@ def HEAP_DUMP_ANALYZER_ECLIPSE_MAT_DEPS = 'heap-dump-analyzer:eclipse-mat-deps'
     name ->
         project("$name") {
             ext {
-                vertx_version = '3.9.2'
+                vertx_version = '4.0.3'
             }
 
             dependencies {

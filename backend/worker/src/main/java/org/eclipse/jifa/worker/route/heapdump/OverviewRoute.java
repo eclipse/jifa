@@ -12,7 +12,7 @@
  ********************************************************************************/
 package org.eclipse.jifa.worker.route.heapdump;
 
-import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import org.eclipse.jifa.hda.api.Model;
 import org.eclipse.jifa.worker.route.ParamKey;
 import org.eclipse.jifa.worker.route.RouteMeta;
@@ -25,12 +25,12 @@ import static org.eclipse.jifa.worker.support.hda.AnalysisEnv.HEAP_DUMP_ANALYZER
 class OverviewRoute extends HeapBaseRoute {
 
     @RouteMeta(path = "/details")
-    void details(Future<Model.Overview.Details> future, @ParamKey("file") String file) {
-        future.complete(HEAP_DUMP_ANALYZER.getDetails(getOrOpenAnalysisContext(file)));
+    void details(Promise<Model.Overview.Details> promise, @ParamKey("file") String file) {
+        promise.complete(HEAP_DUMP_ANALYZER.getDetails(getOrOpenAnalysisContext(file)));
     }
 
     @RouteMeta(path = "/biggestObjects")
-    void biggestObjects(Future<List<Model.Overview.BigObject>> future, @ParamKey("file") String file) {
-        future.complete(HEAP_DUMP_ANALYZER.getBigObjects(getOrOpenAnalysisContext(file)));
+    void biggestObjects(Promise<List<Model.Overview.BigObject>> promise, @ParamKey("file") String file) {
+        promise.complete(HEAP_DUMP_ANALYZER.getBigObjects(getOrOpenAnalysisContext(file)));
     }
 }

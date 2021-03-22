@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2021 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -97,15 +97,14 @@ public class WorkerClient {
     }
 
     private static HttpRequest<Buffer> request(HttpMethod method, String hostIP, int port, String uri) {
-        switch (method) {
-            case GET:
-                return client.get(port, hostIP, uri);
-            case POST:
-                return client.post(port, hostIP, uri);
-            default:
-                LOGGER.error("Unsupported worker http request method {}", method);
-                throw new IllegalArgumentException();
+        if (method == HttpMethod.GET) {
+            return client.get(port, hostIP, uri);
+        } else if (method == HttpMethod.POST) {
+            return client.post(port, hostIP, uri);
+
         }
+        LOGGER.error("Unsupported worker http request method {}", method);
+        throw new IllegalArgumentException();
     }
 }
 

@@ -12,7 +12,7 @@
  ********************************************************************************/
 package org.eclipse.jifa.worker.route.heapdump;
 
-import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import org.eclipse.jifa.common.request.PagingRequest;
 import org.eclipse.jifa.common.vo.PageView;
 import org.eclipse.jifa.worker.route.ParamKey;
@@ -25,14 +25,14 @@ import static org.eclipse.jifa.worker.support.hda.AnalysisEnv.HEAP_DUMP_ANALYZER
 class DirectByteBufferRoute extends HeapBaseRoute {
 
     @RouteMeta(path = "/directByteBuffer/summary")
-    void summary(Future<DirectByteBuffer.Summary> future, @ParamKey("file") String file) {
-        future.complete(HEAP_DUMP_ANALYZER.getSummaryOfDirectByteBuffers(getOrOpenAnalysisContext(file)));
+    void summary(Promise<DirectByteBuffer.Summary> promise, @ParamKey("file") String file) {
+        promise.complete(HEAP_DUMP_ANALYZER.getSummaryOfDirectByteBuffers(getOrOpenAnalysisContext(file)));
     }
 
     @RouteMeta(path = "/directByteBuffer/records")
-    void record(Future<PageView<DirectByteBuffer.Item>> future, @ParamKey("file") String file,
+    void record(Promise<PageView<DirectByteBuffer.Item>> promise, @ParamKey("file") String file,
                 PagingRequest pagingRequest) {
-        future.complete(HEAP_DUMP_ANALYZER.getDirectByteBuffers(getOrOpenAnalysisContext(file), pagingRequest.getPage()
+        promise.complete(HEAP_DUMP_ANALYZER.getDirectByteBuffers(getOrOpenAnalysisContext(file), pagingRequest.getPage()
             , pagingRequest.getPageSize()));
     }
 }

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2021 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -13,7 +13,7 @@
 package org.eclipse.jifa.master.http;
 
 import io.reactivex.Single;
-import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.reactivex.core.AbstractVerticle;
 import io.vertx.reactivex.core.http.HttpServerResponse;
 import io.vertx.reactivex.ext.web.Router;
@@ -32,7 +32,7 @@ public class HttpServerVerticle extends AbstractVerticle implements Constant {
     private WebClient client;
 
     @Override
-    public void start(Future<Void> startFuture) {
+    public void start(Promise<Void> startFuture) {
         vertx.rxExecuteBlocking(future -> {
             client = WebClient.create(vertx);
             // base

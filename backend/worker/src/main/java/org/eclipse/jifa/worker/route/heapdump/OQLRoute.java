@@ -12,7 +12,7 @@
  ********************************************************************************/
 package org.eclipse.jifa.worker.route.heapdump;
 
-import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import org.eclipse.jifa.common.request.PagingRequest;
 import org.eclipse.jifa.hda.api.Model;
 import org.eclipse.jifa.worker.route.ParamKey;
@@ -24,11 +24,11 @@ import static org.eclipse.jifa.worker.support.hda.AnalysisEnv.HEAP_DUMP_ANALYZER
 class OQLRoute extends HeapBaseRoute {
 
     @RouteMeta(path = "/oql")
-    void oql(Future<Model.OQLResult> future, @ParamKey("file") String file,
+    void oql(Promise<Model.OQLResult> promise, @ParamKey("file") String file,
              @ParamKey("oql") String oql, @ParamKey(value = "sortBy", mandatory = false) String sortBy,
              @ParamKey(value = "ascendingOrder", mandatory = false) boolean ascendingOrder,
              PagingRequest pagingRequest) {
-        future.complete(HEAP_DUMP_ANALYZER.getOQLResult(getOrOpenAnalysisContext(file),
+        promise.complete(HEAP_DUMP_ANALYZER.getOQLResult(getOrOpenAnalysisContext(file),
                                                         oql, sortBy, ascendingOrder,
                                                         pagingRequest.getPage(), pagingRequest.getPageSize()));
     }

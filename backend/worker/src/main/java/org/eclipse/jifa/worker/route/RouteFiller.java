@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2021 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -98,7 +98,7 @@ public class RouteFiller {
         }
 
         String fullPath = prefix + meta.path();
-        Route route = router.route(meta.method(), fullPath);
+        Route route = router.route(meta.method().toVertx(), fullPath);
         Arrays.stream(meta.contentType()).forEach(route::produces);
         method.setAccessible(true);
 
@@ -119,7 +119,7 @@ public class RouteFiller {
                         !RouterAnnotationProcessor.processPagingRequest(arguments, rc, method, param) &&
                         !RouterAnnotationProcessor.processHttpServletRequest(arguments, rc, method, param) &&
                         !RouterAnnotationProcessor.processHttpServletResponse(arguments, rc, method, param) &&
-                        !RouterAnnotationProcessor.processFuture(arguments, rc, method, param) &&
+                        !RouterAnnotationProcessor.processPromise(arguments, rc, method, param) &&
                         !RouterAnnotationProcessor.processRoutingContext(arguments, rc, method, param)
                     ) {
                         throw new JifaException(ErrorCode.ILLEGAL_ARGUMENT,

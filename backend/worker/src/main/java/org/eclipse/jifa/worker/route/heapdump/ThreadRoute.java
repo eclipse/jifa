@@ -12,7 +12,7 @@
  ********************************************************************************/
 package org.eclipse.jifa.worker.route.heapdump;
 
-import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import org.eclipse.jifa.common.request.PagingRequest;
 import org.eclipse.jifa.common.vo.PageView;
 import org.eclipse.jifa.common.vo.support.SearchType;
@@ -28,34 +28,34 @@ import static org.eclipse.jifa.worker.support.hda.AnalysisEnv.HEAP_DUMP_ANALYZER
 class ThreadRoute extends HeapBaseRoute {
 
     @RouteMeta(path = "/threadsSummary")
-    void threadsSummary(Future<Model.Thread.Summary> future, @ParamKey("file") String file,
+    void threadsSummary(Promise<Model.Thread.Summary> promise, @ParamKey("file") String file,
                         @ParamKey(value = "searchText", mandatory = false) String searchText,
                         @ParamKey(value = "searchType", mandatory = false) SearchType searchType) {
-        future.complete(HEAP_DUMP_ANALYZER.getSummaryOfThreads(getOrOpenAnalysisContext(file), searchText, searchType));
+        promise.complete(HEAP_DUMP_ANALYZER.getSummaryOfThreads(getOrOpenAnalysisContext(file), searchText, searchType));
     }
 
     @RouteMeta(path = "/threads")
-    void threads(Future<PageView<Model.Thread.Item>> future, @ParamKey("file") String file,
+    void threads(Promise<PageView<Model.Thread.Item>> promise, @ParamKey("file") String file,
                  @ParamKey(value = "sortBy", mandatory = false) String sortBy,
                  @ParamKey(value = "ascendingOrder", mandatory = false) boolean ascendingOrder,
                  @ParamKey(value = "searchText", mandatory = false) String searchText,
                  @ParamKey(value = "searchType", mandatory = false) SearchType searchType,
                  PagingRequest paging) {
-        future.complete(HEAP_DUMP_ANALYZER.getThreads(getOrOpenAnalysisContext(file), sortBy, ascendingOrder,
+        promise.complete(HEAP_DUMP_ANALYZER.getThreads(getOrOpenAnalysisContext(file), sortBy, ascendingOrder,
                                                       searchText, searchType, paging.getPage(), paging.getPageSize()));
     }
 
     @RouteMeta(path = "/stackTrace")
-    void stackTrace(Future<List<Model.Thread.StackFrame>> future, @ParamKey("file") String file,
+    void stackTrace(Promise<List<Model.Thread.StackFrame>> promise, @ParamKey("file") String file,
                     @ParamKey("objectId") int objectId) {
-        future.complete(HEAP_DUMP_ANALYZER.getStackTrace(getOrOpenAnalysisContext(file), objectId));
+        promise.complete(HEAP_DUMP_ANALYZER.getStackTrace(getOrOpenAnalysisContext(file), objectId));
     }
 
     @RouteMeta(path = "/locals")
-    void locals(Future<List<Model.Thread.LocalVariable>> future, @ParamKey("file") String file,
+    void locals(Promise<List<Model.Thread.LocalVariable>> promise, @ParamKey("file") String file,
                 @ParamKey("objectId") int objectId, @ParamKey("depth") int depth,
                 @ParamKey("firstNonNativeFrame") boolean firstNonNativeFrame) {
-        future.complete(HEAP_DUMP_ANALYZER.getLocalVariables(getOrOpenAnalysisContext(file), objectId, depth,
+        promise.complete(HEAP_DUMP_ANALYZER.getLocalVariables(getOrOpenAnalysisContext(file), objectId, depth,
                                                              firstNonNativeFrame));
     }
 }

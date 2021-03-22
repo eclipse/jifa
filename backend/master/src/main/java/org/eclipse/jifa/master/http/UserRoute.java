@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2021 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -45,15 +45,13 @@ class UserRoute implements Constant {
         jwtAuth = JWTAuth.create(vertx, new JWTAuthOptions().addPubSecKey(pubSecKeyOptions));
         jwtOptions = new JWTOptions();
         jwtOptions.setSubject(JWT_SUBJECT).setIssuer(JWT_ISSUER).setExpiresInMinutes(JWT_EXPIRES_IN_MINUTES);
-
-        apiRouter.route().handler(JWTAuthHandler.create(jwtAuth, BASE + AUTH));
+        apiRouter.routeWithRegex("^(?!" + BASE + AUTH +"$).*").handler(JWTAuthHandler.create(jwtAuth));
 
         apiRouter.post().path(AUTH).handler(this::auth);
 
         apiRouter.route().handler(this::extractUserInfo);
 
         apiRouter.get().path(USER_INFO).handler(this::userInfo);
-
     }
 
     private void auth(RoutingContext context) {

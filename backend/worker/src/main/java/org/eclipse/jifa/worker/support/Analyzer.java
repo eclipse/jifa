@@ -14,7 +14,7 @@ package org.eclipse.jifa.worker.support;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import org.eclipse.jifa.common.aux.JifaException;
 import org.eclipse.jifa.common.enums.FileType;
 import org.eclipse.jifa.common.enums.ProgressState;
@@ -93,18 +93,18 @@ public class Analyzer {
         }
     }
 
-    public void analyze(Future<Void> future, FileType fileType, String fileName, Map<String, String> options) {
+    public void analyze(Promise<Void> promise, FileType fileType, String fileName, Map<String, String> options) {
         ProgressListener progressListener;
 
         if (getCacheValueIfPresent(fileName) != null ||
             new File(FileSupport.errorLogPath(fileType, fileName)).exists()) {
-            future.complete();
+            promise.complete();
             return;
         }
 
         progressListener = new DefaultProgressListener();
         boolean success = putFileListener(fileName, progressListener);
-        future.complete();
+        promise.complete();
 
         if (success) {
             try {

@@ -12,7 +12,7 @@
  ********************************************************************************/
 package org.eclipse.jifa.worker.route.heapdump;
 
-import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import org.eclipse.jifa.common.enums.FileTransferState;
 import org.eclipse.jifa.common.enums.FileType;
 import org.eclipse.jifa.common.request.PagingRequest;
@@ -32,9 +32,9 @@ import static org.eclipse.jifa.hda.api.Model.Comparison;
 class CompareRoute extends HeapBaseRoute {
 
     @RouteMeta(path = "/compare/files")
-    void files(Future<PageView<FileInfo>> future, @ParamKey("file") String source,
+    void files(Promise<PageView<FileInfo>> promise, @ParamKey("file") String source,
                @ParamKey(value = "expected", mandatory = false) String expected, PagingRequest pagingRequest) {
-        future.complete(PageViewBuilder.build(FileSupport.info(FileType.HEAP_DUMP).stream().filter(
+        promise.complete(PageViewBuilder.build(FileSupport.info(FileType.HEAP_DUMP).stream().filter(
             fileInfo -> !fileInfo.getName().equals(source) && fileInfo.getTransferState() == FileTransferState.SUCCESS)
                                                          .sorted((i1, i2) ->
                                                                      Long.compare(i2.getCreationTime(),
@@ -43,17 +43,17 @@ class CompareRoute extends HeapBaseRoute {
     }
 
     @RouteMeta(path = "/compare/summary")
-    void summary(Future<Comparison.Summary> future, @ParamKey("file") String target,
+    void summary(Promise<Comparison.Summary> promise, @ParamKey("file") String target,
                  @ParamKey("baseline") String baseline) {
-        future.complete(
+        promise.complete(
             AnalysisEnv.HEAP_DUMP_ANALYZER.getSummaryOfComparison(Analyzer.getOrOpenAnalysisContext(baseline),
                                                                   Analyzer.getOrOpenAnalysisContext(target)));
     }
 
     @RouteMeta(path = "/compare/records")
-    void record(Future<PageView<Comparison.Item>> future, @ParamKey("file") String target,
+    void record(Promise<PageView<Comparison.Item>> promise, @ParamKey("file") String target,
                 @ParamKey("baseline") String baseline, PagingRequest pagingRequest) {
-        future.complete(
+        promise.complete(
             AnalysisEnv.HEAP_DUMP_ANALYZER
                 .getItemsOfComparison(Analyzer.getOrOpenAnalysisContext(baseline),
                                       Analyzer.getOrOpenAnalysisContext(target),
