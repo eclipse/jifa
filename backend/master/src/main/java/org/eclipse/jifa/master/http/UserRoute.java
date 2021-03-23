@@ -40,12 +40,11 @@ class UserRoute implements Constant {
         // symmetric is not safe, but it's enough now...
         PubSecKeyOptions pubSecKeyOptions = new PubSecKeyOptions();
         pubSecKeyOptions.setAlgorithm(JWT_ALGORITHM_HS256)
-                        .setPublicKey(JWT_ALGORITHM_HS256_PUBLIC_KEY)
-                        .setSymmetric(true);
+                        .setBuffer(JWT_ALGORITHM_HS256_PUBLIC_KEY);
         jwtAuth = JWTAuth.create(vertx, new JWTAuthOptions().addPubSecKey(pubSecKeyOptions));
         jwtOptions = new JWTOptions();
         jwtOptions.setSubject(JWT_SUBJECT).setIssuer(JWT_ISSUER).setExpiresInMinutes(JWT_EXPIRES_IN_MINUTES);
-        apiRouter.routeWithRegex("^(?!" + BASE + AUTH +"$).*").handler(JWTAuthHandler.create(jwtAuth));
+        apiRouter.routeWithRegex("^(?!" + AUTH +"$).*").handler(JWTAuthHandler.create(jwtAuth));
 
         apiRouter.post().path(AUTH).handler(this::auth);
 
