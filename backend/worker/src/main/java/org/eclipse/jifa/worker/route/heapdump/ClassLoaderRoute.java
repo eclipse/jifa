@@ -19,8 +19,8 @@ import org.eclipse.jifa.hda.api.Model;
 import org.eclipse.jifa.worker.route.ParamKey;
 import org.eclipse.jifa.worker.route.RouteMeta;
 
+import static org.eclipse.jifa.worker.support.Analyzer.HEAP_DUMP_ANALYZER;
 import static org.eclipse.jifa.worker.support.Analyzer.getOrOpenAnalysisContext;
-import static org.eclipse.jifa.worker.support.hda.AnalysisEnv.HEAP_DUMP_ANALYZER;
 
 class ClassLoaderRoute extends HeapBaseRoute {
 

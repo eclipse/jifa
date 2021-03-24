@@ -30,7 +30,6 @@ import org.eclipse.jifa.common.JifaHooks;
 import org.eclipse.jifa.common.aux.JifaException;
 import org.eclipse.jifa.common.util.FileUtil;
 import org.eclipse.jifa.worker.route.RouteFiller;
-import org.eclipse.jifa.worker.support.hda.AnalysisEnv;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,11 +49,6 @@ public class Worker extends AbstractVerticle {
 
     public static void main(String[] args) throws InterruptedException {
         startTime = System.currentTimeMillis();
-
-        if (!AnalysisEnv.INITIALIZED) {
-            System.err.println("Heap dump analysis env initialized failed");
-            return;
-        }
 
         JsonObject vertxConfig = new JsonObject(
             FileUtil.content(Worker.class.getClassLoader().getResourceAsStream(DEFAULT_VERTX_CONFIG_FILE)));

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020, 2021 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -10,14 +10,16 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-rootProject.name = 'Jifa'
 
-include ':backend'
-include ':backend:common'
-include ':backend:master'
-include ':backend:worker'
-include ':backend:heap-dump-analyzer:api'
-include ':backend:heap-dump-analyzer:impl'
-include ':backend:heap-dump-analyzer:eclipse-mat-deps'
-include ':backend:heap-dump-analyzer:provider'
-include ':frontend'
+plugins {
+    id 'java-library'
+}
+
+dependencies {
+    implementation project(':backend:common')
+    implementation project(':backend:heap-dump-analyzer:api')
+
+    compileOnly files("${mat_deps_dir_path}/${osgi_jar}")
+}
+
+compileJava.dependsOn(':backend:heap-dump-analyzer:impl:installJar')

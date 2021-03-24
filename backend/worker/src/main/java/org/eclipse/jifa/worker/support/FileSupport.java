@@ -43,7 +43,6 @@ import org.eclipse.jifa.common.util.FileUtil;
 import org.eclipse.jifa.common.vo.FileInfo;
 import org.eclipse.jifa.common.vo.TransferringFile;
 import org.eclipse.jifa.worker.WorkerGlobal;
-import org.eclipse.jifa.worker.support.hda.TransferListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

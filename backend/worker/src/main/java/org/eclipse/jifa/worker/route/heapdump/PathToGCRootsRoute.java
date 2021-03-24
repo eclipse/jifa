@@ -16,10 +16,10 @@ import io.vertx.core.Promise;
 import org.eclipse.jifa.worker.route.ParamKey;
 import org.eclipse.jifa.worker.route.RouteMeta;
 import org.eclipse.jifa.worker.support.Analyzer;
-import org.eclipse.jifa.worker.support.hda.AnalysisEnv;
 
 import static org.eclipse.jifa.common.util.Assertion.ASSERT;
 import static org.eclipse.jifa.hda.api.Model.GCRootPath;
+import static org.eclipse.jifa.worker.support.Analyzer.HEAP_DUMP_ANALYZER;
 
 class PathToGCRootsRoute extends HeapBaseRoute {
 
@@ -28,7 +28,7 @@ class PathToGCRootsRoute extends HeapBaseRoute {
               @ParamKey("skip") int skip, @ParamKey("count") int count) {
 
         ASSERT.isTrue(origin >= 0).isTrue(skip >= 0).isTrue(count > 0);
-        promise.complete(AnalysisEnv.HEAP_DUMP_ANALYZER.getPathToGCRoots(Analyzer.getOrOpenAnalysisContext(file),
-                                                                        origin, skip, count));
+        promise.complete(HEAP_DUMP_ANALYZER.getPathToGCRoots(Analyzer.getOrOpenAnalysisContext(file),
+                                                             origin, skip, count));
     }
 }

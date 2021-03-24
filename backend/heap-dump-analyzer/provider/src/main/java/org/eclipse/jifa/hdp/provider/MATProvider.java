@@ -10,7 +10,8 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-package org.eclipse.jifa.worker.support.hda;
+
+package org.eclipse.jifa.hdp.provider;
 
 import org.eclipse.jifa.common.aux.JifaException;
 import org.eclipse.jifa.hda.api.AnalysisContext;
@@ -29,21 +30,23 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.ServiceLoader;
 
-public class AnalysisEnv {
+public class MATProvider implements HeapDumpAnalyzer.Provider {
 
-    public static boolean INITIALIZED;
+    private HeapDumpAnalyzer<AnalysisContext> analyzer;
 
-    public static HeapDumpAnalyzer<AnalysisContext> HEAP_DUMP_ANALYZER;
-
-    static {
+    public MATProvider() {
         init();
-        INITIALIZED = true;
     }
 
-    private static void init() {
-        ServiceLoader<FrameworkFactory> factoryLoader = ServiceLoader.load(FrameworkFactory.class);
-        Map<String, String> m = new HashMap<>();
-        m.put(Constants.FRAMEWORK_STORAGE_CLEAN, Constants.FRAMEWORK_STORAGE_CLEAN_ONFIRSTINIT);
+    @Override
+    public HeapDumpAnalyzer<AnalysisContext> get() {
+        return analyzer;
+    }
+
+    @SuppressWarnings("unchecked")
+    private void init() {
+        Map<String, String> config = new HashMap<>();
+        config.put(Constants.FRAMEWORK_STORAGE_CLEAN, Constants.FRAMEWORK_STORAGE_CLEAN_ONFIRSTINIT);
 
         String apiBase = "org.eclipse.jifa.hda.api";
         String commonBase = "org.eclipse.jifa.common";
@@ -57,10 +60,9 @@ public class AnalysisEnv {
             commonBase + ".vo",
             commonBase + ".vo.support"
         };
-        m.put(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, String.join(",", extras));
-        Framework framework = factoryLoader.iterator().next().newFramework(m);
-
+        config.put(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, String.join(",", extras));
         try {
+            Framework framework = ServiceLoader.load(FrameworkFactory.class).iterator().next().newFramework(config);
             framework.start();
 
             File[] files = Objects.requireNonNull(new File(System.getProperty("mat-deps")).listFiles());
@@ -77,14 +79,13 @@ public class AnalysisEnv {
             for (Bundle bundle : bundles) {
                 bundle.start();
             }
+
+            analyzer =
+                framework.getBundleContext()
+                         .getService(framework.getBundleContext().getServiceReference(HeapDumpAnalyzer.class));
+
         } catch (BundleException be) {
             throw new JifaException(be);
         }
-        //noinspection unchecked
-        HEAP_DUMP_ANALYZER =
-            framework.getBundleContext()
-                     .getService(framework.getBundleContext().getServiceReference(HeapDumpAnalyzer.class));
-        assert HEAP_DUMP_ANALYZER != null;
     }
-
 }

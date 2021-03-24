@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-package org.eclipse.jifa.worker.support.hda;
+package org.eclipse.jifa.worker.support;
 
 import lombok.Data;
 import org.eclipse.jifa.common.enums.FileTransferState;
