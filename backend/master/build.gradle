@@ -69,3 +69,9 @@ task runVertxCodeGen(type: JavaCompile, group: 'build') {
 compileJava {
     dependsOn runVertxCodeGen
 }
+
+clean {
+  doFirst {
+      delete files("${projectDir}/src/main/generated")
+  }
+}

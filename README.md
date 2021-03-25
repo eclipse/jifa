@@ -58,7 +58,8 @@ Only using worker as a standalone application is a simple and lightweight mode.
 In this mode, we only need to deploy the front end and worker side without any database configuration. 
 To use this mode, we need to forward the http requests to the workers:
 ```bash
-$ ./gradlew clean buildWorker
+$ ./gradlew clean
+$ ./gradlew buildWorker
 $ cd demo
 $ ./run_worker.sh
 ```
