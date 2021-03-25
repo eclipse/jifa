@@ -124,6 +124,7 @@
         this.sortBy = val.prop
         this.nextPage = 1
         this.totalSize = 0
+        this.currentSize = 0
         this.threads = []
         this.ascendingOrder = val.order === 'ascending'
         this.fetchThreadsData()
@@ -293,9 +294,9 @@
       },
       fetchThreadDetails() {
         if (this.currentSize >= this.totalSize) {
+          this.loading = false
           return
         }
-        this.loading = true
         if (this.nextPage > 1) {
           this.threads.splice(this.threads.length - 1, 1)
         }
