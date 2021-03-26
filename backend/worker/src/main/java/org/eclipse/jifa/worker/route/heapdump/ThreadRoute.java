@@ -48,7 +48,12 @@ class ThreadRoute extends HeapBaseRoute {
     @RouteMeta(path = "/stackTrace")
     void stackTrace(Promise<List<Model.Thread.StackFrame>> promise, @ParamKey("file") String file,
                     @ParamKey("objectId") int objectId) {
-        promise.complete(HEAP_DUMP_ANALYZER.getStackTrace(getOrOpenAnalysisContext(file), objectId));
+        promise.complete(HEAP_DUMP_ANALYZER.
+
+
+
+
+                getStackTrace(getOrOpenAnalysisContext(file), objectId));
     }
 
     @RouteMeta(path = "/locals")

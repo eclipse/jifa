@@ -12,8 +12,11 @@
  ********************************************************************************/
 package org.eclipse.jifa.hda.impl;
 
+import io.vertx.ext.web.RoutingContext;
+import io.vertx.reactivex.core.http.HttpServerRequest;
 import org.eclipse.jifa.common.Constant;
 import org.eclipse.jifa.common.aux.JifaException;
+import org.eclipse.jifa.common.request.AnalysisParmPack;
 import org.eclipse.jifa.common.request.PagingRequest;
 import org.eclipse.jifa.common.util.ReflectionUtil;
 import org.eclipse.jifa.common.vo.PageView;
@@ -1827,6 +1830,11 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
                     throw new AnalysisException("Should not reach here");
             }
         });
+    }
+
+    @Override
+    public Object foo(RoutingContext context, AnalysisParmPack pack) {
+        return " "+pack.toString();
     }
 
     interface R {

@@ -30,6 +30,7 @@ import org.eclipse.jifa.common.JifaHooks;
 import org.eclipse.jifa.common.aux.JifaException;
 import org.eclipse.jifa.common.util.FileUtil;
 import org.eclipse.jifa.worker.route.RouteFiller;
+import org.eclipse.jifa.worker.route.RouteMappingTable;
 import org.eclipse.jifa.worker.support.hda.AnalysisEnv;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -164,7 +165,8 @@ public class Worker extends AbstractVerticle {
 
             router.post().handler(BodyHandler.create());
 
-            new RouteFiller(router).fill();
+            //new RouteFiller(router).fill();
+            RouteMappingTable.register(router);
             hooks.afterRoutes(router);
             server.requestHandler(router);
 

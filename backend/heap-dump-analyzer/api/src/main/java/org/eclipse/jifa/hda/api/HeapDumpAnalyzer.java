@@ -12,6 +12,8 @@
  ********************************************************************************/
 package org.eclipse.jifa.hda.api;
 
+import io.vertx.ext.web.RoutingContext;
+import org.eclipse.jifa.common.request.AnalysisParmPack;
 import org.eclipse.jifa.common.vo.PageView;
 import org.eclipse.jifa.common.vo.support.SearchType;
 
@@ -132,4 +134,5 @@ public interface HeapDumpAnalyzer<C extends AnalysisContext> {
                                                                       int page,
                                                                       int pageSize);
 
+    Object foo(RoutingContext context, AnalysisParmPack pack);
 }

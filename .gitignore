@@ -16,6 +16,7 @@ gradle-app.setting
 
 file-uploads
 backend/master/src/main/generated/**
+backend/heap-dump-analyzer/p2asmaven
 deploy/
 
 backend/config/jifa-ssh-key
