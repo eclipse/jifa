@@ -580,23 +580,29 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
                 return data;
             }
 
-            IResultTable table = queryByCommand(context, "oql", DirectByteBufferData.ARGS);
-
             data = new DirectByteBufferData();
-            RefinedResultBuilder builder =
-                new RefinedResultBuilder(new SnapshotQueryContext(context.snapshot), table);
-            builder.setSortOrder(3, Column.SortDirection.DESC);
-            data.resultContext = (RefinedTable) builder.build();
-            DirectByteBuffer.Summary summary = new DirectByteBuffer.Summary();
-            summary.totalSize = data.resultContext.getRowCount();
+            IResult result = queryByCommand(context, "oql", DirectByteBufferData.ARGS);
+            IResultTable table;
+            if (result instanceof IResultTable) {
+                table = (IResultTable) result;
 
-            for (int i = 0; i < summary.totalSize; i++) {
-                Object row = data.resultContext.getRow(i);
-                summary.position += data.position(row);
-                summary.limit += data.limit(row);
-                summary.capacity += data.capacity(row);
+                RefinedResultBuilder builder =
+                    new RefinedResultBuilder(new SnapshotQueryContext(context.snapshot), table);
+                builder.setSortOrder(3, Column.SortDirection.DESC);
+                data.resultContext = (RefinedTable) builder.build();
+                DirectByteBuffer.Summary summary = new DirectByteBuffer.Summary();
+                summary.totalSize = data.resultContext.getRowCount();
+
+                for (int i = 0; i < summary.totalSize; i++) {
+                    Object row = data.resultContext.getRow(i);
+                    summary.position += data.position(row);
+                    summary.limit += data.limit(row);
+                    summary.capacity += data.capacity(row);
+                }
+                data.summary = summary;
+            } else {
+                data.summary = new DirectByteBuffer.Summary();
             }
-            data.summary = summary;
             context.directByteBufferData = new SoftReference<>(data);
             return data;
         }
