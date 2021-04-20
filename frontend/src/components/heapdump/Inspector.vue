@@ -170,7 +170,7 @@
             name = name.substring(dotPos + 1)
           }
           tmpView.push({data: name, icon: getIcon(ov.gCRoot, ov.objectType)})
-          tmpView.push({data: p, icon: ICONS.objects.class_package})
+          tmpView.push({data: p, icon: ICONS.objects.package})
 
           tmpView.push({
             data: ov.classLabel,
