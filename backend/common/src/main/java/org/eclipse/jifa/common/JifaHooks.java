@@ -13,6 +13,7 @@
 
 package org.eclipse.jifa.common;
 
+import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
@@ -25,18 +26,18 @@ public interface JifaHooks {
     }
 
     /* Provide custom http server configuration to vertx. */
-    default HttpServerOptions serverOptions() {
+    default HttpServerOptions serverOptions(Vertx vertx) {
         return new HttpServerOptions();
     }
 
     /* Access the route configuration before JIFA routes are loaded.
        You could use this to customize redirects, authenticate, etc. */
-    default void beforeRoutes(Router router) {
+    default void beforeRoutes(Vertx vertx, Router router) {
     }
 
     /* Access route configuration after JIFA routes are loaded.
        You could use this to customize error handling, etc. */
-    default void afterRoutes(Router router) {
+    default void afterRoutes(Vertx vertx, Router router) {
     }
 
     /* Provide custom mapping for directory path, file, and index functionality. */
