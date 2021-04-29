@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -10,13 +10,16 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
+
 package org.eclipse.jifa.common.util;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-public class GsonHolder {
-
-    public static final Gson GSON = new GsonBuilder().registerTypeAdapterFactory(new TypeFactory()).create();
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface UseAccessor {
 
 }
