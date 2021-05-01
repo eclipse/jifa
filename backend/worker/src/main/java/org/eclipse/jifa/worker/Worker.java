@@ -123,7 +123,7 @@ public class Worker extends AbstractVerticle {
         vertx.executeBlocking(event -> {
             WorkerGlobal.init(vertx, host, port, config(), hooks);
 
-            HttpServer server = vertx.createHttpServer(hooks.serverOptions());
+            HttpServer server = vertx.createHttpServer(hooks.serverOptions(vertx));
             Router router = Router.router(vertx);
 
             // body handler always ends to be first so it can read the body
@@ -133,7 +133,7 @@ public class Worker extends AbstractVerticle {
                 router.post().handler(BodyHandler.create(uploadDir));
             }
 
-            hooks.beforeRoutes(router);
+            hooks.beforeRoutes(vertx, router);
 
             File webRoot = new File(staticRoot);
             if (webRoot.exists() && webRoot.isDirectory()) {
@@ -159,7 +159,7 @@ public class Worker extends AbstractVerticle {
             router.post().handler(BodyHandler.create());
 
             new RouteFiller(router).fill();
-            hooks.afterRoutes(router);
+            hooks.afterRoutes(vertx, router);
             server.requestHandler(router);
 
             server.listen(port, host, ar -> {
