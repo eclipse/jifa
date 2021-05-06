@@ -15,6 +15,7 @@ package org.eclipse.jifa.hda.impl;
 import org.eclipse.jifa.common.Constant;
 import org.eclipse.jifa.common.aux.JifaException;
 import org.eclipse.jifa.common.request.PagingRequest;
+import org.eclipse.jifa.common.util.ErrorUtil;
 import org.eclipse.jifa.common.util.ReflectionUtil;
 import org.eclipse.jifa.common.vo.PageView;
 import org.eclipse.jifa.common.vo.support.SearchPredicate;
@@ -39,6 +40,7 @@ import org.eclipse.mat.query.IResult;
 import org.eclipse.mat.query.IResultPie;
 import org.eclipse.mat.query.IResultTable;
 import org.eclipse.mat.query.IResultTree;
+import org.eclipse.mat.query.IStructuredResult;
 import org.eclipse.mat.query.refined.RefinedResultBuilder;
 import org.eclipse.mat.query.refined.RefinedTable;
 import org.eclipse.mat.query.refined.RefinedTree;
@@ -81,6 +83,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -1604,22 +1607,10 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
                                                                   String searchText, SearchType searchType,
                                                                   PagingRequest pagingRequest) {
         PageViewBuilder<?, DominatorTree.DefaultItem> builder = PageViewBuilder.fromList(elements);
+
         return builder
             .paging(pagingRequest)
-            .map(e -> $(() -> {
-                DominatorTree.DefaultItem item = new DominatorTree.DefaultItem();
-                int objectId = tree.getContext(e).getObjectId();
-                IObject object = snapshot.getObject(objectId);
-                item.setObjectId(objectId);
-                item.setSuffix(Helper.suffix(object.getGCRootInfo()));
-                item.setObjectType(typeOf(object));
-                item.setGCRoot(snapshot.isGCRoot(objectId));
-                item.setLabel((String) tree.getColumnValue(e, 0));
-                item.setShallowSize(((Bytes) tree.getColumnValue(e, 1)).getValue());
-                item.setRetainedSize(((Bytes) tree.getColumnValue(e, 2)).getValue());
-                item.setPercent((Double) tree.getColumnValue(e, 3));
-                return item;
-            }))
+            .map(e -> $(() -> new VirtualDefaultItem(snapshot, tree, e, 0, 1, 2, 3)))
             .sort(DominatorTree.DefaultItem.sortBy(sortBy, ascendingOrder))
             .filter(SearchPredicate.createPredicate(searchText, searchType))
             .done();
