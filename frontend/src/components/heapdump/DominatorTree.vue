@@ -194,6 +194,10 @@
         this.records = []
       },
       changeGrouping() {
+        // sort by Objects is not valid for grouping by none
+        if (this.grouping === 'NONE' && this.sortBy === 'Objects') {
+          this.sortBy = 'retainedHeap'
+        }
         this.clear()
         this.fetchNextPageData()
       },
