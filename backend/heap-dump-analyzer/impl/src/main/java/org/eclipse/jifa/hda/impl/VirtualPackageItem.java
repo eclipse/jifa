@@ -18,49 +18,50 @@ import org.eclipse.mat.query.Bytes;
 import org.eclipse.mat.query.IStructuredResult;
 import org.eclipse.mat.snapshot.ISnapshot;
 import org.eclipse.mat.snapshot.model.IObject;
+import org.eclipse.jifa.common.util.ReflectionUtil;
 import org.eclipse.jifa.common.util.UseAccessor;
 import org.eclipse.jifa.hda.api.AnalysisException;
 import static org.eclipse.jifa.hda.api.Model.DominatorTree;
 
+import java.util.Map;
+
 @UseAccessor
-public class VirtualDefaultItem extends DominatorTree.DefaultItem {
+public class VirtualPackageItem extends DominatorTree.PackageItem {
     static final int COLUMN_LABEL = 0;
-    static final int COLUMN_SHALLOW = 1;
-    static final int COLUMN_RETAINED = 2;
-    static final int COLUMN_PERCENT = 3;
+    static final int COLUMN_OBJECTS = 1;
+    static final int COLUMN_SHALLOW = 2;
+    static final int COLUMN_RETAINED = 3;
+    static final int COLUMN_PERCENT = 4;
 
     transient final ISnapshot snapshot;
     transient final IStructuredResult results;
     transient final Object e;
 
-    public VirtualDefaultItem(final ISnapshot snapshot, final IStructuredResult results, final Object e) {
+    public VirtualPackageItem(final ISnapshot snapshot, final IStructuredResult results, final Object e) {
         this.snapshot = snapshot;
         this.results = results;
         this.e = e;
         this.objectId = results.getContext(e).getObjectId();
+        this.isObjType = false;
     }
 
     @Override
     public String getSuffix() {
-        try {
-            IObject object = snapshot.getObject(objectId);
-            return Helper.suffix(object.getGCRootInfo());
-        } catch (SnapshotException se) {
-            throw new AnalysisException(se);
-        }
+        return null;
     }
 
     @Override
     public int getObjectId() {
-        return objectId;
+        return getLabel().hashCode();
     }
 
     @Override
     public int getObjectType() {
-        try {
-            return HeapDumpAnalyzerImpl.typeOf(snapshot.getObject(objectId));
-        } catch (SnapshotException se) {
-            throw new AnalysisException(se);
+        Map<String, ?> subPackages = ReflectionUtil.getFieldValueOrNull(e, "subPackages");
+        if (subPackages.size() == 0) {
+            return DominatorTree.ItemType.CLASS;
+        } else {
+            return DominatorTree.ItemType.PACKAGE;
         }
     }
 
@@ -72,6 +73,16 @@ public class VirtualDefaultItem extends DominatorTree.DefaultItem {
     @Override
     public String getLabel() {
         return (String) results.getColumnValue(e, COLUMN_LABEL);
+    }
+
+    @Override
+    public long getObjects() {
+        Object value = results.getColumnValue(e, COLUMN_OBJECTS);
+        if (value != null) {
+            return (Integer) value;
+        } else {
+            return 0;
+        }
     }
 
     @Override

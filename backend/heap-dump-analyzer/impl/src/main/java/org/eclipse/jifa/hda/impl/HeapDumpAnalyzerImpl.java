@@ -83,6 +83,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -1606,39 +1607,33 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
                                                                   boolean ascendingOrder, String sortBy,
                                                                   String searchText, SearchType searchType,
                                                                   PagingRequest pagingRequest) {
-        PageViewBuilder<?, DominatorTree.DefaultItem> builder = PageViewBuilder.fromList(elements);
-
-        return builder
-            .paging(pagingRequest)
-            .map(e -> $(() -> new VirtualDefaultItem(snapshot, tree, e, 0, 1, 2, 3)))
-            .sort(DominatorTree.DefaultItem.sortBy(sortBy, ascendingOrder))
+        final AtomicInteger afterFilterCount = new AtomicInteger(0);
+        List<DominatorTree.DefaultItem> items = elements.stream()
+            .map(e -> $(() -> new VirtualDefaultItem(snapshot, tree, e)))
             .filter(SearchPredicate.createPredicate(searchText, searchType))
-            .done();
+            .peek(filtered -> afterFilterCount.incrementAndGet())
+            .sorted(DominatorTree.DefaultItem.sortBy(sortBy, ascendingOrder))
+            .skip(pagingRequest.from())
+            .limit(pagingRequest.getPageSize())
+            .collect(Collectors.toList());
+        return new PageView(pagingRequest, afterFilterCount.get(), items);
     }
 
-    private PageView<DominatorTree.ClassItem> buildClassItems(IResultTree tree, List<?> elements,
+    private PageView<DominatorTree.ClassItem> buildClassItems(ISnapshot snapshot, IResultTree tree, List<?> elements,
                                                               boolean ascendingOrder,
                                                               String sortBy,
                                                               String searchText, SearchType searchType,
                                                               PagingRequest pagingRequest) {
-
-        PageViewBuilder<?, DominatorTree.ClassItem> builder = PageViewBuilder.fromList(elements);
-        return builder
-            .paging(pagingRequest)
-            .map(e -> $(() -> {
-                DominatorTree.ClassItem item = new DominatorTree.ClassItem();
-                int objectId = tree.getContext(e).getObjectId();
-                item.setObjectId(objectId);
-                item.setLabel((String) tree.getColumnValue(e, 0));
-                item.setObjects((Integer) tree.getColumnValue(e, 1));
-                item.setShallowSize(((Bytes) tree.getColumnValue(e, 2)).getValue());
-                item.setRetainedSize(((Bytes) tree.getColumnValue(e, 3)).getValue());
-                item.setPercent((Double) tree.getColumnValue(e, 4));
-                return item;
-            }))
-            .sort(DominatorTree.ClassItem.sortBy(sortBy, ascendingOrder))
+        final AtomicInteger afterFilterCount = new AtomicInteger(0);
+        List<DominatorTree.ClassItem> items = elements.stream()
+            .map(e -> $(() -> new VirtualClassItem(snapshot, tree, e)))
             .filter(SearchPredicate.createPredicate(searchText, searchType))
-            .done();
+            .peek(filtered -> afterFilterCount.incrementAndGet())
+            .sorted(DominatorTree.ClassItem.sortBy(sortBy, ascendingOrder))
+            .skip(pagingRequest.from())
+            .limit(pagingRequest.getPageSize())
+            .collect(Collectors.toList());
+        return new PageView(pagingRequest, afterFilterCount.get(), items);
     }
 
     private PageView<DominatorTree.ClassLoaderItem> buildClassLoaderItems(ISnapshot snapshot, IResultTree tree,
@@ -1646,35 +1641,16 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
                                                                           String sortBy,
                                                                           String searchText, SearchType searchType,
                                                                           PagingRequest pagingRequest) {
-
-        PageViewBuilder<?, DominatorTree.ClassLoaderItem> builder = PageViewBuilder.fromList(elements);
-        return builder
-            .paging(pagingRequest)
-            .map(e -> $(() -> {
-                DominatorTree.ClassLoaderItem item = new DominatorTree.ClassLoaderItem();
-                int objectId = tree.getContext(e).getObjectId();
-                IObject object = null;
-                try {
-                    object = snapshot.getObject(objectId);
-                } catch (SnapshotException snapshotException) {
-                    snapshotException.printStackTrace();
-                }
-                item.setObjectId(objectId);
-                item.setLabel((String) tree.getColumnValue(e, 0));
-                if (tree.getColumnValue(e, 1) != null) {
-                    item.setObjects((Integer) tree.getColumnValue(e, 1));
-                } else {
-                    item.setObjects(0);
-                }
-                item.setShallowSize(((Bytes) tree.getColumnValue(e, 2)).getValue());
-                item.setRetainedSize(((Bytes) tree.getColumnValue(e, 3)).getValue());
-                item.setPercent((Double) tree.getColumnValue(e, 4));
-                item.setObjectType(typeOf(object));
-                return item;
-            }))
-            .sort(DominatorTree.ClassLoaderItem.sortBy(sortBy, ascendingOrder))
+        final AtomicInteger afterFilterCount = new AtomicInteger(0);
+        List<DominatorTree.ClassLoaderItem> items = elements.stream()
+            .map(e -> $(() -> new VirtualClassLoaderItem(snapshot, tree, e)))
             .filter(SearchPredicate.createPredicate(searchText, searchType))
-            .done();
+            .peek(filtered -> afterFilterCount.incrementAndGet())
+            .sorted(DominatorTree.ClassLoaderItem.sortBy(sortBy, ascendingOrder))
+            .skip(pagingRequest.from())
+            .limit(pagingRequest.getPageSize())
+            .collect(Collectors.toList());
+        return new PageView(pagingRequest, afterFilterCount.get(), items);
     }
 
     private PageView<DominatorTree.PackageItem> buildPackageItems(ISnapshot snapshot, IResultTree tree,
@@ -1682,35 +1658,16 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
                                                                   boolean ascendingOrder, String sortBy,
                                                                   String searchText, SearchType searchType,
                                                                   PagingRequest pagingRequest) {
-
-        PageViewBuilder<?, DominatorTree.PackageItem> builder = PageViewBuilder.fromList(elements);
-        return builder
-            .paging(pagingRequest)
-            .map(e -> $(() -> {
-                DominatorTree.PackageItem item = new DominatorTree.PackageItem();
-                String label = (String) tree.getColumnValue(e, 0);
-                // objectId is actually the hashcode of label string, so don't set it as real object id
-                item.setLabel(label);
-                item.setObjectId(label.hashCode());
-                if (tree.getColumnValue(e, 1) != null) {
-                    item.setObjects((Integer) tree.getColumnValue(e, 1));
-                } else {
-                    item.setObjects(0);
-                }
-                item.setShallowSize(((Bytes) tree.getColumnValue(e, 2)).getValue());
-                item.setRetainedSize(((Bytes) tree.getColumnValue(e, 3)).getValue());
-                item.setPercent((Double) tree.getColumnValue(e, 4));
-                item.setObjectType(DominatorTree.ItemType.PACKAGE);
-                if ((((HashMap) Objects.requireNonNull(getFieldValueOrNull(e, "subPackages"))).size() == 0)) {
-                    int objectId = tree.getContext(e).getObjectId();
-                    item.setObjectType(DominatorTree.ItemType.CLASS);
-                }
-                item.setObjType(false);
-                return item;
-            }))
-            .sort(DominatorTree.PackageItem.sortBy(sortBy, ascendingOrder))
+        final AtomicInteger afterFilterCount = new AtomicInteger(0);
+        List<DominatorTree.PackageItem> items = elements.stream()
+            .map(e -> $(() -> new VirtualPackageItem(snapshot, tree, e)))
             .filter(SearchPredicate.createPredicate(searchText, searchType))
-            .done();
+            .peek(filtered -> afterFilterCount.incrementAndGet())
+            .sorted(DominatorTree.PackageItem.sortBy(sortBy, ascendingOrder))
+            .skip(pagingRequest.from())
+            .limit(pagingRequest.getPageSize())
+            .collect(Collectors.toList());
+        return new PageView(pagingRequest, afterFilterCount.get(), items);
     }
 
     @Override
@@ -1728,7 +1685,7 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
                         buildDefaultItems(context.snapshot, tree, tree.getElements(), ascendingOrder, sortBy,
                                           searchText, searchType, new PagingRequest(page, pageSize));
                 case BY_CLASS:
-                    return buildClassItems(tree, tree.getElements(), ascendingOrder, sortBy,
+                    return buildClassItems(context.snapshot, tree, tree.getElements(), ascendingOrder, sortBy,
                                            searchText, searchType, new PagingRequest(page, pageSize));
 
                 case BY_CLASSLOADER:
@@ -1762,7 +1719,7 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
                 case BY_CLASS:
                     Object object = Helper.fetchObjectInResultTree(tree, idPathInResultTree);
                     List<?> elements = object == null ? Collections.emptyList() : tree.getChildren(object);
-                    return buildClassItems(tree, elements, ascendingOrder, sortBy, null, null, new PagingRequest(page
+                    return buildClassItems(context.snapshot, tree, elements, ascendingOrder, sortBy, null, null, new PagingRequest(page
                         , pageSize));
                 case BY_CLASSLOADER:
                     List<?> children = new ExoticTreeFinder(tree)
