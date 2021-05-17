@@ -25,7 +25,7 @@ public class SearchPredicate {
 
     public static <T extends Searchable> Predicate<T> createPredicate(String searchText, SearchType searchType) {
         if (searchText == null || searchType == null || searchText.isEmpty()) {
-            return null;
+            return (T record) -> true;
         }
 
         Predicate<T> pred;

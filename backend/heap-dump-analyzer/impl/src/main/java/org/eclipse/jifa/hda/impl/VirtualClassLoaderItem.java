@@ -23,17 +23,18 @@ import org.eclipse.jifa.hda.api.AnalysisException;
 import static org.eclipse.jifa.hda.api.Model.DominatorTree;
 
 @UseAccessor
-public class VirtualDefaultItem extends DominatorTree.DefaultItem {
+public class VirtualClassLoaderItem extends DominatorTree.ClassLoaderItem {
     static final int COLUMN_LABEL = 0;
-    static final int COLUMN_SHALLOW = 1;
-    static final int COLUMN_RETAINED = 2;
-    static final int COLUMN_PERCENT = 3;
+    static final int COLUMN_OBJECTS = 1;
+    static final int COLUMN_SHALLOW = 2;
+    static final int COLUMN_RETAINED = 3;
+    static final int COLUMN_PERCENT = 4;
 
     transient final ISnapshot snapshot;
     transient final IStructuredResult results;
     transient final Object e;
 
-    public VirtualDefaultItem(final ISnapshot snapshot, final IStructuredResult results, final Object e) {
+    public VirtualClassLoaderItem(final ISnapshot snapshot, final IStructuredResult results, final Object e) {
         this.snapshot = snapshot;
         this.results = results;
         this.e = e;
@@ -42,12 +43,7 @@ public class VirtualDefaultItem extends DominatorTree.DefaultItem {
 
     @Override
     public String getSuffix() {
-        try {
-            IObject object = snapshot.getObject(objectId);
-            return Helper.suffix(object.getGCRootInfo());
-        } catch (SnapshotException se) {
-            throw new AnalysisException(se);
-        }
+        return null;
     }
 
     @Override
@@ -72,6 +68,16 @@ public class VirtualDefaultItem extends DominatorTree.DefaultItem {
     @Override
     public String getLabel() {
         return (String) results.getColumnValue(e, COLUMN_LABEL);
+    }
+
+    @Override
+    public long getObjects() {
+        Object value = results.getColumnValue(e, COLUMN_OBJECTS);
+        if (value != null) {
+            return (Integer) value;
+        } else {
+            return 0;
+        }
     }
 
     @Override
