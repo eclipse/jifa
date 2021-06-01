@@ -100,6 +100,8 @@
       </el-table-column>
       <el-table-column label="Retained Heap" prop="retainedHeap" sortable="custom">
       </el-table-column>
+      <el-table-column label="Max Locals' Retained Heap" prop="maxLocalsRetainedHeap">
+      </el-table-column>
       <el-table-column label="Context Class Loader" prop="contextClassLoader" width="420px" show-overflow-tooltip
                        sortable="custom">
       </el-table-column>
@@ -271,6 +273,7 @@
               stack: res[i].stack,
               depth: depth++,
               hasChildren: res[i].hasLocal,
+              maxLocalsRetainedHeap: res[i].maxLocalsRetainedSize,
               firstNonNativeFrame: res[i].firstNonNativeFrame
             })
           }
