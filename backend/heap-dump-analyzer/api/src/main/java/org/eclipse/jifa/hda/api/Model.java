@@ -400,9 +400,12 @@ public interface Model {
 
             public boolean firstNonNativeFrame;
 
-            public StackFrame(String stack, boolean hasLocal) {
+            public long maxLocalsRetainedSize;
+
+            public StackFrame(String stack, boolean hasLocal, long maxLocalsRetainedSize) {
                 this.stack = stack;
                 this.hasLocal = hasLocal;
+                this.maxLocalsRetainedSize = maxLocalsRetainedSize;
             }
         }
     }

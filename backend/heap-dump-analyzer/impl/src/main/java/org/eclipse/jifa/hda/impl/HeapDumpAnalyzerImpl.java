@@ -1175,6 +1175,11 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
     }
 
     private Model.Thread.Item buildThreadItem(IResultTree result, Object row) {
+        // the report changed a little in MAT:
+        // Bug 572596 Add maximum retained heap size to thread overview stack
+        boolean includesMaxLocalRetained = (result.getColumns().length == 10);
+        int offset = includesMaxLocalRetained ? 1 : 0;
+
         return new Model.Thread.Item(result.getContext(row).getObjectId(),
                                      (String) result.getColumnValue(row, 0),
                                      (String) result.getColumnValue(row, 1),
@@ -1182,7 +1187,7 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
                                      ((Bytes) result.getColumnValue(row, 3)).getValue(),
                                      (String) result.getColumnValue(row, 4),
                                      result.hasChildren(row),
-                                     (Boolean) result.getColumnValue(row, 5));
+                                     (Boolean) result.getColumnValue(row, 5 + offset));
     }
 
     @Override
@@ -1211,13 +1216,19 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
 
             List<?> elements = result.getElements();
 
+            boolean includesMaxLocalRetained = (result.getColumns().length == 10);
+
             if (result.hasChildren(elements.get(0))) {
 
                 List<?> frames = result.getChildren(elements.get(0));
 
                 List<Model.Thread.StackFrame> res = frames.stream().map(
                     frame -> new Model.Thread.StackFrame(((String) result.getColumnValue(frame, 0)),
-                                                         result.hasChildren(frame))).collect(Collectors.toList());
+                                                         result.hasChildren(frame),
+                                                         (includesMaxLocalRetained && result.getColumnValue(frame, 4) != null)
+                                                            ? ((Bytes) result.getColumnValue(frame, 4)).getValue()
+                                                            : 0L
+                                                         )).collect(Collectors.toList());
                 res.stream().filter(t -> !t.getStack().contains("Native Method")).findFirst()
                    .ifPresent(sf -> sf.setFirstNonNativeFrame(true));
                 return res;
