@@ -57,6 +57,7 @@ public class MATProvider implements HeapDumpAnalyzer.Provider {
             commonBase + ".enums",
             commonBase + ".request",
             commonBase + ".util",
+            commonBase + ".cache",
             commonBase + ".vo",
             commonBase + ".vo.support"
         };

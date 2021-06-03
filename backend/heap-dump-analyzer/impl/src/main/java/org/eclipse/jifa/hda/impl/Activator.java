@@ -12,6 +12,7 @@
  ********************************************************************************/
 package org.eclipse.jifa.hda.impl;
 
+import org.eclipse.jifa.common.cache.Support;
 import org.eclipse.jifa.hda.api.HeapDumpAnalyzer;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
@@ -22,7 +23,13 @@ public class Activator implements BundleActivator {
 
     @Override
     public void start(BundleContext bundleContext) {
-        bundleContext.registerService(HeapDumpAnalyzer.class, new HeapDumpAnalyzerImpl(), new Hashtable<>());
+        try {
+            bundleContext.registerService(HeapDumpAnalyzer.class,
+                                          Support.buildProxy(new HeapDumpAnalyzerImpl()),
+                                          new Hashtable<>());
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
     }
 
     @Override
