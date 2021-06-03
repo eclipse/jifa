@@ -23,13 +23,9 @@ public class Activator implements BundleActivator {
 
     @Override
     public void start(BundleContext bundleContext) {
-        try {
-            bundleContext.registerService(HeapDumpAnalyzer.class,
-                                          Support.buildProxy(new HeapDumpAnalyzerImpl()),
-                                          new Hashtable<>());
-        } catch (Throwable t) {
-            t.printStackTrace();
-        }
+        bundleContext.registerService(HeapDumpAnalyzer.class,
+                                      Support.buildProxy(new HeapDumpAnalyzerImpl()),
+                                      new Hashtable<>());
     }
 
     @Override
