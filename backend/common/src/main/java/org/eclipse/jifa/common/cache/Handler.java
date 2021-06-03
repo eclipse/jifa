@@ -132,7 +132,8 @@ class Handler implements InvocationHandler {
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        Entry entry = map.get(methodKey(method));
+        String key = methodKey(method);
+        Entry entry = map.get(key);
         if (entry == null) {
             return method.invoke(target, args);
         }
@@ -141,7 +142,8 @@ class Handler implements InvocationHandler {
         for (int i : entry.providerArgIndices) {
             providerArgs[index++] = args[i];
         }
-        Object result = cache.load(new Cache.CacheKey(providerArgs), () -> entry.provider.invoke(target, providerArgs));
+        Object result = cache.load(new Cache.CacheKey(key, providerArgs),
+                                   () -> entry.provider.invoke(target, providerArgs));
 
         Method poster = entry.poster;
         if (poster != null) {

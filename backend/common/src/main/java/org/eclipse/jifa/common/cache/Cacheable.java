@@ -8,7 +8,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 @Retention(value = RUNTIME)
 @Target(ElementType.METHOD)
-public @interface Cacheablbuild.gradle e {
+public @interface Cacheable {
 
     int[] ignored() default {};
 }

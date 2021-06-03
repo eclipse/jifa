@@ -39,10 +39,13 @@ class Cache {
 
     static class CacheKey {
 
-        Object[] keys;
+        String key;
 
-        CacheKey(Object[] keys) {
-            this.keys = keys;
+        Object[] attachments;
+
+        CacheKey(String key, Object[] attachments) {
+            this.key = key;
+            this.attachments = attachments;
         }
 
         @Override
@@ -52,12 +55,13 @@ class Cache {
             if (o == null || getClass() != o.getClass())
                 return false;
             CacheKey cacheKey = (CacheKey) o;
-            return Arrays.equals(keys, cacheKey.keys);
+            return key.equals(cacheKey.key) && Arrays.equals(attachments, cacheKey.attachments);
         }
 
         @Override
         public int hashCode() {
-            return Arrays.hashCode(keys);
+            int hash = key.hashCode();
+            return hash * 31 ^ Arrays.hashCode(attachments);
         }
     }
 }
