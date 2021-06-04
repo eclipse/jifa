@@ -13,15 +13,15 @@
 
 package org.eclipse.jifa.common.cache;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
+import net.sf.cglib.proxy.Enhancer;
 
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
+public class ProxyBuilder {
 
-@Retention(value = RUNTIME)
-@Target(ElementType.METHOD)
-public @interface CacheProvider {
-
-    String target() default "";
+    @SuppressWarnings("unchecked")
+    public static <T> T build(T target) {
+        Enhancer e = new Enhancer();
+        e.setSuperclass(target.getClass());
+        e.setCallback(new Handler(target));
+        return (T) e.create();
+    }
 }

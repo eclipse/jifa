@@ -16,6 +16,7 @@ package org.eclipse.jifa.common.cache;
 import com.google.common.cache.CacheBuilder;
 import org.eclipse.jifa.common.aux.JifaException;
 
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -39,13 +40,13 @@ class Cache {
 
     static class CacheKey {
 
-        String key;
+        Method method;
 
-        Object[] attachments;
+        Object[] args;
 
-        CacheKey(String key, Object[] attachments) {
-            this.key = key;
-            this.attachments = attachments;
+        CacheKey(Method method, Object[] args) {
+            this.method = method;
+            this.args = args;
         }
 
         @Override
@@ -55,13 +56,13 @@ class Cache {
             if (o == null || getClass() != o.getClass())
                 return false;
             CacheKey cacheKey = (CacheKey) o;
-            return key.equals(cacheKey.key) && Arrays.equals(attachments, cacheKey.attachments);
+            return method.equals(cacheKey.method) && Arrays.equals(args, cacheKey.args);
         }
 
         @Override
         public int hashCode() {
-            int hash = key.hashCode();
-            return hash * 31 ^ Arrays.hashCode(attachments);
+            int hash = method.hashCode();
+            return hash * 31 ^ Arrays.hashCode(args);
         }
     }
 }

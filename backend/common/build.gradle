@@ -25,6 +25,8 @@ dependencies {
 
     api 'com.google.code.gson:gson:2.8.6'
 
+    api 'cglib:cglib:3.3.0'
+
     api group: 'io.vertx', name: 'vertx-web', version: "${vertx_version}"
     api group: 'io.vertx', name: 'vertx-rx-java2', version: "${vertx_version}"
     api group: 'io.vertx', name: 'vertx-service-proxy', version: "${vertx_version}"

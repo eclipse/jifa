@@ -14,8 +14,6 @@ package org.eclipse.jifa.hda.impl;
 
 import org.eclipse.jifa.common.Constant;
 import org.eclipse.jifa.common.aux.JifaException;
-import org.eclipse.jifa.common.cache.CachePoster;
-import org.eclipse.jifa.common.cache.CacheProvider;
 import org.eclipse.jifa.common.cache.Cacheable;
 import org.eclipse.jifa.common.request.PagingRequest;
 import org.eclipse.jifa.common.util.ErrorUtil;
@@ -1090,8 +1088,8 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
         });
     }
 
-    @CacheProvider
-    public IResult getOQLResultCacheProvider(AnalysisContextImpl context, String oql) {
+    @Cacheable
+    protected IResult getOQLResultCacheProvider(AnalysisContextImpl context, String oql) {
         return $(() -> {
             Map<String, Object> args = new HashMap<>();
             args.put("queryString", oql);
@@ -1099,10 +1097,10 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
         });
     }
 
-    @CachePoster
-    public OQLResult getOQLResultCachePoster(IResult result, AnalysisContextImpl context, String sortBy,
-                                             boolean ascendingOrder, int page, int pageSize) {
-
+    @Override
+    public OQLResult getOQLResult(AnalysisContextImpl context, String oql, String sortBy, boolean ascendingOrder,
+                                  int page, int pageSize) {
+        IResult result = getOQLResultCacheProvider(context, oql);
         return $(() -> {
             if (result instanceof IResultTree) {
                 return new OQLResult.TreeResult(
@@ -1155,16 +1153,7 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
             } else {
                 throw new AnalysisException("Unsupported OQL result type");
             }
-
         });
-    }
-
-    @Override
-    @Cacheable
-    public OQLResult getOQLResult(AnalysisContextImpl context, String oql, String sortBy, boolean ascendingOrder,
-                                  int page, int pageSize) {
-        return getOQLResultCachePoster(getOQLResultCacheProvider(context, oql), context, sortBy, ascendingOrder, page
-            , pageSize);
     }
 
     @Override

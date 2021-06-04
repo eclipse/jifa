@@ -59,7 +59,15 @@ public class MATProvider implements HeapDumpAnalyzer.Provider {
             commonBase + ".util",
             commonBase + ".cache",
             commonBase + ".vo",
-            commonBase + ".vo.support"
+            commonBase + ".vo.support",
+            "net.sf.cglib.beans",
+            "net.sf.cglib.core",
+            "net.sf.cglib.core.internal",
+            "net.sf.cglib.proxy",
+            "net.sf.cglib.reflect",
+            "net.sf.cglib.transform",
+            "net.sf.cglib.transform.impl",
+            "net.sf.cglib.util",
         };
         config.put(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, String.join(",", extras));
         try {

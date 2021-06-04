@@ -13,116 +13,38 @@
 
 package org.eclipse.jifa.common.cache;
 
+import net.sf.cglib.proxy.MethodInterceptor;
+import net.sf.cglib.proxy.MethodProxy;
 import org.eclipse.jifa.common.aux.JifaException;
 
-import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
-import java.util.HashMap;
-import java.util.Map;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.List;
 
-class Handler implements InvocationHandler {
-
-    private final Object target;
+class Handler implements MethodInterceptor {
 
     private final Cache cache;
 
-    private final Map<String, Entry> map;
+    private final List<Method> cacheableMethods;
 
     public Handler(Object target) {
-        this.target = target;
         cache = new Cache();
-        map = new HashMap<>();
+        cacheableMethods = new ArrayList<>();
 
-        Method[] methods = target.getClass().getMethods();
         try {
-            Map<String, Method> providers = new HashMap<>();
-            Map<String, Method> posters = new HashMap<>();
-
+            Method[] methods = target.getClass().getDeclaredMethods();
             for (Method method : methods) {
-                CacheProvider provider = method.getAnnotation(CacheProvider.class);
-                if (provider != null) {
-                    String providerTarget = provider.target();
-                    if (providerTarget.isEmpty()) {
-                        int i = method.getName().indexOf("CacheProvider");
-                        if (i == -1) {
-                            throw new JifaException("Method name must end withs CacheProvider: " + method);
-                        }
-                        providerTarget = method.getName().substring(0, i);
+                if (method.getAnnotation(Cacheable.class) != null) {
+                    if (!method.isAccessible()) {
+                        method.setAccessible(true);
                     }
-                    if (providers.containsKey(providerTarget)) {
-                        throw new JifaException("Duplicated provider");
+                    int mod = method.getModifiers();
+                    if (Modifier.isAbstract(mod) || Modifier.isFinal(mod) ||
+                        !(Modifier.isPublic(mod) || Modifier.isProtected(mod))) {
+                        throw new JifaException("Illegal method modifier: " + method);
                     }
-                    providers.put(providerTarget, method);
-                }
-
-                CachePoster poster = method.getAnnotation(CachePoster.class);
-                if (poster != null) {
-                    String posterTarget = poster.target();
-                    if (posterTarget.isEmpty()) {
-                        int i = method.getName().indexOf("CachePoster");
-                        if (i == -1) {
-                            throw new JifaException("Method name must end withs CachePoster: " + method);
-                        }
-                        posterTarget = method.getName().substring(0, i);
-                    }
-
-                    if (posters.containsKey(posterTarget)) {
-                        throw new JifaException("Duplicated poster");
-                    }
-                    posters.put(posterTarget, method);
-                }
-            }
-
-            for (Method method : methods) {
-                Cacheable c = method.getAnnotation(Cacheable.class);
-                if (c != null) {
-                    String key = methodKey(method);
-                    Entry entry = new Entry();
-                    entry.key = key;
-
-                    Method provider = providers.get(key);
-                    if (provider == null) {
-                        throw new JifaException("Provider must be exist: " + key);
-                    }
-
-                    entry.provider = provider;
-                    provider.setAccessible(true);
-                    Parameter[] allParams = method.getParameters();
-                    Parameter[] providerParams = provider.getParameters();
-                    int[] indices = new int[providerParams.length];
-                    for (int i = 0; i < providerParams.length; i++) {
-                        String name = providerParams[i].getName();
-                        assert !name.startsWith("args");
-                        for (int j = 0; j < allParams.length; j++) {
-                            if (name.equals(allParams[j].getName())) {
-                                indices[i] = j;
-                            }
-                        }
-                    }
-                    entry.providerArgIndices = indices;
-
-                    Method poster = posters.get(key);
-                    if (poster != null) {
-                        entry.poster = poster;
-                        poster.setAccessible(true);
-
-                        Parameter[] posterParams = poster.getParameters();
-                        indices = new int[posterParams.length];
-                        // index 0 is for provider result
-                        for (int i = 1; i < posterParams.length; i++) {
-                            String name = posterParams[i].getName();
-                            assert !name.startsWith("args");
-                            for (int j = 0; j < allParams.length; j++) {
-                                if (name.equals(allParams[j].getName())) {
-                                    indices[i] = j;
-                                }
-                            }
-                        }
-                        entry.posterArgIndices = indices;
-                    }
-
-                    map.put(key, entry);
+                    cacheableMethods.add(method);
                 }
             }
         } catch (Exception exception) {
@@ -131,44 +53,17 @@ class Handler implements InvocationHandler {
     }
 
     @Override
-    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        String key = methodKey(method);
-        Entry entry = map.get(key);
-        if (entry == null) {
-            return method.invoke(target, args);
+    public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy) throws Throwable {
+        if (cacheableMethods.contains(method)) {
+            return cache.load(new Cache.CacheKey(method, args),
+                              () -> {
+                                  try {
+                                      return proxy.invokeSuper(obj, args);
+                                  } catch (Throwable throwable) {
+                                      throw new JifaException(throwable);
+                                  }
+                              });
         }
-        Object[] providerArgs = new Object[entry.providerArgIndices.length];
-        int index = 0;
-        for (int i : entry.providerArgIndices) {
-            providerArgs[index++] = args[i];
-        }
-        Object result = cache.load(new Cache.CacheKey(key, providerArgs),
-                                   () -> entry.provider.invoke(target, providerArgs));
-
-        Method poster = entry.poster;
-        if (poster != null) {
-            Object[] posterArgs = new Object[entry.posterArgIndices.length];
-            posterArgs[0] = result;
-            for (int i = 1; i < posterArgs.length; i++) {
-                posterArgs[i] = args[entry.posterArgIndices[i]];
-            }
-            result = poster.invoke(target, posterArgs);
-        }
-        return result;
-    }
-
-    private String methodKey(Method method) {
-        return method.getName();
-    }
-
-    static class Entry {
-
-        String key;
-
-        Method provider;
-        int[] providerArgIndices;
-
-        Method poster;
-        int[] posterArgIndices;
+        return proxy.invokeSuper(obj, args);
     }
 }
