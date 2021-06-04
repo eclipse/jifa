@@ -29,7 +29,6 @@ def HEAP_DUMP_ANALYZER_PROVIDER = 'heap-dump-analyzer:provider'
                 targetCompatibility = JavaVersion.VERSION_1_8
                 sourceCompatibility = JavaVersion.VERSION_1_8
                 options.compilerArgs << "-Xlint:deprecation"
-                options.compilerArgs << "-parameters"
             }
             test {
                 useJUnit()
