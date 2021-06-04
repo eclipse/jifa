@@ -16,7 +16,6 @@ import org.eclipse.jifa.common.Constant;
 import org.eclipse.jifa.common.aux.JifaException;
 import org.eclipse.jifa.common.cache.Cacheable;
 import org.eclipse.jifa.common.request.PagingRequest;
-import org.eclipse.jifa.common.util.ErrorUtil;
 import org.eclipse.jifa.common.util.ReflectionUtil;
 import org.eclipse.jifa.common.vo.PageView;
 import org.eclipse.jifa.common.vo.support.SearchPredicate;
@@ -41,7 +40,6 @@ import org.eclipse.mat.query.IResult;
 import org.eclipse.mat.query.IResultPie;
 import org.eclipse.mat.query.IResultTable;
 import org.eclipse.mat.query.IResultTree;
-import org.eclipse.mat.query.IStructuredResult;
 import org.eclipse.mat.query.refined.RefinedResultBuilder;
 import org.eclipse.mat.query.refined.RefinedTable;
 import org.eclipse.mat.query.refined.RefinedTree;
@@ -81,15 +79,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static org.eclipse.jifa.common.util.ReflectionUtil.getFieldValueOrNull;
 import static org.eclipse.jifa.common.vo.support.SearchPredicate.createPredicate;
 import static org.eclipse.jifa.hda.api.Model.*;
 import static org.eclipse.jifa.hda.api.ProgressListener.NoOpProgressListener;
@@ -1089,7 +1084,7 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
     }
 
     @Cacheable
-    protected IResult getOQLResultCacheProvider(AnalysisContextImpl context, String oql) {
+    protected IResult getOQLResult(AnalysisContextImpl context, String oql) {
         return $(() -> {
             Map<String, Object> args = new HashMap<>();
             args.put("queryString", oql);
@@ -1100,7 +1095,7 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
     @Override
     public OQLResult getOQLResult(AnalysisContextImpl context, String oql, String sortBy, boolean ascendingOrder,
                                   int page, int pageSize) {
-        IResult result = getOQLResultCacheProvider(context, oql);
+        IResult result = getOQLResult(context, oql);
         return $(() -> {
             if (result instanceof IResultTree) {
                 return new OQLResult.TreeResult(
