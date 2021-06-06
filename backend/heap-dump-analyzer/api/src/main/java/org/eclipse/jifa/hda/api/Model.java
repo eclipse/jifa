@@ -364,6 +364,8 @@ public interface Model {
                 this.daemon = daemon;
             }
 
+            public Item() {}
+
             public static Comparator<Item> sortBy(String field, boolean ascendingOrder) {
                 return ascendingOrder ? sortTable.get(field) : sortTable.get(field).reversed();
             }
