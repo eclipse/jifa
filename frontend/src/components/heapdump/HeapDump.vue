@@ -177,6 +177,21 @@
                   <span slot="label"> OQL </span>
                   <div v-bind:style="{ 'height': '100%', 'width': resultDivWidth}">
                     <OQL :file="file"
+                         queryType="oql"
+                         @outgoingRefsOfObj="outgoingRefsOfObj"
+                         @incomingRefsOfObj="incomingRefsOfObj"
+                         @outgoingRefsOfClass="outgoingRefsOfClass"
+                         @incomingRefsOfClass="incomingRefsOfClass"
+                         @pathToGCRootsOfObj="pathToGCRootsOfObj"
+                         @setSelectedObjectId="setSelectedObjectId"/>
+                  </div>
+                </el-tab-pane>
+
+                <el-tab-pane name="calcitesSQL" lazy>
+                  <span slot="label"> Calcite SQL </span>
+                  <div v-bind:style="{ 'height': '100%', 'width': resultDivWidth}">
+                    <OQL :file="file"
+                         queryType="sql"
                          @outgoingRefsOfObj="outgoingRefsOfObj"
                          @incomingRefsOfObj="incomingRefsOfObj"
                          @outgoingRefsOfClass="outgoingRefsOfClass"

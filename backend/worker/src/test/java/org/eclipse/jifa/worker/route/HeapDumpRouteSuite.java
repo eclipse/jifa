@@ -184,6 +184,14 @@ public class HeapDumpRouteSuite extends Base {
                         .addQueryParam("ascendingOrder", "true")
                         .addQueryParam("pageSize", "10"));
 
+        // oql
+        testGet("/sql",
+                (PreProcessor) req -> req.addQueryParam("sql", "select * from java.lang.String")
+                        .addQueryParam("page", "1")
+                        .addQueryParam("sortBy", "id")
+                        .addQueryParam("ascendingOrder", "true")
+                        .addQueryParam("pageSize", "10"));
+
         // path to gc roots
         testGet("/pathToGCRoots",
                 (PreProcessor) req -> req.addQueryParam("origin", String.valueOf(holder.id))

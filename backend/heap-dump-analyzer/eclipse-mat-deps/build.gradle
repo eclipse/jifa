@@ -47,16 +47,53 @@ p2AsMaven {
         slicingOption 'includeNonGreedy', 'false'
         slicingOption 'includeOptional', 'false'
     }
+
+    group 'calcite-eclipse-deps', {
+        repoEclipse '4.18'
+        iu 'org.eclipse.help'
+        iu 'org.eclipse.jface'
+        iu 'org.eclipse.jface.text'
+        iu 'org.eclipse.swt'
+        iu 'org.eclipse.ui'
+        feature 'org.eclipse.platform'
+        append true
+        slicingOption 'includeFeatures', 'false'
+        slicingOption 'includeNonGreedy', 'false'
+        slicingOption 'includeOptional', 'false'
+        slicingOption 'platformFilter', 'linux,gtk,x86_64'
+    }
+
+    group 'calcite-mat-deps', {
+        repo 'https://archive.eclipse.org/mat/photon/M7/update-site/'
+        iu 'org.eclipse.mat.ui'
+        append true
+        slicingOption 'includeFeatures', 'false'
+        slicingOption 'includeNonGreedy', 'false'
+        slicingOption 'includeOptional', 'false'
+    }
+
+    group 'mat-calcite-plugin', {
+        repo 'jar:https://github.com/vlsi/mat-calcite-plugin/releases/download/v1.5.0/MatCalciteRepository-1.5.0.zip!/'
+        iu 'MatCalcitePlugin'
+        append true
+        slicingOption 'includeFeatures', 'false'
+        slicingOption 'includeNonGreedy', 'false'
+        slicingOption 'includeOptional', 'false'
+    }
 }
 
 afterEvaluate {
     copy {
         from files(
+                "${buildDir}/p2asmaven/p2/mat-calcite-plugin/plugins",
+                "${buildDir}/p2asmaven/p2/calcite-eclipse-deps/plugins",
+                "${buildDir}/p2asmaven/p2/calcite-mat-deps/plugins",
                 "${buildDir}/p2asmaven/p2/eclipse-deps/plugins",
-                "${buildDir}/p2asmaven/p2/eclipse-mat/plugins")
+                "${buildDir}/p2asmaven/p2/eclipse-mat/plugins",
+                )
         into "${mat_deps_dir_path}"
         include '*.jar'
-        rename '(.+)_(.+)', '$1.jar'
+        rename '(.+)', '$1'
     }
 }
 
@@ -65,4 +102,3 @@ task clean {
         delete files("${projectDir}/workspace")
     }
 }
-

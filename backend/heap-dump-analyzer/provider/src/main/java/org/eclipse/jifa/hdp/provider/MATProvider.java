@@ -21,6 +21,7 @@ import org.osgi.framework.BundleException;
 import org.osgi.framework.Constants;
 import org.osgi.framework.launch.Framework;
 import org.osgi.framework.launch.FrameworkFactory;
+import org.osgi.framework.wiring.BundleRevision;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -79,14 +80,22 @@ public class MATProvider implements HeapDumpAnalyzer.Provider {
             for (File file : files) {
                 String name = file.getName();
                 // org.eclipse.osgi is the system bundle
-                if (name.endsWith(".jar") && !name.equals("org.eclipse.osgi.jar")) {
+                if (name.endsWith(".jar") && !name.startsWith("org.eclipse.osgi_")) {
                     Bundle b = framework.getBundleContext().installBundle(file.toURI().toString());
                     bundles.add(b);
                 }
             }
 
+            ArrayList validNames = new ArrayList();
+            validNames.add("org.apache.felix.scr");
+            validNames.add("org.eclipse.equinox.event");
+            validNames.add("org.eclipse.jifa.hda.implementation");
+
             for (Bundle bundle : bundles) {
-                bundle.start();
+                if (validNames.contains(bundle.getSymbolicName())) {
+                    System.out.println("starting bundle:   " + bundle);
+                    bundle.start();
+                }
             }
 
             analyzer =
