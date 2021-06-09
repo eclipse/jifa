@@ -17,6 +17,8 @@ import com.google.gson.GsonBuilder;
 
 public class GsonHolder {
 
-    public static final Gson GSON = new GsonBuilder().registerTypeAdapterFactory(new TypeFactory()).create();
+    public static final Gson GSON = new GsonBuilder().registerTypeAdapterFactory(new TypeFactory())
+                                                     .serializeSpecialFloatingPointValues()
+                                                     .create();
 
 }
