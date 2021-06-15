@@ -194,7 +194,8 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
         return queryByCommand(context, command, null, NoOpProgressListener);
     }
 
-    private <Res extends IResult> Res queryByCommand(AnalysisContextImpl context,
+    @Cacheable
+    protected <Res extends IResult> Res queryByCommand(AnalysisContextImpl context,
                                                      String command,
                                                      Map<String, Object> args) throws SnapshotException {
         return queryByCommand(context, command, args, NoOpProgressListener);
