@@ -24,6 +24,7 @@ import java.lang.ref.SoftReference;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class AnalysisContextImpl implements AnalysisContext {
 
@@ -87,5 +88,20 @@ public class AnalysisContextImpl implements AnalysisContext {
 
     static class LeakReportData {
         IResult result;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        AnalysisContextImpl that = (AnalysisContextImpl) o;
+        return Objects.equals(snapshot, that.snapshot);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(snapshot);
     }
 }
