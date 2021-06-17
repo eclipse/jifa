@@ -476,12 +476,11 @@ public class FileSupport {
     }
 
     public static long getTotalDiskSpace() {
-        return new File(WorkerGlobal.workspace()).getTotalSpace() >> 20;
+        return new File(System.getProperty("user.home")).getTotalSpace() >> 20;
     }
 
     public static long getUsedDiskSpace() {
-        String path = WorkerGlobal.workspace();
-        return FileUtils.sizeOfDirectory(new File(path)) >> 20;
+        return FileUtils.sizeOfDirectory(new File(System.getProperty("user.home"))) >> 20;
     }
 
 }
