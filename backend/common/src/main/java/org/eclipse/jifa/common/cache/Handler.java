@@ -60,6 +60,9 @@ class Handler implements MethodInterceptor {
                                   try {
                                       return proxy.invokeSuper(obj, args);
                                   } catch (Throwable throwable) {
+                                      if (throwable instanceof RuntimeException) {
+                                          throw (RuntimeException) throwable;
+                                      }
                                       throw new JifaException(throwable);
                                   }
                               });
