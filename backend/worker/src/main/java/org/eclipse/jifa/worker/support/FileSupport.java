@@ -190,6 +190,14 @@ public class FileSupport {
         return fileInfo;
     }
 
+    public static FileInfo infoOrNull(FileType type, String name) {
+        try {
+            return info(type, name);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     public static void save(FileInfo info) {
         try {
             FileUtils
@@ -334,7 +342,7 @@ public class FileSupport {
             URLConnection conn = new URL(url).openConnection();
             listener.updateState(ProgressState.IN_PROGRESS);
             promise.complete(new TransferringFile(fileName));
-            listener.setTotalSize(conn.getContentLength());
+            listener.setTotalSize(Math.max(conn.getContentLength(), 0));
             in = conn.getInputStream();
             out = new FileOutputStream(filePath);
             byte[] buffer = new byte[8192];

@@ -199,8 +199,14 @@ class FileRoute extends BaseRoute {
             }
             promise.complete(progress);
         } else {
-            FileInfo info = FileSupport.info(type, name);
-            ASSERT.notNull(info);
+            FileInfo info = FileSupport.infoOrNull(type, name);
+            if (info == null) {
+                TransferProgress progress = new TransferProgress();
+                progress.setState(ProgressState.ERROR);
+                promise.complete(progress);
+                return;
+            }
+
             if (info.getTransferState() == FileTransferState.IN_PROGRESS
                 || info.getTransferState() == FileTransferState.NOT_STARTED) {
                 LOGGER.warn("Illegal file {} state", name);
