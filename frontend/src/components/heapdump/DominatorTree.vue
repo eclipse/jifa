@@ -91,7 +91,7 @@
         <el-table-column prop="id" label="Class Name" show-overflow-tooltip sortable="custom">
           <template slot-scope="scope">
             <span v-if="scope.row.isResult"
-                  @click="canInspect(scope.row)?$emit('setSelectedObjectId', scope.row.objectId):{}"
+                  @click="scope.row.isObjType ? $emit('setSelectedObjectId', scope.row.objectId) : {}"
                   style="cursor: pointer"
                   @contextmenu="contextMenuTargetObjectId = scope.row.objectId; idPathInResultTree = scope.row.idPathInResultTree; contextMenuTargetObjectLabel = scope.row.label"
                   v-contextmenu:contextmenu>
@@ -209,16 +209,6 @@
         this.ascendingOrder = val.order === 'ascending';
         this.fetchNextPageData();
       },
-      canInspect(row) {
-        if (row.isObjType === true) {
-          return true;
-        } else {
-          if (row.objectType == 1) {
-            return true;
-          }
-          return false;
-        }
-      },
       getIconWrapper(gCRoot, objectType, isObj) {
         return getIcon(gCRoot, objectType, isObj)
       },
@@ -314,7 +304,7 @@
             this.records.push({
               rowKey: rowKey++,
               objectId: d.objectId,
-              isObjType: d.isObjType,
+              isObjType: d.objType,
               objectType: d.objectType,
               icon: this.getIconWrapper(d.gCRoot, d.objectType, d.isObjType),
               label: d.label,
