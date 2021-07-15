@@ -17,7 +17,7 @@ plugins {
 dependencies {
     implementation project(':backend:common')
     implementation project(':backend:heap-dump-analyzer:api')
-    runtime project(':backend:heap-dump-analyzer:provider')
+    runtimeOnly project(':backend:heap-dump-analyzer:provider')
 
     implementation group: 'io.vertx', name: 'vertx-core', version: "${vertx_version}"
     implementation group: 'io.vertx', name: 'vertx-config', version: "${vertx_version}"
