@@ -54,11 +54,11 @@ sourceSets {
 
 task runVertxCodeGen(type: JavaCompile, group: 'build') {
     def generated = project.file('src/main/generated')
-    generated.delete()
+    delete generated
     source = sourceSets.main.java
     classpath = sourceSets.main.compileClasspath
     options.annotationProcessorPath = sourceSets.main.compileClasspath
-    destinationDir = generated
+    destinationDirectory = generated
     options.compilerArgs = [
             "-proc:only",
             "-processor",
