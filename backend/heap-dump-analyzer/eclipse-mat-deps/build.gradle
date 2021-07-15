@@ -60,7 +60,7 @@ afterEvaluate {
 
 task clean {
     doFirst {
-        delete files("${mat_deps_dir_path}", "${projectDir}/workspace")
+        delete files("${projectDir}/workspace")
     }
 }
 
