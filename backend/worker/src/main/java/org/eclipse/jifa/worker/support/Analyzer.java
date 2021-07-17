@@ -129,6 +129,8 @@ public class Analyzer {
                         break;
                 }
             } catch (Exception e) {
+                LOGGER.error("task failed due to {}", ErrorUtil.toString(e));
+                LOGGER.error(progressListener.log());
                 File log = new File(FileSupport.errorLogPath(fileType, fileName));
                 FileUtil.write(log, progressListener.log(), false);
                 FileUtil.write(log, ErrorUtil.toString(e), true);
