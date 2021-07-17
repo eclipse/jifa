@@ -36,9 +36,7 @@ class Handler implements MethodInterceptor {
             Method[] methods = target.getClass().getDeclaredMethods();
             for (Method method : methods) {
                 if (method.getAnnotation(Cacheable.class) != null) {
-                    if (!method.isAccessible()) {
-                        method.setAccessible(true);
-                    }
+                    method.setAccessible(true);
                     int mod = method.getModifiers();
                     if (Modifier.isAbstract(mod) || Modifier.isFinal(mod) ||
                         !(Modifier.isPublic(mod) || Modifier.isProtected(mod))) {
