@@ -92,6 +92,7 @@ afterEvaluate {
                 "${buildDir}/p2asmaven/p2/eclipse-mat/plugins",
                 )
         into "${mat_deps_dir_path}"
+        duplicatesStrategy = DuplicatesStrategy.WARN
         include '*.jar'
         rename '(.+)', '$1'
     }
