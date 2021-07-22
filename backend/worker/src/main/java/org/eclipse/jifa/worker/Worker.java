@@ -31,7 +31,6 @@ import org.eclipse.jifa.common.aux.JifaException;
 import org.eclipse.jifa.common.util.FileUtil;
 import org.eclipse.jifa.worker.route.RouteFiller;
 import org.eclipse.jifa.worker.route.RouteMappingTable;
-import org.eclipse.jifa.worker.support.hda.AnalysisEnv;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,11 +50,6 @@ public class Worker extends AbstractVerticle {
 
     public static void main(String[] args) throws InterruptedException {
         startTime = System.currentTimeMillis();
-
-        if (!AnalysisEnv.INITIALIZED) {
-            System.err.println("Heap dump analysis env initialized failed");
-            return;
-        }
 
         JsonObject vertxConfig = new JsonObject(
             FileUtil.content(Worker.class.getClassLoader().getResourceAsStream(DEFAULT_VERTX_CONFIG_FILE)));
@@ -130,7 +124,7 @@ public class Worker extends AbstractVerticle {
         vertx.executeBlocking(event -> {
             WorkerGlobal.init(vertx, host, port, config(), hooks);
 
-            HttpServer server = vertx.createHttpServer(hooks.serverOptions());
+            HttpServer server = vertx.createHttpServer(hooks.serverOptions(vertx));
             Router router = Router.router(vertx);
 
             // body handler always ends to be first so it can read the body
@@ -140,7 +134,7 @@ public class Worker extends AbstractVerticle {
                 router.post().handler(BodyHandler.create(uploadDir));
             }
 
-            hooks.beforeRoutes(router);
+            hooks.beforeRoutes(vertx, router);
 
             File webRoot = new File(staticRoot);
             if (webRoot.exists() && webRoot.isDirectory()) {
@@ -167,7 +161,7 @@ public class Worker extends AbstractVerticle {
 
             //new RouteFiller(router).fill();
             RouteMappingTable.register(router);
-            hooks.afterRoutes(router);
+            hooks.afterRoutes(vertx,router);
             server.requestHandler(router);
 
             server.listen(port, host, ar -> {

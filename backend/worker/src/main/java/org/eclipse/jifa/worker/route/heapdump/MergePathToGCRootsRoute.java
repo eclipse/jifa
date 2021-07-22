@@ -18,9 +18,9 @@ import org.eclipse.jifa.common.vo.PageView;
 import org.eclipse.jifa.worker.route.ParamKey;
 import org.eclipse.jifa.worker.route.RouteMeta;
 import org.eclipse.jifa.worker.support.Analyzer;
-import org.eclipse.jifa.worker.support.hda.AnalysisEnv;
 
 import static org.eclipse.jifa.hda.api.Model.GCRootPath;
+import static org.eclipse.jifa.worker.support.Analyzer.HEAP_DUMP_ANALYZER;
 
 class MergePathToGCRootsRoute extends HeapBaseRoute {
 
@@ -30,10 +30,10 @@ class MergePathToGCRootsRoute extends HeapBaseRoute {
                         @ParamKey("classId") int classId,
                         @ParamKey("grouping") GCRootPath.Grouping grouping,
                         PagingRequest pagingRequest) {
-        promise.complete(AnalysisEnv.HEAP_DUMP_ANALYZER
-                            .getRootsOfMergePathToGCRootsByClassId(Analyzer.getOrOpenAnalysisContext(file), classId,
-                                                                   grouping, pagingRequest.getPage(),
-                                                                   pagingRequest.getPageSize()));
+        promise.complete(HEAP_DUMP_ANALYZER
+                             .getRootsOfMergePathToGCRootsByClassId(Analyzer.getOrOpenAnalysisContext(file), classId,
+                                                                    grouping, pagingRequest.getPage(),
+                                                                    pagingRequest.getPageSize()));
     }
 
     @RouteMeta(path = "/mergePathToGCRoots/children/byClassId")
@@ -43,10 +43,10 @@ class MergePathToGCRootsRoute extends HeapBaseRoute {
                            PagingRequest pagingRequest,
                            @ParamKey("classId") int classId,
                            @ParamKey("objectIdPathInGCPathTree") int[] objectIdPathInGCPathTree) {
-        promise.complete(AnalysisEnv.HEAP_DUMP_ANALYZER
-                            .getChildrenOfMergePathToGCRootsByClassId(Analyzer.getOrOpenAnalysisContext(file), classId,
-                                                                      objectIdPathInGCPathTree,
-                                                                      grouping, pagingRequest.getPage(),
-                                                                      pagingRequest.getPageSize()));
+        promise.complete(HEAP_DUMP_ANALYZER
+                             .getChildrenOfMergePathToGCRootsByClassId(Analyzer.getOrOpenAnalysisContext(file), classId,
+                                                                       objectIdPathInGCPathTree,
+                                                                       grouping, pagingRequest.getPage(),
+                                                                       pagingRequest.getPageSize()));
     }
 }

@@ -43,7 +43,6 @@ import org.eclipse.jifa.common.util.FileUtil;
 import org.eclipse.jifa.common.vo.FileInfo;
 import org.eclipse.jifa.common.vo.TransferringFile;
 import org.eclipse.jifa.worker.WorkerGlobal;
-import org.eclipse.jifa.worker.support.hda.TransferListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -191,6 +190,14 @@ public class FileSupport {
         return fileInfo;
     }
 
+    public static FileInfo infoOrNull(FileType type, String name) {
+        try {
+            return info(type, name);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     public static void save(FileInfo info) {
         try {
             FileUtils
@@ -335,7 +342,7 @@ public class FileSupport {
             URLConnection conn = new URL(url).openConnection();
             listener.updateState(ProgressState.IN_PROGRESS);
             promise.complete(new TransferringFile(fileName));
-            listener.setTotalSize(conn.getContentLength());
+            listener.setTotalSize(Math.max(conn.getContentLength(), 0));
             in = conn.getInputStream();
             out = new FileOutputStream(filePath);
             byte[] buffer = new byte[8192];
@@ -477,12 +484,11 @@ public class FileSupport {
     }
 
     public static long getTotalDiskSpace() {
-        return new File(WorkerGlobal.workspace()).getTotalSpace() >> 20;
+        return new File(System.getProperty("user.home")).getTotalSpace() >> 20;
     }
 
     public static long getUsedDiskSpace() {
-        String path = WorkerGlobal.workspace();
-        return FileUtils.sizeOfDirectory(new File(path)) >> 20;
+        return FileUtils.sizeOfDirectory(new File(System.getProperty("user.home"))) >> 20;
     }
 
 }

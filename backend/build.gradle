@@ -18,8 +18,9 @@ def MASTER = 'master'
 def HEAP_DUMP_ANALYZER_API = 'heap-dump-analyzer:api'
 def HEAP_DUMP_ANALYZER_IMPL = 'heap-dump-analyzer:impl'
 def HEAP_DUMP_ANALYZER_ECLIPSE_MAT_DEPS = 'heap-dump-analyzer:eclipse-mat-deps'
+def HEAP_DUMP_ANALYZER_PROVIDER = 'heap-dump-analyzer:provider'
 
-[COMMON, WORKER, MASTER, HEAP_DUMP_ANALYZER_API, HEAP_DUMP_ANALYZER_IMPL].each {
+[COMMON, WORKER, MASTER, HEAP_DUMP_ANALYZER_API, HEAP_DUMP_ANALYZER_IMPL, HEAP_DUMP_ANALYZER_PROVIDER].each {
     name ->
         project("$name") {
             apply plugin: 'java'
@@ -60,12 +61,13 @@ def HEAP_DUMP_ANALYZER_ECLIPSE_MAT_DEPS = 'heap-dump-analyzer:eclipse-mat-deps'
 
 def deps_dir_name = "mat-deps"
 def deps_dir_path = project(HEAP_DUMP_ANALYZER_ECLIPSE_MAT_DEPS).projectDir.parentFile.path + '/' + deps_dir_name
-[HEAP_DUMP_ANALYZER_ECLIPSE_MAT_DEPS, HEAP_DUMP_ANALYZER_IMPL, WORKER].each {
+[HEAP_DUMP_ANALYZER_ECLIPSE_MAT_DEPS, HEAP_DUMP_ANALYZER_IMPL, HEAP_DUMP_ANALYZER_PROVIDER, WORKER].each {
     name ->
         project("$name") {
             ext {
                 mat_deps_dir_name = deps_dir_name
                 mat_deps_dir_path = deps_dir_path
+                osgi_jar = "org.eclipse.osgi.jar"
             }
         }
 }

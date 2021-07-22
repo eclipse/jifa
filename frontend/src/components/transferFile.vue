@@ -56,7 +56,7 @@
     </el-dialog>
 
     <el-tabs value="scp" style="margin-top: 10px">
-      <el-tab-pane label="Upload" name="upload" v-if="false">
+      <el-tab-pane label="Upload" name="upload">
         <div align="center">
           <el-upload ref="uploadComp"
                      drag

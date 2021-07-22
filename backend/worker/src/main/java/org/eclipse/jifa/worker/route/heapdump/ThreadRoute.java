@@ -22,8 +22,8 @@ import org.eclipse.jifa.worker.route.RouteMeta;
 
 import java.util.List;
 
+import static org.eclipse.jifa.worker.support.Analyzer.HEAP_DUMP_ANALYZER;
 import static org.eclipse.jifa.worker.support.Analyzer.getOrOpenAnalysisContext;
-import static org.eclipse.jifa.worker.support.hda.AnalysisEnv.HEAP_DUMP_ANALYZER;
 
 class ThreadRoute extends HeapBaseRoute {
 

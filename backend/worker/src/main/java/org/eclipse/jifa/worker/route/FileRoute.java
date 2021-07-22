@@ -32,7 +32,7 @@ import org.eclipse.jifa.common.vo.TransferProgress;
 import org.eclipse.jifa.common.vo.TransferringFile;
 import org.eclipse.jifa.worker.WorkerGlobal;
 import org.eclipse.jifa.worker.support.FileSupport;
-import org.eclipse.jifa.worker.support.hda.TransferListener;
+import org.eclipse.jifa.worker.support.TransferListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -199,8 +199,14 @@ class FileRoute extends BaseRoute {
             }
             promise.complete(progress);
         } else {
-            FileInfo info = FileSupport.info(type, name);
-            ASSERT.notNull(info);
+            FileInfo info = FileSupport.infoOrNull(type, name);
+            if (info == null) {
+                TransferProgress progress = new TransferProgress();
+                progress.setState(ProgressState.ERROR);
+                promise.complete(progress);
+                return;
+            }
+
             if (info.getTransferState() == FileTransferState.IN_PROGRESS
                 || info.getTransferState() == FileTransferState.NOT_STARTED) {
                 LOGGER.warn("Illegal file {} state", name);

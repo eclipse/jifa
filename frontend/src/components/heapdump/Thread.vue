@@ -100,6 +100,8 @@
       </el-table-column>
       <el-table-column label="Retained Heap" prop="retainedHeap" sortable="custom">
       </el-table-column>
+      <el-table-column label="Max Locals' Retained Heap" prop="maxLocalsRetainedHeap">
+      </el-table-column>
       <el-table-column label="Context Class Loader" prop="contextClassLoader" width="420px" show-overflow-tooltip
                        sortable="custom">
       </el-table-column>
@@ -124,6 +126,7 @@
         this.sortBy = val.prop
         this.nextPage = 1
         this.totalSize = 0
+        this.currentSize = 0
         this.threads = []
         this.ascendingOrder = val.order === 'ascending'
         this.fetchThreadsData()
@@ -270,6 +273,7 @@
               stack: res[i].stack,
               depth: depth++,
               hasChildren: res[i].hasLocal,
+              maxLocalsRetainedHeap: res[i].maxLocalsRetainedSize,
               firstNonNativeFrame: res[i].firstNonNativeFrame
             })
           }
@@ -293,9 +297,9 @@
       },
       fetchThreadDetails() {
         if (this.currentSize >= this.totalSize) {
+          this.loading = false
           return
         }
-        this.loading = true
         if (this.nextPage > 1) {
           this.threads.splice(this.threads.length - 1, 1)
         }

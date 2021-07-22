@@ -26,6 +26,10 @@ import static org.eclipse.jifa.hda.api.Model.*;
 
 public interface HeapDumpAnalyzer<C extends AnalysisContext> {
 
+    interface Provider {
+        HeapDumpAnalyzer<AnalysisContext> get();
+    }
+
     C open(File dump, Map<String, String> arguments, ProgressListener listener);
 
     void dispose(C context);

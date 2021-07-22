@@ -19,34 +19,34 @@ import org.eclipse.jifa.hda.api.Model;
 import org.eclipse.jifa.worker.route.ParamKey;
 import org.eclipse.jifa.worker.route.RouteMeta;
 import org.eclipse.jifa.worker.support.Analyzer;
-import org.eclipse.jifa.worker.support.hda.AnalysisEnv;
 
 import java.util.List;
 
 import static org.eclipse.jifa.hda.api.Model.GCRoot;
+import static org.eclipse.jifa.worker.support.Analyzer.HEAP_DUMP_ANALYZER;
 
 class GCRootRoute extends HeapBaseRoute {
 
     @RouteMeta(path = "/GCRoots")
     void roots(Promise<List<GCRoot.Item>> promise, @ParamKey("file") String file) {
-        promise.complete(AnalysisEnv.HEAP_DUMP_ANALYZER.getGCRoots(Analyzer.getOrOpenAnalysisContext(file)));
+        promise.complete(HEAP_DUMP_ANALYZER.getGCRoots(Analyzer.getOrOpenAnalysisContext(file)));
     }
 
     @RouteMeta(path = "/GCRoots/classes")
     void classes(Promise<PageView<GCRoot.Item>> promise, @ParamKey("file") String file,
                  @ParamKey("rootTypeIndex") int rootTypeIndex, PagingRequest pagingRequest) {
-        promise.complete(AnalysisEnv.HEAP_DUMP_ANALYZER.getClassesOfGCRoot(Analyzer.getOrOpenAnalysisContext(file),
-                                                                          rootTypeIndex, pagingRequest.getPage(),
-                                                                          pagingRequest.getPageSize()));
+        promise.complete(HEAP_DUMP_ANALYZER.getClassesOfGCRoot(Analyzer.getOrOpenAnalysisContext(file),
+                                                               rootTypeIndex, pagingRequest.getPage(),
+                                                               pagingRequest.getPageSize()));
     }
 
     @RouteMeta(path = "/GCRoots/class/objects")
     void objects(Promise<PageView<Model.JavaObject>> promise, @ParamKey("file") String file,
                  @ParamKey("rootTypeIndex") int rootTypeIndex, @ParamKey("classIndex") int classIndex,
                  PagingRequest pagingRequest) {
-        promise.complete(AnalysisEnv.HEAP_DUMP_ANALYZER.getObjectsOfGCRoot(Analyzer.getOrOpenAnalysisContext(file),
-                                                                          rootTypeIndex, classIndex,
-                                                                          pagingRequest.getPage(),
-                                                                          pagingRequest.getPageSize()));
+        promise.complete(HEAP_DUMP_ANALYZER.getObjectsOfGCRoot(Analyzer.getOrOpenAnalysisContext(file),
+                                                               rootTypeIndex, classIndex,
+                                                               pagingRequest.getPage(),
+                                                               pagingRequest.getPageSize()));
     }
 }

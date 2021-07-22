@@ -14,11 +14,10 @@ plugins {
     id 'application'
 }
 
-def osgi_jar = "org.eclipse.osgi.jar"
-
 dependencies {
     implementation project(':backend:common')
     implementation project(':backend:heap-dump-analyzer:api')
+    runtime project(':backend:heap-dump-analyzer:provider')
 
     implementation group: 'io.vertx', name: 'vertx-core', version: "${vertx_version}"
     implementation group: 'io.vertx', name: 'vertx-config', version: "${vertx_version}"
@@ -30,14 +29,8 @@ dependencies {
 
     implementation 'com.amazonaws:aws-java-sdk-s3:1.11.882'
 
-    compileOnly files("${mat_deps_dir_path}/${osgi_jar}")
-
     testImplementation 'junit:junit:4.12'
     testImplementation group: 'io.vertx', name: 'vertx-unit', version: "${vertx_version}"
-}
-
-['run', 'test', 'startScripts'].each { n ->
-    tasks[n].dependsOn(':backend:heap-dump-analyzer:impl:installJar')
 }
 
 run {

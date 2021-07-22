@@ -18,77 +18,99 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.function.Predicate;
+import java.util.regex.Pattern;
 
 public class SearchPredicate {
     private static final Logger LOGGER = LoggerFactory.getLogger(SearchPredicate.class);
 
     public static <T extends Searchable> Predicate<T> createPredicate(String searchText, SearchType searchType) {
-        if (searchText == null || searchType == null) {
-            return null;
+        if (searchText == null || searchType == null || searchText.isEmpty()) {
+            return (T record) -> true;
         }
-        return (T record) -> {
-            try {
-                // don't filter any items if search content is empty
-                if (searchText.isEmpty()) {
-                    return true;
+
+        Predicate<T> pred;
+
+        try {
+            switch (searchType) {
+                case BY_NAME:
+                case BY_CONTEXT_CLASSLOADER_NAME: {
+                    Pattern p = Pattern.compile(searchText);
+                    pred = (T record) -> p.matcher(((String) record.getBySearchType(searchType))).matches();
+                    break;
                 }
 
-                switch (searchType) {
-                    // string comparing
-                    case BY_NAME:
-                    case BY_CONTEXT_CLASSLOADER_NAME: {
-                        return ((String) record.getBySearchType(searchType)).matches(searchText);
+                case BY_PERCENT: {
+                    String prefix = extractPrefix(searchText);
+                    double num = Double.parseDouble(extractNumberText(searchText)) / 100.0;
+                    switch (prefix) {
+                        case "==":
+                            pred = (T record) -> Double.compare((double) record.getBySearchType(searchType), num) == 0;
+                            break;
+                        case ">=":
+                            pred = (T record) -> (double) record.getBySearchType(searchType) >= num;
+                            break;
+                        case "<=":
+                            pred = (T record) -> (double) record.getBySearchType(searchType) <= num;
+                            break;
+                        case ">":
+                            pred = (T record) -> (double) record.getBySearchType(searchType) > num;
+                            break;
+                        case "<":
+                            pred = (T record) -> (double) record.getBySearchType(searchType) < num;
+                            break;
+                        case "!=":
+                            pred = (T record) -> Double.compare((double) record.getBySearchType(searchType), num) != 0;
+                            break;
+                        default:
+                            pred = (T record) -> false;
+                            break;
                     }
-                    // double comparing
-                    case BY_PERCENT: {
-                        String prefix = extractPrefix(searchText);
-                        double num = Double.parseDouble(extractNumberText(searchText));
-                        num /= 100; // [1.80]% => 0.0180
-                        switch (prefix) {
-                            case "==":
-                                return Double.compare((double) record.getBySearchType(searchType), num) == 0;
-                            case ">=":
-                                return (double) record.getBySearchType(searchType) >= num;
-                            case "<=":
-                                return (double) record.getBySearchType(searchType) <= num;
-                            case ">":
-                                return (double) record.getBySearchType(searchType) > num;
-                            case "<":
-                                return (double) record.getBySearchType(searchType) < num;
-                            case "!=":
-                                return Double.compare((double) record.getBySearchType(searchType), num) != 0;
-                            default: {
-                                return false;
-                            }
-                        }
-                    }
-                    // long comparing
-                    default: {
-                        String prefix = extractPrefix(searchText);
-                        long num = Long.parseLong(extractNumberText(searchText));
-                        switch (prefix) {
-                            case "==":
-                                return (long) record.getBySearchType(searchType) == num;
-                            case ">=":
-                                return (long) record.getBySearchType(searchType) >= num;
-                            case "<=":
-                                return (long) record.getBySearchType(searchType) <= num;
-                            case ">":
-                                return (long) record.getBySearchType(searchType) > num;
-                            case "<":
-                                return (long) record.getBySearchType(searchType) < num;
-                            case "!=":
-                                return (long) record.getBySearchType(searchType) != num;
-                            default: {
-                                return false;
-                            }
-                        }
-                    }
+                    break;
                 }
+
+                default: {
+                    final String prefix = extractPrefix(searchText);
+                    final long num = Long.parseLong(extractNumberText(searchText));
+                    switch (prefix) {
+                        case "==":
+                            pred = (T record) -> (long) record.getBySearchType(searchType) == num;
+                            break;
+                        case ">=":
+                            pred = (T record) -> (long) record.getBySearchType(searchType) >= num;
+                            break;
+                        case "<=":
+                            pred = (T record) -> (long) record.getBySearchType(searchType) <= num;
+                            break;
+                        case ">":
+                            pred = (T record) -> (long) record.getBySearchType(searchType) > num;
+                            break;
+                        case "<":
+                            pred = (T record) -> (long) record.getBySearchType(searchType) < num;
+                            break;
+                        case "!=":
+                            pred = (T record) -> (long) record.getBySearchType(searchType) != num;
+                            break;
+                        default:
+                            pred = (T record) -> false;
+                            break;
+                    }
+                    break;
+                }
+            }
+        } catch (RuntimeException ignored) {
+            LOGGER.debug("unexpected exception generating search `" + searchText + "` with type " + searchType.name());
+            pred = (T record) -> false;
+        }
+
+        // wrap for error handling
+        final Predicate<T> unwrapped = pred;
+        return (T record) -> {
+            try {
+                return unwrapped.test(record);
             } catch (Throwable ignored) {
                 LOGGER.debug("unexpected exception when search `" + searchText + "` with type " + searchType.name());
+                return false;
             }
-            return false;
         };
     }
 

@@ -22,24 +22,37 @@ import org.eclipse.jifa.common.util.ErrorUtil;
 import org.eclipse.jifa.common.util.FileUtil;
 import org.eclipse.jifa.hda.api.AnalysisContext;
 import org.eclipse.jifa.hda.api.DefaultProgressListener;
+import org.eclipse.jifa.hda.api.HeapDumpAnalyzer;
 import org.eclipse.jifa.hda.api.ProgressListener;
+import org.eclipse.jifa.worker.Worker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.ServiceLoader;
 
 import static org.eclipse.jifa.common.enums.FileType.HEAP_DUMP;
 import static org.eclipse.jifa.common.util.Assertion.ASSERT;
-import static org.eclipse.jifa.worker.support.hda.AnalysisEnv.HEAP_DUMP_ANALYZER;
 
 public class Analyzer {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(Analyzer.class);
 
-    private Map<String, ProgressListener> listeners;
-    private Cache<String, Object> cache;
+    public static final HeapDumpAnalyzer<AnalysisContext> HEAP_DUMP_ANALYZER;
+
+    static {
+        Iterator<HeapDumpAnalyzer.Provider> iterator =
+            ServiceLoader.load(HeapDumpAnalyzer.Provider.class, Worker.class.getClassLoader()).iterator();
+        ASSERT.isTrue(iterator.hasNext());
+        HEAP_DUMP_ANALYZER = iterator.next().get();
+    }
+
+    private final Map<String, ProgressListener> listeners;
+    private final Cache<String, Object> cache;
 
     private Analyzer() {
         listeners = new HashMap<>();

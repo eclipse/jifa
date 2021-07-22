@@ -17,12 +17,13 @@ import org.eclipse.jifa.hda.api.Model;
 import org.eclipse.jifa.worker.route.ParamKey;
 import org.eclipse.jifa.worker.route.RouteMeta;
 import org.eclipse.jifa.worker.support.Analyzer;
-import org.eclipse.jifa.worker.support.hda.AnalysisEnv;
+
+import static org.eclipse.jifa.worker.support.Analyzer.HEAP_DUMP_ANALYZER;
 
 class LeakRoute extends HeapBaseRoute {
 
     @RouteMeta(path = "/leak/report")
     void report(Promise<Model.LeakReport> promise, @ParamKey("file") String file) {
-        promise.complete(AnalysisEnv.HEAP_DUMP_ANALYZER.getLeakReport(Analyzer.getOrOpenAnalysisContext(file)));
+        promise.complete(HEAP_DUMP_ANALYZER.getLeakReport(Analyzer.getOrOpenAnalysisContext(file)));
     }
 }
