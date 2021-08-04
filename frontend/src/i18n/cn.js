@@ -19,6 +19,9 @@ exports.default = {
     searchPlaceholder:'搜索...',
     heapDumpAnalysis: '堆分析',
 
+    unlockFileSuccessPrompt:'解锁成功！',
+    unlockFilePrompt:'是否解锁文件，允许任意用户访问?',
+    unlockFile:'解锁文件',
     setting: '设置',
     diskCleanup: '清理磁盘',
     help: '帮助',

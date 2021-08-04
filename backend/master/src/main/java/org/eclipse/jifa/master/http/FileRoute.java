@@ -86,6 +86,7 @@ class FileRoute extends BaseRoute implements Constant {
         info.setShared(file.isShared());
         info.setDownloadable(false);
         info.setCreationTime(file.getCreationTime());
+        info.setUserId(file.getUserId());
         return info;
     }
 

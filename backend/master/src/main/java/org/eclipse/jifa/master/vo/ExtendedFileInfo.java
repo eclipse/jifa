@@ -22,5 +22,7 @@ public class ExtendedFileInfo extends FileInfo {
 
     private String displayName;
 
+    private String userId;
+
     private boolean shared;
 }

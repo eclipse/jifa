@@ -37,14 +37,24 @@
         {{$t("jifa.resetResultDivWidth")}}
       </b-dropdown-item>
     </b-nav-item-dropdown>
+
+    <b-nav-item href="#" @click="doUnlock" v-if="$jifa.fileManagement && !$jifa.workerOnly && showUnlockOpt">
+      <i class="el-icon-folder-opened" style="margin-right: 3px"/> {{$t("jifa.unlockFile")}}
+    </b-nav-item>
   </b-navbar-nav>
 </template>
 <script>
   import axios from 'axios'
-  import {heapDumpService} from '../../util'
+  import {heapDumpService, service} from '../../util'
 
   export default {
     props: ['file', 'analysisState', 'type', 'showInspector'],
+
+    data(){
+      return {
+        showUnlockOpt: false,
+      }
+    },
 
     methods: {
 
@@ -56,6 +66,31 @@
         }).then(() => {
           axios.post(this.getUrlByType('clean')).then(() => {
             window.location.reload();
+          })
+        })
+      },
+
+      doUnlock() {
+        // Okay, unlock it.
+        this.$confirm(this.$t('jifa.unlockFilePrompt'), this.$t('jifa.prompt'), {
+          confirmButtonText: this.$t('jifa.confirm'),
+          cancelButtonText: this.$t('jifa.cancel'),
+          type: 'warning'
+        }).then(() => {
+          let formData = new FormData()
+          formData.append('name', this.file)
+          axios.post(service("/file/setShared"), new URLSearchParams(formData)).then(() => {
+            this.$notify({
+              title: this.$t("jifa.unlockFileSuccessPrompt"),
+              position: 'top-right',
+              type: "success",
+              offset: 300,
+              duration: 1000,
+              showClose: true,
+              onClose: () => {
+                this.analysisState = "SUCCESS";
+              }
+            })
           })
         })
       },
@@ -86,6 +121,41 @@
             return ""
         }
       }
+    },
+    mounted() {
+      // workerOnly mode does not need this
+      if (this.$jifa.workerOnly) {
+        return;
+      }
+
+      axios.get(service('/file'), {
+        params: {
+          name: this.file,
+        }
+      }).then(resp => {
+        let data = resp.data;
+
+        // Already shared?
+        if (data.shared) {
+          return;
+        }
+
+        // Granted accessibility?
+        let fileOwnerId = data.userId;
+        axios.get(service('/userInfo')).then(resp1 => {
+          let userInfo = resp1.data;
+          if (userInfo === undefined) {
+            return;
+          }
+          let currentUserId = userInfo.id;
+          if (userInfo.admin !== true && currentUserId !== fileOwnerId) {
+            return;
+          }
+
+          // Finally...
+          this.showUnlockOpt = true;
+        });
+      })
     }
   }
 </script>

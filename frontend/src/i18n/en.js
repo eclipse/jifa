@@ -19,6 +19,9 @@ exports.default = {
     searchPlaceholder:'Search...',
     heapDumpAnalysis: 'Heap Dump Analysis',
 
+    unlockFileSuccessPrompt:'Unlock successfully!',
+    unlockFilePrompt:'Are you sure unlocking this file to allow arbitrary access?',
+    unlockFile:'Unlock File',
     setting: 'Setting',
     diskCleanup: 'Disk Cleanup',
     help: 'Help',
