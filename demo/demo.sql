@@ -1,3 +1,5 @@
+drop database if exists jifa;
+
 create database jifa;
 
 use jifa;

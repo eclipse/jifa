@@ -40,7 +40,7 @@ def HEAP_DUMP_ANALYZER_PROVIDER = 'heap-dump-analyzer:provider'
     name ->
         project("$name") {
             ext {
-                vertx_version = '4.0.3'
+                vertx_version = '4.1.2'
             }
 
             dependencies {

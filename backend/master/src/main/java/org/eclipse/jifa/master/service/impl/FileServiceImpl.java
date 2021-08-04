@@ -130,7 +130,6 @@ public class FileServiceImpl implements FileService, Constant {
     @Override
     public void setShared(String name, Handler<AsyncResult<Void>> handler) {
         dbClient.rxUpdateWithParams(FileSQL.SET_SHARED, ja(name))
-                .doOnSuccess(SQLAssert::assertUpdated)
                 .ignoreElement()
                 .subscribe(CompletableHelper.toObserver(handler));
     }
