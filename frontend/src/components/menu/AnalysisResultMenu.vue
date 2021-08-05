@@ -91,6 +91,7 @@
                 this.analysisState = "SUCCESS";
               }
             })
+            this.showUnlockOpt = false
           })
         })
       },
