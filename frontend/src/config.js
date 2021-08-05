@@ -12,7 +12,7 @@
  ********************************************************************************/
 
 const defaults = {
-  workerOnly: false,
+  workerOnly: true,
   fileManagement: true,
 }
 
