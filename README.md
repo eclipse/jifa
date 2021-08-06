@@ -35,19 +35,18 @@ Heap dump Analysis:
 
 ![Jifa Sample](https://raw.githubusercontent.com/wiki/eclipse/jifa/resources/jifa-sample.jpg)
 
-
-## What's the goal?
+## Goal
 We believe that many companies have encountered problems when troubleshooting Java problems
 in their production environments, and we hope that Jifa will grow into a popular product to
-help developers quickly resolve production problems.
+help developers quickly address production problems.
 
 Looking forward to more users and contributors :-)
 
-## How do I interact with the community?
+## Links
 - Join the Eclipse Jifa developer community [mailing list](https://accounts.eclipse.org/mailing-list/jifa-dev).
   The community primarily uses this list for project announcements and administrative discussions amongst committers.
   Questions are welcome here as well.
-- Ask a question or start a discussion via the [GitHub issue](https://github.com/eclipse/jifa/issues).
+- **Ask a question or start a discussion via the [GitHub issue](https://github.com/eclipse/jifa/issues).(Recommend)**
 - Slack channel: [Eclipse Jifa](https://eclipsejifa.slack.com)
 
 ## Quick start
@@ -91,5 +90,5 @@ For the sake of simplicity, we demonstrate how to start them in development mode
 This would work for further developing and testing. 
 
 # Documents
-+ 1. [Jifa Customization](./docs/customization.md)
-+ 2. [Contribution Guide](./docs/CONTRIBUTING.md)
++ 1. [Jifa Customization](CUSTOMIZATION.md)
++ 2. [Contribution Guide](CONTRIBUTING.md)
