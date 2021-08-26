@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2021 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -42,7 +42,9 @@ import org.eclipse.jifa.master.entity.enums.JobState;
 import org.eclipse.jifa.master.entity.enums.JobType;
 import org.eclipse.jifa.master.service.impl.helper.*;
 import org.eclipse.jifa.master.service.sql.*;
+import org.eclipse.jifa.master.support.K8SWorkerScheduler;
 import org.eclipse.jifa.master.support.WorkerClient;
+import org.eclipse.jifa.master.support.WorkerScheduler;
 import org.eclipse.jifa.master.task.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,11 +74,7 @@ public class Pivot {
 
     private static final String NOTIFY_WORKER_ACTION_DELAY_KEY = "JOB-NOTIFY-WORKER-ACTION-DELAY";
 
-    private static final String TRIGGER_SCHEDULING_ACTION_DELAY = "JOB-TRIGGER-SCHEDULING-ACTION-DELAY";
-
     private static Pivot SINGLETON;
-
-    private Master currentMaster;
 
     private JDBCClient dbClient;
 
@@ -86,11 +84,13 @@ public class Pivot {
 
     private long notifyWorkerActionDelay;
 
-    private long triggerSchedulingActionDelay;
-
-    private SchedulingTask schedulingTask;
+    private WorkerScheduler workerScheduler;
 
     private Pivot() {
+    }
+
+    public static Pivot instance() {
+        return SINGLETON;
     }
 
     public static synchronized Pivot instance(Vertx vertx, JDBCClient dbClient) {
@@ -103,28 +103,20 @@ public class Pivot {
         jm.vertx = vertx;
 
         try {
-
+            jm.workerScheduler = new K8SWorkerScheduler();
             jm.pendingJobMaxCount = ConfigHelper.getInt(jm.config(PENDING_JOB_MAX_COUNT_KEY));
 
             jm.notifyWorkerActionDelay = ConfigHelper.getLong(jm.config(NOTIFY_WORKER_ACTION_DELAY_KEY));
 
-            jm.triggerSchedulingActionDelay = ConfigHelper.getLong(jm.config(TRIGGER_SCHEDULING_ACTION_DELAY));
-
             String ip =
-                org.eclipse.jifa.master.Master.DEV_MODE ? LOCAL_HOST : InetAddress.getLocalHost().getHostAddress();
-            LOGGER.info("Current Master Host IP is {}", ip);
+                    org.eclipse.jifa.master.Master.DEV_MODE ? LOCAL_HOST : InetAddress.getLocalHost().getHostAddress();
+            LOGGER.info("Current Master Host IP is {}. Mode: {}", ip, org.eclipse.jifa.master.Master.DEV_MODE ? "dev" : "prod");
 
-            SQLConnection sqlConnection = dbClient.rxGetConnection().blockingGet();
-            jm.currentMaster = jm.selectMaster(sqlConnection, ip).doFinally(sqlConnection::close).blockingGet();
-
-            if (jm.currentMaster.isLeader()) {
-                new DiskCleaningTask(jm, vertx);
-                new RetiringTask(jm, vertx);
-                jm.schedulingTask = new SchedulingTask(jm, vertx);
-                new TransferJobResultFillingTask(jm, vertx);
-                new DiskUsageUpdatingTask(jm, vertx);
-                new FileSyncTask(jm, vertx);
-            }
+            // Start periodic tasks
+            LOGGER.info("Create periodic tasks");
+            new RetiringTask(jm, vertx);
+            new TransferJobResultFillingTask(jm, vertx);
+            new PVCCleanupTask(jm, vertx);
         } catch (Throwable t) {
             LOGGER.error("Init job service error", t);
             System.exit(-1);
@@ -148,6 +140,10 @@ public class Pivot {
         return job;
     }
 
+    public WorkerScheduler getWorkerScheduler() {
+        return workerScheduler;
+    }
+
     public JDBCClient getDbClient() {
         return dbClient;
     }
@@ -167,6 +163,10 @@ public class Pivot {
         ).flatMap(i -> postInProgressJob(job).andThen(Single.just(job)));
     }
 
+    public static String buildWorkerName(Job job) {
+        return "my-worker" + job.getTarget().hashCode();
+    }
+
     private Single<Job> doAllocate(SQLConnection conn, Job job, int pendingCount) {
         job.setState(JobState.PENDING);
 
@@ -174,23 +174,16 @@ public class Pivot {
             return conn.rxUpdateWithParams(INSERT_ACTIVE, buildActiveParams(job)).map(i -> job);
         }
 
-        return setFileUsed(conn, job).andThen(decideWorker(conn, job).flatMap(
-            worker -> {
-                String selectedHostIP = worker.getHostIP();
-                long loadSum = worker.getCurrentLoad() + job.getEstimatedLoad();
-                if (loadSum <= worker.getMaxLoad()) {
-                    // new in progress job
-                    job.setHostIP(selectedHostIP);
-                    job.setState(JobState.IN_PROGRESS);
-
-                    return insertActiveJob(conn, job)
-                        .andThen(updateWorkerLoad(conn, selectedHostIP, loadSum))
-                        .toSingleDefault(job);
-                }
-                SERVICE_ASSERT.isTrue(!job.isImmediate(), ErrorCode.IMMEDIATE_JOB);
-                return insertActiveJob(conn, job).toSingleDefault(job);
-            }
-        ));
+        final String workerName = buildWorkerName(job);
+        return setFileUsed(conn, job)
+                .andThen(newWorker(workerScheduler.getWorkerInfo(workerName).getIp(), job)
+                        .flatMap(worker -> {
+                            String selectedHostIP = worker.getHostIP();
+                            // new in progress job
+                            job.setHostIP(selectedHostIP);
+                            job.setState(JobState.IN_PROGRESS);
+                            return insertActiveJob(conn, job).toSingleDefault(job);
+                        }));
     }
 
     private Map<String, String> buildQueryFileTransferProgressParams(File file) {
@@ -217,29 +210,29 @@ public class Pivot {
 
     public Completable processTimeoutTransferJob(Job job) {
         return dbClient.rxGetConnection()
-                       .flatMap(conn -> selectFileOrNotFount(conn, job.getTarget()).doOnTerminate(conn::close))
-                       .flatMapCompletable(
-                           file -> {
-                               if (file.found()) {
-                                   return WorkerClient.get(job.getHostIP(), uri(Constant.TRANSFER_PROGRESS),
-                                                           buildQueryFileTransferProgressParams(file))
-                                                      .flatMapCompletable(
-                                                          resp -> processTransferProgressResult(job.getTarget(), resp));
-                               } else {
-                                   return finish(job);
-                               }
-                           }
-                       )
-                       .doOnError((t) -> LOGGER.warn("Process time out transfer job {} error", job.getTarget(), t))
-                       .onErrorComplete();
+                .flatMap(conn -> selectFileOrNotFount(conn, job.getTarget()).doOnTerminate(conn::close))
+                .flatMapCompletable(
+                        file -> {
+                            if (file.found()) {
+                                return WorkerClient.get(job.getHostIP(), uri(Constant.TRANSFER_PROGRESS),
+                                        buildQueryFileTransferProgressParams(file))
+                                        .flatMapCompletable(
+                                                resp -> processTransferProgressResult(job.getTarget(), resp));
+                            } else {
+                                return finish(job);
+                            }
+                        }
+                )
+                .doOnError((t) -> LOGGER.warn("Process time out transfer job {} error", job.getTarget(), t))
+                .onErrorComplete();
     }
 
     Completable transferDone(String name, FileTransferState transferState, long size) {
         return dbClient.rxGetConnection()
-                       .flatMap(conn -> selectActiveJob(conn, JobType.FILE_TRANSFER, name).doOnTerminate(conn::close))
-                       .flatMapCompletable(
-                           job -> finish(job, conn -> updateFileTransferResult(conn, job, name, transferState, size))
-                       );
+                .flatMap(conn -> selectActiveJob(conn, JobType.FILE_TRANSFER, name).doOnTerminate(conn::close))
+                .flatMapCompletable(
+                        job -> finish(job, conn -> updateFileTransferResult(conn, job, name, transferState, size))
+                );
     }
 
     private HashMap<String, String> buildParams(File... files) {
@@ -311,20 +304,16 @@ public class Pivot {
 
     private Completable finish(Job job, Function<SQLConnection, Completable> post) {
         return inTransactionAndLock(
-            conn -> selectWorker(conn, job.getHostIP())
-                .flatMapCompletable(worker -> updateWorkerLoad(conn, worker.getHostIP(),
-                                                               worker.getCurrentLoad() - job.getEstimatedLoad()))
-                .andThen(insertHistoricalJob(conn, job))
-                // delete old job
-                .andThen(deleteActiveJob(conn, job))
-                .andThen(this.setFileUnused(conn, job))
-                .andThen(post.apply(conn))
-                .toSingleDefault(job)
+                conn -> Completable.complete()
+                        .andThen(insertHistoricalJob(conn, job))
+                        // delete old job
+                        .andThen(deleteActiveJob(conn, job))
+                        .andThen(this.setFileUnused(conn, job))
+                        .andThen(post.apply(conn))
+                        .toSingleDefault(job)
         ).ignoreElement()
-         // notify worker
-         .andThen(this.notifyWorkerJobIsFinished(job))
-         // trigger scheduling
-         .andThen(this.triggerScheduling());
+        // notify worker
+        .andThen(this.notifyWorkerJobIsFinished(job));
     }
 
     private Completable setFileUsed(SQLConnection conn, Job job) {
@@ -404,15 +393,6 @@ public class Pivot {
         });
     }
 
-    private Completable triggerScheduling() {
-        return Completable
-            .fromAction(() -> {
-                if (currentMaster.leader) {
-                    vertx.setTimer(triggerSchedulingActionDelay, ignored -> schedulingTask.trigger());
-                }
-            });
-    }
-
     public JsonObject config(String name) {
         return SQLHelper.singleRow(dbClient.rxQueryWithParams(ConfigSQL.SELECT, ja(name)).blockingGet());
     }
@@ -452,15 +432,11 @@ public class Pivot {
 
     private Single<Integer> checkPendingCont(SQLConnection conn, Job job) {
         Single<ResultSet> s = job.getHostIP() == null ?
-                              conn.rxQuery(COUNT_ALL_PENDING) :
-                              conn.rxQueryWithParams(COUNT_PENDING_BY_HOST_IP, ja(job.getHostIP()));
+                conn.rxQuery(COUNT_ALL_PENDING) :
+                conn.rxQueryWithParams(COUNT_PENDING_BY_HOST_IP, ja(job.getHostIP()));
         return s.map(SQLHelper::count)
                 .doOnSuccess((pending) -> SERVICE_ASSERT.isTrue(pending < pendingJobMaxCount,
-                                                                ErrorCode.SERVER_TOO_BUSY));
-    }
-
-    private Single<Worker> decideWorker(SQLConnection conn, Job job) {
-        return job.getHostIP() == null ? selectMostIdleWorker(conn) : selectWorker(conn, job.getHostIP());
+                        ErrorCode.SERVER_TOO_BUSY));
     }
 
     private Single<Master> selectMaster(SQLConnection conn, String hostIP) {
@@ -469,23 +445,17 @@ public class Pivot {
                    .map(MasterHelper::fromDBRecord);
     }
 
-    public Single<Worker> selectMostIdleWorker(SQLConnection conn) {
-        return conn.rxQuery(WorkerSQL.SELECT_MOST_IDLE)
-                   .map(SQLHelper::singleRow)
-                   .map(WorkerHelper::fromDBRecord);
-    }
-
-    public Single<Worker> selectWorker(SQLConnection conn, String hostIP) {
-        return conn.rxQueryWithParams(WorkerSQL.SELECT_BY_IP, ja(hostIP))
-                   .map(SQLHelper::singleRow)
-                   .map(WorkerHelper::fromDBRecord);
-    }
-
-    public Completable updateWorkerLoad(SQLConnection conn, String hostIP, long load) {
-        SERVICE_ASSERT.isTrue(load >= 0, ErrorCode.SANITY_CHECK);
-        return conn.rxUpdateWithParams(WorkerSQL.UPDATE_LOAD, ja(load, hostIP))
-                   .doOnSuccess(SQLAssert::assertUpdated)
-                   .ignoreElement();
+    public Single<Worker> newWorker(String hostIP, Job job) {
+        return Single.just(new Worker())
+                .doOnSuccess(worker -> {
+                    worker.setHostName(buildWorkerName(job));
+                    worker.setHostIP(hostIP);
+                    worker.setCurrentLoad(5);
+                    worker.setMemoryTotal(10);
+                    worker.setMemoryUsed(5);
+                    worker.setDiskTotal(10);
+                    worker.setDiskUsed(5);
+                });
     }
 
     private Completable insertActiveJob(SQLConnection conn, Job job) {

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2021 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -12,72 +12,75 @@
  ********************************************************************************/
 package org.eclipse.jifa.master.service.impl;
 
+import io.reactivex.Completable;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.reactivex.CompletableHelper;
 import io.vertx.reactivex.SingleHelper;
 import io.vertx.reactivex.ext.jdbc.JDBCClient;
-import org.eclipse.jifa.master.entity.Worker;
-import org.eclipse.jifa.master.entity.enums.Deleter;
+import org.eclipse.jifa.common.enums.StartStatus;
+import org.eclipse.jifa.master.Constant;
 import org.eclipse.jifa.master.service.WorkerService;
-import org.eclipse.jifa.master.service.impl.helper.WorkerHelper;
-import org.eclipse.jifa.master.service.sql.FileSQL;
-import org.eclipse.jifa.master.service.sql.WorkerSQL;
+import org.eclipse.jifa.master.support.K8SWorkerScheduler;
+import org.eclipse.jifa.master.support.WorkerClient;
+import org.eclipse.jifa.master.support.WorkerScheduler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import java.net.ConnectException;
+import java.util.Map;
+import java.util.concurrent.TimeoutException;
 
-import static org.eclipse.jifa.master.service.impl.helper.SQLHelper.ja;
+import static org.eclipse.jifa.master.Constant.uri;
 
-public class WorkerServiceImpl implements WorkerService, WorkerSQL {
+public class WorkerServiceImpl implements WorkerService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(WorkerServiceImpl.class);
 
-    private final JDBCClient dbClient;
-
-    private final Pivot pivot;
+    private final WorkerScheduler workerScheduler;
 
     public WorkerServiceImpl(JDBCClient dbClient, Pivot pivot) {
-        this.dbClient = dbClient;
-        this.pivot = pivot;
+        // Use default K8S worker scheduler
+        workerScheduler = pivot.getWorkerScheduler();
     }
 
     @Override
-    public void queryAll(Handler<AsyncResult<List<Worker>>> handler) {
-        dbClient.rxQuery(WorkerSQL.SELECT_ALL)
-                .map(records -> records.getRows()
-                                       .stream()
-                                       .map(WorkerHelper::fromDBRecord)
-                                       .collect(Collectors.toList()))
-                .subscribe(SingleHelper.toObserver(handler));
+    public void startWorker(String workerName, Handler<AsyncResult<Void>> handler) {
+        Completable.fromAction(() -> workerScheduler.startWorker(workerName, Map.of("requestMemSize", "0"))).subscribe(CompletableHelper.toObserver(handler));
     }
 
     @Override
-    public void diskCleanup(String hostIP, Handler<AsyncResult<Void>> handler) {
-        dbClient.rxUpdateWithParams(FileSQL.UPDATE_AS_PENDING_DELETE, ja(hostIP))
-                .ignoreElement()
-                .andThen(dbClient.rxQueryWithParams(FileSQL.SELECT_PENDING_DELETE, ja(hostIP))
-                                 .map(rs -> rs.getRows().stream().map(row -> row.getString("name"))
-                                              .collect(Collectors.toList()))
-                                 .flatMapCompletable(
-                                     fileNames -> pivot.deleteFile(Deleter.ADMIN, fileNames.toArray(new String[0])))
-                )
-                .subscribe(CompletableHelper.toObserver(handler));
+    public void startWorkerWithSpec(String workerName, long requestMemSize, Handler<AsyncResult<Void>> handler) {
+        Completable.fromAction(() -> workerScheduler.startWorker(workerName, Map.of("requestMemSize", Long.toString(requestMemSize)))).subscribe(CompletableHelper.toObserver(handler));
     }
 
     @Override
-    public void selectMostIdleWorker(Handler<AsyncResult<Worker>> handler) {
-        dbClient.rxGetConnection()
-                .flatMap(conn -> pivot.selectMostIdleWorker(conn).doOnTerminate(conn::close))
-                .subscribe(SingleHelper.toObserver(handler));
+    public void stopWorker(String workerName, Handler<AsyncResult<Void>> handler) {
+        Completable.fromAction(() -> workerScheduler.stopWorker(workerName)).subscribe(CompletableHelper.toObserver(handler));
     }
 
     @Override
-    public void selectWorkerByIP(String hostIp, Handler<AsyncResult<Worker>> handler) {
-        dbClient.rxQueryWithParams(WorkerSQL.SELECT_BY_IP, ja(hostIp))
-                .map(ar -> {
-                    if (ar.getRows().size() > 0) {
-                        return WorkerHelper.fromDBRecord(ar.getRows().get(0));
+    public void startWorkerDone(String workerName, Handler<AsyncResult<StartStatus>> handler) {
+        String workerIp = workerScheduler.getWorkerInfo(workerName).getIp();
+        if (workerIp == null) {
+            LOGGER.info("Trying to start worker " + workerIp + "...");
+        } else {
+            LOGGER.info("Accessing worker " + workerIp);
+        }
+        WorkerClient.get(workerIp, uri(Constant.PING), 4000/*timeout*/)
+                .map(resp -> resp.bodyAsJson(StartStatus.class))
+                .onErrorReturn(err -> {
+                    if (err instanceof ConnectException) {
+                        // This is what we expect since we can not connect to worker if its
+                        // functionalities are not available
+                        return StartStatus.STARTING;
+                    } else if (err instanceof TimeoutException) {
+                        return StartStatus.TIMEOUT;
+                    } else {
+                        // For debugging purpose, use slf4j later
+                        err.printStackTrace();
+
+                        return StartStatus.ERROR;
                     }
-                    return Worker.NOT_FOUND;
                 })
                 .subscribe(SingleHelper.toObserver(handler));
     }

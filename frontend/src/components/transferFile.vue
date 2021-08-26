@@ -31,6 +31,8 @@
       </div>
     </el-dialog>
 
+    <StartWorker ref="StartWorker"/>
+
     <el-dialog
             width="30%"
             :visible.sync="transferProgressViewVisible"
@@ -216,9 +218,11 @@
 <script>
   import axios from 'axios'
   import {service, toSizeString} from '../util'
+  import StartWorker from './startWorker'
 
   export default {
     props: ['fileType', 'transferViewVisible'],
+    components: { StartWorker },
     data() {
       return {
         authHeader:{ Authorization: this.$jifa.get_authorization_header()},
@@ -353,7 +357,16 @@
           if (valid) {
             let formData = new FormData()
             formData.append('url', this.url.url)
-            this.doTransfer('/file/transferByURL', formData)
+
+            if (this.$jifa.workerOnly) {
+              this.doTransfer('/file/transferByURL', formData)
+            } else {
+              formData.append('way', "URL")
+              this.$refs.StartWorker.startWorker(formData, workerName => {
+                formData.append("workerName", workerName)
+                this.doTransfer('/file/transferByURL', formData)
+              });
+            }
           }
         })
       },
@@ -363,6 +376,7 @@
             let formData = new FormData()
             formData.append('path', this.fileSystem.path)
             formData.append('move', this.fileSystem.moveOrCopy === 'move')
+            // bypass master node
             this.doTransfer('/file/transferByFileSystem', formData)
           }
         })
@@ -379,7 +393,16 @@
             if (!usePublicKey) {
               formData.append('password', this.scp.password)
             }
-            this.doTransfer('/file/transferBySCP', formData)
+
+            if (this.$jifa.workerOnly) {
+              this.doTransfer('/file/transferBySCP', formData)
+            } else {
+              formData.append('way', "SCP");
+              this.$refs.StartWorker.startWorker(formData, workerName => {
+                formData.append("workerName", workerName)
+                this.doTransfer('/file/transferBySCP', formData)
+              });
+            }
           }
         })
       },
@@ -392,7 +415,16 @@
             formData.append('accessKeySecret', this.oss.accessKeySecret)
             formData.append('bucketName', this.oss.bucketName)
             formData.append('objectName', this.oss.objectName)
-            this.doTransfer('/file/transferByOSS', formData)
+
+            if (this.$jifa.workerOnly) {
+              this.doTransfer('/file/transferByOSS', formData)
+            } else {
+              formData.append("way", "OSS")
+              this.$refs.StartWorker.startWorker('OSS', formData, workerName => {
+                formData.append("workerName", workerName)
+                this.doTransfer('/file/transferByOSS', formData)
+              });
+            }
           }
         })
       },
@@ -405,6 +437,7 @@
             formData.append('keySecret', this.s3.secretKey)
             formData.append('bucketName', this.s3.bucketName)
             formData.append('objectName', this.s3.objectName)
+            // bypass master node
             this.doTransfer('/file/transferByS3', formData)
           }
         })

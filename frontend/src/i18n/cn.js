@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2021 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -15,6 +15,14 @@
 exports.__esModule = true;
 exports.default = {
   jifa: {
+    startingStatus:{
+      request:'已请求启动worker',
+      requestFailed:'请求启动worker失败，请稍后重试',
+      error:'启动worker失败，请稍后重试',
+      success:'启动worker成功！',
+      timeout:'启动worker超时，请稍后重试',
+      starting:'正在启动worker',
+    },
     searchTip:"搜索文本使用Java语言正则语法，比如用 *.String.* 来搜索java.lang.String，搜索数值使用>num,<num,>=num,<=num,==num,!=num,num的语法",
     searchPlaceholder:'搜索...',
     heapDumpAnalysis: '堆分析',

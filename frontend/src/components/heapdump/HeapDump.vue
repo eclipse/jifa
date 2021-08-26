@@ -1,5 +1,5 @@
 <!--
-    Copyright (c) 2020 Contributors to the Eclipse Foundation
+    Copyright (c) 2020, 2021 Contributors to the Eclipse Foundation
 
     See the NOTICE file(s) distributed with this work for additional
     information regarding copyright ownership.
@@ -23,6 +23,7 @@
     </el-header>
 
     <el-main style="padding-top: 0; padding-bottom: 0; height: 100%">
+      <StartWorker ref="StartWorker"/>
 
       <el-dialog
               :title="$t('jifa.options')"
@@ -246,6 +247,7 @@
   import ClassLoaders from './ClassLoaders'
   import DirectByteBuffer from './DirectByteBuffer'
   import HeapFileCompare from './HeapFileCompare'
+  import StartWorker from '../startWorker'
 
   export default {
     props: ['file'],
@@ -291,7 +293,8 @@
       ClassLoaders,
       DirectByteBuffer,
       HeapFileCompare,
-      Footer
+      Footer,
+      StartWorker
     },
     methods: {
       expandResultDivWidth() {
@@ -423,10 +426,22 @@
       },
 
       analyzeHeapDump() {
-        this.optionViewVisible = false;
-        let params = new FormData();
-        params.append('keep_unreachable_objects', this.options.keepUnreachableObjects);
-        this.doAnalyzeHeapDump(params);
+        if (this.$jifa.workerOnly) {
+          this.optionViewVisible = false;
+          let params = new FormData();
+          params.append('keep_unreachable_objects', this.options.keepUnreachableObjects);
+          this.doAnalyzeHeapDump(params);
+        } else {
+          let formData = new FormData();
+          formData.append("file", this.file);
+          // eslint-disable-next-line no-unused-vars
+          this.$refs.StartWorker.startWorker(formData, workerName => {
+            this.optionViewVisible = false;
+            let params = new FormData();
+            params.append('keep_unreachable_objects', this.options.keepUnreachableObjects);
+            this.doAnalyzeHeapDump(params);
+          })
+        }
       },
 
       doAnalyzeHeapDump(params) {
@@ -437,13 +452,28 @@
       },
     },
     mounted() {
-      axios.get(heapDumpService(this.file, 'isFirstAnalysis')).then(resp => {
-        if (resp.data.result) {
-          this.optionViewVisible = true
-        } else {
-          this.doAnalyzeHeapDump(new FormData())
-        }
-      })
+      if (this.$jifa.workerOnly) {
+        axios.get(heapDumpService(this.file, 'isFirstAnalysis')).then(resp => {
+          if (resp.data.result) {
+            this.optionViewVisible = true
+          } else {
+            this.doAnalyzeHeapDump(new FormData())
+          }
+        })
+      } else {
+        let formData = new FormData();
+        formData.append("file",this.file);
+        // eslint-disable-next-line no-unused-vars
+        this.$refs.StartWorker.startWorker(formData, workerName => {
+          axios.get(heapDumpService(this.file, 'isFirstAnalysis')).then(resp => {
+            if (resp.data.result) {
+              this.optionViewVisible = true
+            } else {
+              this.doAnalyzeHeapDump(new FormData())
+            }
+          })
+        })
+      }
     }
   }
 </script>

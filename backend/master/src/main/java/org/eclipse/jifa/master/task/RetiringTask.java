@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2021 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -26,6 +26,9 @@ import static org.eclipse.jifa.master.service.ServiceAssertion.SERVICE_ASSERT;
 import static org.eclipse.jifa.master.service.impl.helper.SQLHelper.ja;
 import static org.eclipse.jifa.master.service.sql.JobSQL.SELECT_TO_RETIRE;
 
+/**
+ * Retiring timeouted IN_PROGRESS active jobs
+ */
 public class RetiringTask extends BaseTask {
     private static long MIN_TIMEOUT_THRESHOLD = 5 * 6000L;
 
@@ -59,6 +62,7 @@ public class RetiringTask extends BaseTask {
         pivot.getDbClient().rxQueryWithParams(SELECT_TO_RETIRE, ja(instant))
              .map(result -> result.getRows().stream().map(JobHelper::fromDBRecord).collect(Collectors.toList()))
              .doOnSuccess(jobs -> LOGGER.info("Found timeout jobs: {}", jobs.size()))
+             .doOnSuccess(jobs -> jobs.forEach(Pivot::buildWorkerName))
              .map(jobs -> jobs.stream().map(pivot::finish).collect(Collectors.toList()))
              .flatMapCompletable(Completable::concat)
              .subscribe(

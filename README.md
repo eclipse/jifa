@@ -52,7 +52,7 @@ Looking forward to more users and contributors :-)
 ## Quick start
 Jifa provides two modes of running: worker-only mode and full cluster mode. The following shows how to use the these two mode, respectively.
 
-## 1. Worker-only mode
+## 1. Worker-only mode(Recommand)
 Only using worker as a standalone application is a simple and lightweight mode. 
 In this mode, we only need to deploy the front end and worker side without any database configuration. 
 To use this mode, we need to forward the http requests to the workers:
@@ -63,31 +63,13 @@ $ cd demo
 $ ./run_worker.sh
 ```
 
-## 2. Full cluster mode
-The other mode is to start the entire Jifa, which includes worker and master. 
-This mode needs to set up the database in advance. 
-
-Here we have prepared an example to demonstrate how to get started. First, configure the database:
+## 2. Cloud mode(Experimental Feature)
+Running the following command line to start k8s based cloud master:
 ```bash
-$ cd demo
-$ docker-compose build
-$ docker-compose up # start mysql server
+$ cd cloud
+$ ./run.sh
 ```
-Then build the Jifa:
-``` bash
-$ ./gradlew clean buildJifa
-```
-Artifacts can be found in the `./deploy` directory. 
-In production mode, we could use `nginx` as a static front-end resource server, 
-and then start multiple workers and at least one master.
-
-For the sake of simplicity, we demonstrate how to start them in development mode:
-
-+ `Frontend`: `cd frontend && npm run serve`
-+ `Master node` : `./gradlew :backend:master:run`
-+ `Worker node` : `./gradlew :backend:worker:run` 
-
-This would work for further developing and testing. 
+Master will create worker only when necessary.
 
 # Documents
 + 1. [Jifa Customization](CUSTOMIZATION.md)

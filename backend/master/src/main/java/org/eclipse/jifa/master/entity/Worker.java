@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020,2021 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -14,12 +14,14 @@ package org.eclipse.jifa.master.entity;
 
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonObject;
+import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(callSuper = false)
 @DataObject(generateConverter = true)
+@Builder
 public class Worker extends Entity {
     public static Worker NOT_FOUND = notFoundInstance(Worker.class);
 
@@ -42,6 +44,18 @@ public class Worker extends Entity {
     private long diskTotal;
 
     public Worker() {
+    }
+
+    public Worker(String hostIP, String hostName, long currentLoad, long maxLoad, long cpuCount, long memoryUsed, long memoryTotal, long diskUsed, long diskTotal) {
+        this.hostIP = hostIP;
+        this.hostName = hostName;
+        this.currentLoad = currentLoad;
+        this.maxLoad = maxLoad;
+        this.cpuCount = cpuCount;
+        this.memoryUsed = memoryUsed;
+        this.memoryTotal = memoryTotal;
+        this.diskUsed = diskUsed;
+        this.diskTotal = diskTotal;
     }
 
     public Worker(JsonObject json) {

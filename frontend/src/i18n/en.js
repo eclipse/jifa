@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2021 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -15,6 +15,14 @@
 exports.__esModule = true;
 exports.default = {
   jifa: {
+    startingStatus:{
+      request:'Request to start worker',
+      requestFailed:'Failed to request to start worker, please try again later',
+      error:'Starting worker fails, please try again later',
+      success:'Succeed to start worker!',
+      timeout:'Starting worker timeout, please try again later',
+      starting:'Starting worker',
+    },
     searchTip:'Use Java regex for text searching(such as matching java.lang.String with the regex pattern .*String.* ). Use >num,<num,>=num,<=num,!=num,num for numeric searching',
     searchPlaceholder:'Search...',
     heapDumpAnalysis: 'Heap Dump Analysis',

@@ -1,0 +1,110 @@
+# Copyright (c) 2021 Contributors to the Eclipse Foundation
+#
+# See the NOTICE file(s) distributed with this work for additional
+# information regarding copyright ownership.
+#
+# This program and the accompanying materials are made available under the
+# terms of the Eclipse Public License 2.0 which is available at
+# http://www.eclipse.org/legal/epl-2.0
+#
+# SPDX-License-Identifier: EPL-2.0
+#
+
+# ---------------- RBAC ------------------
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  namespace: jifa-test
+  name: letsencrypt
+
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: patch-tls
+  namespace: default
+subjects:
+  - kind: Group
+    name: system:serviceaccounts # Name is case sensitive
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole #this must be Role or ClusterRole
+  name: cluster-admin # this must match the name of the Role or ClusterRole you wish to bind to
+  apiGroup: rbac.authorization.k8s.io
+
+# ---------------- PVC ------------------
+---
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: local-storage
+provisioner: kubernetes.io/no-provisioner
+volumeBindingMode: WaitForFirstConsumer
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: worker-pv
+  labels:
+    type: local
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/mnt"
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: worker-pvc
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 3Gi
+
+# ---------------- MASTER ------------------
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: my-jifa-master
+  labels:
+    app: jifa-master
+spec:
+  serviceAccountName: letsencrypt
+  volumes:
+    - name: master-volume
+      persistentVolumeClaim:
+        claimName: worker-pvc
+  containers:
+    - name: my-jifa-master
+      image: docker.io/kelthuzadx/jifa-master-open
+      volumeMounts:
+        - name: master-volume
+          mountPath: /root
+      ports:
+        - name: web
+          containerPort: 80
+          protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jifa-master-slb
+  namespace: jifa-test
+spec:
+  ports:
+    - port: 80
+      protocol: TCP
+      targetPort: 80
+  selector:
+    app: jifa-master
+  type: LoadBalancer

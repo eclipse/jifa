@@ -38,6 +38,9 @@ dependencies {
 
     testImplementation group: 'junit', name: 'junit', version: "4.12"
     testImplementation group: 'io.vertx', name: 'vertx-unit', version: "3.7.1"
+
+    // k8s client API
+    implementation 'io.kubernetes:client-java:10.0.0'
 }
 
 application {

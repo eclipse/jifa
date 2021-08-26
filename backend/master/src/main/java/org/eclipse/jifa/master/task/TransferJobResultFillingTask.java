@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2021 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -15,9 +15,11 @@ package org.eclipse.jifa.master.task;
 import io.reactivex.Completable;
 import io.vertx.reactivex.core.Vertx;
 import org.eclipse.jifa.common.aux.ErrorCode;
+import org.eclipse.jifa.master.entity.Job;
 import org.eclipse.jifa.master.service.impl.Pivot;
 import org.eclipse.jifa.master.service.impl.helper.ConfigHelper;
 import org.eclipse.jifa.master.service.impl.helper.JobHelper;
+import org.eclipse.jifa.master.support.K8SWorkerScheduler;
 
 import java.time.Instant;
 import java.util.stream.Collectors;
@@ -60,6 +62,11 @@ public class TransferJobResultFillingTask extends BaseTask {
         pivot.getDbClient().rxQueryWithParams(SELECT_TRANSFER_JOB_TO_FILLING_RESULT, ja(instant))
              .map(result -> result.getRows().stream().map(JobHelper::fromDBRecord).collect(Collectors.toList()))
              .doOnSuccess(jobs -> LOGGER.info("Found timeout file transfer jobs: {}", jobs.size()))
+             .doOnSuccess(jobs->{
+                 for (Job job : jobs) {
+                     pivot.getWorkerScheduler().stopWorker("my-worker" + job.getTarget().hashCode());
+                 }
+             })
              .map(jobs -> jobs.stream().map(pivot::processTimeoutTransferJob).collect(Collectors.toList()))
              .flatMapCompletable(Completable::concat)
              .subscribe(

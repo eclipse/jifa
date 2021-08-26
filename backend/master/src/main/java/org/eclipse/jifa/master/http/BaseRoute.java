@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2021 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -66,5 +66,21 @@ class BaseRoute implements Constant {
         ASSERT.isTrue(!Strings.isNullOrEmpty(userId), ErrorCode.ILLEGAL_ARGUMENT);
         ASSERT.isTrue(!Strings.isNullOrEmpty(originalName), ErrorCode.ILLEGAL_ARGUMENT);
         return userId + SEP + System.currentTimeMillis() + SEP + originalName;
+    }
+
+    String extractOriginalName(String path) {
+        String name = path.substring(path.lastIndexOf(java.io.File.separatorChar) + 1);
+
+        if (name.contains("?")) {
+            name = name.substring(0, name.indexOf("?"));
+        }
+
+        name = name.replaceAll("[%\\\\& ]", "_");
+
+        if (name.length() == 0) {
+            name = System.currentTimeMillis() + "";
+        }
+
+        return name;
     }
 }

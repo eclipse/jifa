@@ -167,7 +167,7 @@ public class Analyzer {
 
         if (progressListener == null) {
             org.eclipse.jifa.common.vo.Progress progress = buildProgressIfFinished(fileType, fileName);
-            ASSERT.notNull(progress);
+            ASSERT.notNull(progress, "cannot find file metadata directory");
             return progress;
         } else {
             org.eclipse.jifa.common.vo.Progress progress = new org.eclipse.jifa.common.vo.Progress();

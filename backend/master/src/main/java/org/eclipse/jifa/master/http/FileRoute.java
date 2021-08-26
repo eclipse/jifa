@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2021 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -39,8 +39,10 @@ import org.eclipse.jifa.master.entity.enums.JobType;
 import org.eclipse.jifa.master.model.TransferWay;
 import org.eclipse.jifa.master.model.User;
 import org.eclipse.jifa.master.service.ProxyDictionary;
+import org.eclipse.jifa.master.service.impl.Pivot;
 import org.eclipse.jifa.master.service.reactivex.FileService;
 import org.eclipse.jifa.master.service.reactivex.JobService;
+import org.eclipse.jifa.master.support.K8SWorkerScheduler;
 import org.eclipse.jifa.master.support.WorkerClient;
 import org.eclipse.jifa.master.vo.ExtendedFileInfo;
 import org.slf4j.Logger;
@@ -162,26 +164,17 @@ class FileRoute extends BaseRoute implements Constant {
     private void transfer(RoutingContext context, TransferWay way) {
         String userId = context.<User>get(USER_INFO_KEY).getId();
         HttpServerRequest request = context.request();
-        String[] paths = way.getPathKeys();
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < paths.length; i++) {
-            sb.append(request.getParam(paths[i]));
-            if (i != paths.length - 1) {
-                sb.append("_");
+        String name = request.getParam("fileName");
+        String origin = request.getParam("originName");
+        String workerName = request.getParam("workerName");
+        ASSERT.notNull(workerName, "worker is not specified");
 
-            }
-        }
-        String origin = extractOriginalName(sb.toString());
         FileType type = FileType.valueOf(context.request().getParam("type"));
-
-        String name = buildFileName(userId, origin);
-        request.params().add("fileName", name);
-
         fileService.rxTransfer(userId, type, origin, name, way, convert(request.params()))
-                   .ignoreElement()
-                   .toSingleDefault(name)
-                   .subscribe(n -> HTTPRespGuarder.ok(context, new TransferringFile(n)),
-                              t -> HTTPRespGuarder.fail(context, t));
+                .ignoreElement()
+                .toSingleDefault(name)
+                .subscribe(n -> HTTPRespGuarder.ok(context, new TransferringFile(n)),
+                        t -> HTTPRespGuarder.fail(context, t));
     }
 
     private void fileTransportProgress(RoutingContext context) {
@@ -208,6 +201,8 @@ class FileRoute extends BaseRoute implements Constant {
                 if (state.isFinal()) {
                     LOGGER.info("File transfer {} done, state is {}", name, progress.getState());
                     FileTransferState transferState = FileTransferState.fromProgressState(state);
+
+                    Pivot.instance().getWorkerScheduler().stopWorker("my-worker" + name.hashCode());
                     return fileService.rxTransferDone(name, transferState, progress.getTotalSize())
                                       .andThen(Single.just(progress));
                 }
@@ -275,22 +270,6 @@ class FileRoute extends BaseRoute implements Constant {
 
     private void unsetShared(RoutingContext context) {
         HTTPRespGuarder.fail(context, new JifaException(ErrorCode.UNSUPPORTED_OPERATION));
-    }
-
-    private String extractOriginalName(String path) {
-        String name = path.substring(path.lastIndexOf(java.io.File.separatorChar) + 1);
-
-        if (name.contains("?")) {
-            name = name.substring(0, name.indexOf("?"));
-        }
-
-        name = name.replaceAll("[%\\\\& ]", "_");
-
-        if (name.length() == 0) {
-            name = System.currentTimeMillis() + "";
-        }
-
-        return name;
     }
 
     private Map<String, String> convert(MultiMap src) {

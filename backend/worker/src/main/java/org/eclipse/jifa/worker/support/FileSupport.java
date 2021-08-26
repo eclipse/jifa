@@ -483,12 +483,4 @@ public class FileSupport {
         throw new JifaException(ErrorCode.TRANSFER_ERROR, t);
     }
 
-    public static long getTotalDiskSpace() {
-        return new File(System.getProperty("user.home")).getTotalSpace() >> 20;
-    }
-
-    public static long getUsedDiskSpace() {
-        return FileUtils.sizeOfDirectory(new File(System.getProperty("user.home"))) >> 20;
-    }
-
 }
