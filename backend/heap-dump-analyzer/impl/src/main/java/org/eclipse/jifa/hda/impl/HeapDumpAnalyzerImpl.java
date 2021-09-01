@@ -1157,57 +1157,35 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
                                                     SearchType searchType) {
         return $(() -> {
             IResultTree result = queryByCommand(context, "thread_overview");
-            List<?> elements = result.getElements();
-            PageViewBuilder<?, Model.Thread.Item> builder = PageViewBuilder.fromList(elements);
-            PageView<Model.Thread.Item> fut =
-                builder.paging(new PagingRequest(1, elements.size()))
-                       .map(e -> buildThreadItem(result, e))
-                       .filter(SearchPredicate.createPredicate(searchText, searchType))
-                       .done();
-            long totalShallowSize = 0;
-            long totalRetainedSize = 0;
-            for (Model.Thread.Item t : fut.getData()) {
-                totalShallowSize += t.getShallowSize();
-                totalRetainedSize += t.getRetainedSize();
-            }
+            List<Model.Thread.Item> items = result.getElements().stream()
+                .map(row -> new VirtualThreadItem(result, row))
+                .filter(SearchPredicate.createPredicate(searchText, searchType))
+                .collect(Collectors.toList());
             Model.Thread.Summary summary = new Model.Thread.Summary();
-            summary.totalSize = fut.getData().size();
-            summary.shallowHeap = totalShallowSize;
-            summary.retainedHeap = totalRetainedSize;
+            summary.totalSize = items.size();
+            summary.shallowHeap = items.stream().mapToLong(Model.Thread.Item::getShallowSize).sum();
+            summary.retainedHeap = items.stream().mapToLong(Model.Thread.Item::getRetainedSize).sum();;
             return summary;
         });
-    }
-
-    private Model.Thread.Item buildThreadItem(IResultTree result, Object row) {
-        // the report changed a little in MAT:
-        // Bug 572596 Add maximum retained heap size to thread overview stack
-        boolean includesMaxLocalRetained = (result.getColumns().length == 10);
-        int offset = includesMaxLocalRetained ? 1 : 0;
-
-        return new Model.Thread.Item(result.getContext(row).getObjectId(),
-                                     (String) result.getColumnValue(row, 0),
-                                     (String) result.getColumnValue(row, 1),
-                                     ((Bytes) result.getColumnValue(row, 2)).getValue(),
-                                     ((Bytes) result.getColumnValue(row, 3)).getValue(),
-                                     (String) result.getColumnValue(row, 4),
-                                     result.hasChildren(row),
-                                     (Boolean) result.getColumnValue(row, 5 + offset));
     }
 
     @Override
     public PageView<Model.Thread.Item> getThreads(AnalysisContextImpl context, String sortBy,
                                                   boolean ascendingOrder, String searchText,
                                                   SearchType searchType, int page, int pageSize) {
+        PagingRequest pagingRequest = new PagingRequest(page, pageSize);
         return $(() -> {
             IResultTree result = queryByCommand(context, "thread_overview");
-            List<?> elements = result.getElements();
-
-            PageViewBuilder<?, Model.Thread.Item> builder = PageViewBuilder.fromList(elements);
-            return builder.paging(new PagingRequest(page, pageSize))
-                          .map(e -> buildThreadItem(result, e))
-                          .sort(Model.Thread.Item.sortBy(sortBy, ascendingOrder))
-                          .filter(SearchPredicate.createPredicate(searchText, searchType))
-                          .done();
+            final AtomicInteger afterFilterCount = new AtomicInteger(0);
+            List<Model.Thread.Item> items = result.getElements().stream()
+                .map(row -> new VirtualThreadItem(result, row))
+                .filter(SearchPredicate.createPredicate(searchText, searchType))
+                .peek(filtered -> afterFilterCount.incrementAndGet())
+                .sorted(Model.Thread.Item.sortBy(sortBy, ascendingOrder))
+                .skip(pagingRequest.from())
+                .limit(pagingRequest.getPageSize())
+                .collect(Collectors.toList());
+            return new PageView(pagingRequest, afterFilterCount.get(), items);
         });
     }
 
