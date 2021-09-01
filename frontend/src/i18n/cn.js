@@ -29,7 +29,6 @@ exports.default = {
     getStarted: '开始使用',
     success: '成功',
     console: '控制台',
-    setUserWorker: '设置 Worker 地址',
     qm: '？',
     feedback: '建议与反馈',
     options: '选项',

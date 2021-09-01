@@ -18,7 +18,6 @@ import org.eclipse.jifa.common.aux.ErrorCode;
 import org.eclipse.jifa.master.Constant;
 import org.eclipse.jifa.master.entity.File;
 import org.eclipse.jifa.master.entity.Job;
-import org.eclipse.jifa.master.entity.UserWorker;
 import org.eclipse.jifa.master.entity.enums.JobState;
 import org.eclipse.jifa.master.model.User;
 import org.eclipse.jifa.master.vo.PendingJob;
@@ -49,11 +48,6 @@ class BaseRoute implements Constant {
 
     void checkPermission(User user, Job job) {
         ASSERT.isTrue(job.getUserId().equals(user.getId()) || user.isAdmin(), ErrorCode.FORBIDDEN);
-    }
-
-    void checkPermission(User user, UserWorker userWorker) {
-
-        ASSERT.isTrue(userWorker.getUserIds().contains(user.getId()) || user.isAdmin(), ErrorCode.FORBIDDEN);
     }
 
     void assertJobInProgress(Job job) {

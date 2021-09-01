@@ -23,8 +23,6 @@
       </b-navbar-brand>
     </b-navbar-nav>
     |
-    <user-worker v-if="subject==='finder' && $jifa.workerOnly===true" />
-
     <finder-menu v-if="subject==='finder'" v-bind="$attrs" v-on="$listeners"/>
     <analysis-result-menu v-else-if="subject==='analysisResult'" v-bind="$attrs" v-on="$listeners"/>
 
@@ -45,7 +43,6 @@
   import FinderMenu from "./FinderMenu"
   import AnalysisResultMenu from "./AnalysisResultMenu"
   import Feedback from "./Feedback";
-  import UserWorker from "./UserWorker";
 
   import {supportLanguages} from '../../i18n/i18n-setup'
 
@@ -57,7 +54,6 @@
       FinderMenu,
       AnalysisResultMenu,
       Feedback,
-      UserWorker
     },
 
     methods: {

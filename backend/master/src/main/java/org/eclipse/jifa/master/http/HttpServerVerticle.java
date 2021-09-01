@@ -52,8 +52,6 @@ public class HttpServerVerticle extends AbstractVerticle implements Constant {
 
             new AdminRoute().init(vertx, config(), apiRouter);
 
-            new UserWorkerRoute().init(vertx, config(), apiRouter);
-
             new WorkerRoute().init(vertx, config(), apiRouter);
 
             new FileRoute().init(vertx, config(), apiRouter);
