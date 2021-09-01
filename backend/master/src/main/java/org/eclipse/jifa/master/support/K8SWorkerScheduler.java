@@ -38,8 +38,10 @@ public class K8SWorkerScheduler implements WorkerScheduler {
 
     private static CoreV1Api api;
 
+    private static long MINIMAL_MEM_REQ;
+
     private static V1Pod createWorker(String name, long requestMemSize) {
-        requestMemSize = Math.max(requestMemSize, 1024 * 1024 * 300 /*MINIMAL_REQUEST_MEM_SIZE*/);
+        requestMemSize = Math.max(requestMemSize, MINIMAL_MEM_REQ);
 
         V1Volume volume = new V1Volume();
         volume.setName("dumpfile-volume");
@@ -99,13 +101,14 @@ public class K8SWorkerScheduler implements WorkerScheduler {
         try {
             client = Config.defaultClient();
             Configuration.setDefaultApiClient(client);
+            api = new CoreV1Api();
+            NAMESPACE = params.get(Constant.K8S_NAMESPACE);
+            WORKER_IMAGE = params.get(Constant.K8S_WORKER_IMAGE);
+            MINIMAL_MEM_REQ = Long.parseLong(params.get(Constant.K8S_MINIMAL_MEM_REQ));
+            LOGGER.info("K8S Namespace: " + NAMESPACE + ", Image: " + WORKER_IMAGE + ", Minimal memory request:" + MINIMAL_MEM_REQ);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        api = new CoreV1Api();
-        NAMESPACE = params.get(Constant.K8S_NAMESPACE);
-        WORKER_IMAGE = params.get(Constant.K8S_WORKER_IMAGE);
-        LOGGER.info("K8S Namespace: " + NAMESPACE + ", Image: " + WORKER_IMAGE);
     }
 
     @Override

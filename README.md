@@ -52,7 +52,7 @@ Looking forward to more users and contributors :-)
 ## Quick start
 Jifa provides two modes of running: worker-only mode and full cluster mode. The following shows how to use the these two mode, respectively.
 
-## 1. Worker-only mode(Recommand)
+## 1. Worker-only mode(Recommend)
 Only using worker as a standalone application is a simple and lightweight mode. 
 In this mode, we only need to deploy the front end and worker side without any database configuration. 
 To use this mode, we need to forward the http requests to the workers:

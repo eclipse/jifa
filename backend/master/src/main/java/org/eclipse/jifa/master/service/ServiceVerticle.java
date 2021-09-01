@@ -64,6 +64,7 @@ public class ServiceVerticle extends AbstractVerticle implements Constant {
             Map<String, String> args = new HashMap<>();
             args.put(Constant.K8S_NAMESPACE, config().getJsonObject(K8S_KEYWORD).getString(Constant.K8S_NAMESPACE));
             args.put(Constant.K8S_WORKER_IMAGE, config().getJsonObject(K8S_KEYWORD).getString(Constant.K8S_WORKER_IMAGE));
+            args.put(Constant.K8S_MINIMAL_MEM_REQ, config().getJsonObject(K8S_KEYWORD).getString(Constant.K8S_MINIMAL_MEM_REQ));
             pivot.getWorkerScheduler().initialize(args);
             LOGGER.info("Configure K8S done");
 

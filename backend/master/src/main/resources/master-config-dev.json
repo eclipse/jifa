@@ -10,7 +10,8 @@
   },
   "k8s-config": {
     "namespace": "jifa-test",
-    "worker-image": "docker.io/kelthuzadx/jifa-worker-open"
+    "worker-image": "docker.io/kelthuzadx/jifa-worker-open",
+    "minimal-mem-req": 314572800
   },
   "worker-config": {
     "username": "jifa",
