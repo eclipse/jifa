@@ -41,6 +41,10 @@
     </v-contextmenu>
 
     <div style="height: 45px; margin-top: 5px">
+      <el-select v-model="queryType">
+        <el-option label="OQL" value="oql" />
+        <el-option label="Calcite SQL" value="sql" />
+      </el-select>
       <el-autocomplete
               v-model="query"
               :fetch-suggestions="queryHistory"
@@ -174,7 +178,7 @@
   const TEXT = 3
 
   export default {
-    props: ['file', 'queryType'],
+    props: ['file'],
     data() {
       return {
         ICONS,
@@ -183,6 +187,7 @@
         searching: false,
         loading: false,
         query: '',
+        queryType: 'oql',
         nextPage: 1,
         pageSize: 25,
         totalSize: 0,
