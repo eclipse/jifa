@@ -85,18 +85,6 @@ public interface Constant extends org.eclipse.jifa.common.Constant {
     String HEAP_DUMP_COMMON = "/heap-dump/:file/*";
 
     /**
-     * USER WORKER URL
-     */
-    String ADD_USER_WORKER = "/userWorker/add";
-    String DELETE_USER_WORKER = "/userWorker/delete";
-    String CHECK_USER_WORKER = "/userWorker/check";
-    String UPDATE_USER_WORKER_USER_IDS = "/userWorker/updateUserIds";
-    String ENABLE_USER_WORKER = "/userWorker/enable";
-    String DISABLE_USER_WORKER = "/userWorker/disable";
-    String UPDATE_USER_WORKER_USER_IDS_AND_STATE = "/userWorker/updateUserIdsAndState";
-    String QUERY_ALL_USER_WORKERS = "/userWorkers";
-
-    /**
      * WORKER URL
      */
     String QUERY_ALL_WORKERS = "/workers";

@@ -42,7 +42,6 @@ public class ServiceVerticle extends AbstractVerticle implements Constant {
             JobService.createProxy(vertx);
             ConfigService.createProxy(vertx);
             WorkerService.createProxy(vertx);
-            UserWorkerService.createProxy(vertx);
             FileService.createProxy(vertx);
             LOGGER.info("Create service proxy done");
 
@@ -55,7 +54,6 @@ public class ServiceVerticle extends AbstractVerticle implements Constant {
             ConfigService.create(vertx, jdbcClient);
             AdminService.create(vertx, jdbcClient);
             WorkerService.create(vertx, jdbcClient, pivot);
-            UserWorkerService.create(vertx, jdbcClient);
             LOGGER.info("Create service done");
 
             future.complete(Single.just(this));

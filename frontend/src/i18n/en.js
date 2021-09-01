@@ -29,7 +29,6 @@ exports.default = {
     getStarted: 'Get Started',
     success: 'Success',
     console: 'Console',
-    setUserWorker: 'Set Worker',
     qm: '?',
     feedback: 'Feedback',
     options: 'Options',

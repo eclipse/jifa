@@ -132,24 +132,6 @@ CREATE TABLE `master` (
 
 /******************************************/
 /*   DatabaseName = jifa   */
-/*   TableName = user_worker   */
-/******************************************/
-CREATE TABLE `user_worker` (
-  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT COMMENT 'key',
-  `host_ip` varchar(64) NOT NULL COMMENT 'Host IP',
-  `port` int(11) NOT NULL COMMENT 'Port',
-  `user_ids` varchar(2048) NOT NULL COMMENT 'User IDs',
-  `enabled` tinyint(4) NOT NULL COMMENT 'Is enabled',
-  `last_modified_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Last modified time',
-  `creation_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Creation time',
-  `operator` varchar(64) NOT NULL COMMENT 'Operator',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_host_ip_and_port` (`host_ip`,`port`)
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8 COMMENT='User worker'
-;
-
-/******************************************/
-/*   DatabaseName = jifa   */
 /*   TableName = worker   */
 /******************************************/
 CREATE TABLE `worker` (
