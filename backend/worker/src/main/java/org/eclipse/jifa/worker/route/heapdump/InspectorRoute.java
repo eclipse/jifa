@@ -20,41 +20,37 @@ import org.eclipse.jifa.worker.route.MappingPrefix;
 import org.eclipse.jifa.worker.route.ParamKey;
 import org.eclipse.jifa.worker.route.RouteMeta;
 
-import static org.eclipse.jifa.worker.support.Analyzer.HEAP_DUMP_ANALYZER;
-import static org.eclipse.jifa.worker.support.Analyzer.getOrOpenAnalysisContext;
-
 @MappingPrefix("/inspector")
 class InspectorRoute extends HeapBaseRoute {
 
     @RouteMeta(path = "/addressToId")
     void addressToId(Promise<Integer> promise, @ParamKey("file") String file, @ParamKey("objectAddress") long address) {
-        promise.complete(HEAP_DUMP_ANALYZER.mapAddressToId(getOrOpenAnalysisContext(file), address));
+        promise.complete(analyzerOf(file).mapAddressToId(address));
     }
 
     @RouteMeta(path = "/value")
     void value(Promise<String> promise, @ParamKey("file") String file, @ParamKey("objectId") int objectId) {
-        promise.complete(HEAP_DUMP_ANALYZER.getObjectValue(getOrOpenAnalysisContext(file), objectId));
+        promise.complete(analyzerOf(file).getObjectValue(objectId));
     }
 
     @RouteMeta(path = "/objectView")
     void objectView(Promise<Model.InspectorView> promise, @ParamKey("file") String file,
                     @ParamKey("objectId") int objectId) {
-        promise.complete(HEAP_DUMP_ANALYZER.getInspectorView(getOrOpenAnalysisContext(file), objectId));
+        promise.complete(analyzerOf(file).getInspectorView(objectId));
     }
 
     @RouteMeta(path = "/fields")
     void fields(Promise<PageView<Model.FieldView>> promise, @ParamKey("file") String file,
                 @ParamKey("objectId") int objectId, PagingRequest pagingRequest) {
-        promise.complete(HEAP_DUMP_ANALYZER.getFields(getOrOpenAnalysisContext(file), objectId,
-                                                     pagingRequest.getPage(), pagingRequest.getPageSize()));
+        promise.complete(analyzerOf(file).getFields(objectId,
+                                                    pagingRequest.getPage(), pagingRequest.getPageSize()));
     }
 
     @RouteMeta(path = "/staticFields")
     void staticFields(Promise<PageView<Model.FieldView>> promise, @ParamKey("file") String file,
                       @ParamKey("objectId") int objectId, PagingRequest pagingRequest) {
 
-        promise.complete(HEAP_DUMP_ANALYZER.getStaticFields(getOrOpenAnalysisContext(file), objectId,
-                                                           pagingRequest.getPage(),
-                                                           pagingRequest.getPageSize()));
+        promise.complete(analyzerOf(file).getStaticFields(objectId, pagingRequest.getPage(),
+                                                          pagingRequest.getPageSize()));
     }
 }

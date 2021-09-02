@@ -14,8 +14,8 @@
 package org.eclipse.jifa.hdp.provider;
 
 import org.eclipse.jifa.common.aux.JifaException;
-import org.eclipse.jifa.hda.api.AnalysisContext;
 import org.eclipse.jifa.hda.api.HeapDumpAnalyzer;
+import org.eclipse.jifa.hda.api.ProgressListener;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.Constants;
@@ -24,6 +24,7 @@ import org.osgi.framework.launch.FrameworkFactory;
 import org.osgi.framework.wiring.BundleRevision;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -33,18 +34,17 @@ import java.util.ServiceLoader;
 
 public class MATProvider implements HeapDumpAnalyzer.Provider {
 
-    private HeapDumpAnalyzer<AnalysisContext> analyzer;
+    private HeapDumpAnalyzer.Provider provider;
 
     public MATProvider() {
         init();
     }
 
     @Override
-    public HeapDumpAnalyzer<AnalysisContext> get() {
-        return analyzer;
+    public HeapDumpAnalyzer provide(Path path, Map<String, String> arguments, ProgressListener listener) {
+        return provider.provide(path, arguments, listener);
     }
 
-    @SuppressWarnings("unchecked")
     private void init() {
         Map<String, String> config = new HashMap<>();
         config.put(Constants.FRAMEWORK_STORAGE_CLEAN, Constants.FRAMEWORK_STORAGE_CLEAN_ONFIRSTINIT);
@@ -98,9 +98,9 @@ public class MATProvider implements HeapDumpAnalyzer.Provider {
                 }
             }
 
-            analyzer =
-                framework.getBundleContext()
-                         .getService(framework.getBundleContext().getServiceReference(HeapDumpAnalyzer.class));
+            provider = framework.getBundleContext()
+                                .getService(framework.getBundleContext()
+                                                     .getServiceReference(HeapDumpAnalyzer.Provider.class));
 
         } catch (BundleException be) {
             throw new JifaException(be);

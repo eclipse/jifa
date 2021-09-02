@@ -20,8 +20,6 @@ import org.eclipse.jifa.worker.route.ParamKey;
 import org.eclipse.jifa.worker.route.RouteMeta;
 
 import static org.eclipse.jifa.common.util.Assertion.ASSERT;
-import static org.eclipse.jifa.worker.support.Analyzer.HEAP_DUMP_ANALYZER;
-import static org.eclipse.jifa.worker.support.Analyzer.getOrOpenAnalysisContext;
 
 class ObjectListRoute extends HeapBaseRoute {
 
@@ -31,20 +29,19 @@ class ObjectListRoute extends HeapBaseRoute {
                    @ParamKey("objectId") int objectId) {
 
         ASSERT.isTrue(objectId >= 0, "Object id must be greater than or equal to 0");
-        promise.complete(HEAP_DUMP_ANALYZER.getOutboundOfObject(getOrOpenAnalysisContext(file),
-                                                               objectId,
-                                                               pagingRequest.getPage(),
-                                                               pagingRequest.getPageSize()));
+        promise.complete(analyzerOf(file).getOutboundOfObject(objectId,
+                                                              pagingRequest.getPage(),
+                                                              pagingRequest.getPageSize()));
     }
 
     @RouteMeta(path = "/inbounds")
-    void inbounds(Promise<PageView<Model.JavaObject>> promise, @ParamKey("file") String file, PagingRequest pagingRequest,
+    void inbounds(Promise<PageView<Model.JavaObject>> promise, @ParamKey("file") String file,
+                  PagingRequest pagingRequest,
                   @ParamKey("objectId") int objectId) {
 
         ASSERT.isTrue(objectId >= 0, "Object id must be greater than or equal to 0");
-        promise.complete(HEAP_DUMP_ANALYZER.getInboundOfObject(getOrOpenAnalysisContext(file),
-                                                              objectId,
-                                                              pagingRequest.getPage(),
-                                                              pagingRequest.getPageSize()));
+        promise.complete(analyzerOf(file).getInboundOfObject(objectId,
+                                                             pagingRequest.getPage(),
+                                                             pagingRequest.getPageSize()));
     }
 }

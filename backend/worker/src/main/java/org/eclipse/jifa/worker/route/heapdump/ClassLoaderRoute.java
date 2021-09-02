@@ -19,30 +19,25 @@ import org.eclipse.jifa.hda.api.Model;
 import org.eclipse.jifa.worker.route.ParamKey;
 import org.eclipse.jifa.worker.route.RouteMeta;
 
-import static org.eclipse.jifa.worker.support.Analyzer.HEAP_DUMP_ANALYZER;
-import static org.eclipse.jifa.worker.support.Analyzer.getOrOpenAnalysisContext;
-
 class ClassLoaderRoute extends HeapBaseRoute {
 
     @RouteMeta(path = "/classLoaderExplorer/summary")
     void summary(Promise<Model.ClassLoader.Summary> promise, @ParamKey("file") String file) {
-        promise.complete(HEAP_DUMP_ANALYZER.getSummaryOfClassLoaders(getOrOpenAnalysisContext(file)));
+        promise.complete(analyzerOf(file).getSummaryOfClassLoaders());
     }
 
     @RouteMeta(path = "/classLoaderExplorer/classLoader")
     void classLoaders(Promise<PageView<Model.ClassLoader.Item>> promise, @ParamKey("file") String file,
                       PagingRequest pagingRequest) {
-        promise.complete(HEAP_DUMP_ANALYZER.getClassLoaders(getOrOpenAnalysisContext(file),
-                                                           pagingRequest.getPage(),
-                                                           pagingRequest.getPageSize()));
+        promise.complete(analyzerOf(file).getClassLoaders(pagingRequest.getPage(),
+                                                          pagingRequest.getPageSize()));
     }
 
     @RouteMeta(path = "/classLoaderExplorer/children")
     void children(Promise<PageView<Model.ClassLoader.Item>> promise, @ParamKey("file") String file,
                   @ParamKey("classLoaderId") int classLoaderId, PagingRequest pagingRequest) {
-        promise.complete(HEAP_DUMP_ANALYZER.getChildrenOfClassLoader(getOrOpenAnalysisContext(file),
-                                                                    classLoaderId,
-                                                                    pagingRequest.getPage(),
-                                                                    pagingRequest.getPageSize()));
+        promise.complete(analyzerOf(file).getChildrenOfClassLoader(classLoaderId,
+                                                                   pagingRequest.getPage(),
+                                                                   pagingRequest.getPageSize()));
     }
 }

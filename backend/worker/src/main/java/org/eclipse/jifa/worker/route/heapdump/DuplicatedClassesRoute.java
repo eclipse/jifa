@@ -20,8 +20,6 @@ import org.eclipse.jifa.worker.route.ParamKey;
 import org.eclipse.jifa.worker.route.RouteMeta;
 
 import static org.eclipse.jifa.hda.api.Model.DuplicatedClass;
-import static org.eclipse.jifa.worker.support.Analyzer.HEAP_DUMP_ANALYZER;
-import static org.eclipse.jifa.worker.support.Analyzer.getOrOpenAnalysisContext;
 
 class DuplicatedClassesRoute extends HeapBaseRoute {
 
@@ -30,15 +28,15 @@ class DuplicatedClassesRoute extends HeapBaseRoute {
                       @ParamKey(value = "searchText", mandatory = false) String searchText,
                       @ParamKey(value = "searchType", mandatory = false) SearchType searchType,
                       PagingRequest pagingRequest) {
-        promise.complete(HEAP_DUMP_ANALYZER.getDuplicatedClasses(getOrOpenAnalysisContext(file)
-            , searchText, searchType, pagingRequest.getPage(), pagingRequest.getPageSize()));
+        promise.complete(analyzerOf(file).getDuplicatedClasses(searchText, searchType, pagingRequest.getPage(),
+                                                               pagingRequest.getPageSize()));
     }
 
     @RouteMeta(path = "/duplicatedClasses/classLoaders")
     void classLoaderRecords(Promise<PageView<DuplicatedClass.ClassLoaderItem>> promise, @ParamKey("file") String file,
                             @ParamKey("index") int index,
                             PagingRequest pagingRequest) {
-        promise.complete(HEAP_DUMP_ANALYZER.getClassloadersOfDuplicatedClass(getOrOpenAnalysisContext(file)
-            , index, pagingRequest.getPage(), pagingRequest.getPageSize()));
+        promise.complete(analyzerOf(file).getClassloadersOfDuplicatedClass(index, pagingRequest.getPage(),
+                                                                           pagingRequest.getPageSize()));
     }
 }

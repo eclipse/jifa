@@ -20,8 +20,6 @@ import org.eclipse.jifa.worker.route.ParamKey;
 import org.eclipse.jifa.worker.route.RouteMeta;
 
 import static org.eclipse.jifa.hda.api.Model.DominatorTree;
-import static org.eclipse.jifa.worker.support.Analyzer.HEAP_DUMP_ANALYZER;
-import static org.eclipse.jifa.worker.support.Analyzer.getOrOpenAnalysisContext;
 
 class DominatorTreeRoute extends HeapBaseRoute {
 
@@ -33,11 +31,10 @@ class DominatorTreeRoute extends HeapBaseRoute {
                @ParamKey(value = "searchText", mandatory = false) String searchText,
                @ParamKey(value = "searchType", mandatory = false) SearchType searchType,
                PagingRequest pagingRequest) {
-        promise.complete(HEAP_DUMP_ANALYZER
-                            .getRootsOfDominatorTree(getOrOpenAnalysisContext(file), grouping, sortBy,
-                                                     ascendingOrder, searchText, searchType,
-                                                     pagingRequest.getPage(),
-                                                     pagingRequest.getPageSize()));
+        promise.complete(analyzerOf(file).getRootsOfDominatorTree(grouping, sortBy,
+                                                                  ascendingOrder, searchText, searchType,
+                                                                  pagingRequest.getPage(),
+                                                                  pagingRequest.getPageSize()));
     }
 
     @RouteMeta(path = "/dominatorTree/children")
@@ -48,11 +45,10 @@ class DominatorTreeRoute extends HeapBaseRoute {
                   PagingRequest pagingRequest,
                   @ParamKey("parentObjectId") int parentObjectId, @ParamKey(value = "idPathInResultTree",
                                                                             mandatory = false) int[] idPathInResultTree) {
-        promise.complete(HEAP_DUMP_ANALYZER
-                            .getChildrenOfDominatorTree(getOrOpenAnalysisContext(file), grouping, sortBy,
-                                                        ascendingOrder,
-                                                        parentObjectId,
-                                                        idPathInResultTree, pagingRequest.getPage(),
-                                                        pagingRequest.getPageSize()));
+        promise.complete(analyzerOf(file).getChildrenOfDominatorTree(grouping, sortBy,
+                                                                     ascendingOrder,
+                                                                     parentObjectId,
+                                                                     idPathInResultTree, pagingRequest.getPage(),
+                                                                     pagingRequest.getPageSize()));
     }
 }
