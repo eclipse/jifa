@@ -412,6 +412,70 @@ public interface Model {
         }
     }
 
+    interface CalciteSQLResult {
+
+        int TREE = 1;
+
+        int TABLE = 2;
+
+        int TEXT = 3;
+
+        int getType();
+
+        @Data
+        class TableResult implements CalciteSQLResult {
+            public int type = TABLE;
+
+            public List<String> columns;
+
+            public PageView<Entry> pv;
+
+            public TableResult(List<String> columns, PageView<Entry> pv) {
+                this.columns = columns;
+                this.pv = pv;
+            }
+
+            @Data
+            public static class Entry {
+
+                public int objectId;
+
+                public List<Object> values;
+
+                public Entry(int objectId, List<Object> values) {
+                    this.objectId = objectId;
+                    this.values = values;
+                }
+            }
+
+        }
+
+        @Data
+        class TextResult implements CalciteSQLResult {
+
+            public int type = CalciteSQLResult.TEXT;
+
+            public String text;
+
+            public TextResult(String text) {
+                this.text = text;
+            }
+        }
+
+        @Data
+        class TreeResult implements CalciteSQLResult {
+
+            public PageView<JavaObject> pv;
+
+            public int type = TREE;
+
+            public TreeResult(PageView<JavaObject> pv) {
+                this.pv = pv;
+            }
+        }
+
+    }
+
     interface OQLResult {
 
         int TREE = 1;

@@ -1094,6 +1094,67 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
     }
 
     @Override
+    public CalciteSQLResult getCalciteSQLResult(AnalysisContextImpl context, String sql, String sortBy, boolean ascendingOrder,
+                                  int page, int pageSize) {
+        return $(() -> {
+            Map<String, Object> args = new HashMap<>();
+            args.put("sql", sql);
+            IResult result = queryByCommand(context, "calcite", args);
+            if (result instanceof IResultTree) {
+                return new CalciteSQLResult.TreeResult(
+                    PageViewBuilder.build(
+                        ((IResultTree) result).getElements(),
+                        new PagingRequest(page, pageSize),
+                        e -> $(() -> {
+                            int objectId = ((IResultTree) result).getContext(e).getObjectId();
+                            IObject o = context.snapshot.getObject(objectId);
+                            JavaObject jo = new JavaObject();
+                            jo.setObjectId(objectId);
+                            jo.setLabel(o.getDisplayName());
+                            jo.setSuffix(Helper.suffix(o.getGCRootInfo()));
+                            jo.setShallowSize(o.getUsedHeapSize());
+                            jo.setRetainedSize(o.getRetainedHeapSize());
+                            jo.setGCRoot(context.snapshot.isGCRoot(objectId));
+                            jo.setObjectType(typeOf(o));
+                            jo.setHasOutbound(true);
+                            return jo;
+                        }), JavaObject.sortBy(sortBy, ascendingOrder)));
+            } else if (result instanceof IResultTable) {
+                IResultTable table = (IResultTable) result;
+                Column[] columns = table.getColumns();
+                List<String> cs = Arrays.stream(columns).map(Column::getLabel).collect(Collectors.toList());
+                PageView<CalciteSQLResult.TableResult.Entry> pv =
+                    PageViewBuilder.build(new PageViewBuilder.Callback<Object>() {
+                        @Override
+                        public int totalSize() {
+                            return table.getRowCount();
+                        }
+
+                        @Override
+                        public Object get(int index) {
+                            return table.getRow(index);
+                        }
+                    }, new PagingRequest(page, pageSize), o -> {
+                        List<Object> l = new ArrayList<>();
+                        for (int i = 0; i < columns.length; i++) {
+                            Object columnValue = table.getColumnValue(o, i);
+
+                            l.add(columnValue != null ? columnValue.toString() : null);
+                        }
+                        IContextObject co = table.getContext(o);
+                        return new CalciteSQLResult.TableResult.Entry(co != null ? co.getObjectId() : Helper.ILLEGAL_OBJECT_ID,
+                                                               l);
+                    });
+                return new CalciteSQLResult.TableResult(cs, pv);
+            } else if (result instanceof TextResult) {
+                return new CalciteSQLResult.TextResult(((TextResult) result).getText());
+            } else {
+                throw new AnalysisException("Unsupported Calcite SQL result type");
+            }
+        });
+    }
+
+    @Override
     public OQLResult getOQLResult(AnalysisContextImpl context, String oql, String sortBy, boolean ascendingOrder,
                                   int page, int pageSize) {
         IResult result = getOQLResult(context, oql);

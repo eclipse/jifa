@@ -37,6 +37,7 @@ public class HeapBaseRoute extends BaseRoute {
         ROUTES.add(ObjectListRoute.class);
         ROUTES.add(ClassReferenceRoute.class);
         ROUTES.add(OQLRoute.class);
+        ROUTES.add(CalciteSQLRoute.class);
         ROUTES.add(DirectByteBufferRoute.class);
         ROUTES.add(GCRootRoute.class);
         ROUTES.add(PathToGCRootsRoute.class);

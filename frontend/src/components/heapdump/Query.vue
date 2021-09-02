@@ -41,10 +41,14 @@
     </v-contextmenu>
 
     <div style="height: 45px; margin-top: 5px">
+      <el-select v-model="queryType">
+        <el-option label="OQL" value="oql" />
+        <el-option label="Calcite SQL" value="sql" />
+      </el-select>
       <el-autocomplete
-              v-model="oql"
+              v-model="query"
               :fetch-suggestions="queryHistory"
-              placeholder="Object Query Language ..."
+              placeholder="Query ..."
               :trigger-on-focus="false"
               prefix-icon="el-icon-edit"
               @keyup.enter.native="search"
@@ -58,10 +62,17 @@
       </el-autocomplete>
     </div>
 
-    <div align="left" style="height: 25px; margin-bottom: 5px">
+    <div align="left" style="height: 25px; margin-bottom: 5px" v-if="queryType == 'oql'">
       <a href="https://help.eclipse.org/oxygen/index.jsp?topic=%2Forg.eclipse.mat.ui.help%2Freference%2Foqlsyntax.html&cp=66_4_2"
          target="_blank" style="font-size: 12px; font-weight: bold; color: #909399; text-decoration: underline">
         > Click to get detailed OQL Help documents.
+      </a>
+    </div>
+
+    <div align="left" style="height: 25px; margin-bottom: 5px" v-if="queryType == 'sql'">
+      <a href="https://github.com/vlsi/mat-calcite-plugin#sample"
+         target="_blank" style="font-size: 12px; font-weight: bold; color: #909399; text-decoration: underline">
+        > Click to get detailed Calcite SQL Help.
       </a>
     </div>
 
@@ -103,7 +114,7 @@
 
             <span v-if="scope.row.isSummaryItem">
               <img :src="ICONS.misc.sumIcon" v-if="treeResult.length >= totalSize"/>
-              <img :src="ICONS.misc.sumPlusIcon" @dblclick="fetchResult(scope.row.oql)" style="cursor: pointer" v-else/>
+              <img :src="ICONS.misc.sumPlusIcon" @dblclick="fetchResult(scope.row.query)" style="cursor: pointer" v-else/>
               {{ treeResult.length }} <strong> / </strong> {{totalSize}}
             </span>
           </template>
@@ -136,7 +147,7 @@
 
             <span v-if="scope.row.isSummaryItem && index === 0">
             <img :src="ICONS.misc.sumIcon" v-if="tableResult.length >= totalSize"/>
-            <img :src="ICONS.misc.sumPlusIcon" @dblclick="fetchResult(scope.row.oql)" style="cursor: pointer" v-else/>
+            <img :src="ICONS.misc.sumPlusIcon" @dblclick="fetchResult(scope.row.query)" style="cursor: pointer" v-else/>
             {{ tableResult.length }} <strong> / </strong> {{totalSize}}
           </span>
           </template>
@@ -161,7 +172,7 @@
 
   let rowKey = 1
 
-  // oql result type
+  // query result type
   const TREE = 1
   const TABLE = 2
   const TEXT = 3
@@ -175,7 +186,8 @@
         headerCellStyle: {padding: 0, 'font-size': '12px', 'font-weight': 'normal'},
         searching: false,
         loading: false,
-        oql: '',
+        query: '',
+        queryType: 'oql',
         nextPage: 1,
         pageSize: 25,
         totalSize: 0,
@@ -197,7 +209,7 @@
         isTableResult: false,
         isTextResult: false,
 
-        historyOQLs: [],
+        historyQueries: [],
         treeSortBy:'retainedHeap',
         treeAscendingOrder:true,
       }
@@ -210,23 +222,24 @@
       },
 
       sortTree(val){
-        if (this.oql) {
+        if (this.query) {
           this.treeSortBy = val.prop;
           this.treeAscendingOrder = val.order === 'ascending';
           this.searching = true
           this.clear()
-          this.fetchResult(this.oql)
+          this.fetchResult(this.query)
         }
       },
 
-      fetchResult(oql) {
-        if (!oql || oql.length === 0) {
+      fetchResult(query) {
+        if (!query || query.length === 0) {
           return
         }
         this.loading = true
-        axios.get(heapDumpService(this.file, 'oql'), {
+        axios.get(heapDumpService(this.file, this.queryType), {
           params: {
-            oql: oql,
+            oql: this.queryType == 'oql' ? query : undefined,
+            sql: this.queryType == 'sql' ? query : undefined,
             page: this.nextPage,
             pageSize: this.pageSize,
             sortBy: this.treeSortBy,
@@ -235,7 +248,7 @@
         }).then(resp => {
           this.adjustDataByResultType(resp.data.type)
           if (this.isTreeResult) {
-            this.putHistory(oql)
+            this.putHistory(query)
             this.totalSize = resp.data.pv.totalSize
             let data = resp.data.pv.data
             data.forEach(d => {
@@ -254,12 +267,12 @@
             })
             this.treeTableData = this.treeResult.concat({
               rowKey: rowKey++,
-              oql: oql,
+              query: query,
               isSummaryItem: true
             })
             this.nextPage++
           } else if (this.isTableResult) {
-            this.putHistory(oql)
+            this.putHistory(query)
             this.totalSize = resp.data.pv.totalSize
             this.tableResultColumns = resp.data.columns
             let data = resp.data.pv.data
@@ -274,7 +287,7 @@
             })
             this.tableTableData = this.tableResult.concat({
               rowKey: rowKey++,
-              oql: oql,
+              query: query,
               isSummaryItem: true
             })
             this.nextPage++
@@ -357,29 +370,29 @@
       },
 
       search() {
-        if (this.oql) {
+        if (this.query) {
           this.searching = true
           this.clear()
-          this.fetchResult(this.oql)
+          this.fetchResult(this.query)
         }
       },
 
-      putHistory(oql) {
-        let target = oql.trim()
-        for (let i = 0; i < this.historyOQLs.length; i++) {
-          if (this.historyOQLs[i].value === target) {
+      putHistory(query) {
+        let target = query.trim()
+        for (let i = 0; i < this.historyQueries.length; i++) {
+          if (this.historyQueries[i].value === target) {
             return
           }
         }
 
-        this.historyOQLs.push({value: target})
-        if (this.historyOQLs.length > 11) {
-          this.historyOQLs.shift()
+        this.historyQueries.push({value: target})
+        if (this.historyQueries.length > 11) {
+          this.historyQueries.shift()
         }
       },
 
       queryHistory(queryString, cb) {
-        let history = this.historyOQLs;
+        let history = this.historyQueries;
         let results = queryString ? history.filter(this.createFilter(queryString)) : history;
         cb(results);
       },

@@ -173,10 +173,10 @@
                   </div>
                 </el-tab-pane>
 
-                <el-tab-pane name="OQL" lazy>
-                  <span slot="label"> OQL </span>
+                <el-tab-pane name="queryEngine" lazy>
+                  <span slot="label"> Query (OQL/Calcite) </span>
                   <div v-bind:style="{ 'height': '100%', 'width': resultDivWidth}">
-                    <OQL :file="file"
+                    <Query :file="file"
                          @outgoingRefsOfObj="outgoingRefsOfObj"
                          @incomingRefsOfObj="incomingRefsOfObj"
                          @outgoingRefsOfClass="outgoingRefsOfClass"
@@ -238,7 +238,7 @@
   import Thread from "./Thread";
   import Histogram from "./Histogram"
   import DuplicatedClasses from "./DuplicatedClasses"
-  import OQL from "./OQL"
+  import Query from "./Query"
   import DynamicResultSlot from "./DynamicResultSlot"
   import DominatorTree from "./DominatorTree"
   import GCRoots from "./GCRoots"
@@ -285,7 +285,7 @@
       Histogram,
       Thread,
       SystemProperty,
-      OQL,
+      Query,
       DynamicResultSlot,
       UnreachableObjects,
       ClassLoaders,

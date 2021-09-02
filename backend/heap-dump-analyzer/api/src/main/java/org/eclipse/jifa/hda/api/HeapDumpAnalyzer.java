@@ -102,6 +102,8 @@ public interface HeapDumpAnalyzer<C extends AnalysisContext> {
 
     OQLResult getOQLResult(C context, String oql, String sortBy, boolean ascendingOrder, int page, int pageSize);
 
+    CalciteSQLResult getCalciteSQLResult(C context, String sql, String sortBy, boolean ascendingOrder, int page, int pageSize);
+
     Model.Thread.Summary getSummaryOfThreads(C context, String searchText, SearchType searchType);
 
     PageView<Model.Thread.Item> getThreads(C context, String sortBy, boolean ascendingOrder, String searchText,
