@@ -177,6 +177,7 @@
                   <span slot="label"> Query (OQL/Calcite) </span>
                   <div v-bind:style="{ 'height': '100%', 'width': resultDivWidth}">
                     <Query :file="file"
+                         queryType="oql"
                          @outgoingRefsOfObj="outgoingRefsOfObj"
                          @incomingRefsOfObj="incomingRefsOfObj"
                          @outgoingRefsOfClass="outgoingRefsOfClass"
