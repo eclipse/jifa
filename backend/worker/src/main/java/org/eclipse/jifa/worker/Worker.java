@@ -27,7 +27,7 @@ import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.CorsHandler;
 import io.vertx.ext.web.handler.StaticHandler;
 import org.eclipse.jifa.common.JifaHooks;
-import org.eclipse.jifa.common.aux.JifaException;
+import org.eclipse.jifa.common.JifaException;
 import org.eclipse.jifa.common.util.FileUtil;
 import org.eclipse.jifa.worker.route.RouteFiller;
 import org.slf4j.Logger;

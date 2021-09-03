@@ -20,9 +20,6 @@
 package org.eclipse.jifa.common.util;
 
 import java.io.IOException;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import com.google.common.base.CaseFormat;
@@ -31,7 +28,7 @@ import com.google.gson.TypeAdapter;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
-import org.eclipse.jifa.common.aux.JifaException;
+import org.eclipse.jifa.common.JifaException;
 
 public class AccessorBasedTypeAdaptor<T> extends TypeAdapter<T> {
     private Gson gson;

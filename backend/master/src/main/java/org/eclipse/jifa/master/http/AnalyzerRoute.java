@@ -17,7 +17,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.ext.web.Router;
 import io.vertx.reactivex.ext.web.RoutingContext;
-import org.eclipse.jifa.common.aux.ErrorCode;
+import org.eclipse.jifa.common.ErrorCode;
 import org.eclipse.jifa.common.util.HTTPRespGuarder;
 import org.eclipse.jifa.master.Constant;
 import org.eclipse.jifa.master.entity.File;

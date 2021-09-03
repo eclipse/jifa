@@ -14,8 +14,8 @@ package org.eclipse.jifa.worker.route;
 
 import io.vertx.ext.web.Route;
 import io.vertx.ext.web.Router;
-import org.eclipse.jifa.common.aux.ErrorCode;
-import org.eclipse.jifa.common.aux.JifaException;
+import org.eclipse.jifa.common.ErrorCode;
+import org.eclipse.jifa.common.JifaException;
 import org.eclipse.jifa.common.util.HTTPRespGuarder;
 import org.eclipse.jifa.worker.Constant;
 import org.eclipse.jifa.worker.WorkerGlobal;

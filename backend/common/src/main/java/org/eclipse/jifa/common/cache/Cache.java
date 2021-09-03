@@ -14,7 +14,7 @@
 package org.eclipse.jifa.common.cache;
 
 import com.google.common.cache.CacheBuilder;
-import org.eclipse.jifa.common.aux.JifaException;
+import org.eclipse.jifa.common.JifaException;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;

@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-package org.eclipse.jifa.common.aux;
+package org.eclipse.jifa.common;
 
 public enum ErrorCode {
 

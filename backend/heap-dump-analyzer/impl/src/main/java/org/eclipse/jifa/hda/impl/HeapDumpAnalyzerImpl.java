@@ -13,7 +13,7 @@
 package org.eclipse.jifa.hda.impl;
 
 import org.eclipse.jifa.common.Constant;
-import org.eclipse.jifa.common.aux.JifaException;
+import org.eclipse.jifa.common.JifaException;
 import org.eclipse.jifa.common.cache.Cacheable;
 import org.eclipse.jifa.common.request.PagingRequest;
 import org.eclipse.jifa.common.util.ReflectionUtil;
