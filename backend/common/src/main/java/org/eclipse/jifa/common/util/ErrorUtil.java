@@ -12,8 +12,8 @@
  ********************************************************************************/
 package org.eclipse.jifa.common.util;
 
-import org.eclipse.jifa.common.aux.ErrorCode;
-import org.eclipse.jifa.common.aux.JifaException;
+import org.eclipse.jifa.common.ErrorCode;
+import org.eclipse.jifa.common.JifaException;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;

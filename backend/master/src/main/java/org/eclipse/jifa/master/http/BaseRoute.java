@@ -14,7 +14,7 @@ package org.eclipse.jifa.master.http;
 
 import com.alibaba.fastjson.JSON;
 import com.google.common.base.Strings;
-import org.eclipse.jifa.common.aux.ErrorCode;
+import org.eclipse.jifa.common.ErrorCode;
 import org.eclipse.jifa.master.Constant;
 import org.eclipse.jifa.master.entity.File;
 import org.eclipse.jifa.master.entity.Job;

@@ -14,7 +14,7 @@ package org.eclipse.jifa.master.service.impl.helper;
 
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.UpdateResult;
-import org.eclipse.jifa.common.aux.ErrorCode;
+import org.eclipse.jifa.common.ErrorCode;
 
 import static org.eclipse.jifa.master.service.ServiceAssertion.SERVICE_ASSERT;
 
