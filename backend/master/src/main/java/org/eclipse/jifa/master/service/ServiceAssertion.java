@@ -13,7 +13,7 @@
 package org.eclipse.jifa.master.service;
 
 import io.vertx.serviceproxy.ServiceException;
-import org.eclipse.jifa.common.aux.ErrorCode;
+import org.eclipse.jifa.common.ErrorCode;
 import org.eclipse.jifa.common.util.Assertion;
 
 public class ServiceAssertion extends Assertion {

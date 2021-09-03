@@ -14,12 +14,11 @@ package org.eclipse.jifa.worker.route;
 
 import com.google.gson.Gson;
 import io.vertx.core.Promise;
-import io.vertx.core.Promise;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.RoutingContext;
-import org.eclipse.jifa.common.aux.ErrorCode;
-import org.eclipse.jifa.common.aux.JifaException;
+import org.eclipse.jifa.common.ErrorCode;
+import org.eclipse.jifa.common.JifaException;
 import org.eclipse.jifa.common.request.PagingRequest;
 import org.eclipse.jifa.common.util.HTTPRespGuarder;
 

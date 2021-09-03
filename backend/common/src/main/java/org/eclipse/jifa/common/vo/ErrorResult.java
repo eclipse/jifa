@@ -13,8 +13,8 @@
 package org.eclipse.jifa.common.vo;
 
 import lombok.Data;
-import org.eclipse.jifa.common.aux.ErrorCode;
-import org.eclipse.jifa.common.aux.JifaException;
+import org.eclipse.jifa.common.ErrorCode;
+import org.eclipse.jifa.common.JifaException;
 
 @Data
 public class ErrorResult {

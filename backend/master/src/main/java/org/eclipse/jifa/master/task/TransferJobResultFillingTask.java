@@ -14,7 +14,7 @@ package org.eclipse.jifa.master.task;
 
 import io.reactivex.Completable;
 import io.vertx.reactivex.core.Vertx;
-import org.eclipse.jifa.common.aux.ErrorCode;
+import org.eclipse.jifa.common.ErrorCode;
 import org.eclipse.jifa.master.service.impl.Pivot;
 import org.eclipse.jifa.master.service.impl.helper.ConfigHelper;
 import org.eclipse.jifa.master.service.impl.helper.JobHelper;

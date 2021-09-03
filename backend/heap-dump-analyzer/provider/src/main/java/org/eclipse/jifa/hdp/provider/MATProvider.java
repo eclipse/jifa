@@ -13,7 +13,7 @@
 
 package org.eclipse.jifa.hdp.provider;
 
-import org.eclipse.jifa.common.aux.JifaException;
+import org.eclipse.jifa.common.JifaException;
 import org.eclipse.jifa.hda.api.HeapDumpAnalyzer;
 import org.eclipse.jifa.hda.api.ProgressListener;
 import org.osgi.framework.Bundle;
@@ -21,7 +21,6 @@ import org.osgi.framework.BundleException;
 import org.osgi.framework.Constants;
 import org.osgi.framework.launch.Framework;
 import org.osgi.framework.launch.FrameworkFactory;
-import org.osgi.framework.wiring.BundleRevision;
 
 import java.io.File;
 import java.nio.file.Path;

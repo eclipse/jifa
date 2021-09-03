@@ -13,7 +13,7 @@
 package org.eclipse.jifa.master.entity;
 
 import lombok.Data;
-import org.eclipse.jifa.common.aux.JifaException;
+import org.eclipse.jifa.common.JifaException;
 
 import java.lang.reflect.Constructor;
 

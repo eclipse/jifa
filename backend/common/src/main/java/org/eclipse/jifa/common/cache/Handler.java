@@ -15,7 +15,7 @@ package org.eclipse.jifa.common.cache;
 
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
-import org.eclipse.jifa.common.aux.JifaException;
+import org.eclipse.jifa.common.JifaException;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
