@@ -13,7 +13,6 @@
 
 package org.eclipse.jifa.hda.impl;
 
-import org.eclipse.jifa.hda.api.AnalysisContext;
 import org.eclipse.jifa.hda.api.Model;
 import org.eclipse.mat.query.IResult;
 import org.eclipse.mat.query.IResultTree;
@@ -26,7 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public class AnalysisContextImpl implements AnalysisContext {
+public class AnalysisContext {
 
     final ISnapshot snapshot;
 
@@ -36,7 +35,7 @@ public class AnalysisContextImpl implements AnalysisContext {
 
     volatile SoftReference<LeakReportData> leakReportData= new SoftReference<>(null);
 
-    AnalysisContextImpl(ISnapshot snapshot) {
+    AnalysisContext(ISnapshot snapshot) {
         this.snapshot = snapshot;
     }
 
@@ -96,7 +95,7 @@ public class AnalysisContextImpl implements AnalysisContext {
             return true;
         if (o == null || getClass() != o.getClass())
             return false;
-        AnalysisContextImpl that = (AnalysisContextImpl) o;
+        AnalysisContext that = (AnalysisContext) o;
         return Objects.equals(snapshot, that.snapshot);
     }
 

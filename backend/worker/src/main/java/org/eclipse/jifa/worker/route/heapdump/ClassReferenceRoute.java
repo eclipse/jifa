@@ -19,40 +19,36 @@ import org.eclipse.jifa.hda.api.Model;
 import org.eclipse.jifa.worker.route.ParamKey;
 import org.eclipse.jifa.worker.route.RouteMeta;
 
-import static org.eclipse.jifa.worker.support.Analyzer.HEAP_DUMP_ANALYZER;
-import static org.eclipse.jifa.worker.support.Analyzer.getOrOpenAnalysisContext;
-
 class ClassReferenceRoute extends HeapBaseRoute {
 
     @RouteMeta(path = "/classReference/inbounds/class")
     void inboundsClassInfo(Promise<Model.ClassReferrer.Item> promise, @ParamKey("file") String file,
                            @ParamKey("objectId") int objectId) {
 
-        promise.complete(HEAP_DUMP_ANALYZER.getInboundClassOfClassReference(getOrOpenAnalysisContext(file), objectId));
+        promise.complete(analyzerOf(file).getInboundClassOfClassReference(objectId));
     }
 
     @RouteMeta(path = "/classReference/outbounds/class")
     void outboundsClassInfo(Promise<Model.ClassReferrer.Item> promise, @ParamKey("file") String file,
                             @ParamKey("objectId") int objectId) {
-
-        promise.complete(HEAP_DUMP_ANALYZER.getOutboundClassOfClassReference(getOrOpenAnalysisContext(file), objectId));
+        promise.complete(analyzerOf(file).getOutboundClassOfClassReference(objectId));
     }
 
     @RouteMeta(path = "/classReference/inbounds/children")
     void inboundsChildren(Promise<PageView<Model.ClassReferrer.Item>> promise, @ParamKey("file") String file,
                           PagingRequest pagingRequest,
                           @ParamKey("objectIds") int[] objectIds) {
-        promise.complete(
-            HEAP_DUMP_ANALYZER.getInboundsOfClassReference(getOrOpenAnalysisContext(file), objectIds,
-                                                           pagingRequest.getPage(), pagingRequest.getPageSize()));
+        promise.complete(analyzerOf(file).getInboundsOfClassReference(objectIds,
+                                                                      pagingRequest.getPage(),
+                                                                      pagingRequest.getPageSize()));
     }
 
     @RouteMeta(path = "/classReference/outbounds/children")
     void outboundsChildren(Promise<PageView<Model.ClassReferrer.Item>> promise, @ParamKey("file") String file,
                            PagingRequest pagingRequest,
                            @ParamKey("objectIds") int[] objectIds) {
-        promise.complete(
-            HEAP_DUMP_ANALYZER.getOutboundsOfClassReference(getOrOpenAnalysisContext(file), objectIds,
-                                                            pagingRequest.getPage(), pagingRequest.getPageSize()));
+        promise.complete(analyzerOf(file).getOutboundsOfClassReference(objectIds,
+                                                                       pagingRequest.getPage(),
+                                                                       pagingRequest.getPageSize()));
     }
 }

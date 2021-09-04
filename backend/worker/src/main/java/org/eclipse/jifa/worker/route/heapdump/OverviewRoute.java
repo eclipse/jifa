@@ -19,18 +19,15 @@ import org.eclipse.jifa.worker.route.RouteMeta;
 
 import java.util.List;
 
-import static org.eclipse.jifa.worker.support.Analyzer.HEAP_DUMP_ANALYZER;
-import static org.eclipse.jifa.worker.support.Analyzer.getOrOpenAnalysisContext;
-
 class OverviewRoute extends HeapBaseRoute {
 
     @RouteMeta(path = "/details")
     void details(Promise<Model.Overview.Details> promise, @ParamKey("file") String file) {
-        promise.complete(HEAP_DUMP_ANALYZER.getDetails(getOrOpenAnalysisContext(file)));
+        promise.complete(analyzerOf(file).getDetails());
     }
 
     @RouteMeta(path = "/biggestObjects")
     void biggestObjects(Promise<List<Model.Overview.BigObject>> promise, @ParamKey("file") String file) {
-        promise.complete(HEAP_DUMP_ANALYZER.getBigObjects(getOrOpenAnalysisContext(file)));
+        promise.complete(analyzerOf(file).getBigObjects());
     }
 }

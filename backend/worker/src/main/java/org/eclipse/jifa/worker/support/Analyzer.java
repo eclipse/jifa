@@ -20,7 +20,6 @@ import org.eclipse.jifa.common.enums.FileType;
 import org.eclipse.jifa.common.enums.ProgressState;
 import org.eclipse.jifa.common.util.ErrorUtil;
 import org.eclipse.jifa.common.util.FileUtil;
-import org.eclipse.jifa.hda.api.AnalysisContext;
 import org.eclipse.jifa.hda.api.DefaultProgressListener;
 import org.eclipse.jifa.hda.api.HeapDumpAnalyzer;
 import org.eclipse.jifa.hda.api.ProgressListener;
@@ -29,7 +28,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -40,15 +38,14 @@ import static org.eclipse.jifa.common.util.Assertion.ASSERT;
 
 public class Analyzer {
 
+    public static final HeapDumpAnalyzer.Provider HEAP_DUMP_ANALYZER_PROVIDER;
     private static final Logger LOGGER = LoggerFactory.getLogger(Analyzer.class);
-
-    public static final HeapDumpAnalyzer<AnalysisContext> HEAP_DUMP_ANALYZER;
 
     static {
         Iterator<HeapDumpAnalyzer.Provider> iterator =
             ServiceLoader.load(HeapDumpAnalyzer.Provider.class, Worker.class.getClassLoader()).iterator();
         ASSERT.isTrue(iterator.hasNext());
-        HEAP_DUMP_ANALYZER = iterator.next().get();
+        HEAP_DUMP_ANALYZER_PROVIDER = iterator.next();
     }
 
     private final Map<String, ProgressListener> listeners;
@@ -80,15 +77,10 @@ public class Analyzer {
         }
     }
 
-    private static AnalysisContext getOrOpenAnalysisContext(String dump, Map<String, String> options,
-                                                            ProgressListener listener) {
-
-        return getOrBuild(dump, key -> HEAP_DUMP_ANALYZER
-            .open(new File(FileSupport.filePath(HEAP_DUMP, dump)), options, listener));
-    }
-
-    public static AnalysisContext getOrOpenAnalysisContext(String dump) {
-        return getOrOpenAnalysisContext(dump, Collections.emptyMap(), ProgressListener.NoOpProgressListener);
+    public static HeapDumpAnalyzer getOrBuildHeapDumpAnalyzer(String dump, Map<String, String> options,
+                                                              ProgressListener listener) {
+        return getOrBuild(dump, key -> HEAP_DUMP_ANALYZER_PROVIDER
+            .provide(new File(FileSupport.filePath(HEAP_DUMP, dump)).toPath(), options, listener));
     }
 
     public static Analyzer getInstance() {
@@ -123,7 +115,7 @@ public class Analyzer {
             try {
                 switch (fileType) {
                     case HEAP_DUMP:
-                        getOrOpenAnalysisContext(fileName, options, progressListener);
+                        getOrBuildHeapDumpAnalyzer(fileName, options, progressListener);
                         break;
                     default:
                         break;
@@ -190,8 +182,8 @@ public class Analyzer {
 
     private synchronized void clearCacheValue(String key) {
         Object value = cache.getIfPresent(key);
-        if (value instanceof AnalysisContext) {
-            HEAP_DUMP_ANALYZER.dispose((AnalysisContext) value);
+        if (value instanceof HeapDumpAnalyzer) {
+            ((HeapDumpAnalyzer) value).dispose();
         }
         cache.invalidate(key);
         LOGGER.info("Clear cache: {}", key);

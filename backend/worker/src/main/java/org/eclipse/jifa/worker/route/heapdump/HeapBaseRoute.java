@@ -12,10 +12,14 @@
  ********************************************************************************/
 package org.eclipse.jifa.worker.route.heapdump;
 
+import org.eclipse.jifa.hda.api.HeapDumpAnalyzer;
+import org.eclipse.jifa.hda.api.ProgressListener;
 import org.eclipse.jifa.worker.route.BaseRoute;
 import org.eclipse.jifa.worker.route.MappingPrefix;
+import org.eclipse.jifa.worker.support.Analyzer;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @MappingPrefix("/heap-dump/:file")
@@ -49,5 +53,9 @@ public class HeapBaseRoute extends BaseRoute {
 
     public static List<Class<? extends HeapBaseRoute>> routes() {
         return ROUTES;
+    }
+
+    public static HeapDumpAnalyzer analyzerOf(String dump) {
+        return Analyzer.getOrBuildHeapDumpAnalyzer(dump, Collections.emptyMap(), ProgressListener.NoOpProgressListener);
     }
 }

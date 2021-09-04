@@ -19,20 +19,17 @@ import org.eclipse.jifa.hda.api.Model;
 import org.eclipse.jifa.worker.route.ParamKey;
 import org.eclipse.jifa.worker.route.RouteMeta;
 
-import static org.eclipse.jifa.worker.support.Analyzer.HEAP_DUMP_ANALYZER;
-import static org.eclipse.jifa.worker.support.Analyzer.getOrOpenAnalysisContext;
-
 class UnreachableObjectsRoute extends HeapBaseRoute {
 
     @RouteMeta(path = "/unreachableObjects/summary")
     void summary(Promise<Model.UnreachableObject.Summary> promise, @ParamKey("file") String file) {
-        promise.complete(HEAP_DUMP_ANALYZER.getSummaryOfUnreachableObjects(getOrOpenAnalysisContext(file)));
+        promise.complete(analyzerOf(file).getSummaryOfUnreachableObjects());
     }
 
     @RouteMeta(path = "/unreachableObjects/records")
-    void records(Promise<PageView<Model.UnreachableObject.Item>> promise, @ParamKey("file") String file, PagingRequest pagingRequest) {
+    void records(Promise<PageView<Model.UnreachableObject.Item>> promise, @ParamKey("file") String file,
+                 PagingRequest pagingRequest) {
 
-        promise.complete(HEAP_DUMP_ANALYZER.getUnreachableObjects(getOrOpenAnalysisContext(file),
-                                                                 pagingRequest.getPage(), pagingRequest.getPageSize()));
+        promise.complete(analyzerOf(file).getUnreachableObjects(pagingRequest.getPage(), pagingRequest.getPageSize()));
     }
 }

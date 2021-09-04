@@ -16,6 +16,7 @@ import org.eclipse.jifa.common.Constant;
 import org.eclipse.jifa.common.JifaException;
 import org.eclipse.jifa.common.cache.Cacheable;
 import org.eclipse.jifa.common.request.PagingRequest;
+import org.eclipse.jifa.common.util.PageViewBuilder;
 import org.eclipse.jifa.common.util.ReflectionUtil;
 import org.eclipse.jifa.common.vo.PageView;
 import org.eclipse.jifa.common.vo.support.SearchPredicate;
@@ -24,7 +25,6 @@ import org.eclipse.jifa.hda.api.AnalysisException;
 import org.eclipse.jifa.hda.api.HeapDumpAnalyzer;
 import org.eclipse.jifa.hda.api.Model;
 import org.eclipse.jifa.hda.api.ProgressListener;
-import org.eclipse.jifa.common.util.PageViewBuilder;
 import org.eclipse.mat.SnapshotException;
 import org.eclipse.mat.internal.snapshot.SnapshotQueryContext;
 import org.eclipse.mat.parser.model.ClassImpl;
@@ -68,9 +68,9 @@ import org.eclipse.mat.snapshot.model.ObjectReference;
 import org.eclipse.mat.snapshot.query.Icons;
 import org.eclipse.mat.snapshot.query.SnapshotQuery;
 
-import java.io.File;
 import java.lang.ref.SoftReference;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -88,10 +88,18 @@ import java.util.stream.Collectors;
 import static org.eclipse.jifa.common.vo.support.SearchPredicate.createPredicate;
 import static org.eclipse.jifa.hda.api.Model.*;
 import static org.eclipse.jifa.hda.api.ProgressListener.NoOpProgressListener;
-import static org.eclipse.jifa.hda.impl.AnalysisContextImpl.ClassLoaderExplorerData;
-import static org.eclipse.jifa.hda.impl.AnalysisContextImpl.DirectByteBufferData;
+import static org.eclipse.jifa.hda.impl.AnalysisContext.ClassLoaderExplorerData;
+import static org.eclipse.jifa.hda.impl.AnalysisContext.DirectByteBufferData;
 
-public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImpl> {
+public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer {
+
+    static final Provider PROVIDER = new ProviderImpl();
+
+    private final AnalysisContext context;
+
+    public HeapDumpAnalyzerImpl(AnalysisContext context) {
+        this.context = context;
+    }
 
     public static int typeOf(IObject object) {
         if (object instanceof IClass) {
@@ -119,7 +127,7 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
         throw new AnalysisException("Should not reach here");
     }
 
-    private static Map<IClass, Set<String>> convert(AnalysisContextImpl context,
+    private static Map<IClass, Set<String>> convert(AnalysisContext context,
                                                     List<String> excludes) throws SnapshotException {
         Map<IClass, Set<String>> excludeMap = null;
 
@@ -149,7 +157,7 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
         return excludeMap;
     }
 
-    private <V> V $(RV<V> rv) {
+    private static <V> V $(RV<V> rv) {
         try {
             return rv.run();
         } catch (Throwable t) {
@@ -165,19 +173,12 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
     }
 
     @Override
-    public AnalysisContextImpl open(File file, Map<String, String> arguments, ProgressListener listener) {
-        return new AnalysisContextImpl(
-            $(() -> SnapshotFactory.openSnapshot(file, arguments, new ProgressListenerImpl(listener)))
-        );
-    }
-
-    @Override
-    public void dispose(AnalysisContextImpl context) {
+    public void dispose() {
         $(() -> SnapshotFactory.dispose(context.snapshot));
     }
 
     @Override
-    public Overview.Details getDetails(AnalysisContextImpl context) {
+    public Overview.Details getDetails() {
         return $(() -> {
                      SnapshotInfo snapshotInfo = context.snapshot.getSnapshotInfo();
                      return new Overview.Details(snapshotInfo.getJvmInfo(), snapshotInfo.getIdentifierSize(),
@@ -189,25 +190,25 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
         );
     }
 
-    private <Res extends IResult> Res queryByCommand(AnalysisContextImpl context,
+    private <Res extends IResult> Res queryByCommand(AnalysisContext context,
                                                      String command) throws SnapshotException {
         return queryByCommand(context, command, null, NoOpProgressListener);
     }
 
     @Cacheable
-    protected <Res extends IResult> Res queryByCommand(AnalysisContextImpl context,
-                                                     String command,
-                                                     Map<String, Object> args) throws SnapshotException {
+    protected <Res extends IResult> Res queryByCommand(AnalysisContext context,
+                                                       String command,
+                                                       Map<String, Object> args) throws SnapshotException {
         return queryByCommand(context, command, args, NoOpProgressListener);
     }
 
-    private <Res extends IResult> Res queryByCommand(AnalysisContextImpl context, String command,
+    private <Res extends IResult> Res queryByCommand(AnalysisContext context, String command,
                                                      ProgressListener listener) throws SnapshotException {
         return queryByCommand(context, command, null, listener);
     }
 
     @SuppressWarnings("unchecked")
-    private <Res extends IResult> Res queryByCommand(AnalysisContextImpl context, String command,
+    private <Res extends IResult> Res queryByCommand(AnalysisContext context, String command,
                                                      Map<String, Object> args,
                                                      ProgressListener listener) throws SnapshotException {
         SnapshotQuery query = SnapshotQuery.parse(command, context.snapshot);
@@ -218,7 +219,7 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
     }
 
     @Override
-    public Map<String, String> getSystemProperties(AnalysisContextImpl context) {
+    public Map<String, String> getSystemProperties() {
         return $(() -> {
             IResultTable result = queryByCommand(context, "system_properties");
             Map<String, String> map = new HashMap<>();
@@ -232,7 +233,7 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
     }
 
     @Override
-    public JavaObject getObjectInfo(AnalysisContextImpl context, int objectId) {
+    public JavaObject getObjectInfo(int objectId) {
         return $(() -> {
             JavaObject ho = new JavaObject();
             IObject object = context.snapshot.getObject(objectId);
@@ -249,7 +250,7 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
     }
 
     @Override
-    public InspectorView getInspectorView(AnalysisContextImpl context, int objectId) {
+    public InspectorView getInspectorView(int objectId) {
         return $(() -> {
             InspectorView view = new InspectorView();
 
@@ -314,7 +315,7 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
     }
 
     @Override
-    public PageView<Model.FieldView> getFields(AnalysisContextImpl context, int objectId, int page, int pageSize) {
+    public PageView<Model.FieldView> getFields(int objectId, int page, int pageSize) {
         return $(() -> {
             ISnapshot snapshot = context.snapshot;
             IObject object = snapshot.getObject(objectId);
@@ -371,7 +372,7 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
     }
 
     @Override
-    public PageView<Model.FieldView> getStaticFields(AnalysisContextImpl context, int objectId, int page,
+    public PageView<Model.FieldView> getStaticFields(int objectId, int page,
                                                      int pageSize) {
         return $(() -> {
             ISnapshot snapshot = context.snapshot;
@@ -393,12 +394,12 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
     }
 
     @Override
-    public int mapAddressToId(AnalysisContextImpl context, long address) {
+    public int mapAddressToId(long address) {
         return $(() -> context.snapshot.mapAddressToId(address));
     }
 
     @Override
-    public String getObjectValue(AnalysisContextImpl context, int objectId) {
+    public String getObjectValue(int objectId) {
         return $(() -> {
             IObject object = context.snapshot.getObject(objectId);
             String text = object.getClassSpecificName();
@@ -407,7 +408,7 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
     }
 
     @Override
-    public List<Overview.BigObject> getBigObjects(AnalysisContextImpl context) {
+    public List<Overview.BigObject> getBigObjects() {
         return $(() -> {
             IResultPie result = queryByCommand(context, "pie_biggest_objects");
 
@@ -422,7 +423,7 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
         });
     }
 
-    private ClassLoaderExplorerData queryClassLoader(AnalysisContextImpl context) throws Exception {
+    private ClassLoaderExplorerData queryClassLoader(AnalysisContext context) throws Exception {
         ClassLoaderExplorerData classLoaderExplorerData = context.classLoaderExplorerData.get();
         if (classLoaderExplorerData != null) {
             return classLoaderExplorerData;
@@ -457,7 +458,7 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
     }
 
     @Override
-    public Model.ClassLoader.Summary getSummaryOfClassLoaders(AnalysisContextImpl context) {
+    public Model.ClassLoader.Summary getSummaryOfClassLoaders() {
         return $(() -> {
             ClassLoaderExplorerData data = queryClassLoader(context);
             Model.ClassLoader.Summary summary =
@@ -470,8 +471,7 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
     }
 
     @Override
-    public PageView<Model.ClassLoader.Item> getClassLoaders(AnalysisContextImpl context,
-                                                            int page, int pageSize) {
+    public PageView<Model.ClassLoader.Item> getClassLoaders(int page, int pageSize) {
         return $(() -> {
             ClassLoaderExplorerData data = queryClassLoader(context);
             IResultTree result = data.result;
@@ -491,9 +491,7 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
     }
 
     @Override
-    public PageView<Model.ClassLoader.Item> getChildrenOfClassLoader(AnalysisContextImpl context,
-                                                                     int classLoaderId,
-                                                                     int page, int pageSize) {
+    public PageView<Model.ClassLoader.Item> getChildrenOfClassLoader(int classLoaderId, int page, int pageSize) {
         return $(() -> {
             ClassLoaderExplorerData data = queryClassLoader(context);
             IResultTree result = data.result;
@@ -517,7 +515,7 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
     }
 
     @Override
-    public UnreachableObject.Summary getSummaryOfUnreachableObjects(AnalysisContextImpl context) {
+    public UnreachableObject.Summary getSummaryOfUnreachableObjects() {
         return $(() -> {
             UnreachableObjectsHistogram histogram =
                 (UnreachableObjectsHistogram) context.snapshot.getSnapshotInfo().getProperty(
@@ -541,9 +539,7 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
     }
 
     @Override
-    public PageView<UnreachableObject.Item> getUnreachableObjects(AnalysisContextImpl context,
-                                                                  int page,
-                                                                  int pageSize) {
+    public PageView<UnreachableObject.Item> getUnreachableObjects(int page, int pageSize) {
         return $(() -> {
             UnreachableObjectsHistogram histogram =
                 (UnreachableObjectsHistogram) context.snapshot.getSnapshotInfo().getProperty(
@@ -568,7 +564,7 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
     }
 
     private DirectByteBufferData queryDirectByteBufferData(
-        AnalysisContextImpl context) throws SnapshotException {
+        AnalysisContext context) throws SnapshotException {
         DirectByteBufferData data = context.directByteBufferData.get();
         if (data != null) {
             return data;
@@ -610,12 +606,12 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
     }
 
     @Override
-    public DirectByteBuffer.Summary getSummaryOfDirectByteBuffers(AnalysisContextImpl context) {
+    public DirectByteBuffer.Summary getSummaryOfDirectByteBuffers() {
         return $(() -> queryDirectByteBufferData(context).summary);
     }
 
     @Override
-    public PageView<DirectByteBuffer.Item> getDirectByteBuffers(AnalysisContextImpl context, int page, int pageSize) {
+    public PageView<DirectByteBuffer.Item> getDirectByteBuffers(int page, int pageSize) {
         return $(() -> {
             DirectByteBufferData data = queryDirectByteBufferData(context);
             RefinedTable resultContext = data.resultContext;
@@ -641,7 +637,7 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
         });
     }
 
-    private PageView<JavaObject> queryIOBoundsOfObject(AnalysisContextImpl context, int objectId, int page,
+    private PageView<JavaObject> queryIOBoundsOfObject(AnalysisContext context, int objectId, int page,
                                                        int pageSize, boolean outbound) throws SnapshotException {
         ISnapshot snapshot = context.snapshot;
         int[] ids = outbound ? snapshot.getOutboundReferentIds(objectId) : snapshot.getInboundRefererIds(objectId);
@@ -668,17 +664,17 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
     }
 
     @Override
-    public PageView<JavaObject> getOutboundOfObject(AnalysisContextImpl context, int objectId, int page, int pageSize) {
+    public PageView<JavaObject> getOutboundOfObject(int objectId, int page, int pageSize) {
         return $(() -> queryIOBoundsOfObject(context, objectId, page, pageSize, true));
     }
 
     @Override
-    public PageView<JavaObject> getInboundOfObject(AnalysisContextImpl context, int objectId, int page, int pageSize) {
+    public PageView<JavaObject> getInboundOfObject(int objectId, int page, int pageSize) {
         return $(() -> queryIOBoundsOfObject(context, objectId, page, pageSize, false));
     }
 
     @Override
-    public List<GCRoot.Item> getGCRoots(AnalysisContextImpl context) {
+    public List<GCRoot.Item> getGCRoots() {
         return $(() -> {
             IResultTree tree = queryByCommand(context, "gc_roots");
             return tree.getElements().stream().map(e -> {
@@ -691,8 +687,7 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
     }
 
     @Override
-    public PageView<GCRoot.Item> getClassesOfGCRoot(AnalysisContextImpl context, int rootTypeIndex, int page,
-                                                    int pageSize) {
+    public PageView<GCRoot.Item> getClassesOfGCRoot(int rootTypeIndex, int page, int pageSize) {
         return $(() -> {
             IResultTree tree = queryByCommand(context, "gc_roots");
             Object root = tree.getElements().get(rootTypeIndex);
@@ -708,9 +703,7 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
     }
 
     @Override
-    public PageView<JavaObject> getObjectsOfGCRoot(AnalysisContextImpl context, int rootTypeIndex, int classIndex,
-                                                   int page,
-                                                   int pageSize) {
+    public PageView<JavaObject> getObjectsOfGCRoot(int rootTypeIndex, int classIndex, int page, int pageSize) {
         return $(() -> {
             IResultTree tree = queryByCommand(context, "gc_roots");
             Object root = tree.getElements().get(rootTypeIndex);
@@ -738,7 +731,7 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
         });
     }
 
-    private IResultTree queryIOBoundClassOfClassReference(AnalysisContextImpl context, Object idOrIds,
+    private IResultTree queryIOBoundClassOfClassReference(AnalysisContext context, Object idOrIds,
                                                           boolean outbound) throws SnapshotException {
         Map<String, Object> args = new HashMap<>();
         if (idOrIds instanceof int[]) {
@@ -763,7 +756,7 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
     }
 
     @Override
-    public ClassReferrer.Item getOutboundClassOfClassReference(AnalysisContextImpl context, int objectId) {
+    public ClassReferrer.Item getOutboundClassOfClassReference(int objectId) {
         return $(() -> {
             IResultTree result = queryIOBoundClassOfClassReference(context, objectId, true);
             return buildClassReferenceItem(result, result.getElements().get(0));
@@ -771,7 +764,7 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
     }
 
     @Override
-    public ClassReferrer.Item getInboundClassOfClassReference(AnalysisContextImpl context, int objectId) {
+    public ClassReferrer.Item getInboundClassOfClassReference(int objectId) {
         return $(() -> {
             IResultTree result = queryIOBoundClassOfClassReference(context, objectId, false);
             return buildClassReferenceItem(result, result.getElements().get(0));
@@ -779,9 +772,7 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
     }
 
     @Override
-    public PageView<ClassReferrer.Item> getOutboundsOfClassReference(AnalysisContextImpl context, int[] objectId,
-                                                                     int page,
-                                                                     int pageSize) {
+    public PageView<ClassReferrer.Item> getOutboundsOfClassReference(int[] objectId, int page, int pageSize) {
         return $(() -> {
             IResultTree result = queryIOBoundClassOfClassReference(context, objectId, true);
             return PageViewBuilder
@@ -791,9 +782,7 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
     }
 
     @Override
-    public PageView<ClassReferrer.Item> getInboundsOfClassReference(AnalysisContextImpl context, int[] objectId,
-                                                                    int page,
-                                                                    int pageSize) {
+    public PageView<ClassReferrer.Item> getInboundsOfClassReference(int[] objectId, int page, int pageSize) {
         return $(() -> {
             IResultTree result = queryIOBoundClassOfClassReference(context, objectId, false);
             return PageViewBuilder
@@ -803,10 +792,11 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
     }
 
     @Override
-    public Comparison.Summary getSummaryOfComparison(AnalysisContextImpl base, AnalysisContextImpl other) {
+    public Comparison.Summary getSummaryOfComparison(Path other) {
         return $(() -> {
-            ISnapshot targetSnapshot = other.snapshot;
-            ISnapshot baselineSnapshot = base.snapshot;
+            ISnapshot baselineSnapshot = ((HeapDumpAnalyzerImpl) PROVIDER.provide(other, Collections.emptyMap(),
+                                                                                NoOpProgressListener)).context.snapshot;
+            ISnapshot targetSnapshot = context.snapshot;
             Histogram targetHistogram = targetSnapshot.getHistogram(new ProgressListenerImpl(NoOpProgressListener));
             Histogram baselineHistogram = baselineSnapshot.getHistogram(new ProgressListenerImpl(NoOpProgressListener));
             final Histogram delta = targetHistogram.diffWithBaseline(baselineHistogram);
@@ -827,11 +817,11 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
     }
 
     @Override
-    public PageView<Comparison.Item> getItemsOfComparison(AnalysisContextImpl base, AnalysisContextImpl other, int page,
-                                                          int pageSize) {
+    public PageView<Comparison.Item> getItemsOfComparison(Path other, int page, int pageSize) {
         return $(() -> {
-            ISnapshot targetSnapshot = other.snapshot;
-            ISnapshot baselineSnapshot = base.snapshot;
+            ISnapshot baselineSnapshot = ((HeapDumpAnalyzerImpl) PROVIDER.provide(other, Collections.emptyMap(),
+                                                                                NoOpProgressListener)).context.snapshot;
+            ISnapshot targetSnapshot = context.snapshot;
             Histogram targetHistogram = targetSnapshot.getHistogram(new ProgressListenerImpl(NoOpProgressListener));
             Histogram baselineHistogram = baselineSnapshot.getHistogram(new ProgressListenerImpl(NoOpProgressListener));
             final Histogram delta = targetHistogram.diffWithBaseline(baselineHistogram);
@@ -851,9 +841,9 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
         });
     }
 
-    private IResultTree queryMultiplePath2GCRootsTreeByClassId(AnalysisContextImpl context, int classId,
+    private IResultTree queryMultiplePath2GCRootsTreeByClassId(AnalysisContext context, int classId,
                                                                GCRootPath.Grouping grouping)
-        throws Exception {
+    throws Exception {
         if (grouping != GCRootPath.Grouping.FROM_GC_ROOTS) {
             throw new JifaException("Unsupported grouping now");
         }
@@ -865,7 +855,7 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
         return queryByCommand(context, "merge_shortest_paths", args);
     }
 
-    private PageView<GCRootPath.MergePathToGCRootsTreeNode> buildMergePathRootsNode(AnalysisContextImpl context,
+    private PageView<GCRootPath.MergePathToGCRootsTreeNode> buildMergePathRootsNode(AnalysisContext context,
                                                                                     IResultTree tree, List<?> elements,
                                                                                     int page, int pageSize) {
 
@@ -889,7 +879,7 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
 
     @Override
     public PageView<GCRootPath.MergePathToGCRootsTreeNode> getRootsOfMergePathToGCRootsByClassId(
-        AnalysisContextImpl context, int classId, GCRootPath.Grouping grouping, int page, int pageSize) {
+        int classId, GCRootPath.Grouping grouping, int page, int pageSize) {
         return $(() -> {
             IResultTree tree = queryMultiplePath2GCRootsTreeByClassId(context, classId, grouping);
             return buildMergePathRootsNode(context, tree, tree.getElements(), page, pageSize);
@@ -898,7 +888,7 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
 
     @Override
     public PageView<GCRootPath.MergePathToGCRootsTreeNode> getChildrenOfMergePathToGCRootsByClassId(
-        AnalysisContextImpl context, int classId, int[] objectIdPathInGCPathTree, GCRootPath.Grouping grouping,
+        int classId, int[] objectIdPathInGCPathTree, GCRootPath.Grouping grouping,
         int page, int pageSize) {
         return $(() -> {
             IResultTree tree = queryMultiplePath2GCRootsTreeByClassId(context, classId, grouping);
@@ -909,7 +899,7 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
     }
 
     @Override
-    public GCRootPath.Item getPathToGCRoots(AnalysisContextImpl context, int originId, int skip, int count) {
+    public GCRootPath.Item getPathToGCRoots(int originId, int skip, int count) {
         return $(() -> {
             ISnapshot snapshot = context.snapshot;
             Map<IClass, Set<String>> excludeMap = convert(context, GCRootPath.EXCLUDES);
@@ -995,15 +985,15 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
     }
 
     @Override
-    public LeakReport getLeakReport(AnalysisContextImpl context) {
+    public LeakReport getLeakReport() {
         return $(() -> {
-            AnalysisContextImpl.LeakReportData data = context.leakReportData.get();
+            AnalysisContext.LeakReportData data = context.leakReportData.get();
             if (data == null) {
                 synchronized (context) {
                     data = context.leakReportData.get();
                     if (data == null) {
                         IResult result = queryByCommand(context, "leakhunter");
-                        data = new AnalysisContextImpl.LeakReportData();
+                        data = new AnalysisContext.LeakReportData();
                         data.result = result;
                         context.leakReportData = new SoftReference<>(data);
                     }
@@ -1085,7 +1075,7 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
     }
 
     @Cacheable
-    protected IResult getOQLResult(AnalysisContextImpl context, String oql) {
+    protected IResult getOQLResult(AnalysisContext context, String oql) {
         return $(() -> {
             Map<String, Object> args = new HashMap<>();
             args.put("queryString", oql);
@@ -1094,8 +1084,7 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
     }
 
     @Override
-    public CalciteSQLResult getCalciteSQLResult(AnalysisContextImpl context, String sql, String sortBy, boolean ascendingOrder,
-                                  int page, int pageSize) {
+    public CalciteSQLResult getCalciteSQLResult(String sql, String sortBy, boolean ascendingOrder, int page, int pageSize) {
         return $(() -> {
             Map<String, Object> args = new HashMap<>();
             args.put("sql", sql);
@@ -1154,9 +1143,7 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
         });
     }
 
-    @Override
-    public OQLResult getOQLResult(AnalysisContextImpl context, String oql, String sortBy, boolean ascendingOrder,
-                                  int page, int pageSize) {
+    public OQLResult getOQLResult(String oql, String sortBy, boolean ascendingOrder, int page, int pageSize) {
         IResult result = getOQLResult(context, oql);
         return $(() -> {
             if (result instanceof IResultTree) {
@@ -1214,7 +1201,7 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
     }
 
     @Override
-    public Model.Thread.Summary getSummaryOfThreads(AnalysisContextImpl context, String searchText,
+    public Model.Thread.Summary getSummaryOfThreads(String searchText,
                                                     SearchType searchType) {
         return $(() -> {
             IResultTree result = queryByCommand(context, "thread_overview");
@@ -1231,8 +1218,7 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
     }
 
     @Override
-    public PageView<Model.Thread.Item> getThreads(AnalysisContextImpl context, String sortBy,
-                                                  boolean ascendingOrder, String searchText,
+    public PageView<Model.Thread.Item> getThreads(String sortBy, boolean ascendingOrder, String searchText,
                                                   SearchType searchType, int page, int pageSize) {
         PagingRequest pagingRequest = new PagingRequest(page, pageSize);
         return $(() -> {
@@ -1251,7 +1237,7 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
     }
 
     @Override
-    public List<Model.Thread.StackFrame> getStackTrace(AnalysisContextImpl context, int objectId) {
+    public List<Model.Thread.StackFrame> getStackTrace(int objectId) {
         return $(() -> {
             Map<String, Object> args = new HashMap<>();
             args.put("objects", Helper.buildHeapObjectArgument(new int[]{objectId}));
@@ -1281,8 +1267,7 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
     }
 
     @Override
-    public List<Model.Thread.LocalVariable> getLocalVariables(AnalysisContextImpl context, int objectId, int depth,
-                                                              boolean firstNonNativeFrame) {
+    public List<Model.Thread.LocalVariable> getLocalVariables(int objectId, int depth, boolean firstNonNativeFrame) {
         return $(() -> {
             Map<String, Object> args = new HashMap<>();
             args.put("objects", Helper.buildHeapObjectArgument(new int[]{objectId}));
@@ -1334,7 +1319,7 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
     }
 
     @Override
-    public PageView<DuplicatedClass.ClassItem> getDuplicatedClasses(AnalysisContextImpl context, String searchText,
+    public PageView<DuplicatedClass.ClassItem> getDuplicatedClasses(String searchText,
                                                                     SearchType searchType, int page, int pageSize) {
         return $(() -> {
             IResultTree result = queryByCommand(context, "duplicate_classes");
@@ -1354,8 +1339,7 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
     }
 
     @Override
-    public PageView<DuplicatedClass.ClassLoaderItem> getClassloadersOfDuplicatedClass(AnalysisContextImpl context,
-                                                                                      int index, int page,
+    public PageView<DuplicatedClass.ClassLoaderItem> getClassloadersOfDuplicatedClass(int index, int page,
                                                                                       int pageSize) {
         return $(() -> {
             IResultTree result = queryByCommand(context, "duplicate_classes");
@@ -1383,7 +1367,7 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
     }
 
     @Override
-    public PageView<Model.Histogram.Item> getHistogram(AnalysisContextImpl context, Model.Histogram.Grouping groupingBy,
+    public PageView<Model.Histogram.Item> getHistogram(Model.Histogram.Grouping groupingBy,
                                                        int[] ids, String sortBy, boolean ascendingOrder,
                                                        String searchText, SearchType searchType,
                                                        int page, int pageSize) {
@@ -1494,8 +1478,7 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
     }
 
     @Override
-    public PageView<Model.Histogram.Item> getChildrenOfHistogram(AnalysisContextImpl context,
-                                                                 Model.Histogram.Grouping groupBy, int[] ids,
+    public PageView<Model.Histogram.Item> getChildrenOfHistogram(Model.Histogram.Grouping groupBy, int[] ids,
                                                                  String sortBy, boolean ascendingOrder,
                                                                  int parentObjectId, int page, int pageSize) {
         return $(() -> {
@@ -1725,8 +1708,7 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
     }
 
     @Override
-    public PageView<? extends DominatorTree.Item> getRootsOfDominatorTree(AnalysisContextImpl context,
-                                                                          DominatorTree.Grouping groupBy, String sortBy,
+    public PageView<? extends DominatorTree.Item> getRootsOfDominatorTree(DominatorTree.Grouping groupBy, String sortBy,
                                                                           boolean ascendingOrder, String searchText,
                                                                           SearchType searchType, int page,
                                                                           int pageSize) {
@@ -1755,8 +1737,7 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
     }
 
     @Override
-    public PageView<? extends DominatorTree.Item> getChildrenOfDominatorTree(AnalysisContextImpl context,
-                                                                             DominatorTree.Grouping groupBy,
+    public PageView<? extends DominatorTree.Item> getChildrenOfDominatorTree(DominatorTree.Grouping groupBy,
                                                                              String sortBy, boolean ascendingOrder,
                                                                              int parentObjectId,
                                                                              int[] idPathInResultTree, int page,
@@ -1843,5 +1824,15 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer<AnalysisContextImp
 
     interface RV<V> {
         V run() throws Exception;
+    }
+
+    private static class ProviderImpl implements HeapDumpAnalyzer.Provider {
+        @Override
+        public HeapDumpAnalyzer provide(Path path, Map<String, String> arguments,
+                                        ProgressListener listener) {
+            return new HeapDumpAnalyzerImpl(new AnalysisContext(
+                $(() -> SnapshotFactory.openSnapshot(path.toFile(), arguments, new ProgressListenerImpl(listener)))
+            ));
+        }
     }
 }

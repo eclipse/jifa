@@ -20,9 +20,6 @@ import org.eclipse.jifa.hda.api.Model;
 import org.eclipse.jifa.worker.route.ParamKey;
 import org.eclipse.jifa.worker.route.RouteMeta;
 
-import static org.eclipse.jifa.worker.support.Analyzer.HEAP_DUMP_ANALYZER;
-import static org.eclipse.jifa.worker.support.Analyzer.getOrOpenAnalysisContext;
-
 class HistogramRoute extends HeapBaseRoute {
 
     @RouteMeta(path = "/histogram")
@@ -34,10 +31,10 @@ class HistogramRoute extends HeapBaseRoute {
                    @ParamKey(value = "searchText", mandatory = false) String searchText,
                    @ParamKey(value = "searchType", mandatory = false) SearchType searchType,
                    PagingRequest pagingRequest) {
-        promise.complete(HEAP_DUMP_ANALYZER.getHistogram(getOrOpenAnalysisContext(file), groupingBy,
-                                                        ids, sortBy, ascendingOrder, searchText,
-                                                        searchType, pagingRequest.getPage(),
-                                                        pagingRequest.getPageSize()));
+        promise.complete(analyzerOf(file).getHistogram(groupingBy,
+                                                       ids, sortBy, ascendingOrder, searchText,
+                                                       searchType, pagingRequest.getPage(),
+                                                       pagingRequest.getPageSize()));
     }
 
     @RouteMeta(path = "/histogram/children")
@@ -48,10 +45,9 @@ class HistogramRoute extends HeapBaseRoute {
                   @ParamKey(value = "ascendingOrder", mandatory = false) boolean ascendingOrder,
                   @ParamKey("parentObjectId") int parentObjectId,
                   PagingRequest pagingRequest) {
-        promise.complete(HEAP_DUMP_ANALYZER
-                            .getChildrenOfHistogram(getOrOpenAnalysisContext(file), groupingBy, ids,
-                                                    sortBy, ascendingOrder, parentObjectId,
-                                                    pagingRequest.getPage(), pagingRequest.getPageSize()));
+        promise.complete(analyzerOf(file).getChildrenOfHistogram(groupingBy, ids,
+                                                                 sortBy, ascendingOrder, parentObjectId,
+                                                                 pagingRequest.getPage(), pagingRequest.getPageSize()));
     }
 
 }
