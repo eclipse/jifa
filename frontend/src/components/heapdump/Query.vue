@@ -41,10 +41,6 @@
     </v-contextmenu>
 
     <div style="height: 45px; margin-top: 5px">
-      <el-select v-model="queryType">
-        <el-option label="OQL" value="oql" />
-        <el-option label="Calcite SQL" value="sql" />
-      </el-select>
       <el-autocomplete
               v-model="query"
               :fetch-suggestions="queryHistory"
@@ -56,6 +52,10 @@
               clearable
               style="display: flex"
       >
+        <el-select slot="prepend" v-model="queryType" style="width: 140px" default-first-option>
+          <el-option label="OQL" value="oql" />
+          <el-option label="Calcite SQL" value="sql" />
+        </el-select>
         <template slot="append">
           <el-button :icon="searching ? 'el-icon-loading':'el-icon-search'" :disabled="searching" @click="search">
           </el-button>
@@ -63,14 +63,14 @@
       </el-autocomplete>
     </div>
 
-    <div align="left" style="height: 25px; margin-bottom: 5px" v-if="queryType == 'oql'">
+    <div align="left" style="height: 25px; margin-bottom: 5px" v-if="queryType === 'oql'">
       <a href="https://help.eclipse.org/oxygen/index.jsp?topic=%2Forg.eclipse.mat.ui.help%2Freference%2Foqlsyntax.html&cp=66_4_2"
          target="_blank" style="font-size: 12px; font-weight: bold; color: #909399; text-decoration: underline">
         > Click to get detailed OQL Help documents.
       </a>
     </div>
 
-    <div align="left" style="height: 25px; margin-bottom: 5px" v-if="queryType == 'sql'">
+    <div align="left" style="height: 25px; margin-bottom: 5px" v-if="queryType === 'sql'">
       <a href="https://github.com/vlsi/mat-calcite-plugin#sample"
          target="_blank" style="font-size: 12px; font-weight: bold; color: #909399; text-decoration: underline">
         > Click to get detailed Calcite SQL Help.
@@ -179,7 +179,7 @@
   const TEXT = 3
 
   export default {
-    props: ['file', 'queryType', 'preparedQuery'],
+    props: ['file', 'preparedQuery'],
     data() {
       return {
         ICONS,
@@ -214,6 +214,8 @@
         treeAscendingOrder:true,
 
         disabledInput: false,
+
+        queryType: 'oql',
       }
     },
     methods: {
@@ -240,8 +242,8 @@
         this.loading = true
         axios.get(heapDumpService(this.file, this.queryType), {
           params: {
-            oql: this.queryType == 'oql' ? query : undefined,
-            sql: this.queryType == 'sql' ? query : undefined,
+            oql: this.queryType === 'oql' ? query : undefined,
+            sql: this.queryType === 'sql' ? query : undefined,
             page: this.nextPage,
             pageSize: this.pageSize,
             sortBy: this.treeSortBy,

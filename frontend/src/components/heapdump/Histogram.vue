@@ -199,7 +199,6 @@
         }).then(resp => {
           let records = resp.data.data
           this.totalSize = resp.data.totalSize
-          console.log(records)
           records.forEach(record =>
               this.records.push({
                 rowKey: rowKey++,
