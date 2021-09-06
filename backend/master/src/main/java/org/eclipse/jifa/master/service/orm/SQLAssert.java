@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-package org.eclipse.jifa.master.service.impl.helper;
+package org.eclipse.jifa.master.service.orm;
 
 import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.UpdateResult;

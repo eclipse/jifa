@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -10,16 +10,8 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-package org.eclipse.jifa.master.vo;
+package org.eclipse.jifa.master.support;
 
-import lombok.Data;
-
-@Data
-public class UserToken {
-
-    private String token;
-
-    public UserToken(String token) {
-        this.token = token;
-    }
+public interface ForthConsumer<A, B, C, D> {
+    void accpet(A a, B b, C c, D d);
 }

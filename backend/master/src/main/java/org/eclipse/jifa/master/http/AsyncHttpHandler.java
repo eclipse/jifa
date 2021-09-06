@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -10,22 +10,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-package org.eclipse.jifa.master.vo;
+package org.eclipse.jifa.master.http;
 
-import lombok.Data;
-
-@Data
-public class TransferDestination {
-
-    private String hostIP;
-
-    private String directory;
-
-    private String filename;
-
-    public TransferDestination(String hostIP, String directory, String filename) {
-        this.hostIP = hostIP;
-        this.directory = directory;
-        this.filename = filename;
-    }
+public @interface AsyncHttpHandler {
 }

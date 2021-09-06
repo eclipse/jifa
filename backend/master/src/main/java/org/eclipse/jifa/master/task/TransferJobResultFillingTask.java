@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2021 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -12,18 +12,22 @@
  ********************************************************************************/
 package org.eclipse.jifa.master.task;
 
-import io.reactivex.Completable;
-import io.vertx.reactivex.core.Vertx;
+import io.vertx.core.Future;
+import io.vertx.core.Vertx;
+import io.vertx.ext.sql.ResultSet;
 import org.eclipse.jifa.common.ErrorCode;
-import org.eclipse.jifa.master.service.impl.Pivot;
-import org.eclipse.jifa.master.service.impl.helper.ConfigHelper;
-import org.eclipse.jifa.master.service.impl.helper.JobHelper;
+import org.eclipse.jifa.master.entity.Job;
+import org.eclipse.jifa.master.service.orm.ConfigHelper;
+import org.eclipse.jifa.master.service.orm.JobHelper;
+import org.eclipse.jifa.master.service.orm.SQLHelper;
+import org.eclipse.jifa.master.support.$;
+import org.eclipse.jifa.master.support.Pivot;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.eclipse.jifa.master.service.ServiceAssertion.SERVICE_ASSERT;
-import static org.eclipse.jifa.master.service.impl.helper.SQLHelper.ja;
 import static org.eclipse.jifa.master.service.sql.JobSQL.SELECT_TRANSFER_JOB_TO_FILLING_RESULT;
 
 public class TransferJobResultFillingTask extends BaseTask {
@@ -56,18 +60,17 @@ public class TransferJobResultFillingTask extends BaseTask {
 
     @Override
     public void doPeriodic() {
-        Instant instant = Instant.now().minusMillis(timeoutThreshold);
-        pivot.getDbClient().rxQueryWithParams(SELECT_TRANSFER_JOB_TO_FILLING_RESULT, ja(instant))
-             .map(result -> result.getRows().stream().map(JobHelper::fromDBRecord).collect(Collectors.toList()))
-             .doOnSuccess(jobs -> LOGGER.info("Found timeout file transfer jobs: {}", jobs.size()))
-             .map(jobs -> jobs.stream().map(pivot::processTimeoutTransferJob).collect(Collectors.toList()))
-             .flatMapCompletable(Completable::concat)
-             .subscribe(
-                 this::end,
-                 t -> {
-                     LOGGER.error("Execute {} error", name(), t);
-                     end();
-                 }
-             );
+        try {
+            Instant instant = Instant.now().minusMillis(timeoutThreshold);
+            Future<ResultSet> future = $.async(pivot.dbClient()::queryWithParams, SELECT_TRANSFER_JOB_TO_FILLING_RESULT, SQLHelper.makeSqlArgument(instant));
+            ResultSet resultSet = $.await(future);
+            List<Job> jobs = resultSet.getRows().stream().map(JobHelper::fromDBRecord).collect(Collectors.toList());
+            for (Job job : jobs) {
+                pivot.processTimeoutTransferJob(job);
+            }
+            this.end();
+        } catch (Throwable e) {
+            LOGGER.error("Execute {} error", name(), e);
+        }
     }
 }

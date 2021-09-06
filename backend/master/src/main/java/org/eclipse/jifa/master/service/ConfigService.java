@@ -12,32 +12,18 @@
  ********************************************************************************/
 package org.eclipse.jifa.master.service;
 
-import io.vertx.codegen.annotations.GenIgnore;
-import io.vertx.codegen.annotations.ProxyGen;
-import io.vertx.codegen.annotations.VertxGen;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
-import io.vertx.reactivex.core.Vertx;
-import io.vertx.reactivex.ext.jdbc.JDBCClient;
-import io.vertx.serviceproxy.ServiceBinder;
-import org.eclipse.jifa.master.service.impl.ConfigServiceImpl;
+import io.vertx.core.Future;
+import io.vertx.ext.sql.ResultSet;
+import org.eclipse.jifa.master.service.orm.SQLHelper;
+import org.eclipse.jifa.master.service.sql.ConfigSQL;
+import org.eclipse.jifa.master.support.$;
 
-@ProxyGen
-@VertxGen
-public interface ConfigService {
+public class ConfigService extends ServiceCenter {
 
-    @GenIgnore
-    static void create(Vertx vertx, JDBCClient dbClient) {
-        new ServiceBinder(vertx.getDelegate()).setAddress(ConfigService.class.getSimpleName())
-                                              .register(ConfigService.class, new ConfigServiceImpl(dbClient));
+    public String getConfig(String configName) {
+        Future<ResultSet> future = $.async(dbClient::queryWithParams, ConfigSQL.SELECT, SQLHelper.makeSqlArgument(configName));
+        ResultSet resultSet = $.await(future);
+        String config = resultSet.getRows().get(0).getString("value");
+        return config;
     }
-
-    @GenIgnore
-    static void createProxy(Vertx vertx) {
-        ProxyDictionary.add(ConfigService.class, new org.eclipse.jifa.master.service.reactivex.ConfigService(
-            new ConfigServiceVertxEBProxy(vertx.getDelegate(), ConfigService.class.getSimpleName())));
-    }
-
-    void getConfig(String configName, Handler<AsyncResult<String>> handler);
-
 }

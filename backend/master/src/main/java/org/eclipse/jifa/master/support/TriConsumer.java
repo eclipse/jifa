@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -10,17 +10,8 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-package org.eclipse.jifa.master.service.impl.helper;
+package org.eclipse.jifa.master.support;
 
-import io.vertx.core.json.JsonObject;
-import org.eclipse.jifa.master.entity.Admin;
-
-public class AdminHelper {
-
-    public static Admin fromDBRecord(JsonObject jsonObject) {
-        Admin job = new Admin();
-        EntityHelper.fill(job, jsonObject);
-        job.setUserId(jsonObject.getString("user_id"));
-        return job;
-    }
+public interface TriConsumer<A, B, C> {
+    void accept(A a, B b, C c);
 }

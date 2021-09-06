@@ -24,7 +24,7 @@ import org.eclipse.jifa.common.enums.FileTransferState;
 import org.eclipse.jifa.common.enums.FileType;
 import org.eclipse.jifa.common.enums.ProgressState;
 import org.eclipse.jifa.common.request.PagingRequest;
-import org.eclipse.jifa.common.util.HTTPRespGuarder;
+import org.eclipse.jifa.common.util.MakeHttpResponse;
 import org.eclipse.jifa.common.util.PageViewBuilder;
 import org.eclipse.jifa.common.vo.FileInfo;
 import org.eclipse.jifa.common.vo.PageView;
@@ -234,7 +234,7 @@ class FileRoute extends BaseRoute {
             fileSystem.moveBlocking(upload.uploadedFileName(), FileSupport.filePath(type, fileName));
             FileSupport.updateTransferState(type, fileName, FileTransferState.SUCCESS);
         }
-        HTTPRespGuarder.ok(context);
+        MakeHttpResponse.ok(context);
     }
 
     @RouteMeta(path = "/file/download/:fileType/:filename", contentType = {} /* keep content-type empty */)

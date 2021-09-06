@@ -19,16 +19,16 @@ import lombok.EqualsAndHashCode;
 import org.eclipse.jifa.common.enums.FileTransferState;
 import org.eclipse.jifa.common.enums.FileType;
 import org.eclipse.jifa.master.entity.enums.Deleter;
-import org.eclipse.jifa.master.model.TransferWay;
+import org.eclipse.jifa.master.entity.enums.TransferWay;
 
 import java.util.Map;
 
 @Data
 @EqualsAndHashCode(callSuper = false)
 @DataObject(generateConverter = true)
-public class File extends Entity {
+public class FileRecord extends Entity {
 
-    public static File NOT_FOUND = notFoundInstance(File.class);
+    public static FileRecord NOT_FOUND = notFoundInstance(FileRecord.class);
 
     private String userId;
 
@@ -62,10 +62,10 @@ public class File extends Entity {
 
     private Map<String, String> transferInfo;
 
-    public File() {
+    public FileRecord() {
     }
 
-    public File(JsonObject json) {
+    public FileRecord(JsonObject json) {
         FileConverter.fromJson(json, this);
     }
 

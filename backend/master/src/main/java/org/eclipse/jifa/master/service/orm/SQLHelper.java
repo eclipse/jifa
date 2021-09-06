@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-package org.eclipse.jifa.master.service.impl.helper;
+package org.eclipse.jifa.master.service.orm;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -21,7 +21,7 @@ import java.time.Instant;
 
 public class SQLHelper {
 
-    public static JsonObject singleRow(ResultSet resultSet) {
+    public static JsonObject firstRow(ResultSet resultSet) {
         SQLAssert.assertSelected(resultSet);
         return resultSet.getRows().get(0);
     }
@@ -31,19 +31,19 @@ public class SQLHelper {
         return resultSet.getRows().get(0).getInteger(SQL.COUNT_NAME);
     }
 
-    public static JsonArray ja(String param) {
+    public static JsonArray makeSqlArgument(String param) {
         return new JsonArray().add(param);
     }
 
-    public static JsonArray ja(String param1, String param2) {
-        return ja(param1).add(param2);
+    public static JsonArray makeSqlArgument(String param1, String param2) {
+        return makeSqlArgument(param1).add(param2);
     }
 
-    public static JsonArray ja(Instant param) {
+    public static JsonArray makeSqlArgument(Instant param) {
         return new JsonArray().add(param);
     }
 
-    public static JsonArray ja(Object... params) {
+    public static JsonArray makeSqlArgument(Object... params) {
         JsonArray jsonArray = new JsonArray();
         for (Object param : params) {
             if (param instanceof JsonArray) {

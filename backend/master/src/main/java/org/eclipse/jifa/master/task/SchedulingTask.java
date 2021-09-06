@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2021 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -12,12 +12,15 @@
  ********************************************************************************/
 package org.eclipse.jifa.master.task;
 
-import io.reactivex.Single;
-import io.vertx.reactivex.core.Vertx;
+import io.vertx.core.Future;
+import io.vertx.core.Vertx;
+import io.vertx.ext.sql.ResultSet;
 import org.eclipse.jifa.master.entity.Job;
-import org.eclipse.jifa.master.service.impl.Pivot;
-import org.eclipse.jifa.master.service.impl.helper.ConfigHelper;
-import org.eclipse.jifa.master.service.impl.helper.JobHelper;
+import org.eclipse.jifa.master.entity.Worker;
+import org.eclipse.jifa.master.service.orm.ConfigHelper;
+import org.eclipse.jifa.master.service.orm.JobHelper;
+import org.eclipse.jifa.master.support.$;
+import org.eclipse.jifa.master.support.Pivot;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -50,24 +53,22 @@ public class SchedulingTask extends BaseTask {
 
     @Override
     public void doPeriodic() {
-        pivot.getDbClient().rxQuery(SELECT_ALL_PENDING)
-             .map(
-                 records -> records.getRows().stream().map(JobHelper::fromDBRecord).collect(Collectors.toList()))
-             .map(jobs -> {
-                 pendingJobs.addAll(jobs);
-                 LOGGER.info("Found pending jobs: {}", pendingJobs.size());
-                 return pendingJobs.size() > 0;
-             })
-             .subscribe(hasPendingJobs -> {
-                 if (hasPendingJobs) {
-                     processNextPendingJob();
-                 } else {
-                     end();
-                 }
-             }, t -> {
-                 LOGGER.error("Execute {} error", name(), t);
-                 end();
-             });
+        try {
+            Future<ResultSet> future = $.async(pivot.dbClient()::query, SELECT_ALL_PENDING);
+            ResultSet resultSet = $.await(future);
+            List<Job> jobs = resultSet.getRows().stream().map(JobHelper::fromDBRecord).collect(Collectors.toList());
+            pendingJobs.addAll(jobs);
+            LOGGER.info("Found pending jobs: {}", pendingJobs.size());
+            if (pendingJobs.size() > 0) {
+                processNextPendingJob();
+            } else {
+                end();
+            }
+        } catch (Throwable e) {
+            LOGGER.error("Execute {} error", name(), e);
+            end();
+        }
+
     }
 
     @Override
@@ -79,65 +80,62 @@ public class SchedulingTask extends BaseTask {
 
     private void processNextPendingJob() {
         if (index < pendingJobs.size()) {
-            processJob(pendingJobs.get(index++))
-                .subscribe(
-                    next -> {
-                        if (next) {
-                            processNextPendingJob();
-                        }
-                    },
-                    t -> {
-                        LOGGER.error("Execute {} error", name(), t);
-                        end();
-                    }
-                );
+            try {
+                boolean ret = processJob(pendingJobs.get(index++));
+                if (ret) {
+                    processNextPendingJob();
+                }
+            } catch (Throwable e) {
+                LOGGER.error("Execute {} error", name(), e);
+                end();
+            }
         } else {
             end();
         }
     }
 
-    private Single<Boolean> processJob(Job job) {
+    private boolean processJob(Job job) {
         return job.getHostIP() == null ? processNoBindingJob(job) : processBindingJob(job);
     }
 
-    private Single<Boolean> processNoBindingJob(Job job) {
-        return pivot.inTransactionAndLock(
-            conn -> pivot.selectMostIdleWorker(conn).flatMap(
-                worker -> {
-                    long loadSum = worker.getCurrentLoad() + job.getEstimatedLoad();
-                    if (loadSum > worker.getMaxLoad()) {
-                        return Single.just(false);
-                    }
-                    String hostIP = worker.getHostIP();
-                    job.setHostIP(hostIP);
-                    return pivot.updatePendingJobToInProcess(conn, job)
-                                .andThen(pivot.updateWorkerLoad(conn, hostIP, loadSum))
-                                .toSingleDefault(true);
-                }
-            )
-        ).doOnSuccess(e -> pivot.postInProgressJob(job).subscribe());
+    private boolean processNoBindingJob(Job job) {
+        return pivot.ensureTransaction(conn -> {
+            Worker worker = pivot.selectMostIdleWorker(conn);
+            long loadSum = worker.getCurrentLoad() + job.getEstimatedLoad();
+            if (loadSum > worker.getMaxLoad()) {
+                return false;
+            }
+            String hostIP = worker.getHostIP();
+            job.setHostIP(hostIP);
+            pivot.updatePendingJobToInProcess(conn, job);
+            pivot.updateWorkerLoad(conn, hostIP, loadSum);
+
+            pivot.postInProgressJob(job);
+            return true;
+        }, err -> LOGGER.error("Can not process binding job {}", job));
     }
 
-    private Single<Boolean> processBindingJob(Job job) {
-        return pivot.inTransactionAndLock(
-            conn -> pivot.selectWorker(conn, job.getHostIP()).flatMap(
-                worker -> {
-                    String hostIP = worker.getHostIP();
-                    if (pinnedHostIPs.contains(hostIP)) {
-                        return Single.just(true);
-                    }
+    private boolean processBindingJob(Job job) {
+        return pivot.ensureTransaction(conn -> {
+            pivot.globalLock(conn);
+            Worker worker = pivot.selectWorker(conn, job.getHostIP());
 
-                    long loadSum = worker.getCurrentLoad() + job.getEstimatedLoad();
-                    if (loadSum > worker.getMaxLoad()) {
-                        LOGGER.info("Pin host: {}", hostIP);
-                        pinnedHostIPs.add(hostIP);
-                        return Single.just(true);
-                    }
-                    return pivot.updatePendingJobToInProcess(conn, job)
-                                .andThen(pivot.updateWorkerLoad(conn, hostIP, loadSum))
-                                .toSingleDefault(true);
-                }
-            )
-        ).doOnSuccess(e -> pivot.postInProgressJob(job).subscribe());
+            String hostIP = worker.getHostIP();
+            if (pinnedHostIPs.contains(hostIP)) {
+                return true;
+            }
+
+            long loadSum = worker.getCurrentLoad() + job.getEstimatedLoad();
+            if (loadSum > worker.getMaxLoad()) {
+                LOGGER.info("Pin host: {}", hostIP);
+                pinnedHostIPs.add(hostIP);
+                return true;
+            }
+            pivot.updatePendingJobToInProcess(conn, job);
+            pivot.updateWorkerLoad(conn, hostIP, loadSum);
+
+            pivot.postInProgressJob(job);
+            return true;
+        }, err -> LOGGER.error("Can not process binding job {}", job));
     }
 }

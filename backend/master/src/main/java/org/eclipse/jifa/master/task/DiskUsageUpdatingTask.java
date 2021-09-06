@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2021 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -12,17 +12,23 @@
  ********************************************************************************/
 package org.eclipse.jifa.master.task;
 
-import io.reactivex.Observable;
-import io.reactivex.Single;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.ext.sql.ResultSet;
 import io.vertx.ext.sql.UpdateResult;
-import io.vertx.reactivex.core.Vertx;
+import io.vertx.ext.web.client.HttpResponse;
 import org.eclipse.jifa.common.vo.DiskUsage;
 import org.eclipse.jifa.master.Constant;
 import org.eclipse.jifa.master.entity.Worker;
-import org.eclipse.jifa.master.service.impl.Pivot;
-import org.eclipse.jifa.master.service.impl.helper.ConfigHelper;
-import org.eclipse.jifa.master.service.impl.helper.WorkerHelper;
+import org.eclipse.jifa.master.service.orm.ConfigHelper;
+import org.eclipse.jifa.master.service.orm.WorkerHelper;
 import org.eclipse.jifa.master.service.sql.WorkerSQL;
+import org.eclipse.jifa.master.support.$;
+import org.eclipse.jifa.master.support.Pivot;
+import org.eclipse.jifa.master.support.TriConsumer;
 import org.eclipse.jifa.master.support.WorkerClient;
 
 import java.util.List;
@@ -30,7 +36,7 @@ import java.util.stream.Collectors;
 
 import static org.eclipse.jifa.common.util.Assertion.ASSERT;
 import static org.eclipse.jifa.master.Constant.uri;
-import static org.eclipse.jifa.master.service.impl.helper.SQLHelper.ja;
+import static org.eclipse.jifa.master.service.orm.SQLHelper.makeSqlArgument;
 
 public class DiskUsageUpdatingTask extends BaseTask {
     public DiskUsageUpdatingTask(Pivot pivot, Vertx vertx) {
@@ -49,38 +55,37 @@ public class DiskUsageUpdatingTask extends BaseTask {
 
     @Override
     public void doPeriodic() {
-        getWorkers().flatMapObservable(
-            workerList -> Observable.fromIterable(workerList)
-                                    .flatMapSingle(
-                                        worker -> WorkerClient.get(worker.getHostIP(), uri(Constant.SYSTEM_DISK_USAGE))
-                                                              .doOnSuccess(resp -> ASSERT
-                                                                  .isTrue(resp.bodyAsJson(DiskUsage.class) != null))
-                                                              .map(resp -> resp.bodyAsJson(DiskUsage.class))
-                                                              .flatMap(
-                                                                  usage -> updateWorkerDiskUsage(worker.getHostIP(),
-                                                                                                 usage
-                                                                                                     .getTotalSpaceInMb(),
-                                                                                                 usage
-                                                                                                     .getUsedSpaceInMb()))
-                                    )
-        ).ignoreElements().subscribe(this::end, t -> {
-            LOGGER.error("Execute {} error", name(), t);
-            end();
-        });
+        try {
+            List<Worker> workers = getWorkers();
+            for (Worker worker : workers) {
+                Future<HttpResponse<Buffer>> future = $.asyncVoid(new TriConsumer<String, String, Handler<AsyncResult<HttpResponse<Buffer>>>>() {
+                    @Override
+                    public void accept(String s, String s2, Handler<AsyncResult<HttpResponse<Buffer>>> handler) {
+                        WorkerClient.get(s, s2, handler);
+                    }
+                }, worker.getHostIP(), uri(Constant.SYSTEM_DISK_USAGE));
+                HttpResponse<Buffer> resp = $.await(future);
+                ASSERT
+                        .isTrue(resp.bodyAsJson(DiskUsage.class) != null);
+                DiskUsage usage = resp.bodyAsJson(DiskUsage.class);
+                updateWorkerDiskUsage(worker.getHostIP(), usage.getTotalSpaceInMb(), usage.getUsedSpaceInMb());
+            }
+            this.end();
+        } catch (Throwable e) {
+            LOGGER.error("Execute {} error", name(), e);
+        }
     }
 
-    private Single<UpdateResult> updateWorkerDiskUsage(String hostIP, long totalSpaceInMb, long usedSpaceInMb) {
-        return pivot.getDbClient()
-                    .rxUpdateWithParams(WorkerSQL.UPDATE_DISK_USAGE, ja(totalSpaceInMb, usedSpaceInMb, hostIP))
-                    .doOnSuccess(updateResult -> ASSERT.isTrue(updateResult.getUpdated() == 1));
+    private void updateWorkerDiskUsage(String hostIP, long totalSpaceInMb, long usedSpaceInMb) {
+        Future<UpdateResult> future = $.async(pivot.dbClient()::updateWithParams, WorkerSQL.UPDATE_DISK_USAGE, makeSqlArgument(totalSpaceInMb, usedSpaceInMb, hostIP));
+
+        UpdateResult updateResult = $.await(future);
+        ASSERT.isTrue(updateResult.getUpdated() == 1);
     }
 
-    private Single<List<Worker>> getWorkers() {
-        return pivot.getDbClient()
-                    .rxQuery(WorkerSQL.SELECT_ALL)
-                    .map(records ->
-                             records.getRows().stream().map(WorkerHelper::fromDBRecord).collect(Collectors.toList())
-                    );
-
+    private List<Worker> getWorkers() {
+        Future<ResultSet> future = $.async(pivot.dbClient()::query, WorkerSQL.SELECT_ALL);
+        ResultSet resultSet = $.await(future);
+        return resultSet.getRows().stream().map(WorkerHelper::fromDBRecord).collect(Collectors.toList());
     }
 }

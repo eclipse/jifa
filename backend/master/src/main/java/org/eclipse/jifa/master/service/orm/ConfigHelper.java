@@ -10,7 +10,21 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-@ModuleGen(groupPackage = "org.eclipse.jifa.master.service", name = "Service")
-package org.eclipse.jifa.master.service;
+package org.eclipse.jifa.master.service.orm;
 
-import io.vertx.codegen.annotations.ModuleGen;
+import io.vertx.core.json.JsonObject;
+
+public class ConfigHelper {
+
+    public static int getInt(JsonObject json) {
+        return Integer.parseInt(json.getString("value"));
+    }
+
+    public static long getLong(JsonObject json) {
+        return Long.parseLong(json.getString("value"));
+    }
+
+    public static boolean getBoolean(JsonObject json) {
+        return Boolean.parseBoolean(json.getString("value"));
+    }
+}

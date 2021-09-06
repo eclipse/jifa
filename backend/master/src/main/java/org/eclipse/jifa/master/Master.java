@@ -12,18 +12,15 @@
  ********************************************************************************/
 package org.eclipse.jifa.master;
 
-import io.reactivex.Single;
+import io.vertx.config.ConfigRetriever;
 import io.vertx.config.ConfigRetrieverOptions;
 import io.vertx.config.ConfigStoreOptions;
-import io.vertx.core.DeploymentOptions;
-import io.vertx.core.Promise;
+import io.vertx.core.*;
 import io.vertx.core.json.JsonObject;
-import io.vertx.reactivex.config.ConfigRetriever;
-import io.vertx.reactivex.core.AbstractVerticle;
-import io.vertx.reactivex.core.Vertx;
-import io.vertx.reactivex.ext.web.client.WebClient;
+import io.vertx.ext.web.client.WebClient;
 import org.eclipse.jifa.master.http.HttpServerVerticle;
 import org.eclipse.jifa.master.service.ServiceVerticle;
+import org.eclipse.jifa.master.support.$;
 import org.eclipse.jifa.master.support.WorkerClient;
 
 public class Master extends AbstractVerticle implements Constant {
@@ -44,22 +41,36 @@ public class Master extends AbstractVerticle implements Constant {
         DEV_MODE = DEV_CONF.endsWith(mc);
 
         ConfigRetriever configRetriever =
-            ConfigRetriever.create(vertx, new ConfigRetrieverOptions().addStore(
-                new ConfigStoreOptions().setType("file")
-                                        .setConfig(new JsonObject().put("path", mc))));
+                ConfigRetriever.create(vertx, new ConfigRetrieverOptions().addStore(
+                        new ConfigStoreOptions().setType("file")
+                                .setConfig(new JsonObject().put("path", mc))));
 
-        configRetriever.rxGetConfig().subscribe(masterConfig -> {
+        try {
+            Future<JsonObject> future = $.asyncVoid(configRetriever::getConfig);
+            JsonObject masterConfig = $.await(future);
+
             WorkerClient.init(masterConfig.getJsonObject(WORKER_CONFIG_KEY), WebClient.create(vertx));
 
             // service
-            Single<String> service = vertx.rxDeployVerticle(ServiceVerticle.class.getName(), new DeploymentOptions()
-                .setConfig(masterConfig.getJsonObject(DB_KEYWORD)));
-
-            DeploymentOptions httpConfig =
-                new DeploymentOptions().setConfig(masterConfig.getJsonObject(HTTP_VERTICLE_CONFIG_KEY))
-                                       .setInstances(Runtime.getRuntime().availableProcessors());
-            service.flatMap(id -> vertx.rxDeployVerticle(HttpServerVerticle.class.getName(), httpConfig))
-                   .subscribe(id -> startFuture.complete(), startFuture::fail);
-        }, startFuture::fail);
+            vertx.deployVerticle(ServiceVerticle.class.getName(), new DeploymentOptions()
+                    .setConfig(masterConfig.getJsonObject(DB_KEYWORD)), asyncResult1 -> {
+                if (asyncResult1.succeeded()) {
+                    DeploymentOptions httpConfig =
+                            new DeploymentOptions().setConfig(masterConfig.getJsonObject(HTTP_VERTICLE_CONFIG_KEY))
+                                    .setInstances(Runtime.getRuntime().availableProcessors());
+                    vertx.deployVerticle(HttpServerVerticle.class.getName(), httpConfig, asyncResult2 -> {
+                        if (asyncResult2.succeeded()) {
+                            startFuture.complete();
+                        } else {
+                            startFuture.fail(asyncResult2.cause());
+                        }
+                    });
+                } else {
+                    startFuture.fail(asyncResult1.cause());
+                }
+            });
+        } catch (Throwable e) {
+            startFuture.fail(e);
+        }
     }
 }

@@ -12,41 +12,56 @@
  ********************************************************************************/
 package org.eclipse.jifa.master.service;
 
-import io.vertx.codegen.annotations.GenIgnore;
-import io.vertx.codegen.annotations.ProxyGen;
-import io.vertx.codegen.annotations.VertxGen;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
-import io.vertx.reactivex.core.Vertx;
-import io.vertx.reactivex.ext.jdbc.JDBCClient;
-import io.vertx.serviceproxy.ServiceBinder;
+import io.vertx.core.Future;
+import io.vertx.ext.sql.ResultSet;
+import io.vertx.ext.sql.UpdateResult;
 import org.eclipse.jifa.master.entity.Worker;
-import org.eclipse.jifa.master.service.impl.Pivot;
-import org.eclipse.jifa.master.service.impl.WorkerServiceImpl;
+import org.eclipse.jifa.master.entity.enums.Deleter;
+import org.eclipse.jifa.master.service.orm.SQLHelper;
+import org.eclipse.jifa.master.service.orm.WorkerHelper;
+import org.eclipse.jifa.master.service.sql.FileSQL;
+import org.eclipse.jifa.master.service.sql.WorkerSQL;
+import org.eclipse.jifa.master.support.$;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
-@ProxyGen
-@VertxGen
-public interface WorkerService {
+public class WorkerService extends ServiceCenter {
 
-    @GenIgnore
-    static void create(Vertx vertx, JDBCClient dbClient, Pivot pivot) {
-        new ServiceBinder(vertx.getDelegate()).setAddress(WorkerService.class.getSimpleName())
-                                              .register(WorkerService.class, new WorkerServiceImpl(dbClient, pivot));
+    public List<Worker> queryAll() {
+        Future<ResultSet> future = $.async(dbClient::query, WorkerSQL.SELECT_ALL);
+        ResultSet resultSet = $.await(future);
+        List<Worker> workers = resultSet.getRows()
+                .stream()
+                .map(WorkerHelper::fromDBRecord)
+                .collect(Collectors.toList());
+        return workers;
     }
 
-    @GenIgnore
-    static void createProxy(Vertx vertx) {
-        ProxyDictionary.add(WorkerService.class, new org.eclipse.jifa.master.service.reactivex.WorkerService(
-            new WorkerServiceVertxEBProxy(vertx.getDelegate(), WorkerService.class.getSimpleName())));
+    public void diskCleanup(String hostIP) {
+        Future<UpdateResult> future = $.async(dbClient::updateWithParams, FileSQL.UPDATE_AS_PENDING_DELETE, SQLHelper.makeSqlArgument(hostIP));
+        $.await(future);
+
+        Future<ResultSet> future1 = $.async(dbClient::queryWithParams, FileSQL.SELECT_PENDING_DELETE, SQLHelper.makeSqlArgument(hostIP));
+        ResultSet resultSet = $.await(future1);
+        List<String> files = resultSet.getRows().stream().map(row -> row.getString("name"))
+                .collect(Collectors.toList());
+        pivot.deleteFile(Deleter.ADMIN, files.toArray(new String[0]));
     }
 
-    void queryAll(Handler<AsyncResult<List<Worker>>> handler);
+    public Worker selectMostIdleWorker() {
+        return pivot.ensureSqlConnection(conn -> {
+            return pivot.selectMostIdleWorker(conn);
+        });
+    }
 
-    void diskCleanup(String hostIP, Handler<AsyncResult<Void>> handler);
-
-    void selectMostIdleWorker(Handler<AsyncResult<Worker>> handler);
-
-    void selectWorkerByIP(String hostIp, Handler<AsyncResult<Worker>> handler);
+    public Worker selectWorkerByIP(String hostIp) {
+        Future<ResultSet> future = $.async(dbClient::queryWithParams, WorkerSQL.SELECT_BY_IP, SQLHelper.makeSqlArgument(hostIp));
+        ResultSet resultSet = $.await(future);
+        if (resultSet.getRows().size() > 0) {
+            Worker worker = WorkerHelper.fromDBRecord(resultSet.getRows().get(0));
+            return worker;
+        }
+        return Worker.NOT_FOUND;
+    }
 }

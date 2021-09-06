@@ -10,19 +10,19 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-package org.eclipse.jifa.master.service.impl.helper;
+package org.eclipse.jifa.master.service.orm;
 
 import io.vertx.core.json.JsonObject;
 import org.eclipse.jifa.common.enums.FileTransferState;
 import org.eclipse.jifa.common.enums.FileType;
-import org.eclipse.jifa.master.entity.File;
+import org.eclipse.jifa.master.entity.FileRecord;
 
 import java.time.Instant;
 
-public class FileHelper {
+public class FileRecordHelper {
 
-    public static File fromDBRecord(JsonObject jsonObject) {
-        File file = new File();
+    public static FileRecord fromDBRecord(JsonObject jsonObject) {
+        FileRecord file = new FileRecord();
         EntityHelper.fill(file, jsonObject);
         file.setUserId(jsonObject.getString("user_id"));
         file.setOriginalName(jsonObject.getString("original_name"));

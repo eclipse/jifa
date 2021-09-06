@@ -10,27 +10,16 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-package org.eclipse.jifa.master.vo;
+package org.eclipse.jifa.master.entity;
 
 import lombok.Data;
-import org.eclipse.jifa.master.entity.Job;
-import org.eclipse.jifa.master.entity.enums.JobType;
 
 @Data
-public class PendingJob {
+public class UserToken {
 
-    private String userId;
+    private String token;
 
-    private JobType type;
-
-    private String target;
-
-    private long creationTime;
-
-    public PendingJob(Job job) {
-        this.userId = job.getUserId();
-        this.type = job.getType();
-        this.target = job.getTarget();
-        this.creationTime = job.getCreationTime();
+    public UserToken(String token) {
+        this.token = token;
     }
 }

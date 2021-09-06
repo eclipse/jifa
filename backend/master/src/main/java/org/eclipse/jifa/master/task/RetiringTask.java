@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2021 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -12,18 +12,22 @@
  ********************************************************************************/
 package org.eclipse.jifa.master.task;
 
-import io.reactivex.Completable;
-import io.vertx.reactivex.core.Vertx;
+import io.vertx.core.Future;
+import io.vertx.core.Vertx;
+import io.vertx.ext.sql.ResultSet;
 import org.eclipse.jifa.common.ErrorCode;
-import org.eclipse.jifa.master.service.impl.Pivot;
-import org.eclipse.jifa.master.service.impl.helper.ConfigHelper;
-import org.eclipse.jifa.master.service.impl.helper.JobHelper;
+import org.eclipse.jifa.master.entity.Job;
+import org.eclipse.jifa.master.service.orm.ConfigHelper;
+import org.eclipse.jifa.master.service.orm.JobHelper;
+import org.eclipse.jifa.master.service.orm.SQLHelper;
+import org.eclipse.jifa.master.support.$;
+import org.eclipse.jifa.master.support.Pivot;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.eclipse.jifa.master.service.ServiceAssertion.SERVICE_ASSERT;
-import static org.eclipse.jifa.master.service.impl.helper.SQLHelper.ja;
 import static org.eclipse.jifa.master.service.sql.JobSQL.SELECT_TO_RETIRE;
 
 public class RetiringTask extends BaseTask {
@@ -55,18 +59,16 @@ public class RetiringTask extends BaseTask {
 
     @Override
     public void doPeriodic() {
-        Instant instant = Instant.now().minusMillis(timeoutThreshold);
-        pivot.getDbClient().rxQueryWithParams(SELECT_TO_RETIRE, ja(instant))
-             .map(result -> result.getRows().stream().map(JobHelper::fromDBRecord).collect(Collectors.toList()))
-             .doOnSuccess(jobs -> LOGGER.info("Found timeout jobs: {}", jobs.size()))
-             .map(jobs -> jobs.stream().map(pivot::finish).collect(Collectors.toList()))
-             .flatMapCompletable(Completable::concat)
-             .subscribe(
-                 this::end,
-                 t -> {
-                     LOGGER.error("Execute {} error", name(), t);
-                     end();
-                 }
-             );
+        try {
+            Instant instant = Instant.now().minusMillis(timeoutThreshold);
+            Future<ResultSet> future = $.async(pivot.dbClient()::queryWithParams, SELECT_TO_RETIRE, SQLHelper.makeSqlArgument(instant));
+            ResultSet result = $.await(future);
+            List<Job> jobs = result.getRows().stream().map(JobHelper::fromDBRecord).collect(Collectors.toList());
+            LOGGER.info("Found timeout jobs: {}", jobs.size());
+            jobs.forEach(pivot::finish);
+            this.end();
+        } catch (Throwable e) {
+            LOGGER.error("Execute {} error", name(), e);
+        }
     }
 }

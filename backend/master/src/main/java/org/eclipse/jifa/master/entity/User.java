@@ -10,21 +10,22 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-package org.eclipse.jifa.master.service.impl.helper;
+package org.eclipse.jifa.master.entity;
 
-import io.vertx.core.json.JsonObject;
+import lombok.Data;
 
-public class ConfigHelper {
+@Data
+public class User {
 
-    public static int getInt(JsonObject json) {
-        return Integer.parseInt(json.getString("value"));
-    }
+    private String id;
 
-    public static long getLong(JsonObject json) {
-        return Long.parseLong(json.getString("value"));
-    }
+    private String name;
 
-    public static boolean getBoolean(JsonObject json) {
-        return Boolean.parseBoolean(json.getString("value"));
+    private boolean admin;
+
+    public User(String id, String name, boolean admin) {
+        this.id = id;
+        this.name = name;
+        this.admin = admin;
     }
 }

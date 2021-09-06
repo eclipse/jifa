@@ -12,15 +12,14 @@
  ********************************************************************************/
 package org.eclipse.jifa.master.http;
 
-import io.reactivex.Single;
+import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Promise;
-import io.vertx.reactivex.core.AbstractVerticle;
-import io.vertx.reactivex.core.http.HttpServerResponse;
-import io.vertx.reactivex.ext.web.Router;
-import io.vertx.reactivex.ext.web.RoutingContext;
-import io.vertx.reactivex.ext.web.client.WebClient;
-import io.vertx.reactivex.ext.web.handler.BodyHandler;
-import org.eclipse.jifa.common.util.HTTPRespGuarder;
+import io.vertx.core.http.HttpServerResponse;
+import io.vertx.ext.web.Router;
+import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.client.WebClient;
+import io.vertx.ext.web.handler.BodyHandler;
+import org.eclipse.jifa.common.request.MakeHttpResponse;
 import org.eclipse.jifa.master.Constant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,46 +30,49 @@ public class HttpServerVerticle extends AbstractVerticle implements Constant {
 
     private WebClient client;
 
-    @Override
-    public void start(Promise<Void> startFuture) {
-        vertx.rxExecuteBlocking(future -> {
-            client = WebClient.create(vertx);
-            // base
-            Router router = Router.router(vertx);
-
-            router.errorHandler(Constant.HTTP_INTERNAL_SERVER_ERROR_STATUS_CODE, this::error);
-            router.errorHandler(Constant.HTTP_BAD_REQUEST_STATUS_CODE, this::error);
-
-            // jifa api
-            Router apiRouter = Router.router(vertx);
-            router.mountSubRouter(BASE, apiRouter);
-            apiRouter.post().handler(BodyHandler.create());
-
-            new UserRoute().init(vertx, config(), apiRouter);
-
-            new JobRoute().init(vertx, config(), apiRouter);
-
-            new AdminRoute().init(vertx, config(), apiRouter);
-
-            new WorkerRoute().init(vertx, config(), apiRouter);
-
-            new FileRoute().init(vertx, config(), apiRouter);
-
-            new AnalyzerRoute().init(vertx, config(), apiRouter);
-
-            Integer port = config().getInteger("port");
-            vertx.createHttpServer().requestHandler(router).rxListen(port).subscribe(s -> {
-                LOGGER.info("Master-Http-Server-Verticle started successfully, port is {}", port);
-                future.complete(Single.just(this));
-            }, future::fail);
-        }).subscribe(f -> startFuture.complete(), startFuture::fail);
-    }
-
-    void error(RoutingContext context) {
+    static void error(RoutingContext context) {
         Throwable failure = context.failure();
         HttpServerResponse response = context.response();
         if (failure != null && !response.ended() && !response.closed()) {
-            HTTPRespGuarder.fail(context, failure);
+            MakeHttpResponse.fail(context, failure);
         }
+    }
+
+    @Override
+    public void start(Promise<Void> startFuture) {
+        vertx.executeBlocking(event -> {
+            // Web client
+            client = WebClient.create(vertx);
+
+            // Http handlers.
+            // All handlers run in a thread to avoid blocking the EventLoop thread.
+            Router router = Router.router(vertx);
+            router.errorHandler(Constant.HTTP_INTERNAL_SERVER_ERROR_STATUS_CODE, HttpServerVerticle::error);
+            router.errorHandler(Constant.HTTP_BAD_REQUEST_STATUS_CODE, HttpServerVerticle::error);
+
+            Router apiRouter = Router.router(vertx);
+            router.mountSubRouter(BASE, apiRouter);
+            router.route().failureHandler(e -> MakeHttpResponse.fail(e, e.failure()));
+
+            apiRouter.post().handler(BodyHandler.create());
+
+            new UserRoute().init(vertx, config(), apiRouter);
+            new JobRoute().init(vertx, config(), apiRouter);
+            new AdminRoute().init(vertx, config(), apiRouter);
+            new WorkerRoute().init(vertx, config(), apiRouter);
+            new FileRoute().init(vertx, config(), apiRouter);
+            new AnalyzerRoute().init(vertx, config(), apiRouter);
+
+            // Create Http server
+            Integer port = config().getInteger("port");
+
+            vertx.createHttpServer()
+                    .requestHandler(router)
+                    .listen(port);
+
+            LOGGER.info("Master http server started successfully, port is {}", port);
+
+            event.complete();
+        });
     }
 }

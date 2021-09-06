@@ -22,9 +22,6 @@ dependencies {
     implementation group: 'io.vertx', name: 'vertx-service-proxy', version: "${vertx_version}"
     compileOnly group: 'io.vertx', name: 'vertx-codegen', version: "${vertx_version}", classifier: 'processor'
 
-    implementation group: 'io.vertx', name: 'vertx-rx-java2', version: "${vertx_version}"
-    implementation group: 'io.vertx', name: 'vertx-rx-java2-gen', version: "${vertx_version}"
-
     implementation group: 'io.vertx', name: 'vertx-web', version: "${vertx_version}"
     implementation group: 'io.vertx', name: 'vertx-auth-jwt', version: "${vertx_version}"
     implementation group: 'io.vertx', name: 'vertx-web-client', version: "${vertx_version}"

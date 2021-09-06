@@ -12,27 +12,24 @@
  ********************************************************************************/
 package org.eclipse.jifa.master.task;
 
-import io.reactivex.Completable;
-import io.reactivex.Maybe;
-import io.reactivex.Observable;
-import io.vertx.reactivex.core.Vertx;
-import io.vertx.reactivex.ext.jdbc.JDBCClient;
+import io.vertx.core.Future;
+import io.vertx.core.Vertx;
+import io.vertx.ext.jdbc.JDBCClient;
+import io.vertx.ext.sql.ResultSet;
+import io.vertx.ext.sql.UpdateResult;
 import org.eclipse.jifa.master.entity.enums.Deleter;
-import org.eclipse.jifa.master.service.impl.Pivot;
-import org.eclipse.jifa.master.service.impl.helper.ConfigHelper;
+import org.eclipse.jifa.master.service.orm.ConfigHelper;
+import org.eclipse.jifa.master.service.orm.SQLHelper;
 import org.eclipse.jifa.master.service.sql.ConfigSQL;
 import org.eclipse.jifa.master.service.sql.FileSQL;
 import org.eclipse.jifa.master.service.sql.WorkerSQL;
+import org.eclipse.jifa.master.support.$;
+import org.eclipse.jifa.master.support.Pivot;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.eclipse.jifa.master.service.impl.helper.SQLHelper.ja;
-
 public class DiskCleaningTask extends BaseTask {
-    private static final int RETRY_LIMIT = 200;
-
-    private int retryCount = 0;
 
     public DiskCleaningTask(Pivot pivot, Vertx vertx) {
         super(pivot, vertx);
@@ -58,23 +55,19 @@ public class DiskCleaningTask extends BaseTask {
      * }
      * </code>
      */
-    private static Observable<Completable> markAndDeleteFiles(JDBCClient jdbcClient, Pivot pivot,
-                                                              List<String> workerIpList) {
-        return Observable.fromIterable(workerIpList)
-                         .flatMap(
-                             workerIp -> jdbcClient.rxUpdateWithParams(FileSQL.UPDATE_AS_PENDING_DELETE, ja(workerIp))
-                                                   .ignoreElement()
-                                                   .andThen(jdbcClient.rxQueryWithParams(FileSQL.SELECT_PENDING_DELETE,
-                                                                                         ja(workerIp))
-                                                                      .map(rs -> rs.getRows().stream()
-                                                                                   .map(row -> row.getString("name"))
-                                                                                   .collect(Collectors.toList()))
-                                                                      .flatMapCompletable(fileNames -> pivot
-                                                                          .deleteFile(Deleter.SYSTEM,
-                                                                                      fileNames.toArray(new String[0])))
-                                                   )
-                                                   .toObservable()
-                         );
+    private static void markAndDeleteFiles(JDBCClient jdbcClient, Pivot pivot,
+                                           List<String> workerIpList) {
+        for (String workerIp : workerIpList) {
+            Future<UpdateResult> future = $.async(jdbcClient::updateWithParams, FileSQL.UPDATE_AS_PENDING_DELETE, SQLHelper.makeSqlArgument(workerIp));
+            $.await(future);
+            Future<ResultSet> future1 = $.async(jdbcClient::queryWithParams, FileSQL.SELECT_PENDING_DELETE, SQLHelper.makeSqlArgument(workerIp));
+            ResultSet rs = $.await(future1);
+            List<String> fileNames = rs.getRows().stream()
+                    .map(row -> row.getString("name"))
+                    .collect(Collectors.toList());
+            pivot.deleteFile(Deleter.SYSTEM, fileNames.toArray(new String[0]));
+
+        }
     }
 
     @Override
@@ -87,53 +80,37 @@ public class DiskCleaningTask extends BaseTask {
         return ConfigHelper.getLong(pivot.config("JOB-DISK-CLEANUP-PERIODIC"));
     }
 
-    @Override
-    public void doEnd() {
-        super.doEnd();
-        getHighDiskOverloadWorkers().map(workerList -> {
-            if (retryCount >= RETRY_LIMIT) {
-                retryCount = 0;
-                throw new Exception("Too much times to retry disk cleaning task");
-            }
-            if (workerList.size() > 0) {
-                LOGGER.info("Disk overload of workers {} are still reaching watermark, try cleaning again", workerList);
-                this.trigger();
-                retryCount++;
-            } else {
-                retryCount = 0;
-            }
-            return Completable.complete();
-        }).subscribe(c -> {
-        }, throwable -> LOGGER.error("Execute {} error", name(), throwable));
-    }
 
     @Override
     public void doPeriodic() {
         // Get high dick overload workers, for each of them, get all files which
         // neither deleted nor used in that worker, finally, apply real disk cleanup
         // action for every file in that list
-        isEnableDiskCleaning().subscribe(val -> {
-            getHighDiskOverloadWorkers()
-                .flatMapObservable(workerIpList -> markAndDeleteFiles(pivot.getDbClient(), pivot, workerIpList))
-                .ignoreElements()
-                .subscribe(this::end, t -> {
-                    LOGGER.error("Execute {} error", name(), t);
-                    end();
-                });
-        });
+        try {
+            if (!isEnableDiskCleaning()) {
+                return;
+            }
+            List<String> workerIpList = getHighDiskOverloadWorkers();
+            markAndDeleteFiles(pivot.dbClient(), pivot, workerIpList);
+        } catch (Throwable e) {
+            LOGGER.error("Execute {} error", name(), e);
+        }
     }
 
-    private Maybe<List<String>> getHighDiskOverloadWorkers() {
-        return pivot.getDbClient().rxQuery(WorkerSQL.SELECT_FOR_DISK_CLEANUP)
-                    .map(rs -> rs.getRows().stream().map(jo -> jo.getString("host_ip")).collect(Collectors.toList()))
-                    .filter(workers -> workers.size() > 0);
+    private List<String> getHighDiskOverloadWorkers() {
+        Future<ResultSet> future = $.async(pivot.dbClient()::query, WorkerSQL.SELECT_FOR_DISK_CLEANUP);
+        ResultSet resultSet = $.await(future);
+        return resultSet.getRows()
+                .stream()
+                .map(jo -> jo.getString("host_ip"))
+                .collect(Collectors.toList());
     }
 
-    private Maybe<Long> isEnableDiskCleaning() {
-        return pivot.getDbClient()
-                    .rxQueryWithParams(ConfigSQL.SELECT, ja("TASK-ENABLE-DISK-CLEANUP"))
-                    .map(resultSet -> resultSet.getRows().get(0).getString("value"))
-                    .map(Long::valueOf)
-                    .filter(value -> value == 1);
+    private boolean isEnableDiskCleaning() {
+        Future<ResultSet> future = $.async(pivot.dbClient()::queryWithParams, ConfigSQL.SELECT, SQLHelper.makeSqlArgument("TASK-ENABLE-DISK-CLEANUP"));
+        ResultSet resultSet = $.await(future);
+        String config = resultSet.getRows().get(0).getString("value");
+        long value = Long.parseLong(config);
+        return value == 1;
     }
 }

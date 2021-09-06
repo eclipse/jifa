@@ -12,38 +12,37 @@
  ********************************************************************************/
 package org.eclipse.jifa.master.service;
 
-import io.vertx.codegen.annotations.GenIgnore;
-import io.vertx.codegen.annotations.ProxyGen;
-import io.vertx.codegen.annotations.VertxGen;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
-import io.vertx.reactivex.core.Vertx;
-import io.vertx.reactivex.ext.jdbc.JDBCClient;
-import io.vertx.serviceproxy.ServiceBinder;
+import io.vertx.core.Future;
+import io.vertx.ext.sql.ResultSet;
+import io.vertx.ext.sql.UpdateResult;
 import org.eclipse.jifa.master.entity.Admin;
-import org.eclipse.jifa.master.service.impl.AdminServiceImpl;
+import org.eclipse.jifa.master.service.orm.AdminHelper;
+import org.eclipse.jifa.master.service.orm.SQLAssert;
+import org.eclipse.jifa.master.service.orm.SQLHelper;
+import org.eclipse.jifa.master.service.sql.AdminSQL;
+import org.eclipse.jifa.master.support.$;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
-@ProxyGen
-@VertxGen
-public interface AdminService {
+public final class AdminService extends ServiceCenter {
 
-    @GenIgnore
-    static void create(Vertx vertx, JDBCClient dbClient) {
-        new ServiceBinder(vertx.getDelegate()).setAddress(AdminService.class.getSimpleName())
-                                              .register(AdminService.class, new AdminServiceImpl(dbClient));
+    public Boolean isAdmin(String userId) {
+        Future<ResultSet> future = $.async(dbClient::queryWithParams, AdminSQL.SELECT_BY_USER_ID, SQLHelper.makeSqlArgument(userId));
+        ResultSet resultSet = $.await(future);
+        return resultSet.getNumRows() == 1;
     }
 
-    @GenIgnore
-    static void createProxy(Vertx vertx) {
-        ProxyDictionary.add(AdminService.class, new org.eclipse.jifa.master.service.reactivex.AdminService(
-            new AdminServiceVertxEBProxy(vertx.getDelegate(), AdminService.class.getSimpleName())));
+
+    public void add(String userId) {
+        Future<UpdateResult> future = $.async(dbClient::updateWithParams, AdminSQL.INSERT, SQLHelper.makeSqlArgument(userId));
+        UpdateResult rs = $.await(future);
+        SQLAssert.assertUpdated(rs);
     }
 
-    void isAdmin(String userId, Handler<AsyncResult<Boolean>> handler);
-
-    void add(String userId, Handler<AsyncResult<Void>> handler);
-
-    void queryAll(Handler<AsyncResult<List<Admin>>> handler);
+    public List<Admin> queryAll() {
+        Future<ResultSet> future = $.async(dbClient::query, AdminSQL.QUERY_ALL);
+        ResultSet rs = $.await(future);
+        return rs.getRows().stream().map(AdminHelper::fromDBRecord).collect(Collectors.toList());
+    }
 }

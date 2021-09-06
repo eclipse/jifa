@@ -10,16 +10,19 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-package org.eclipse.jifa.master.service.impl.helper;
+package org.eclipse.jifa.master.entity;
 
-import io.vertx.core.json.JsonObject;
-import org.eclipse.jifa.master.entity.Entity;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import org.eclipse.jifa.common.vo.FileInfo;
 
-class EntityHelper {
+@Data
+@EqualsAndHashCode(callSuper = true)
+public class ExtendedFileInfo extends FileInfo {
 
-    static void fill(Entity entity, JsonObject json) {
-        entity.setId(json.getLong("id"));
-        entity.setLastModifiedTime(json.getInstant("last_modified_time").toEpochMilli());
-        entity.setCreationTime(json.getInstant("creation_time").toEpochMilli());
-    }
+    private String displayName;
+
+    private String userId;
+
+    private boolean shared;
 }

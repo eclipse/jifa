@@ -10,22 +10,17 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-package org.eclipse.jifa.master.model;
+package org.eclipse.jifa.master.service.orm;
 
-import lombok.Data;
+import io.vertx.core.json.JsonObject;
+import org.eclipse.jifa.master.entity.Admin;
 
-@Data
-public class User {
+public class AdminHelper {
 
-    private String id;
-
-    private String name;
-
-    private boolean admin;
-
-    public User(String id, String name, boolean admin) {
-        this.id = id;
-        this.name = name;
-        this.admin = admin;
+    public static Admin fromDBRecord(JsonObject jsonObject) {
+        Admin job = new Admin();
+        EntityHelper.fill(job, jsonObject);
+        job.setUserId(jsonObject.getString("user_id"));
+        return job;
     }
 }

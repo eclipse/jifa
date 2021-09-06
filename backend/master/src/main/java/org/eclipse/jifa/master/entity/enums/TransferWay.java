@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-package org.eclipse.jifa.master.model;
+package org.eclipse.jifa.master.entity.enums;
 
 import static org.eclipse.jifa.master.Constant.*;
 

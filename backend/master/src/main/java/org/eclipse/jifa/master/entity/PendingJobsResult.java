@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-package org.eclipse.jifa.master.vo;
+package org.eclipse.jifa.master.entity;
 
 import lombok.Data;
 

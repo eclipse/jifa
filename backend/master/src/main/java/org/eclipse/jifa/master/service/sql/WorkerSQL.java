@@ -15,7 +15,7 @@ package org.eclipse.jifa.master.service.sql;
 public interface WorkerSQL {
 
     String SELECT_MOST_IDLE =
-        "SELECT * FROM worker ORDER BY (max_load - current_load) DESC, last_modified_time ASC LIMIT 1";
+            "SELECT * FROM worker ORDER BY (max_load - current_load) DESC, last_modified_time ASC LIMIT 1";
 
     String SELECT_BY_IP = "SELECT * FROM worker WHERE host_ip = ?";
 
@@ -24,7 +24,7 @@ public interface WorkerSQL {
     String UPDATE_LOAD = "UPDATE worker SET current_load = ? WHERE host_ip = ?";
 
     String SELECT_FOR_DISK_CLEANUP =
-        "SELECT * FROM worker WHERE disk_total > 0 AND disk_used / disk_total >= 0.75 ORDER BY disk_used DESC LIMIT 20";
+            "SELECT * FROM worker WHERE disk_total > 0 AND disk_used / disk_total >= 0.75 ORDER BY disk_used DESC LIMIT 20";
 
     String UPDATE_DISK_USAGE = "UPDATE worker SET disk_total= ?, disk_used= ? WHERE host_ip = ?";
 }

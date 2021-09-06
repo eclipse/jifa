@@ -12,23 +12,22 @@
  ********************************************************************************/
 package org.eclipse.jifa.master.http;
 
-import io.reactivex.Single;
+import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
-import io.vertx.reactivex.core.Vertx;
-import io.vertx.reactivex.ext.web.Router;
-import io.vertx.reactivex.ext.web.RoutingContext;
+import io.vertx.ext.web.Router;
+import io.vertx.ext.web.RoutingContext;
 import org.eclipse.jifa.common.ErrorCode;
-import org.eclipse.jifa.common.util.HTTPRespGuarder;
+import org.eclipse.jifa.common.request.MakeHttpResponse;
 import org.eclipse.jifa.master.Constant;
 import org.eclipse.jifa.master.entity.Job;
+import org.eclipse.jifa.master.entity.PendingJob;
+import org.eclipse.jifa.master.entity.PendingJobsResult;
 import org.eclipse.jifa.master.entity.enums.JobState;
 import org.eclipse.jifa.master.entity.enums.JobType;
-import org.eclipse.jifa.master.service.ProxyDictionary;
-import org.eclipse.jifa.master.service.reactivex.JobService;
-import org.eclipse.jifa.master.vo.PendingJob;
-import org.eclipse.jifa.master.vo.PendingJobsResult;
+import org.eclipse.jifa.master.service.JobService;
+import org.eclipse.jifa.master.service.ServiceCenter;
 
-import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.eclipse.jifa.common.util.Assertion.ASSERT;
@@ -38,32 +37,26 @@ class JobRoute extends BaseRoute implements Constant {
     private JobService jobService;
 
     void init(Vertx vertx, JsonObject config, Router apiRouter) {
-        jobService = ProxyDictionary.lookup(JobService.class);
-        apiRouter.get().path(PENDING_JOBS).handler(this::frontPendingJobs);
+        jobService = ServiceCenter.lookup(JobService.class);
+        apiRouter.get().path(PENDING_JOBS).handler(ctx -> runHttpHandlerAsync(ctx, JobRoute.this::frontPendingJobs));
     }
 
+    @AsyncHttpHandler
     private void frontPendingJobs(RoutingContext context) {
-
         JobType type = JobType.valueOf(context.request().getParam("type"));
         String target = context.request().getParam("target");
 
-        jobService.rxFindActive(type, target)
-                  .doOnSuccess(this::assertJobExist)
-                  .flatMap(job -> {
-                      if (job.getState() == JobState.IN_PROGRESS) {
-                          return Single.just(new PendingJobsResult(true));
-                      }
-                      ASSERT.isTrue(job.getState() == JobState.PENDING, ErrorCode.SANITY_CHECK);
-                      return jobService.rxPendingJobsInFrontOf(job)
-                                       .map(fronts -> {
-                                           ArrayList<Job> jobs = new ArrayList<>(fronts);
-                                           jobs.add(job);
-                                           return jobs;
-                                       })
-                                       .map(fronts -> fronts.stream().map(PendingJob::new).collect(Collectors.toList()))
-                                       .map(PendingJobsResult::new);
-                  })
-                  .subscribe(result -> HTTPRespGuarder.ok(context, result),
-                             t -> HTTPRespGuarder.fail(context, t));
+
+        Job job = jobService.findActive(type, target);
+        assertJobExist(job);
+        if (job.getState() == JobState.IN_PROGRESS) {
+            MakeHttpResponse.ok(context, new PendingJobsResult(true));
+            return;
+        }
+        ASSERT.isTrue(job.getState() == JobState.PENDING, ErrorCode.SANITY_CHECK);
+        List<Job> jobs = jobService.pendingJobsInFrontOf(job);
+        jobs.add(job);
+        List<PendingJob> pj = jobs.stream().map(PendingJob::new).collect(Collectors.toList());
+        MakeHttpResponse.ok(context, new PendingJobsResult(pj));
     }
 }

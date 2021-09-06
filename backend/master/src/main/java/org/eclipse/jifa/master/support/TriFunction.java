@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -10,19 +10,8 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-package org.eclipse.jifa.master.vo;
+package org.eclipse.jifa.master.support;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import org.eclipse.jifa.common.vo.FileInfo;
-
-@Data
-@EqualsAndHashCode(callSuper = true)
-public class ExtendedFileInfo extends FileInfo {
-
-    private String displayName;
-
-    private String userId;
-
-    private boolean shared;
+public interface TriFunction<A, B, C, D> {
+    D apply(A a, B b, C c);
 }

@@ -12,45 +12,80 @@
  ********************************************************************************/
 package org.eclipse.jifa.master.service;
 
-import io.vertx.codegen.annotations.GenIgnore;
-import io.vertx.codegen.annotations.ProxyGen;
-import io.vertx.codegen.annotations.VertxGen;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
-import io.vertx.reactivex.core.Vertx;
-import io.vertx.reactivex.ext.jdbc.JDBCClient;
-import io.vertx.serviceproxy.ServiceBinder;
+import io.vertx.core.Future;
+import io.vertx.core.json.JsonArray;
+import io.vertx.ext.sql.ResultSet;
+import io.vertx.ext.sql.UpdateResult;
 import org.eclipse.jifa.master.entity.Job;
+import org.eclipse.jifa.master.entity.enums.JobState;
 import org.eclipse.jifa.master.entity.enums.JobType;
-import org.eclipse.jifa.master.service.impl.JobServiceImpl;
-import org.eclipse.jifa.master.service.impl.Pivot;
+import org.eclipse.jifa.master.service.orm.JobHelper;
+import org.eclipse.jifa.master.service.orm.SQLHelper;
+import org.eclipse.jifa.master.support.$;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.time.Instant;
 import java.util.List;
+import java.util.stream.Collectors;
 
-@ProxyGen
-@VertxGen
-public interface JobService {
-    @GenIgnore
-    static void create(Vertx vertx, Pivot pivot, JDBCClient dbClient) {
-        new ServiceBinder(vertx.getDelegate())
-            .setAddress(JobService.class.getSimpleName())
-            .register(JobService.class, new JobServiceImpl(pivot, dbClient));
+import static org.eclipse.jifa.master.service.orm.SQLHelper.makeSqlArgument;
+import static org.eclipse.jifa.master.service.sql.JobSQL.*;
+
+public final class JobService extends ServiceCenter {
+    private static final Logger LOGGER = LoggerFactory.getLogger(JobService.class);
+
+
+    public Job findActive(JobType jobType, String target) {
+        Future<ResultSet> future = $.async(dbClient::queryWithParams, SELECT_ACTIVE_BY_TYPE_AND_TARGET, makeSqlArgument(jobType, target));
+        ResultSet rs = $.await(future);
+        if (rs.getNumRows() == 0) {
+            return Job.NOT_FOUND;
+        }
+
+        Job job = JobHelper.fromDBRecord(rs.getRows().get(0));
+        if (job.getState() != JobState.IN_PROGRESS) {
+            return job;
+        }
+        Future<UpdateResult> future1 = $.async(dbClient::updateWithParams, UPDATE_ACCESS_TIME, makeSqlArgument(jobType, target));
+        $.await(future1);
+        return job;
     }
 
-    @GenIgnore
-    static void createProxy(Vertx vertx) {
-        ProxyDictionary.add(JobService.class, new org.eclipse.jifa.master.service.reactivex.JobService(
-            new JobServiceVertxEBProxy(vertx.getDelegate(), JobService.class.getSimpleName())));
+    public List<Job> pendingJobsInFrontOf(Job job) {
+        String hostIP = job.getHostIP();
+        Instant instant = Instant.ofEpochMilli(job.getCreationTime());
+        String sql;
+        JsonArray sqlParam;
+        if (hostIP == null) {
+            sql = SELECT_FRONT_PENDING;
+            sqlParam = SQLHelper.makeSqlArgument(instant);
+        } else {
+            sql = SELECT_FRONT_PENDING_BY_HOST_IP;
+            sqlParam = makeSqlArgument(hostIP, instant);
+        }
+
+        Future<ResultSet> future = $.async(dbClient::queryWithParams, sql, sqlParam);
+        ResultSet rs = $.await(future);
+        return rs
+                .getRows()
+                .stream()
+                .map(JobHelper::fromDBRecord)
+                .filter(job1 -> job.getId() != job1.getId())
+                .collect(Collectors.toList());
     }
 
-    void findActive(JobType jobType, String target, Handler<AsyncResult<Job>> handler);
+    public Job allocate(String userId, String hostIP, JobType jobType, String target, String attachment,
+                        long estimatedLoad, boolean immediate) {
 
-    void pendingJobsInFrontOf(Job job, Handler<AsyncResult<List<Job>>> handler);
+        return pivot.allocate(userId, hostIP, jobType, target, attachment, estimatedLoad, immediate);
+    }
 
-    void allocate(String userId, String hostIP, JobType jobType, String target,
-                  String attachment, long estimatedLoad,
-                  boolean immediate,
-                  Handler<AsyncResult<Job>> handler);
+    public void finish(JobType type, String target) {
+        Future<ResultSet> future = $.async(dbClient::queryWithParams, SELECT_ACTIVE_BY_TYPE_AND_TARGET, makeSqlArgument(type, target));
+        ResultSet rs = $.await(future);
 
-    void finish(JobType type, String target, Handler<AsyncResult<Void>> handler);
+        Job job = JobHelper.fromDBRecord(SQLHelper.firstRow(rs));
+        pivot.finish(job);
+    }
 }

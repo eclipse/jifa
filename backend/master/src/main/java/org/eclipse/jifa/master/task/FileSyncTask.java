@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2021 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -12,13 +12,17 @@
  ********************************************************************************/
 package org.eclipse.jifa.master.task;
 
-import io.reactivex.Observable;
-import io.vertx.reactivex.core.Vertx;
-import org.eclipse.jifa.master.service.impl.Pivot;
-import org.eclipse.jifa.master.service.impl.helper.ConfigHelper;
-import org.eclipse.jifa.master.service.impl.helper.WorkerHelper;
+import io.vertx.core.Future;
+import io.vertx.core.Vertx;
+import io.vertx.ext.sql.ResultSet;
+import org.eclipse.jifa.master.entity.Worker;
+import org.eclipse.jifa.master.service.orm.ConfigHelper;
+import org.eclipse.jifa.master.service.orm.WorkerHelper;
 import org.eclipse.jifa.master.service.sql.WorkerSQL;
+import org.eclipse.jifa.master.support.$;
+import org.eclipse.jifa.master.support.Pivot;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class FileSyncTask extends BaseTask {
@@ -47,20 +51,17 @@ public class FileSyncTask extends BaseTask {
 
     @Override
     public void doPeriodic() {
-        pivot.getDbClient().rxQuery(WorkerSQL.SELECT_ALL)
-             .map(records -> records.getRows()
-                                    .stream()
-                                    .map(WorkerHelper::fromDBRecord)
-                                    .collect(Collectors.toList()))
-             .flatMapCompletable(workers -> Observable.fromIterable(workers)
-                                                      .flatMapCompletable(
-                                                          worker -> pivot.syncFiles(worker, cleanStale)
-                                                      )
-             ).subscribe(this::end,
-                         t -> {
-                             LOGGER.error("Execute {} error", name(), t);
-                             end();
-                         }
-        );
+        try {
+            Future<ResultSet> future = $.async(pivot.dbClient()::query, WorkerSQL.SELECT_ALL);
+            ResultSet resultSet = $.await(future);
+            List<Worker> workers = resultSet.getRows().stream().map(WorkerHelper::fromDBRecord).collect(Collectors.toList());
+            for (Worker worker : workers) {
+                pivot.syncFiles(worker, cleanStale);
+            }
+            this.end();
+        } catch (Throwable e) {
+            LOGGER.error("Execute {} error", name(), e);
+
+        }
     }
 }

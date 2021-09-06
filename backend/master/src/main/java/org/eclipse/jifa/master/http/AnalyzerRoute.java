@@ -12,22 +12,25 @@
  ********************************************************************************/
 package org.eclipse.jifa.master.http;
 
-import io.reactivex.Single;
+import io.vertx.core.Future;
+import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
-import io.vertx.reactivex.core.Vertx;
-import io.vertx.reactivex.ext.web.Router;
-import io.vertx.reactivex.ext.web.RoutingContext;
+import io.vertx.ext.web.Router;
+import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.client.HttpResponse;
 import org.eclipse.jifa.common.ErrorCode;
-import org.eclipse.jifa.common.util.HTTPRespGuarder;
+import org.eclipse.jifa.common.request.MakeHttpResponse;
 import org.eclipse.jifa.master.Constant;
-import org.eclipse.jifa.master.entity.File;
+import org.eclipse.jifa.master.entity.FileRecord;
 import org.eclipse.jifa.master.entity.Job;
+import org.eclipse.jifa.master.entity.User;
 import org.eclipse.jifa.master.entity.enums.JobState;
 import org.eclipse.jifa.master.entity.enums.JobType;
-import org.eclipse.jifa.master.model.User;
-import org.eclipse.jifa.master.service.ProxyDictionary;
-import org.eclipse.jifa.master.service.reactivex.FileService;
-import org.eclipse.jifa.master.service.reactivex.JobService;
+import org.eclipse.jifa.master.service.FileService;
+import org.eclipse.jifa.master.service.JobService;
+import org.eclipse.jifa.master.service.ServiceCenter;
+import org.eclipse.jifa.master.support.$;
 import org.eclipse.jifa.master.support.WorkerClient;
 
 import static org.eclipse.jifa.common.util.Assertion.ASSERT;
@@ -40,7 +43,7 @@ class AnalyzerRoute extends BaseRoute {
     private FileService fileService;
 
     // TODO: current algorithm used isn't good enough
-    private static long calculateLoad(File file) {
+    private static long calculateLoad(FileRecord file) {
         double size = file.getSize();
         double G = 1024 * 1024 * 1024;
 
@@ -52,55 +55,58 @@ class AnalyzerRoute extends BaseRoute {
     }
 
     void init(Vertx vertx, JsonObject config, Router apiRouter) {
-        jobService = ProxyDictionary.lookup(JobService.class);
-        fileService = ProxyDictionary.lookup(FileService.class);
+        jobService = ServiceCenter.lookup(JobService.class);
+        fileService = ServiceCenter.lookup(FileService.class);
         // heap dump
         // Do not change the order !!
-        apiRouter.route().path(HEAP_DUMP_RELEASE).handler(context -> release(context, HEAP_DUMP_ANALYSIS));
-        apiRouter.route().path(HEAP_DUMP_COMMON).handler(context -> process(context, HEAP_DUMP_ANALYSIS));
+        apiRouter.route().path(HEAP_DUMP_RELEASE).handler(ctx -> runHttpHandlerAsync(ctx, AnalyzerRoute.this::release));
+        apiRouter.route().path(HEAP_DUMP_COMMON).handler(ctx -> runHttpHandlerAsync(ctx, AnalyzerRoute.this::process));
     }
 
-    private Single<Job> findOrAllocate(User user, File file, JobType jobType) {
+    @AsyncHttpHandler
+    private Job findOrAllocate(User user, FileRecord file, JobType jobType) {
         String target = file.getName();
-        return jobService.rxFindActive(jobType, target)
-                         .flatMap(job -> job.found() ?
-                                         Single.just(job) :
-                                         jobService.rxAllocate(user.getId(), file.getHostIP(), jobType,
-                                                               target, EMPTY_STRING, calculateLoad(file), false)
-                         );
+        Job job = jobService.findActive(jobType, target);
+        if (job.found()) {
+            return job;
+        } else {
+            job = jobService.allocate(user.getId(), file.getHostIP(), jobType,
+                    target, EMPTY_STRING, calculateLoad(file), false);
+            return job;
+        }
     }
 
-    private void release(RoutingContext context, JobType jobType) {
+    @AsyncHttpHandler
+    private void release(RoutingContext context) {
+        final JobType jobType = HEAP_DUMP_ANALYSIS;
         User user = context.get(Constant.USER_INFO_KEY);
         String fileName = context.request().getParam("file");
 
-        fileService.rxFile(fileName)
-                   .doOnSuccess(file -> assertFileAvailable(file))
-                   .doOnSuccess(file -> checkPermission(user, file))
-                   .flatMap(file -> jobService.rxFindActive(jobType, file.getName()))
-                   .doOnSuccess(this::assertJobExist)
-                   .doOnSuccess(job -> ASSERT.isTrue(job.getState() != JobState.PENDING,
-                                                     ErrorCode.RELEASE_PENDING_JOB))
-                   .ignoreElement()
-                   .andThen(jobService.rxFinish(jobType, fileName))
-                   .subscribe(() -> HTTPRespGuarder.ok(context),
-                              t -> HTTPRespGuarder.fail(context, t));
-
+        FileRecord file = fileService.file(fileName);
+        assertFileAvailable(file);
+        checkPermission(user, file);
+        Job job = jobService.findActive(jobType, file.getName());
+        assertJobExist(job);
+        ASSERT.isTrue(job.getState() != JobState.PENDING,
+                ErrorCode.RELEASE_PENDING_JOB);
+        jobService.finish(jobType, fileName);
+        MakeHttpResponse.ok(context);
     }
 
-    private void process(RoutingContext context, JobType jobType) {
+    @AsyncHttpHandler
+    private void process(RoutingContext context) {
         User user = context.get(Constant.USER_INFO_KEY);
         context.request().params().add("userName", user.getName());
         String fileName = context.request().getParam("file");
 
-        fileService.rxFile(fileName)
-                   .doOnSuccess(file -> assertFileAvailable(file))
-                   .doOnSuccess(file -> checkPermission(user, file))
-                   .doOnSuccess(file -> ASSERT.isTrue(file.transferred(), ErrorCode.NOT_TRANSFERRED))
-                   .flatMap(file -> findOrAllocate(user, file, jobType))
-                   .doOnSuccess(this::assertJobInProgress)
-                   .flatMap(job -> WorkerClient.send(context.request(), job.getHostIP()))
-                   .subscribe(resp -> HTTPRespGuarder.ok(context, resp.statusCode(), resp.bodyAsString()),
-                              t -> HTTPRespGuarder.fail(context, t));
+        FileRecord file = fileService.file(fileName);
+        assertFileAvailable(file);
+        checkPermission(user, file);
+        ASSERT.isTrue(file.transferred(), ErrorCode.NOT_TRANSFERRED);
+        Job job = findOrAllocate(user, file, HEAP_DUMP_ANALYSIS);
+        assertJobInProgress(job);
+        Future<HttpResponse<Buffer>> future = $.asyncVoid(WorkerClient::send, context.request(), job.getHostIP());
+        HttpResponse<Buffer> resp = $.await(future);
+        MakeHttpResponse.ok(context, resp);
     }
 }

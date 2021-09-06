@@ -12,17 +12,20 @@
  ********************************************************************************/
 package org.eclipse.jifa.master.http;
 
+import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
-import io.vertx.reactivex.core.Vertx;
-import io.vertx.reactivex.core.http.HttpServerRequest;
-import io.vertx.reactivex.ext.web.Router;
-import io.vertx.reactivex.ext.web.RoutingContext;
+import io.vertx.ext.web.Router;
+import io.vertx.ext.web.RoutingContext;
 import org.eclipse.jifa.common.ErrorCode;
-import org.eclipse.jifa.common.util.HTTPRespGuarder;
+import org.eclipse.jifa.common.request.MakeHttpResponse;
 import org.eclipse.jifa.master.Constant;
-import org.eclipse.jifa.master.model.User;
-import org.eclipse.jifa.master.service.ProxyDictionary;
-import org.eclipse.jifa.master.service.reactivex.WorkerService;
+import org.eclipse.jifa.master.entity.User;
+import org.eclipse.jifa.master.entity.Worker;
+import org.eclipse.jifa.master.service.ServiceCenter;
+import org.eclipse.jifa.master.service.WorkerService;
+
+import java.util.List;
 
 import static org.eclipse.jifa.common.util.Assertion.ASSERT;
 
@@ -31,29 +34,26 @@ class WorkerRoute extends BaseRoute {
     private WorkerService workerService;
 
     void init(Vertx vertx, JsonObject config, Router apiRouter) {
-        workerService = ProxyDictionary.lookup(WorkerService.class);
-        apiRouter.get().path(Constant.QUERY_ALL_WORKERS).handler(this::queryAll);
-        apiRouter.post().path(Constant.WORKER_DISK_CLEANUP).handler(this::diskCleanup);
+        workerService = ServiceCenter.lookup(WorkerService.class);
+        apiRouter.get().path(Constant.QUERY_ALL_WORKERS).handler(ctx -> runHttpHandlerAsync(ctx, WorkerRoute.this::queryAll));
+        apiRouter.post().path(Constant.WORKER_DISK_CLEANUP).handler(ctx -> runHttpHandlerAsync(ctx, WorkerRoute.this::diskCleanup));
     }
 
+    @AsyncHttpHandler
     private void queryAll(RoutingContext context) {
         User user = context.get(Constant.USER_INFO_KEY);
         ASSERT.isTrue(user.isAdmin(), ErrorCode.FORBIDDEN);
-        workerService.rxQueryAll()
-                     .subscribe(
-                         workers -> HTTPRespGuarder.ok(context, workers),
-                         t -> HTTPRespGuarder.fail(context, t)
-                     );
+        List<Worker> workers = workerService.queryAll();
+        MakeHttpResponse.ok(context, workers);
     }
 
+    @AsyncHttpHandler
     private void diskCleanup(RoutingContext context) {
         User user = context.get(Constant.USER_INFO_KEY);
         ASSERT.isTrue(user.isAdmin(), ErrorCode.FORBIDDEN);
         HttpServerRequest request = context.request();
         String hostIP = request.getParam("host_ip");
-        workerService.rxDiskCleanup(hostIP).subscribe(
-            () -> HTTPRespGuarder.ok(context, "ok"),
-            t -> HTTPRespGuarder.fail(context, t));
+        workerService.diskCleanup(hostIP);
+        MakeHttpResponse.ok(context, "ok");
     }
-
 }

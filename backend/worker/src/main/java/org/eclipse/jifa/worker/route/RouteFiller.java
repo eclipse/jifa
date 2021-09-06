@@ -16,7 +16,7 @@ import io.vertx.ext.web.Route;
 import io.vertx.ext.web.Router;
 import org.eclipse.jifa.common.ErrorCode;
 import org.eclipse.jifa.common.JifaException;
-import org.eclipse.jifa.common.util.HTTPRespGuarder;
+import org.eclipse.jifa.common.util.MakeHttpResponse;
 import org.eclipse.jifa.worker.Constant;
 import org.eclipse.jifa.worker.WorkerGlobal;
 import org.eclipse.jifa.worker.route.heapdump.HeapBaseRoute;
@@ -129,7 +129,7 @@ public class RouteFiller {
                 }
                 method.invoke(thisObject, arguments.toArray());
             } catch (Throwable t) {
-                HTTPRespGuarder.fail(rc, t);
+                MakeHttpResponse.fail(rc, t);
             }
         }, false);
     }

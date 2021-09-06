@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2021 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-package org.eclipse.jifa.common.util;
+package org.eclipse.jifa.common.request;
 
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerResponse;
@@ -26,25 +26,9 @@ import java.lang.reflect.InvocationTargetException;
 
 import static org.eclipse.jifa.common.util.GsonHolder.GSON;
 
-public class HTTPRespGuarder implements Constant {
+public class MakeHttpResponse implements Constant {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(HTTPRespGuarder.class);
-
-    public static void ok(io.vertx.reactivex.ext.web.RoutingContext context) {
-        ok(context.getDelegate());
-    }
-
-    public static void ok(io.vertx.reactivex.ext.web.RoutingContext context, int statusCode, Object content) {
-        ok(context.getDelegate(), statusCode, content);
-    }
-
-    public static void ok(io.vertx.reactivex.ext.web.RoutingContext context, Object content) {
-        ok(context.getDelegate(), content);
-    }
-
-    public static void fail(io.vertx.reactivex.ext.web.RoutingContext context, Throwable t) {
-        fail(context.getDelegate(), t);
-    }
+    private static final Logger LOGGER = LoggerFactory.getLogger(MakeHttpResponse.class);
 
     public static void ok(RoutingContext context) {
         ok(context, commonStatusCodeOf(context.request().method()), null);
@@ -54,7 +38,7 @@ public class HTTPRespGuarder implements Constant {
         ok(context, commonStatusCodeOf(context.request().method()), content);
     }
 
-    private static void ok(RoutingContext context, int statusCode, Object content) {
+    public static void ok(RoutingContext context, int statusCode, Object content) {
         HttpServerResponse response = context.response();
         response.putHeader(Constant.HEADER_CONTENT_TYPE_KEY, Constant.CONTENT_TYPE_JSON_FORM).setStatusCode(statusCode);
         if (content != null) {
@@ -70,9 +54,9 @@ public class HTTPRespGuarder implements Constant {
         }
         log(t);
         context.response()
-               .putHeader(Constant.HEADER_CONTENT_TYPE_KEY, Constant.CONTENT_TYPE_JSON_FORM)
-               .setStatusCode(statusCodeOf(t))
-               .end(GSON.toJson(new ErrorResult(t)));
+                .putHeader(Constant.HEADER_CONTENT_TYPE_KEY, Constant.CONTENT_TYPE_JSON_FORM)
+                .setStatusCode(statusCodeOf(t))
+                .end(GSON.toJson(new ErrorResult(t)));
     }
 
     private static int statusCodeOf(Throwable t) {

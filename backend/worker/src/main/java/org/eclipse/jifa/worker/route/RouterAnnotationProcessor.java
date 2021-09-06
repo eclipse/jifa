@@ -20,7 +20,7 @@ import io.vertx.ext.web.RoutingContext;
 import org.eclipse.jifa.common.ErrorCode;
 import org.eclipse.jifa.common.JifaException;
 import org.eclipse.jifa.common.request.PagingRequest;
-import org.eclipse.jifa.common.util.HTTPRespGuarder;
+import org.eclipse.jifa.common.util.MakeHttpResponse;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -164,9 +164,9 @@ class RouterAnnotationProcessor {
         promise.future().onComplete(
             event -> {
                 if (event.succeeded()) {
-                    HTTPRespGuarder.ok(rc, event.result());
+                    MakeHttpResponse.ok(rc, event.result());
                 } else {
-                    HTTPRespGuarder.fail(rc, event.cause());
+                    MakeHttpResponse.fail(rc, event.cause());
                 }
             }
         );
