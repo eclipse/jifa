@@ -30,9 +30,6 @@ import java.util.stream.Collectors;
 import static org.eclipse.jifa.master.service.impl.helper.SQLHelper.ja;
 
 public class DiskCleaningTask extends BaseTask {
-    private static final int RETRY_LIMIT = 200;
-
-    private int retryCount = 0;
 
     public DiskCleaningTask(Pivot pivot, Vertx vertx) {
         super(pivot, vertx);
