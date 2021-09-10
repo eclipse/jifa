@@ -19,8 +19,12 @@ import io.vertx.reactivex.core.AbstractVerticle;
 import io.vertx.reactivex.ext.jdbc.JDBCClient;
 import org.eclipse.jifa.master.Constant;
 import org.eclipse.jifa.master.service.impl.Pivot;
+import org.eclipse.jifa.master.support.K8SWorkerScheduler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class ServiceVerticle extends AbstractVerticle implements Constant {
 
@@ -30,12 +34,12 @@ public class ServiceVerticle extends AbstractVerticle implements Constant {
     public void start(Promise <Void> startFuture) {
 
         vertx.rxExecuteBlocking(future -> {
-            // init Data source
+            // init data source
             DruidDataSource ds = new DruidDataSource();
-            ds.setUrl(config().getString(DB_URL));
-            ds.setUsername(config().getString(DB_USERNAME));
-            ds.setPassword(config().getString(DB_PASSWORD));
-            ds.setDriverClassName(config().getString(DB_DRIVER_CLASS_NAME));
+            ds.setUrl(config().getJsonObject(DB_KEYWORD).getString(DB_URL));
+            ds.setUsername(config().getJsonObject(DB_KEYWORD).getString(DB_USERNAME));
+            ds.setPassword(config().getJsonObject(DB_KEYWORD).getString(DB_PASSWORD));
+            ds.setDriverClassName(config().getJsonObject(DB_KEYWORD).getString(DB_DRIVER_CLASS_NAME));
 
             // create proxy first
             AdminService.createProxy(vertx);
@@ -55,6 +59,14 @@ public class ServiceVerticle extends AbstractVerticle implements Constant {
             AdminService.create(vertx, jdbcClient);
             WorkerService.create(vertx, jdbcClient, pivot);
             LOGGER.info("Create service done");
+
+            // K8S
+            Map<String, String> args = new HashMap<>();
+            args.put(Constant.K8S_NAMESPACE, config().getJsonObject(K8S_KEYWORD).getString(Constant.K8S_NAMESPACE));
+            args.put(Constant.K8S_WORKER_IMAGE, config().getJsonObject(K8S_KEYWORD).getString(Constant.K8S_WORKER_IMAGE));
+            args.put(Constant.K8S_MINIMAL_MEM_REQ, config().getJsonObject(K8S_KEYWORD).getString(Constant.K8S_MINIMAL_MEM_REQ));
+            pivot.getWorkerScheduler().initialize(args);
+            LOGGER.info("Configure K8S done");
 
             future.complete(Single.just(this));
         }).subscribe(f -> startFuture.complete(), startFuture::fail);

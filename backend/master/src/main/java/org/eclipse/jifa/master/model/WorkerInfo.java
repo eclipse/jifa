@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -10,21 +10,12 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-package org.eclipse.jifa.common.vo;
+package org.eclipse.jifa.master.model;
 
 import lombok.Data;
 
 @Data
-public class DiskUsage {
-    private long totalSpaceInMb;
-    private long usedSpaceInMb;
-
-    public DiskUsage() {
-
-    }
-
-    public DiskUsage(long totalSpaceInMb, long usedSpaceInMb) {
-        this.totalSpaceInMb = totalSpaceInMb;
-        this.usedSpaceInMb = usedSpaceInMb;
-    }
+public class WorkerInfo {
+    String name;
+    String ip;
 }

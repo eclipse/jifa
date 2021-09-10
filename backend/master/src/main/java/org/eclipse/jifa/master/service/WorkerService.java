@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2021 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -20,6 +20,7 @@ import io.vertx.core.Handler;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.ext.jdbc.JDBCClient;
 import io.vertx.serviceproxy.ServiceBinder;
+import org.eclipse.jifa.common.enums.StartStatus;
 import org.eclipse.jifa.master.entity.Worker;
 import org.eclipse.jifa.master.service.impl.Pivot;
 import org.eclipse.jifa.master.service.impl.WorkerServiceImpl;
@@ -42,11 +43,11 @@ public interface WorkerService {
             new WorkerServiceVertxEBProxy(vertx.getDelegate(), WorkerService.class.getSimpleName())));
     }
 
-    void queryAll(Handler<AsyncResult<List<Worker>>> handler);
+    void startWorker(String workerName, Handler<AsyncResult<Void>> handler);
 
-    void diskCleanup(String hostIP, Handler<AsyncResult<Void>> handler);
+    void startWorkerWithSpec(String workerName, long requestMemSize, Handler<AsyncResult<Void>> handler);
 
-    void selectMostIdleWorker(Handler<AsyncResult<Worker>> handler);
+    void stopWorker(String workerName, Handler<AsyncResult<Void>> handler);
 
-    void selectWorkerByIP(String hostIp, Handler<AsyncResult<Worker>> handler);
+    void startWorkerDone(String workerName, Handler<AsyncResult<StartStatus>> handler);
 }

@@ -13,8 +13,7 @@
 package org.eclipse.jifa.worker.route;
 
 import io.vertx.core.Promise;
-import org.eclipse.jifa.common.vo.DiskUsage;
-import org.eclipse.jifa.worker.support.FileSupport;
+import org.eclipse.jifa.common.enums.StartStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,14 +21,8 @@ import org.slf4j.LoggerFactory;
 class SystemRoute extends BaseRoute {
     private static final Logger LOGGER = LoggerFactory.getLogger(SystemRoute.class);
 
-    @RouteMeta(path = "/system/diskUsage")
-    void diskUsage(Promise<DiskUsage> promise) {
-        // Should we cache it?
-        long totalSpaceInMb = FileSupport.getTotalDiskSpace();
-        long usedSpaceInMb = FileSupport.getUsedDiskSpace();
-        assert totalSpaceInMb >= usedSpaceInMb;
-        LOGGER.info("Disk total {}MB, used {}MB", totalSpaceInMb, usedSpaceInMb);
-
-        promise.complete(new DiskUsage(totalSpaceInMb, usedSpaceInMb));
+    @RouteMeta(path = "/system/ping")
+    void ping(Promise<StartStatus> promise) {
+        promise.complete(StartStatus.SUCCESS);
     }
 }

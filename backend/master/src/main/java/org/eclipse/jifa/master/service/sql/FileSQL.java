@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2021 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -13,6 +13,14 @@
 package org.eclipse.jifa.master.service.sql;
 
 public interface FileSQL {
+    String SELECT_DATED_FILES =
+            "SELECT f.* FROM file f LEFT JOIN active_job aj ON f.name=aj.target " +
+                    "WHERE aj.target is null and " +
+                    "f.deleted=0 and " +
+                    "f.cas_state=0 and " +
+                    "f.transfer_state='SUCCESS' and " +
+                    "f.last_modified_time < now() - interval 30 day " +
+                    "LIMIT 50";
 
     String INSERT = "INSERT INTO file(user_id, original_name, name, type, size, host_ip, transfer_state, shared, " +
                     "downloadable, in_shared_disk, deleted, cas_state) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -36,7 +44,7 @@ public interface FileSQL {
     String SET_SHARED = "UPDATE file SET shared = 1 WHERE name = ?";
 
     /**
-     * To simultaneously accept users' requests while doing disk cleaning task
+     * To simultaneously accept users' requests while deleting dated files
      * we can CAS cas_state field to handle these works, its values are as follow:
      * <p>
      * cas_state(0) - This file is not being using by users

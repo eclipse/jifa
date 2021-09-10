@@ -70,6 +70,19 @@ public class WorkerClient {
         return send(HttpMethod.GET, hostIP, PORT, uri, params);
     }
 
+    public static Single<HttpResponse<Buffer>> get(String hostIP, String uri, long timeout) {
+        return send(HttpMethod.GET, hostIP, PORT, uri, null, timeout);
+    }
+
+    private static Single<HttpResponse<Buffer>> send(HttpMethod method, String hostIP, int port, String uri,
+                                                     Map<String, String> params, long timeout) {
+        HttpRequest<Buffer> request = request(method, hostIP, port, uri);
+        if (params != null) {
+            request.queryParams().addAll(params);
+        }
+        return request.basicAuthentication(USERNAME, PASSWORD).timeout(timeout).rxSend();
+    }
+
     public static Single<HttpResponse<Buffer>> send(HttpServerRequest request, String hostIP) {
         return send(request, hostIP, PORT);
     }

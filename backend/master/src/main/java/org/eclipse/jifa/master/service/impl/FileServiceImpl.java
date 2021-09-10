@@ -12,6 +12,7 @@
  ********************************************************************************/
 package org.eclipse.jifa.master.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.google.common.base.Strings;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -109,6 +110,7 @@ public class FileServiceImpl implements FileService, Constant {
         file.setTransferWay(transferWay);
         file.setTransferInfo(transferInfo);
 
+        String hostIp = pivot.getWorkerScheduler().getWorkerInfo(transferInfo.get("workerName")).getIp();
         boolean immediate = false;
 
         if (transferWay == TransferWay.OSS ||
@@ -116,7 +118,7 @@ public class FileServiceImpl implements FileService, Constant {
             immediate = true;
         }
 
-        pivot.allocate(userId, null, JobType.FILE_TRANSFER, name, GSON.toJson(file), TRANSFER_JOB_LOAD,
+        pivot.allocate(userId, hostIp, JobType.FILE_TRANSFER, name, JSON.toJSONString(file), TRANSFER_JOB_LOAD,
                        immediate)
              .subscribe(SingleHelper.toObserver(handler));
     }

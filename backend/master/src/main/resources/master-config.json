@@ -1,12 +1,17 @@
 {
   "database": {
-    "url": "jdbc:mysql://database:3306/jifa?useUnicode=true&characterEncoding=utf8&enabledTLSProtocols=TLSv1.2",
+    "url": "jdbc:mysql://mysql-service.jifa-test.svc.cluster.local:3306/jifa?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true",
     "username": "root",
     "password": "123456",
     "driver-class-name": "com.mysql.jdbc.Driver"
   },
   "http-verticle-config": {
     "port": 9102
+  },
+  "k8s-config": {
+    "namespace": "jifa-test",
+    "worker-image": "docker.io/kelthuzadx/jifa-worker-open",
+    "minimal-mem-req": 314572800
   },
   "worker-config": {
     "username": "jifa",

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2021 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -89,8 +89,9 @@ public interface Constant extends org.eclipse.jifa.common.Constant {
     /**
      * WORKER URL
      */
-    String QUERY_ALL_WORKERS = "/workers";
-    String WORKER_DISK_CLEANUP = "/worker/diskCleanup";
+    String START_WORKER = "/worker/startWorker";
+    String STOP_WORKER = "/worker/stopWorker";
+    String START_WORKER_DONE = "/worker/startWorkerDone";
 
     /**
      * ADMIN URL
@@ -104,7 +105,7 @@ public interface Constant extends org.eclipse.jifa.common.Constant {
     String USERNAME = "username";
     String PASSWORD = "password";
     String PORT = "port";
-    String SYSTEM_DISK_USAGE = "/system/diskUsage";
+    String PING = "/system/ping";
 
     long MAX_SIZE_FOR_DOWNLOAD = 512 * 1024 * 1024; // 512MB
 
@@ -112,6 +113,14 @@ public interface Constant extends org.eclipse.jifa.common.Constant {
      * DEV
      */
     String LOCAL_HOST = "localhost";
+
+    /**
+     * K8S CLOUD CONFIG
+     */
+    String K8S_KEYWORD = "k8s-config";
+    String K8S_NAMESPACE = "namespace";
+    String K8S_WORKER_IMAGE = "worker-image";
+    String K8S_MINIMAL_MEM_REQ = "minimal-mem-req";
 
     static String uri(String suffix) {
         return BASE + suffix;

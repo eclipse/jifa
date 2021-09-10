@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2021 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -26,6 +26,7 @@ import org.eclipse.jifa.master.entity.enums.JobState;
 import org.eclipse.jifa.master.entity.enums.JobType;
 import org.eclipse.jifa.master.model.User;
 import org.eclipse.jifa.master.service.ProxyDictionary;
+import org.eclipse.jifa.master.service.impl.Pivot;
 import org.eclipse.jifa.master.service.reactivex.FileService;
 import org.eclipse.jifa.master.service.reactivex.JobService;
 import org.eclipse.jifa.master.support.WorkerClient;
@@ -81,6 +82,7 @@ class AnalyzerRoute extends BaseRoute {
                    .doOnSuccess(this::assertJobExist)
                    .doOnSuccess(job -> ASSERT.isTrue(job.getState() != JobState.PENDING,
                                                      ErrorCode.RELEASE_PENDING_JOB))
+                   .doOnSuccess(job -> Pivot.instance().getWorkerScheduler().stopWorker("my-worker" + fileName.hashCode()))
                    .ignoreElement()
                    .andThen(jobService.rxFinish(jobType, fileName))
                    .subscribe(() -> HTTPRespGuarder.ok(context),

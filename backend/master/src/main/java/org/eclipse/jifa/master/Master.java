@@ -53,7 +53,7 @@ public class Master extends AbstractVerticle implements Constant {
 
             // service
             Single<String> service = vertx.rxDeployVerticle(ServiceVerticle.class.getName(), new DeploymentOptions()
-                .setConfig(masterConfig.getJsonObject(DB_KEYWORD)));
+                .setConfig(masterConfig));
 
             DeploymentOptions httpConfig =
                 new DeploymentOptions().setConfig(masterConfig.getJsonObject(HTTP_VERTICLE_CONFIG_KEY))
