@@ -88,39 +88,19 @@ public class DiskCleaningTask extends BaseTask {
     }
 
     @Override
-    public void doEnd() {
-        super.doEnd();
-        getHighDiskOverloadWorkers().map(workerList -> {
-            if (retryCount >= RETRY_LIMIT) {
-                retryCount = 0;
-                throw new Exception("Too much times to retry disk cleaning task");
-            }
-            if (workerList.size() > 0) {
-                LOGGER.info("Disk overload of workers {} are still reaching watermark, try cleaning again", workerList);
-                this.trigger();
-                retryCount++;
-            } else {
-                retryCount = 0;
-            }
-            return Completable.complete();
-        }).subscribe(c -> {
-        }, throwable -> LOGGER.error("Execute {} error", name(), throwable));
-    }
-
-    @Override
     public void doPeriodic() {
         // Get high dick overload workers, for each of them, get all files which
         // neither deleted nor used in that worker, finally, apply real disk cleanup
         // action for every file in that list
-        isEnableDiskCleaning().subscribe(val -> {
-            getHighDiskOverloadWorkers()
-                .flatMapObservable(workerIpList -> markAndDeleteFiles(pivot.getDbClient(), pivot, workerIpList))
-                .ignoreElements()
-                .subscribe(this::end, t -> {
-                    LOGGER.error("Execute {} error", name(), t);
-                    end();
-                });
-        });
+        isEnableDiskCleaning()
+                .subscribe(val -> getHighDiskOverloadWorkers()
+                        .flatMapObservable(workerIpList -> markAndDeleteFiles(pivot.getDbClient(), pivot, workerIpList))
+                        .ignoreElements()
+                        .subscribe(
+                                () -> LOGGER.info("Execute {} successfully ", name()),
+                                t -> LOGGER.error("Execute {} error", name(), t)
+                        )
+        );
     }
 
     private Maybe<List<String>> getHighDiskOverloadWorkers() {
