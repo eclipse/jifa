@@ -42,10 +42,15 @@ public class Analyzer {
     private static final Logger LOGGER = LoggerFactory.getLogger(Analyzer.class);
 
     static {
-        Iterator<HeapDumpAnalyzer.Provider> iterator =
-            ServiceLoader.load(HeapDumpAnalyzer.Provider.class, Worker.class.getClassLoader()).iterator();
-        ASSERT.isTrue(iterator.hasNext());
-        HEAP_DUMP_ANALYZER_PROVIDER = iterator.next();
+        try {
+            Iterator<HeapDumpAnalyzer.Provider> iterator =
+                ServiceLoader.load(HeapDumpAnalyzer.Provider.class, Worker.class.getClassLoader()).iterator();
+            ASSERT.isTrue(iterator.hasNext());
+            HEAP_DUMP_ANALYZER_PROVIDER = iterator.next();
+        } catch (Throwable t) {
+            LOGGER.error("Init analyzer failed", t);
+            throw new Error(t);
+        }
     }
 
     private final Map<String, ProgressListener> listeners;
