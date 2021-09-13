@@ -80,7 +80,6 @@ public class DiskCleaningTask extends BaseTask {
         return ConfigHelper.getLong(pivot.config("JOB-DISK-CLEANUP-PERIODIC"));
     }
 
-
     @Override
     public void doPeriodic() {
         // Get high dick overload workers, for each of them, get all files which

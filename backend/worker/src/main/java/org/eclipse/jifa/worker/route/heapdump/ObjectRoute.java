@@ -18,14 +18,12 @@ import org.eclipse.jifa.worker.route.ParamKey;
 import org.eclipse.jifa.worker.route.RouteMeta;
 
 import static org.eclipse.jifa.common.util.Assertion.ASSERT;
-import static org.eclipse.jifa.worker.support.Analyzer.HEAP_DUMP_ANALYZER;
-import static org.eclipse.jifa.worker.support.Analyzer.getOrOpenAnalysisContext;
 
 class ObjectRoute extends HeapBaseRoute {
 
     @RouteMeta(path = "/object")
     void info(Promise<Model.JavaObject> promise, @ParamKey("file") String file, @ParamKey("objectId") int objectId) {
         ASSERT.isTrue(objectId >= 0, "Object id must be greater than or equal to 0");
-        promise.complete(HEAP_DUMP_ANALYZER.getObjectInfo(getOrOpenAnalysisContext(file), objectId));
+        promise.complete(analyzerOf(file).getObjectInfo(objectId));
     }
 }

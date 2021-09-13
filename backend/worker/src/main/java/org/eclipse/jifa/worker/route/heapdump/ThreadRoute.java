@@ -22,16 +22,13 @@ import org.eclipse.jifa.worker.route.RouteMeta;
 
 import java.util.List;
 
-import static org.eclipse.jifa.worker.support.Analyzer.HEAP_DUMP_ANALYZER;
-import static org.eclipse.jifa.worker.support.Analyzer.getOrOpenAnalysisContext;
-
 class ThreadRoute extends HeapBaseRoute {
 
     @RouteMeta(path = "/threadsSummary")
     void threadsSummary(Promise<Model.Thread.Summary> promise, @ParamKey("file") String file,
                         @ParamKey(value = "searchText", mandatory = false) String searchText,
                         @ParamKey(value = "searchType", mandatory = false) SearchType searchType) {
-        promise.complete(HEAP_DUMP_ANALYZER.getSummaryOfThreads(getOrOpenAnalysisContext(file), searchText, searchType));
+        promise.complete(analyzerOf(file).getSummaryOfThreads(searchText, searchType));
     }
 
     @RouteMeta(path = "/threads")
@@ -41,21 +38,20 @@ class ThreadRoute extends HeapBaseRoute {
                  @ParamKey(value = "searchText", mandatory = false) String searchText,
                  @ParamKey(value = "searchType", mandatory = false) SearchType searchType,
                  PagingRequest paging) {
-        promise.complete(HEAP_DUMP_ANALYZER.getThreads(getOrOpenAnalysisContext(file), sortBy, ascendingOrder,
-                                                      searchText, searchType, paging.getPage(), paging.getPageSize()));
+        promise.complete(analyzerOf(file).getThreads(sortBy, ascendingOrder,
+                                                     searchText, searchType, paging.getPage(), paging.getPageSize()));
     }
 
     @RouteMeta(path = "/stackTrace")
     void stackTrace(Promise<List<Model.Thread.StackFrame>> promise, @ParamKey("file") String file,
                     @ParamKey("objectId") int objectId) {
-        promise.complete(HEAP_DUMP_ANALYZER.getStackTrace(getOrOpenAnalysisContext(file), objectId));
+        promise.complete(analyzerOf(file).getStackTrace(objectId));
     }
 
     @RouteMeta(path = "/locals")
     void locals(Promise<List<Model.Thread.LocalVariable>> promise, @ParamKey("file") String file,
                 @ParamKey("objectId") int objectId, @ParamKey("depth") int depth,
                 @ParamKey("firstNonNativeFrame") boolean firstNonNativeFrame) {
-        promise.complete(HEAP_DUMP_ANALYZER.getLocalVariables(getOrOpenAnalysisContext(file), objectId, depth,
-                                                             firstNonNativeFrame));
+        promise.complete(analyzerOf(file).getLocalVariables(objectId, depth, firstNonNativeFrame));
     }
 }

@@ -18,13 +18,10 @@ import org.eclipse.jifa.worker.route.RouteMeta;
 
 import java.util.Map;
 
-import static org.eclipse.jifa.worker.support.Analyzer.HEAP_DUMP_ANALYZER;
-import static org.eclipse.jifa.worker.support.Analyzer.getOrOpenAnalysisContext;
-
 class SystemPropertyRoute extends HeapBaseRoute {
 
     @RouteMeta(path = "/systemProperties")
     void systemProperty(Promise<Map<String, String>> promise, @ParamKey("file") String file) {
-        promise.complete(HEAP_DUMP_ANALYZER.getSystemProperties(getOrOpenAnalysisContext(file)));
+        promise.complete(analyzerOf(file).getSystemProperties());
     }
 }

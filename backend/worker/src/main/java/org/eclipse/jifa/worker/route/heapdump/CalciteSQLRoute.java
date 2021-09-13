@@ -18,9 +18,6 @@ import org.eclipse.jifa.hda.api.Model;
 import org.eclipse.jifa.worker.route.ParamKey;
 import org.eclipse.jifa.worker.route.RouteMeta;
 
-import static org.eclipse.jifa.worker.support.Analyzer.HEAP_DUMP_ANALYZER;
-import static org.eclipse.jifa.worker.support.Analyzer.getOrOpenAnalysisContext;
-
 class CalciteSQLRoute extends HeapBaseRoute {
 
     @RouteMeta(path = "/sql")
@@ -28,8 +25,8 @@ class CalciteSQLRoute extends HeapBaseRoute {
              @ParamKey("sql") String oql, @ParamKey(value = "sortBy", mandatory = false) String sortBy,
              @ParamKey(value = "ascendingOrder", mandatory = false) boolean ascendingOrder,
              PagingRequest pagingRequest) {
-        promise.complete(HEAP_DUMP_ANALYZER.getCalciteSQLResult(getOrOpenAnalysisContext(file),
-                                                        oql, sortBy, ascendingOrder,
-                                                        pagingRequest.getPage(), pagingRequest.getPageSize()));
+        promise.complete(analyzerOf(file).getCalciteSQLResult(oql, sortBy, ascendingOrder,
+                                                              pagingRequest.getPage(),
+                                                              pagingRequest.getPageSize()));
     }
 }

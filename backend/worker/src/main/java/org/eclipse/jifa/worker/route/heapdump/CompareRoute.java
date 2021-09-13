@@ -21,13 +21,13 @@ import org.eclipse.jifa.common.vo.FileInfo;
 import org.eclipse.jifa.common.vo.PageView;
 import org.eclipse.jifa.worker.route.ParamKey;
 import org.eclipse.jifa.worker.route.RouteMeta;
-import org.eclipse.jifa.worker.support.Analyzer;
 import org.eclipse.jifa.worker.support.FileSupport;
 
+import java.io.File;
 import java.util.stream.Collectors;
 
+import static org.eclipse.jifa.common.enums.FileType.HEAP_DUMP;
 import static org.eclipse.jifa.hda.api.Model.Comparison;
-import static org.eclipse.jifa.worker.support.Analyzer.HEAP_DUMP_ANALYZER;
 
 class CompareRoute extends HeapBaseRoute {
 
@@ -44,17 +44,15 @@ class CompareRoute extends HeapBaseRoute {
     @RouteMeta(path = "/compare/summary")
     void summary(Promise<Comparison.Summary> promise, @ParamKey("file") String target,
                  @ParamKey("baseline") String baseline) {
-        promise.complete(
-            HEAP_DUMP_ANALYZER.getSummaryOfComparison(Analyzer.getOrOpenAnalysisContext(baseline),
-                                                      Analyzer.getOrOpenAnalysisContext(target)));
+        promise.complete(HeapBaseRoute.analyzerOf(target)
+                                      .getSummaryOfComparison(new File(FileSupport.filePath(HEAP_DUMP, baseline)).toPath()));
     }
 
     @RouteMeta(path = "/compare/records")
     void record(Promise<PageView<Comparison.Item>> promise, @ParamKey("file") String target,
                 @ParamKey("baseline") String baseline, PagingRequest pagingRequest) {
         promise.complete(
-            HEAP_DUMP_ANALYZER.getItemsOfComparison(Analyzer.getOrOpenAnalysisContext(baseline),
-                                                    Analyzer.getOrOpenAnalysisContext(target),
-                                                    pagingRequest.getPage(), pagingRequest.getPageSize()));
+            analyzerOf(target).getItemsOfComparison(new File(FileSupport.filePath(HEAP_DUMP, baseline)).toPath(),
+                                                      pagingRequest.getPage(), pagingRequest.getPageSize()));
     }
 }

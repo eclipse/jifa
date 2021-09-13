@@ -15,127 +15,125 @@ package org.eclipse.jifa.hda.api;
 import org.eclipse.jifa.common.vo.PageView;
 import org.eclipse.jifa.common.vo.support.SearchType;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
 import static org.eclipse.jifa.hda.api.Model.ClassLoader;
 import static org.eclipse.jifa.hda.api.Model.*;
 
-public interface HeapDumpAnalyzer<C extends AnalysisContext> {
+public interface HeapDumpAnalyzer {
 
-    interface Provider {
-        HeapDumpAnalyzer<AnalysisContext> get();
-    }
+    void dispose();
 
-    C open(File dump, Map<String, String> arguments, ProgressListener listener);
+    Overview.Details getDetails();
 
-    void dispose(C context);
+    Map<String, String> getSystemProperties();
 
-    Overview.Details getDetails(C context);
+    List<Overview.BigObject> getBigObjects();
 
-    Map<String, String> getSystemProperties(C context);
+    JavaObject getObjectInfo(int objectId);
 
-    List<Overview.BigObject> getBigObjects(C context);
+    InspectorView getInspectorView(int objectId);
 
-    JavaObject getObjectInfo(C context, int objectId);
+    PageView<FieldView> getFields(int objectId, int page, int pageSize);
 
-    InspectorView getInspectorView(C context, int objectId);
+    PageView<FieldView> getStaticFields(int objectId, int page, int pageSize);
 
-    PageView<FieldView> getFields(C context, int objectId, int page, int pageSize);
+    int mapAddressToId(long address);
 
-    PageView<FieldView> getStaticFields(C context, int objectId, int page, int pageSize);
+    String getObjectValue(int objectId);
 
-    int mapAddressToId(C context, long address);
+    ClassLoader.Summary getSummaryOfClassLoaders();
 
-    String getObjectValue(C context, int objectId);
+    PageView<ClassLoader.Item> getClassLoaders(int page, int pageSize);
 
-    ClassLoader.Summary getSummaryOfClassLoaders(C context);
-
-    PageView<ClassLoader.Item> getClassLoaders(C context, int page, int pageSize);
-
-    PageView<ClassLoader.Item> getChildrenOfClassLoader(C context, int classLoaderId,
+    PageView<ClassLoader.Item> getChildrenOfClassLoader(int classLoaderId,
                                                         int page, int pageSize);
 
-    UnreachableObject.Summary getSummaryOfUnreachableObjects(C context);
+    UnreachableObject.Summary getSummaryOfUnreachableObjects();
 
-    PageView<UnreachableObject.Item> getUnreachableObjects(C context, int page, int pageSize);
+    PageView<UnreachableObject.Item> getUnreachableObjects(int page, int pageSize);
 
-    DirectByteBuffer.Summary getSummaryOfDirectByteBuffers(C context);
+    DirectByteBuffer.Summary getSummaryOfDirectByteBuffers();
 
-    PageView<DirectByteBuffer.Item> getDirectByteBuffers(C context, int page, int pageSize);
+    PageView<DirectByteBuffer.Item> getDirectByteBuffers(int page, int pageSize);
 
-    PageView<JavaObject> getOutboundOfObject(C context, int objectId, int page, int pageSize);
+    PageView<JavaObject> getOutboundOfObject(int objectId, int page, int pageSize);
 
-    PageView<JavaObject> getInboundOfObject(C context, int objectId, int page, int pageSize);
+    PageView<JavaObject> getInboundOfObject(int objectId, int page, int pageSize);
 
-    List<GCRoot.Item> getGCRoots(C context);
+    List<GCRoot.Item> getGCRoots();
 
-    PageView<GCRoot.Item> getClassesOfGCRoot(C context, int rootTypeIndex, int page, int pageSize);
+    PageView<GCRoot.Item> getClassesOfGCRoot(int rootTypeIndex, int page, int pageSize);
 
-    PageView<JavaObject> getObjectsOfGCRoot(C context, int rootTypeIndex, int classIndex, int page, int pageSize);
+    PageView<JavaObject> getObjectsOfGCRoot(int rootTypeIndex, int classIndex, int page, int pageSize);
 
-    ClassReferrer.Item getOutboundClassOfClassReference(C context, int objectId);
+    ClassReferrer.Item getOutboundClassOfClassReference(int objectId);
 
-    ClassReferrer.Item getInboundClassOfClassReference(C context, int objectId);
+    ClassReferrer.Item getInboundClassOfClassReference(int objectId);
 
-    PageView<ClassReferrer.Item> getOutboundsOfClassReference(C context, int[] objectIds, int page, int pageSize);
+    PageView<ClassReferrer.Item> getOutboundsOfClassReference(int[] objectIds, int page, int pageSize);
 
-    PageView<ClassReferrer.Item> getInboundsOfClassReference(C context, int[] objectIds, int page, int pageSize);
+    PageView<ClassReferrer.Item> getInboundsOfClassReference(int[] objectIds, int page, int pageSize);
 
-    Comparison.Summary getSummaryOfComparison(C base, C other);
+    Comparison.Summary getSummaryOfComparison(Path other);
 
-    PageView<Comparison.Item> getItemsOfComparison(C base, C other, int page, int pageSize);
+    PageView<Comparison.Item> getItemsOfComparison(Path other, int page, int pageSize);
 
-    PageView<GCRootPath.MergePathToGCRootsTreeNode> getRootsOfMergePathToGCRootsByClassId(C context, int classId,
+    PageView<GCRootPath.MergePathToGCRootsTreeNode> getRootsOfMergePathToGCRootsByClassId(int classId,
                                                                                           GCRootPath.Grouping grouping,
                                                                                           int page, int pageSize);
 
-    PageView<GCRootPath.MergePathToGCRootsTreeNode> getChildrenOfMergePathToGCRootsByClassId(C context, int classId,
+    PageView<GCRootPath.MergePathToGCRootsTreeNode> getChildrenOfMergePathToGCRootsByClassId(int classId,
                                                                                              int[] objectIdPathInGCPathTree,
                                                                                              GCRootPath.Grouping grouping,
                                                                                              int page, int pageSize);
 
-    GCRootPath.Item getPathToGCRoots(C context, int originId, int skip, int count);
+    GCRootPath.Item getPathToGCRoots(int originId, int skip, int count);
 
-    LeakReport getLeakReport(C context);
+    LeakReport getLeakReport();
 
-    OQLResult getOQLResult(C context, String oql, String sortBy, boolean ascendingOrder, int page, int pageSize);
+    OQLResult getOQLResult(String oql, String sortBy, boolean ascendingOrder, int page, int pageSize);
 
-    CalciteSQLResult getCalciteSQLResult(C context, String sql, String sortBy, boolean ascendingOrder, int page, int pageSize);
+    CalciteSQLResult getCalciteSQLResult(String sql, String sortBy, boolean ascendingOrder, int page, int pageSize);
 
-    Model.Thread.Summary getSummaryOfThreads(C context, String searchText, SearchType searchType);
+    Model.Thread.Summary getSummaryOfThreads(String searchText, SearchType searchType);
 
-    PageView<Model.Thread.Item> getThreads(C context, String sortBy, boolean ascendingOrder, String searchText,
+    PageView<Model.Thread.Item> getThreads(String sortBy, boolean ascendingOrder, String searchText,
                                            SearchType searchType, int page, int pageSize);
 
-    List<Model.Thread.StackFrame> getStackTrace(C context, int objectId);
+    List<Model.Thread.StackFrame> getStackTrace(int objectId);
 
-    List<Model.Thread.LocalVariable> getLocalVariables(C context, int objectId, int depth, boolean firstNonNativeFrame);
+    List<Model.Thread.LocalVariable> getLocalVariables(int objectId, int depth, boolean firstNonNativeFrame);
 
-    PageView<DuplicatedClass.ClassItem> getDuplicatedClasses(C context, String searchText, SearchType searchType,
+    PageView<DuplicatedClass.ClassItem> getDuplicatedClasses(String searchText, SearchType searchType,
                                                              int page, int pageSize);
 
-    PageView<DuplicatedClass.ClassLoaderItem> getClassloadersOfDuplicatedClass(C context, int index, int page,
+    PageView<DuplicatedClass.ClassLoaderItem> getClassloadersOfDuplicatedClass(int index, int page,
                                                                                int pageSize);
 
-    PageView<Histogram.Item> getHistogram(C context, Histogram.Grouping groupingBy, int[] ids,
+    PageView<Histogram.Item> getHistogram(Histogram.Grouping groupingBy, int[] ids,
                                           String sortBy, boolean ascendingOrder,
                                           String searchText, SearchType searchType, int page, int pageSize);
 
-    PageView<Histogram.Item> getChildrenOfHistogram(C context, Histogram.Grouping groupBy, int[] ids,
+    PageView<Histogram.Item> getChildrenOfHistogram(Histogram.Grouping groupBy, int[] ids,
                                                     String sortBy, boolean ascendingOrder, int parentObjectId,
                                                     int page, int pageSize);
 
-    PageView<? extends DominatorTree.Item> getRootsOfDominatorTree(C context, DominatorTree.Grouping groupBy,
+    PageView<? extends DominatorTree.Item> getRootsOfDominatorTree(DominatorTree.Grouping groupBy,
                                                                    String sortBy,
                                                                    boolean ascendingOrder, String searchText,
                                                                    SearchType searchType, int page, int pageSize);
 
-    PageView<? extends DominatorTree.Item> getChildrenOfDominatorTree(C context, DominatorTree.Grouping groupBy,
+    PageView<? extends DominatorTree.Item> getChildrenOfDominatorTree(DominatorTree.Grouping groupBy,
                                                                       String sortBy, boolean ascendingOrder,
                                                                       int parentObjectId, int[] idPathInResultTree,
                                                                       int page,
                                                                       int pageSize);
+
+    interface Provider {
+        HeapDumpAnalyzer provide(Path path, Map<String, String> arguments, ProgressListener listener);
+    }
 
 }

@@ -252,7 +252,7 @@
             loaded.push({
               rowKey: rowKey++,
               objectId: d.objectId,
-              isObjType: d.isObjType,
+              isObjType: d.objType,
               objectType: d.objectType,
               icon: this.getIconWrapper(d.gCRoot, d.objectType, d.objType),
               label: d.label,

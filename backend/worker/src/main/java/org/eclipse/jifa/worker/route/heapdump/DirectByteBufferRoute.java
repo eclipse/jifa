@@ -19,20 +19,18 @@ import org.eclipse.jifa.worker.route.ParamKey;
 import org.eclipse.jifa.worker.route.RouteMeta;
 
 import static org.eclipse.jifa.hda.api.Model.DirectByteBuffer;
-import static org.eclipse.jifa.worker.support.Analyzer.HEAP_DUMP_ANALYZER;
-import static org.eclipse.jifa.worker.support.Analyzer.getOrOpenAnalysisContext;
 
 class DirectByteBufferRoute extends HeapBaseRoute {
 
     @RouteMeta(path = "/directByteBuffer/summary")
     void summary(Promise<DirectByteBuffer.Summary> promise, @ParamKey("file") String file) {
-        promise.complete(HEAP_DUMP_ANALYZER.getSummaryOfDirectByteBuffers(getOrOpenAnalysisContext(file)));
+        promise.complete(analyzerOf(file).getSummaryOfDirectByteBuffers());
     }
 
     @RouteMeta(path = "/directByteBuffer/records")
     void record(Promise<PageView<DirectByteBuffer.Item>> promise, @ParamKey("file") String file,
                 PagingRequest pagingRequest) {
-        promise.complete(HEAP_DUMP_ANALYZER.getDirectByteBuffers(getOrOpenAnalysisContext(file), pagingRequest.getPage()
-            , pagingRequest.getPageSize()));
+        promise.complete(analyzerOf(file).getDirectByteBuffers(pagingRequest.getPage(),
+                                                               pagingRequest.getPageSize()));
     }
 }
