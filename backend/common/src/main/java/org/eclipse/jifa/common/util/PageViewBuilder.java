@@ -39,15 +39,6 @@ public class PageViewBuilder<A, B extends Searchable> {
         return new PageView<>(paging, callback.totalSize(), result);
     }
 
-    public static <S, R> PageView<R> build(Callback<S> callback, PagingRequest paging, Function<S, R> mapper, Comparator<R> comparator) {
-        List<R> result = IntStream.range(paging.from(), paging.to(callback.totalSize()))
-                .mapToObj(callback::get)
-                .map(mapper)
-                .sorted(comparator)
-                .collect(Collectors.toList());
-        return new PageView<>(paging, callback.totalSize(), result);
-    }
-
     public static <R> PageView<R> build(Collection<R> total, PagingRequest paging) {
         List<R> result = total.stream()
                 .skip(paging.from())
@@ -65,24 +56,16 @@ public class PageViewBuilder<A, B extends Searchable> {
         return new PageView<>(paging, total.size(), result);
     }
 
-    public static <S, R> PageView<R> build(Collection<S> total, PagingRequest paging, Function<S, R> mapper, Comparator<R> comparator) {
+    public static <S, T, R> PageView<R> build(Collection<S> total, PagingRequest paging, Function<S, T> mapper1,
+                                           Function<T, R> mapper2,
+                                           Comparator<T> comparator) {
         List<R> result = total.stream()
-                .skip(paging.from())
-                .limit(paging.getPageSize())
-                .map(mapper)
-                .sorted(comparator) // sort after applied mapping function
-                .collect(Collectors.toList());
-        return new PageView<>(paging, total.size(), result);
-    }
-
-    public static <S, R> PageView<R> build(Collection<S> total, PagingRequest paging, Function<S, R> mapper, Comparator<R> comparator, Predicate<R> predicate) {
-        List<R> result = total.stream()
-                .skip(paging.from())
-                .limit(paging.getPageSize())
-                .map(mapper)
-                .filter(predicate)
-                .sorted(comparator) // sort after applied mapping function
-                .collect(Collectors.toList());
+                              .map(mapper1)
+                              .sorted(comparator)
+                              .skip(paging.from())
+                              .limit(paging.getPageSize())
+                              .map(mapper2)
+                              .collect(Collectors.toList());
         return new PageView<>(paging, total.size(), result);
     }
 
