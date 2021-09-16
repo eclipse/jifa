@@ -91,6 +91,7 @@ public class DiskCleaningTask extends BaseTask {
             }
             List<String> workerIpList = getHighDiskOverloadWorkers();
             markAndDeleteFiles(pivot.dbClient(), pivot, workerIpList);
+            this.end();
         } catch (Throwable e) {
             LOGGER.error("Execute {} error", name(), e);
         }

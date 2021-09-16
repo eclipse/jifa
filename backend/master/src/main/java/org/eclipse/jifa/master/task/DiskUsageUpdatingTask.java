@@ -58,12 +58,7 @@ public class DiskUsageUpdatingTask extends BaseTask {
         try {
             List<Worker> workers = getWorkers();
             for (Worker worker : workers) {
-                Future<HttpResponse<Buffer>> future = $.asyncVoid(new TriConsumer<String, String, Handler<AsyncResult<HttpResponse<Buffer>>>>() {
-                    @Override
-                    public void accept(String s, String s2, Handler<AsyncResult<HttpResponse<Buffer>>> handler) {
-                        WorkerClient.get(s, s2, handler);
-                    }
-                }, worker.getHostIP(), uri(Constant.SYSTEM_DISK_USAGE));
+                Future<HttpResponse<Buffer>> future = $.asyncVoid(WorkerClient::get, worker.getHostIP(), uri(Constant.SYSTEM_DISK_USAGE));
                 HttpResponse<Buffer> resp = $.await(future);
                 ASSERT
                         .isTrue(resp.bodyAsJson(DiskUsage.class) != null);

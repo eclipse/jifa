@@ -15,19 +15,19 @@ package org.eclipse.jifa.master.service.sql;
 public interface FileSQL {
 
     String INSERT = "INSERT INTO file(user_id, original_name, name, type, size, host_ip, transfer_state, shared, " +
-            "downloadable, in_shared_disk, deleted, cas_state) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    "downloadable, in_shared_disk, deleted, cas_state) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
     String SELECT_BY_USER_ID_AND_TYPE =
-            "SELECT * FROM file WHERE user_id = ? AND type = ? AND deleted = false ORDER BY creation_time DESC LIMIT ?, ?";
+        "SELECT * FROM file WHERE user_id = ? AND type = ? AND deleted = false ORDER BY creation_time DESC LIMIT ?, ?";
 
     String COUNT_BY_USER_ID_AND_TYPE = "SELECT COUNT(*) FROM file WHERE user_id = ? AND type = ? AND deleted = false";
 
     String SELECT_BY_USER_ID_AND_TYPE_AND_EXPECTED_NAME =
-            "SELECT * FROM file WHERE user_id = ? AND type = ? AND (name like ? OR display_name like ?) AND deleted = " +
-                    "false ORDER BY creation_time DESC LIMIT ?, ?";
+        "SELECT * FROM file WHERE user_id = ? AND type = ? AND (name like ? OR display_name like ?) AND deleted = " +
+        "false ORDER BY creation_time DESC LIMIT ?, ?";
 
     String COUNT_BY_USER_ID_AND_TYPE_AND_EXPECTED_NAME = "SELECT COUNT(*) FROM file WHERE user_id = ? AND type = ? " +
-            "AND (name like ? OR display_name like ?) AND deleted = false";
+                                                         "AND (name like ? OR display_name like ?) AND deleted = false";
 
     String SELECT_FILE_BY_NAME = "SELECT * FROM file WHERE name = ?";
 
@@ -44,21 +44,21 @@ public interface FileSQL {
      * cas_state(2) - This file will be deleted quickly
      */
     String UPDATE_FILE_AS_USED =
-            "UPDATE file SET cas_state = 1 WHERE name = ? and deleted = false AND (cas_state = 0 OR cas_state = 1)";
+        "UPDATE file SET cas_state = 1 WHERE name = ? and deleted = false AND (cas_state = 0 OR cas_state = 1)";
 
     String UPDATE_FILE_AS_UNUSED =
-            "UPDATE file SET cas_state = 0 WHERE name = ? and deleted = false AND (cas_state = 1 OR cas_state = 0)";
+        "UPDATE file SET cas_state = 0 WHERE name = ? and deleted = false AND (cas_state = 1 OR cas_state = 0)";
 
     String UPDATE_AS_PENDING_DELETE = "UPDATE file SET cas_state = 2 WHERE host_ip = ? AND deleted = false AND " +
-            "cas_state = 0 AND transfer_state != 'IN_PROGRESS' ORDER BY creation_time ASC LIMIT 10";
+                                      "cas_state = 0 AND transfer_state != 'IN_PROGRESS' ORDER BY creation_time ASC LIMIT 10";
 
     String SELECT_PENDING_DELETE = "SELECT * FROM file WHERE host_ip = ? AND cas_state = 2 AND deleted = false";
 
     String DELETE_FILE_BY_NAME =
-            "UPDATE file SET deleted = true, deleter = ?, deleted_time = now(), cas_state = 0 WHERE name= ? AND deleted = false";
+        "UPDATE file SET deleted = true, deleter = ?, deleted_time = now(), cas_state = 0 WHERE name= ? AND deleted = false";
 
     String UPDATE_DISPLAY_NAME = "UPDATE file SET display_name = ? WHERE name = ?";
 
     String SELECT_FILES_FOR_SYNC =
-            "SELECT * FROM file  WHERE host_ip = ? AND transfer_state = 'SUCCESS' AND deleted = false AND type != 'JINSIGHT'";
+        "SELECT * FROM file  WHERE host_ip = ? AND transfer_state = 'SUCCESS' AND deleted = false AND type != 'JINSIGHT'";
 }
