@@ -22,7 +22,6 @@
         J I F A
       </b-navbar-brand>
     </b-navbar-nav>
-    |
     <finder-menu v-if="subject==='finder'" v-bind="$attrs" v-on="$listeners"/>
     <analysis-result-menu v-else-if="subject==='analysisResult'" v-bind="$attrs" v-on="$listeners"/>
 
