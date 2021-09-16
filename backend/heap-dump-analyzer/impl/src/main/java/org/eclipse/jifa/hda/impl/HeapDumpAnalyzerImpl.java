@@ -21,6 +21,7 @@ import org.eclipse.jifa.common.util.ReflectionUtil;
 import org.eclipse.jifa.common.vo.PageView;
 import org.eclipse.jifa.common.vo.support.SearchPredicate;
 import org.eclipse.jifa.common.vo.support.SearchType;
+import org.eclipse.jifa.common.vo.support.SortTableGenerator;
 import org.eclipse.jifa.hda.api.AnalysisException;
 import org.eclipse.jifa.hda.api.HeapDumpAnalyzer;
 import org.eclipse.jifa.hda.api.Model;
@@ -1094,20 +1095,19 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer {
                     PageViewBuilder.build(
                         ((IResultTree) result).getElements(),
                         new PagingRequest(page, pageSize),
-                        e -> doRun(() -> {
-                            int objectId = ((IResultTree) result).getContext(e).getObjectId();
-                            IObject o = context.snapshot.getObject(objectId);
+                        e -> doRun(()-> context.snapshot.getObject(((IResultTree) result).getContext(e).getObjectId())),
+                        o -> doRun(() -> {
                             JavaObject jo = new JavaObject();
-                            jo.setObjectId(objectId);
+                            jo.setObjectId(o.getObjectId());
                             jo.setLabel(o.getDisplayName());
                             jo.setSuffix(Helper.suffix(o.getGCRootInfo()));
                             jo.setShallowSize(o.getUsedHeapSize());
                             jo.setRetainedSize(o.getRetainedHeapSize());
-                            jo.setGCRoot(context.snapshot.isGCRoot(objectId));
+                            jo.setGCRoot(context.snapshot.isGCRoot(o.getObjectId()));
                             jo.setObjectType(typeOf(o));
                             jo.setHasOutbound(true);
                             return jo;
-                        }), JavaObject.sortBy(sortBy, ascendingOrder)));
+                        }), IObjectSortHelper.sortBy(sortBy, ascendingOrder)));
             } else if (result instanceof IResultTable) {
                 IResultTable table = (IResultTable) result;
                 Column[] columns = table.getColumns();
@@ -1143,6 +1143,21 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer {
         });
     }
 
+    static class IObjectSortHelper {
+
+        static Map<String, Comparator<IObject>> sortTable = new SortTableGenerator<IObject>()
+            .add("id", IObject::getObjectId)
+            .add("shallowHeap", IObject::getUsedHeapSize)
+            .add("retainedHeap", IObject::getRetainedHeapSize)
+            .add("label", IObject::getDisplayName)
+            .build();
+
+        public static Comparator<IObject> sortBy(String field, boolean ascendingOrder) {
+            return ascendingOrder ? sortTable.get(field) : sortTable.get(field).reversed();
+        }
+    }
+
+
     public OQLResult getOQLResult(String oql, String sortBy, boolean ascendingOrder, int page, int pageSize) {
         IResult result = getOQLResult(context, oql);
         return doRun(() -> {
@@ -1151,20 +1166,19 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer {
                     PageViewBuilder.build(
                         ((IResultTree) result).getElements(),
                         new PagingRequest(page, pageSize),
-                        e -> doRun(() -> {
-                            int objectId = ((IResultTree) result).getContext(e).getObjectId();
-                            IObject o = context.snapshot.getObject(objectId);
+                        e -> doRun(() -> context.snapshot.getObject(((IResultTree) result).getContext(e).getObjectId())),
+                        o -> doRun(() -> {
                             JavaObject jo = new JavaObject();
-                            jo.setObjectId(objectId);
+                            jo.setObjectId(o.getObjectId());
                             jo.setLabel(o.getDisplayName());
                             jo.setSuffix(Helper.suffix(o.getGCRootInfo()));
                             jo.setShallowSize(o.getUsedHeapSize());
                             jo.setRetainedSize(o.getRetainedHeapSize());
-                            jo.setGCRoot(context.snapshot.isGCRoot(objectId));
+                            jo.setGCRoot(context.snapshot.isGCRoot(o.getObjectId()));
                             jo.setObjectType(typeOf(o));
                             jo.setHasOutbound(true);
                             return jo;
-                        }), JavaObject.sortBy(sortBy, ascendingOrder)));
+                        }), IObjectSortHelper.sortBy(sortBy, ascendingOrder)));
             } else if (result instanceof IResultTable) {
                 IResultTable table = (IResultTable) result;
                 Column[] columns = table.getColumns();
