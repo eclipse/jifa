@@ -14,6 +14,8 @@ package org.eclipse.jifa.worker.support;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.RemovalCause;
+
 import io.vertx.core.Promise;
 import org.eclipse.jifa.common.JifaException;
 import org.eclipse.jifa.common.enums.FileType;
@@ -32,6 +34,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.ServiceLoader;
+import java.util.concurrent.TimeUnit;
 
 import static org.eclipse.jifa.common.enums.FileType.HEAP_DUMP;
 import static org.eclipse.jifa.common.util.Assertion.ASSERT;
@@ -40,6 +43,7 @@ public class Analyzer {
 
     public static final HeapDumpAnalyzer.Provider HEAP_DUMP_ANALYZER_PROVIDER;
     private static final Logger LOGGER = LoggerFactory.getLogger(Analyzer.class);
+    public static final int DURATION = 60;
 
     static {
         try {
@@ -58,7 +62,24 @@ public class Analyzer {
 
     private Analyzer() {
         listeners = new HashMap<>();
-        cache = CacheBuilder.newBuilder().build();
+        //Worker-only mode need specify eviction policy.And full cluster mode will not be affected.
+        cache = CacheBuilder.newBuilder()
+                .expireAfterAccess(DURATION, TimeUnit.MINUTES)
+                .recordStats()
+                .removalListener(notification -> {
+                    try {
+                        RemovalCause cause = notification.getCause();
+                        String fileName = (String) notification.<String> getKey();
+                        LOGGER.info("clean cache : {} cause of {}", fileName, cause);
+                        Object value = notification.getValue();
+                        if (value instanceof HeapDumpAnalyzer) {
+                            ((HeapDumpAnalyzer) value).dispose();
+                        }
+                    } catch (Exception e) {
+                        LOGGER.warn("clean cache {} failed.", notification.getKey());
+                    }
+                })
+                .build();
     }
 
     private static <T> T getOrBuild(String key, Builder<T> builder) {
@@ -186,10 +207,6 @@ public class Analyzer {
     }
 
     private synchronized void clearCacheValue(String key) {
-        Object value = cache.getIfPresent(key);
-        if (value instanceof HeapDumpAnalyzer) {
-            ((HeapDumpAnalyzer) value).dispose();
-        }
         cache.invalidate(key);
         LOGGER.info("Clear cache: {}", key);
     }

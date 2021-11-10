@@ -14,6 +14,7 @@ package org.eclipse.jifa.hda.impl;
 
 import org.eclipse.jifa.common.Constant;
 import org.eclipse.jifa.common.JifaException;
+import org.eclipse.jifa.common.cache.Cache;
 import org.eclipse.jifa.common.cache.Cacheable;
 import org.eclipse.jifa.common.request.PagingRequest;
 import org.eclipse.jifa.common.util.PageViewBuilder;
@@ -175,7 +176,13 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer {
 
     @Override
     public void dispose() {
-        $(() -> SnapshotFactory.dispose(context.snapshot));
+        $(() -> {
+                    //clear method cache
+                    Cache.getSingle().disposeAnalysisCacheByArg(context);
+                    //dipose snapshot
+                    SnapshotFactory.dispose(context.snapshot);
+                }
+        );
     }
 
     @Override

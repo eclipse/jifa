@@ -29,7 +29,7 @@ class Handler implements MethodInterceptor {
     private final List<Method> cacheableMethods;
 
     public Handler(Object target) {
-        cache = new Cache();
+        cache = Cache.getSingle();
         cacheableMethods = new ArrayList<>();
 
         try {
