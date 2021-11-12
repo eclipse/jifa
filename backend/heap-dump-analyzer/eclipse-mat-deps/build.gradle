@@ -73,7 +73,8 @@ p2AsMaven {
     }
 
     group 'mat-calcite-plugin', {
-        repo 'jar:https://github.com/vlsi/mat-calcite-plugin/releases/download/v1.5.0/MatCalciteRepository-1.5.0.zip!/'
+        repo Locale.getDefault().getCountry() == 'CN' ? 'jar:http://jifa.dragonwell-jdk.io/static/MatCalciteRepository-1.5.0.zip!/'
+                : 'jar:https://github.com/vlsi/mat-calcite-plugin/releases/download/v1.5.0/MatCalciteRepository-1.5.0.zip!/'
         iu 'MatCalcitePlugin'
         append true
         slicingOption 'includeFeatures', 'false'
