@@ -67,9 +67,9 @@ public class TestWorker {
                                          context.fail(e);
                                          return;
                                      }
-                                     done.countDown();
                                      vertx.undeploy(res.result(), res2 -> {
                                          if (res2.succeeded()) {
+                                             done.countDown();
                                              async.complete();
                                          } else {
                                              context.fail(res2.cause());
@@ -109,10 +109,10 @@ public class TestWorker {
                                          context.fail(e);
                                          return;
                                      }
-                                     done.countDown();
                                      vertx.undeploy(res.result(), res2 -> {
                                          if (res2.succeeded()) {
                                              context.assertEquals(FakeHooks.countInitTriggered(), 1);
+                                             done.countDown();
                                              async.complete();
                                          } else {
                                              context.fail(res2.cause());
