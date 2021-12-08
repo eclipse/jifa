@@ -41,6 +41,19 @@ public class WorkerGlobal {
 
     private static boolean initialized;
 
+    static synchronized void reset() {
+        if (!initialized) {
+            return;
+        }
+        VERTX = null;
+        HOST = null;
+        PORT = 0;
+        CONFIG = null;
+        HOOKS = null;
+
+        initialized = false;
+    }
+
     static synchronized void init(Vertx vertx, String host, int port, JsonObject config, JifaHooks hooks) {
         if (initialized) {
             return;

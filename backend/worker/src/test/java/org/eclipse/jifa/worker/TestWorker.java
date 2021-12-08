@@ -18,6 +18,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -28,6 +29,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 
 @RunWith(VertxUnitRunner.class)
 public class TestWorker {
@@ -45,14 +47,27 @@ public class TestWorker {
         cfg.put("server.port", findRandomPort());
         cfg.put("server.host", "127.0.0.1");
         cfg.put("api.prefix", "/jifa-api");
+        Map<String, Object> auth = new HashMap<>();
+        auth.put("enabled", false);
+        cfg.put("basicAuth", auth);
 
         Async async = context.async();
 
         Vertx vertx = Vertx.vertx();
+        CountDownLatch count = new CountDownLatch(1);
+        CountDownLatch done = new CountDownLatch(1);
+        Worker.setCount(count);
         vertx.deployVerticle(Worker.class.getName(),
                              new DeploymentOptions().setConfig(new JsonObject(cfg)).setInstances(1),
                              res -> {
                                  if (res.succeeded()) {
+                                     try {
+                                         count.await();
+                                     } catch (InterruptedException e) {
+                                         context.fail(e);
+                                         return;
+                                     }
+                                     done.countDown();
                                      vertx.undeploy(res.result(), res2 -> {
                                          if (res2.succeeded()) {
                                              async.complete();
@@ -64,6 +79,7 @@ public class TestWorker {
                                      context.fail(res.cause());
                                  }
                              });
+        done.await();
     }
 
     @Test
@@ -72,15 +88,28 @@ public class TestWorker {
         cfg.put("server.port", findRandomPort());
         cfg.put("server.host", "127.0.0.1");
         cfg.put("api.prefix", "/jifa-api");
+        Map<String, Object> auth = new HashMap<>();
+        auth.put("enabled", false);
+        cfg.put("basicAuth", auth);
         cfg.put("hooks.className", FakeHooks.class.getName());
 
         Async async = context.async();
 
         Vertx vertx = Vertx.vertx();
+        CountDownLatch count = new CountDownLatch(1);
+        CountDownLatch done = new CountDownLatch(1);
+        Worker.setCount(count);
         vertx.deployVerticle(Worker.class.getName(),
                              new DeploymentOptions().setConfig(new JsonObject(cfg)).setInstances(1),
                              res -> {
                                  if (res.succeeded()) {
+                                     try {
+                                         count.await();
+                                     } catch (InterruptedException e) {
+                                         context.fail(e);
+                                         return;
+                                     }
+                                     done.countDown();
                                      vertx.undeploy(res.result(), res2 -> {
                                          if (res2.succeeded()) {
                                              context.assertEquals(FakeHooks.countInitTriggered(), 1);
@@ -93,6 +122,12 @@ public class TestWorker {
                                      context.fail(res.cause());
                                  }
                              });
+        done.await();
+    }
+
+    @After
+    public void reset() {
+        Worker.resetCount();
     }
 
     int findRandomPort() throws IOException {
