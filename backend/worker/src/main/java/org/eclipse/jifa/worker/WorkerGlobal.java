@@ -75,7 +75,7 @@ public class WorkerGlobal {
     static String stringConfig(String... keys) {
         JsonObject o = CONFIG;
         for (int i = 0; i < keys.length - 1; i++) {
-            o = CONFIG.getJsonObject(keys[i]);
+            o = o.getJsonObject(keys[i]);
         }
 
         return o.getString(keys[keys.length - 1]);
@@ -84,7 +84,7 @@ public class WorkerGlobal {
     public static boolean booleanConfig(String... keys) {
         JsonObject o = CONFIG;
         for (int i = 0; i < keys.length - 1; i++) {
-            o = CONFIG.getJsonObject(keys[i]);
+            o = o.getJsonObject(keys[i]);
         }
         if (o == null) {
             return false;
