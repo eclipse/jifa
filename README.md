@@ -50,6 +50,10 @@ Looking forward to more users and contributors :-)
 - Slack channel: [Eclipse Jifa](https://eclipsejifa.slack.com)
 
 ## Quick start
+Prerequisites for building Jifa:
+- Install JDK 11, and make sure $JAVA_HOME is set properly
+- Install npm
+
 Jifa provides two modes of running: worker-only mode and full cluster mode. The following shows how to use the these two mode, respectively.
 
 ## 1. Worker-only mode
