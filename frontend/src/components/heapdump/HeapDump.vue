@@ -456,12 +456,12 @@
 
   .mainTabs /deep/ .el-tabs__content {
     height: 100%;
-    overflow: scroll;
+    overflow: auto;
   }
 
   .mainTabs /deep/ .el-tab-pane {
     height: 100%;
-    overflow: scroll;
+    overflow: auto;
   }
 
   .mainTabs .dynamicTab /deep/ .el-tabs__content {
@@ -471,7 +471,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    overflow: scroll;
+    overflow: auto;
   }
 
   .mainTabs .dynamicTab /deep/ .el-tab-pane {
@@ -481,6 +481,6 @@
     left: 0;
     right: 0;
     bottom: 0;
-    overflow: scroll;
+    overflow: auto;
   }
 </style>

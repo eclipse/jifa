@@ -133,7 +133,7 @@
           </el-table-column>
         </el-table>
 
-        <div v-if="item.isPathToGCRootsTab" style="height: 100%; overflow: scroll">
+        <div v-if="item.isPathToGCRootsTab" style="height: 100%; overflow: auto">
           <el-tree ref="resultContainer"
                    v-loading="item.loading"
                    :data="item.treeData"

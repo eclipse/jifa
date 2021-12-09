@@ -244,7 +244,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    overflow: scroll;
+    overflow: auto;
   }
 
   .firstTabs /deep/ .el-tab-pane {
@@ -253,7 +253,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    overflow: scroll;
+    overflow: auto;
   }
 
   .bottomTabs /deep/ .el-tabs__content {
@@ -262,7 +262,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    overflow: scroll;
+    overflow: auto;
   }
 
   .bottomTabs /deep/ .el-tab-pane {
@@ -271,6 +271,6 @@
     left: 0;
     right: 0;
     bottom: 0;
-    overflow: scroll;
+    overflow: auto;
   }
 </style>
