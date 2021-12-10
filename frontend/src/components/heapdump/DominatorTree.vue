@@ -73,71 +73,71 @@
       </v-contextmenu-item>
     </v-contextmenu>
 
-    <div v-loading="loading" style="position: absolute; top: 40px; left: 0; right: 0; bottom: 0;">
-      <el-table
-          ref='recordTable' :data="tableData"
-          :highlight-current-row="true"
-          stripe
-          :header-cell-style="headerCellStyle"
-          :cell-style='cellStyle'
-          row-key="rowKey"
-          :load="loadChildren"
-          @sort-change="sortTable"
-          height="100%"
-          :span-method="spanMethod"
-          :indent=8
-          lazy
-          fit>
-        <el-table-column prop="id" label="Class Name" show-overflow-tooltip sortable="custom">
-          <template slot-scope="scope">
-            <span v-if="scope.row.isResult"
-                  @click="scope.row.isObjType ? $emit('setSelectedObjectId', scope.row.objectId) : {}"
-                  style="cursor: pointer"
-                  @contextmenu="contextMenuTargetObjectId = scope.row.objectId; idPathInResultTree = scope.row.idPathInResultTree; contextMenuTargetObjectLabel = scope.row.label"
-                  v-contextmenu:contextmenu>
-              <img :src="scope.row.icon" style="margin-right: 5px"/>
-                {{ scope.row.label }}
-              <span style="font-weight: bold; color: #909399">
-                {{ scope.row.suffix }}
-              </span>
+    <el-table
+        ref='recordTable' :data="tableData"
+        :highlight-current-row="true"
+        stripe
+        :header-cell-style="headerCellStyle"
+        :cell-style='cellStyle'
+        row-key="rowKey"
+        :load="loadChildren"
+        @sort-change="sortTable"
+        height="100%"
+        :span-method="spanMethod"
+        :indent=8
+        lazy
+        fit
+        v-loading="loading"
+    >
+      <el-table-column prop="id" label="Class Name" show-overflow-tooltip sortable="custom">
+        <template slot-scope="scope">
+          <span v-if="scope.row.isResult"
+                @click="scope.row.isObjType ? $emit('setSelectedObjectId', scope.row.objectId) : {}"
+                style="cursor: pointer"
+                @contextmenu="contextMenuTargetObjectId = scope.row.objectId; idPathInResultTree = scope.row.idPathInResultTree; contextMenuTargetObjectLabel = scope.row.label"
+                v-contextmenu:contextmenu>
+            <img :src="scope.row.icon" style="margin-right: 5px"/>
+              {{ scope.row.label }}
+            <span style="font-weight: bold; color: #909399">
+              {{ scope.row.suffix }}
             </span>
+          </span>
 
-            <span v-if="scope.row.isSummaryItem">
-              <img :src="ICONS.misc.sumIcon" v-if="records.length >= totalSize"/>
-              <img :src="ICONS.misc.sumPlusIcon" @dblclick="fetchNextPageData" style="cursor: pointer" v-else/>
-              {{ records.length }} <strong> / </strong> {{totalSize}}
-            </span>
+          <span v-if="scope.row.isSummaryItem">
+            <img :src="ICONS.misc.sumIcon" v-if="records.length >= totalSize"/>
+            <img :src="ICONS.misc.sumPlusIcon" @dblclick="fetchNextPageData" style="cursor: pointer" v-else/>
+            {{ records.length }} <strong> / </strong> {{totalSize}}
+          </span>
 
-            <span v-if="scope.row.isChildrenSummary">
-              <img :src="ICONS.misc.sumIcon" v-if="scope.row.currentSize >= scope.row.totalSize"/>
-              <img :src="ICONS.misc.sumPlusIcon"
-                   @dblclick="fetchChildren(scope.row.parentRowKey, scope.row.objectId, scope.row.nextPage, scope.row.idPathInResultTree, scope.row.resolve)"
-                   style="cursor: pointer"
-                   v-else/>
-              {{ scope.row.currentSize }} <strong> / </strong> {{ scope.row.totalSize }}
-            </span>
-          </template>
-        </el-table-column>
-        <el-table-column/>
-        <el-table-column/>
-        <el-table-column/>
-        <el-table-column/>
-        <el-table-column/>
+          <span v-if="scope.row.isChildrenSummary">
+            <img :src="ICONS.misc.sumIcon" v-if="scope.row.currentSize >= scope.row.totalSize"/>
+            <img :src="ICONS.misc.sumPlusIcon"
+                 @dblclick="fetchChildren(scope.row.parentRowKey, scope.row.objectId, scope.row.nextPage, scope.row.idPathInResultTree, scope.row.resolve)"
+                 style="cursor: pointer"
+                 v-else/>
+            {{ scope.row.currentSize }} <strong> / </strong> {{ scope.row.totalSize }}
+          </span>
+        </template>
+      </el-table-column>
+      <el-table-column/>
+      <el-table-column/>
+      <el-table-column/>
+      <el-table-column/>
+      <el-table-column/>
 
-        <el-table-column v-if="grouping!=='NONE'" label="Objects" prop="Objects" sortable="custom">
-          <template slot-scope="scope">
-            {{ grouping !== "NONE" ? scope.row.objects : ''}}
-          </template>
-        </el-table-column>
+      <el-table-column v-if="grouping!=='NONE'" label="Objects" prop="Objects" sortable="custom">
+        <template slot-scope="scope">
+          {{ grouping !== "NONE" ? scope.row.objects : ''}}
+        </template>
+      </el-table-column>
 
-        <el-table-column label="Shallow Heap" prop="shallowHeap" sortable="custom">
-        </el-table-column>
-        <el-table-column label="Retained Heap" prop="retainedHeap" sortable="custom">
-        </el-table-column>
-        <el-table-column label="Percentage" prop="percent" sortable="custom">
-        </el-table-column>
-      </el-table>
-    </div>
+      <el-table-column label="Shallow Heap" prop="shallowHeap" sortable="custom">
+      </el-table-column>
+      <el-table-column label="Retained Heap" prop="retainedHeap" sortable="custom">
+      </el-table-column>
+      <el-table-column label="Percentage" prop="percent" sortable="custom">
+      </el-table-column>
+    </el-table>
   </div>
 </template>
 
