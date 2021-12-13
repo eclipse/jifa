@@ -28,10 +28,10 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @RunWith(VertxUnitRunner.class)
 public class TestWorker {
-
     private static Logger LOGGER = LoggerFactory.getLogger(TestWorker.class);
 
     @Before
@@ -46,24 +46,12 @@ public class TestWorker {
         cfg.put("server.host", "127.0.0.1");
         cfg.put("api.prefix", "/jifa-api");
 
-        Async async = context.async();
-
         Vertx vertx = Vertx.vertx();
         vertx.deployVerticle(Worker.class.getName(),
                              new DeploymentOptions().setConfig(new JsonObject(cfg)).setInstances(1),
-                             res -> {
-                                 if (res.succeeded()) {
-                                     vertx.undeploy(res.result(), res2 -> {
-                                         if (res2.succeeded()) {
-                                             async.complete();
-                                         } else {
-                                             context.fail(res2.cause());
-                                         }
-                                     });
-                                 } else {
-                                     context.fail(res.cause());
-                                 }
-                             });
+                             context.asyncAssertSuccess(deployId -> {
+                                 vertx.undeploy(deployId, context.asyncAssertSuccess());
+                             }));
     }
 
     @Test
@@ -79,20 +67,14 @@ public class TestWorker {
         Vertx vertx = Vertx.vertx();
         vertx.deployVerticle(Worker.class.getName(),
                              new DeploymentOptions().setConfig(new JsonObject(cfg)).setInstances(1),
-                             res -> {
-                                 if (res.succeeded()) {
-                                     vertx.undeploy(res.result(), res2 -> {
-                                         if (res2.succeeded()) {
-                                             context.assertEquals(FakeHooks.countInitTriggered(), 1);
-                                             async.complete();
-                                         } else {
-                                             context.fail(res2.cause());
-                                         }
-                                     });
-                                 } else {
-                                     context.fail(res.cause());
-                                 }
-                             });
+                             context.asyncAssertSuccess(deployId -> {
+                                 vertx.undeploy(deployId, context.asyncAssertSuccess(res -> {
+                                     context.assertEquals(1, FakeHooks.countInitTriggered());
+                                     async.complete();
+                                 }));
+                             }));
+
+        async.awaitSuccess(TimeUnit.SECONDS.toMillis(30));
     }
 
     int findRandomPort() throws IOException {
