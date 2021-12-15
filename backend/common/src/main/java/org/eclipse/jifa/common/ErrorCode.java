@@ -69,6 +69,8 @@ public enum ErrorCode {
 
     FILE_IS_BEING_DELETING,
 
+    FILE_TOO_BIG,
+
     RELEASE_PENDING_JOB;
 
     public boolean isFatal() {

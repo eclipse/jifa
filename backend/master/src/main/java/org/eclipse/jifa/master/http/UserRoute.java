@@ -18,6 +18,7 @@ import io.vertx.ext.auth.JWTOptions;
 import io.vertx.ext.auth.PubSecKeyOptions;
 import io.vertx.ext.auth.jwt.JWTAuthOptions;
 import io.vertx.reactivex.core.Vertx;
+import io.vertx.reactivex.core.http.Cookie;
 import io.vertx.reactivex.ext.auth.jwt.JWTAuth;
 import io.vertx.reactivex.ext.web.Router;
 import io.vertx.reactivex.ext.web.RoutingContext;
@@ -44,13 +45,24 @@ class UserRoute implements Constant {
         jwtAuth = JWTAuth.create(vertx, new JWTAuthOptions().addPubSecKey(pubSecKeyOptions));
         jwtOptions = new JWTOptions();
         jwtOptions.setSubject(JWT_SUBJECT).setIssuer(JWT_ISSUER).setExpiresInMinutes(JWT_EXPIRES_IN_MINUTES);
+
+        apiRouter.routeWithRegex("^(?!" + AUTH +"$).*").handler(this::authWithCookie);
+
         apiRouter.routeWithRegex("^(?!" + AUTH +"$).*").handler(JWTAuthHandler.create(jwtAuth));
 
         apiRouter.post().path(AUTH).handler(this::auth);
 
-        apiRouter.route().handler(this::extractUserInfo);
+        apiRouter.route().handler(this::extractInfo);
 
         apiRouter.get().path(USER_INFO).handler(this::userInfo);
+    }
+
+    private void authWithCookie(RoutingContext context) {
+        Cookie authCookie = context.request().getCookie(COOKIE_AUTHORIZATION);
+        if (!context.request().headers().contains(HEADER_AUTHORIZATION) && authCookie != null) {
+            context.request().headers().add(HEADER_AUTHORIZATION, HEADER_AUTHORIZATION_PREFIX + authCookie.getValue());
+        }
+        context.next();
     }
 
     private void auth(RoutingContext context) {
@@ -76,6 +88,25 @@ class UserRoute implements Constant {
         User user = new User(principal.getString(USER_ID_KEY), principal.getString(USER_NAME_KEY),
                              principal.getBoolean(USER_IS_ADMIN_KEY));
         context.put(USER_INFO_KEY, user);
+    }
+
+    private void saveAuthorizationCookie(RoutingContext context) {
+        Cookie authCookie = context.getCookie(COOKIE_AUTHORIZATION);
+        String authHeader = context.request().getHeader(HEADER_AUTHORIZATION);
+
+        if (authHeader != null && authHeader.startsWith(HEADER_AUTHORIZATION_PREFIX)) {
+            // cookie can not have ' ', so we save substring here
+            authHeader = authHeader.substring(HEADER_AUTHORIZATION_PREFIX.length());
+            if (authCookie == null || !authHeader.equals(authCookie.getValue())) {
+                Cookie cookie = Cookie.cookie(COOKIE_AUTHORIZATION, authHeader);
+                context.addCookie(cookie);
+            }
+        }
+    }
+
+    private void extractInfo(RoutingContext context) {
+        saveAuthorizationCookie(context);
+        extractUserInfo(context);
         context.next();
     }
 

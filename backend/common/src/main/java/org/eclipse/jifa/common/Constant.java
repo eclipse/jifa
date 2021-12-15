@@ -14,7 +14,14 @@ package org.eclipse.jifa.common;
 
 public interface Constant {
     String HEADER_CONTENT_TYPE_KEY = "Content-Type";
+    String HEADER_CONTENT_LENGTH_KEY = "Content-Length";
+    String HEADER_CONTENT_DISPOSITION = "Content-Disposition";
+    String HEADER_AUTHORIZATION = "authorization";
     String CONTENT_TYPE_JSON_FORM = "application/json; charset=UTF-8";
+    String CONTENT_TYPE_FILE_FORM = "application/octet-stream";
+
+    String COOKIE_AUTHORIZATION = "grace-authorization";
+    String HEADER_AUTHORIZATION_PREFIX = "Bearer ";
 
     int HTTP_GET_OK_STATUS_CODE = 200;
     int HTTP_POST_CREATED_STATUS_CODE = 201;

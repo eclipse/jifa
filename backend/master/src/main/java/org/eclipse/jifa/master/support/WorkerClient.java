@@ -96,6 +96,13 @@ public class WorkerClient {
         return request.basicAuthentication(USERNAME, PASSWORD).rxSend();
     }
 
+    public static Single<HttpResponse<Buffer>> send(HttpRequest<Buffer> request, MultiMap params) {
+        if (params != null) {
+            request.queryParams().addAll(params);
+        }
+        return request.basicAuthentication(USERNAME, PASSWORD).rxSend();
+    }
+
     private static HttpRequest<Buffer> request(HttpMethod method, String hostIP, int port, String uri) {
         if (method == HttpMethod.GET) {
             return client.get(port, hostIP, uri);
@@ -106,5 +113,10 @@ public class WorkerClient {
         LOGGER.error("Unsupported worker http request method {}", method);
         throw new IllegalArgumentException();
     }
+
+    public static HttpRequest<Buffer> request(HttpMethod method, String hostIP, String uri) {
+        return request(method, hostIP, PORT, uri);
+    }
+
 }
 

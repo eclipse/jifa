@@ -51,7 +51,7 @@ exports.default = {
     progress: 'Progress',
     analyze: 'analyze',
     reanalyze: 'Reanalyze',
-    release: 'Release',
+    download: 'Download File',
     edit: 'edit',
     delete: 'Delete',
     loading: 'Loading',
@@ -60,6 +60,7 @@ exports.default = {
     deleteSuccessPrompt: 'Delete success!',
     deleteFailedPrompt: 'Delete failed!',
     deleteCanceled: 'Delete operation is canceled',
+    downloadBegin: 'Downloading has began. Please wait',
     returnValue: 'Are you sure to leave?',
     gotoParseFile: 'Will go to parse file',
 
@@ -86,6 +87,7 @@ exports.default = {
       uploadToOSS: 'Upload file to OSS',
       setShare: 'Set file as shared',
       deleteFile: 'Delete file permanently',
+      downloadFile: 'Download file. Max supported size is 512MB',
     },
 
     heap: {

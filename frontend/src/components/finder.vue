@@ -57,8 +57,7 @@
                   </p>
                 </el-col>
 
-                <el-col :span="8" align="right">
-
+                <el-col :span="11" align="right" class="icons-col">
                   <el-tooltip class="item" effect="light" :content="$t('jifa.tip.copyName')" placement="top-start">
                     <span>
                       <el-link icon="el-icon-document-copy" v-clipboard:copy="file(row, col).name"
@@ -84,14 +83,18 @@
                     </span>
                   </el-tooltip>
 
-
-                  <span v-if="downloadable(file(row,col))">
-                    <el-divider direction="vertical"></el-divider>
-                    <el-link icon="el-icon-download" :underline="false"
-                             :href="service('/file/download/' + currentMenuItem + '/' + file(row, col).name)"
-                             target="_blank"/>
-                  </span>
-
+                  <el-tooltip class="item" effect="light" :content="$t('jifa.tip.downloadFile')" placement="top-start"
+                              v-if="transferIsSuccess(file(row,col))">
+                    <span>
+                      <el-divider direction="vertical"></el-divider>
+                      <el-link icon="el-icon-download" :underline="false"
+                               :disabled="fileTooBigToDownload(file(row, col))"
+                               target="_blank"
+                               download
+                               :href="`/jifa-api/file/download?name=${file(row,col).name}&type=${currentMenuItem}`"
+                      />
+                    </span>
+                  </el-tooltip>
 
                   <el-tooltip class="item" effect="light" :content="$t('jifa.tip.deleteFile')" placement="top-start">
                     <span v-if="canDelete(file(row,col))">
@@ -254,8 +257,9 @@
         })
       },
 
-      downloadable(file) {
-        return file.downloadble && this.transferIsSuccess(file)
+      fileTooBigToDownload(file) {
+        // don't restrict size in worker only mode
+        return file.size > 512 * 1024 * 1024 && !this.$jifa.workerOnly
       },
 
       transferIsSuccess(file) {
@@ -357,3 +361,11 @@
     }
   }
 </script>
+
+<style scoped>
+
+.icons-col .el-divider {
+  margin-left: 4px;
+  margin-right: 4px;
+}
+</style>
