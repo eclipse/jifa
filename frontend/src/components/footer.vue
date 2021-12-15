@@ -11,6 +11,7 @@
     SPDX-License-Identifier: EPL-2.0
  -->
 <template>
+  <div hidden/>
 </template>
 
 <script>
