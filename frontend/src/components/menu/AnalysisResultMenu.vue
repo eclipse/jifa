@@ -20,6 +20,12 @@
       <i class="el-icon-s-release" style="margin-right: 3px"/> {{$t("jifa.release")}}
     </b-nav-item>
 
+    <b-nav-item :href="`/jifa-api/file/download?name=${file}&type=${type}`"
+                download
+                v-if="$jifa.fileManagement && showDownloadOpt">
+      <i class="el-icon-download" style="margin-right: 3px"/> {{$t("jifa.download")}}
+    </b-nav-item>
+
     <b-nav-item-dropdown right v-if="analysisState === 'SUCCESS' && type === 'HEAP_DUMP'">
       <template v-slot:button-content>
         <i class="el-icon-setting" style="margin-right: 3px"/> {{$t("jifa.setting")}}
@@ -53,6 +59,7 @@
     data(){
       return {
         showUnlockOpt: false,
+        showDownloadOpt: false,
       }
     },
 
@@ -126,6 +133,7 @@
     mounted() {
       // workerOnly mode does not need this
       if (this.$jifa.workerOnly) {
+        this.showDownloadOpt = true;
         return;
       }
 
@@ -136,8 +144,12 @@
       }).then(resp => {
         let data = resp.data;
 
+        // File too big to download?
+        const showDownloadOpt = data.size <= 512 * 1024 * 1024
+
         // Already shared?
         if (data.shared) {
+          this.showDownloadOpt = showDownloadOpt;
           return;
         }
 
@@ -155,6 +167,7 @@
 
           // Finally...
           this.showUnlockOpt = true;
+          this.showDownloadOpt = showDownloadOpt;
         });
       })
     }

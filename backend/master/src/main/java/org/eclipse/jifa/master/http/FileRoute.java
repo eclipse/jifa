@@ -16,9 +16,12 @@ import io.reactivex.Single;
 import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.core.MultiMap;
 import io.vertx.reactivex.core.Vertx;
+import io.vertx.reactivex.core.buffer.Buffer;
 import io.vertx.reactivex.core.http.HttpServerRequest;
 import io.vertx.reactivex.ext.web.Router;
 import io.vertx.reactivex.ext.web.RoutingContext;
+import io.vertx.reactivex.ext.web.client.HttpRequest;
+import io.vertx.reactivex.ext.web.codec.BodyCodec;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jifa.common.ErrorCode;
 import org.eclipse.jifa.common.JifaException;
@@ -111,6 +114,8 @@ class FileRoute extends BaseRoute implements Constant {
 
         apiRouter.post().path(UPLOAD_TO_OSS).handler(this::uploadToOSS);
         apiRouter.get().path(UPLOAD_TO_OSS_PROGRESS).handler(this::uploadToOSSProgress);
+
+        apiRouter.get().path(DOWNLOAD).handler(this::download);
     }
 
     private void files(RoutingContext context) {
@@ -312,5 +317,26 @@ class FileRoute extends BaseRoute implements Constant {
             progress.setTransferredSize(file.getSize());
         }
         return progress;
+    }
+
+    private void download(RoutingContext context) {
+        String name = context.request().getParam("name");
+        User user = context.get(USER_INFO_KEY);
+        fileService.rxFile(name)
+                .doOnSuccess(file -> ASSERT.isTrue(file.found(), ErrorCode.FILE_DOES_NOT_EXIST))
+                .doOnSuccess(file -> checkPermission(user, file))
+                .doOnSuccess(file -> ASSERT.isTrue(file.getSize() < MAX_SIZE_FOR_DOWNLOAD, ErrorCode.FILE_TOO_BIG))
+                .flatMap(file -> {
+                    context.response()
+                            .putHeader(HEADER_CONTENT_LENGTH_KEY, String.valueOf(file.getSize()))
+                            .putHeader(HEADER_CONTENT_DISPOSITION, "attachment;filename=" + file.getName())
+                            .putHeader(HEADER_CONTENT_TYPE_KEY, CONTENT_TYPE_FILE_FORM);
+                    HttpRequest<Buffer> workerRequest = WorkerClient.request(context.request().method(), file.getHostIP(), context.request().uri());
+                    workerRequest.as(BodyCodec.pipe(context.response()));
+                    return WorkerClient.send(workerRequest, null);
+                })
+                .subscribe(resp -> context.response().end(),
+                        t -> HTTPRespGuarder.fail(context, t));
+
     }
 }

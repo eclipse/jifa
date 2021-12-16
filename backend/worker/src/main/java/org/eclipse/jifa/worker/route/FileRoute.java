@@ -42,7 +42,7 @@ import java.net.URL;
 import java.util.List;
 import java.util.Set;
 
-import static org.eclipse.jifa.common.Constant.EMPTY_STRING;
+import static org.eclipse.jifa.common.Constant.*;
 import static org.eclipse.jifa.common.util.Assertion.ASSERT;
 
 class FileRoute extends BaseRoute {
@@ -237,11 +237,12 @@ class FileRoute extends BaseRoute {
         HTTPRespGuarder.ok(context);
     }
 
-    @RouteMeta(path = "/file/download/:fileType/:filename", contentType = {} /* keep content-type empty */)
-    void download(RoutingContext context, @ParamKey("fileType") FileType fileType, @ParamKey("filename") String name) {
+    @RouteMeta(path = "/file/download", contentType = {CONTENT_TYPE_FILE_FORM})
+    void download(RoutingContext context, @ParamKey("type") FileType fileType, @ParamKey("name") String name) {
         File file = new File(FileSupport.filePath(fileType, name));
         ASSERT.isTrue(file.exists(), "File doesn't exist!");
         HttpServerResponse response = context.response();
+        response.putHeader(HEADER_CONTENT_DISPOSITION, "attachment;filename=" + file.getName());
         response.sendFile(file.getAbsolutePath(), event -> {
             if (!response.ended()) {
                 response.end();

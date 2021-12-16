@@ -73,6 +73,7 @@ public interface Constant extends org.eclipse.jifa.common.Constant {
     String UPLOAD_TO_OSS = "/file/uploadToOSS";
     String UPLOAD_TO_OSS_PROGRESS = "/file/uploadToOSSProgress";
 
+    String DOWNLOAD = "/file/download";
     /**
      * JOB URL
      */
@@ -103,6 +104,8 @@ public interface Constant extends org.eclipse.jifa.common.Constant {
     String PASSWORD = "password";
     String PORT = "port";
     String SYSTEM_DISK_USAGE = "/system/diskUsage";
+
+    long MAX_SIZE_FOR_DOWNLOAD = 512 * 1024 * 1024; // 512MB
 
     /**
      * DEV

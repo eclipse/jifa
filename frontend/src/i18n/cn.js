@@ -52,6 +52,7 @@ exports.default = {
     analyze: '分析',
     reanalyze: '重新分析',
     release: '释放',
+    download: '下载原文件',
     edit: '编辑',
     delete: '删除',
     loading: '加载中',
@@ -60,6 +61,7 @@ exports.default = {
     deleteSuccessPrompt: '删除成功！',
     deleteFailedPrompt: '删除失败！',
     deleteCanceled: '已取消删除',
+    downloadBegin: '文件开始下载，请耐心等待',
     returnValue: '确定离开吗?',
     gotoParseFile: '即将解析文件',
 
@@ -84,6 +86,7 @@ exports.default = {
       uploadToOSS: '上传文件到OSS',
       setShare: '设置文件共享',
       deleteFile: '删除文件',
+      downloadFile: '本地下载文件，最大支持512MB',
     },
 
     heap: {
