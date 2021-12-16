@@ -12,7 +12,6 @@
  ********************************************************************************/
 package org.eclipse.jifa.master.http;
 
-import com.alibaba.fastjson.JSON;
 import io.reactivex.Single;
 import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.core.MultiMap;
@@ -52,6 +51,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.eclipse.jifa.common.util.Assertion.ASSERT;
+import static org.eclipse.jifa.common.util.GsonHolder.GSON;
 
 class FileRoute extends BaseRoute implements Constant {
 
@@ -201,7 +201,7 @@ class FileRoute extends BaseRoute implements Constant {
                 WorkerClient.send(context.request(), job.getHostIP())
                             .doOnSuccess(resp -> ASSERT.isTrue(HTTP_GET_OK_STATUS_CODE == resp.statusCode(),
                                                                resp::bodyAsString))
-                            .map(resp -> JSON.parseObject(resp.bodyAsString(), TransferProgress.class));
+                            .map(resp -> GSON.fromJson(resp.bodyAsString(), TransferProgress.class));
 
             return progressSingle.flatMap(progress -> {
                 ProgressState state = progress.getState();

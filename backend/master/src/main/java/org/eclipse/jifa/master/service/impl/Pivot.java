@@ -12,9 +12,6 @@
  ********************************************************************************/
 package org.eclipse.jifa.master.service.impl;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
@@ -55,6 +52,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static org.eclipse.jifa.common.util.GsonHolder.GSON;
 import static org.eclipse.jifa.master.Constant.LOCAL_HOST;
 import static org.eclipse.jifa.master.Constant.uri;
 import static org.eclipse.jifa.master.service.ServiceAssertion.SERVICE_ASSERT;
@@ -206,7 +204,7 @@ public class Pivot {
             return Completable.complete();
         }
 
-        TransferProgress progress = JSON.parseObject(resp.bodyAsString(), TransferProgress.class);
+        TransferProgress progress = GSON.fromJson(resp.bodyAsString(), TransferProgress.class);
         ProgressState state = progress.getState();
         if (state.isFinal()) {
             return transferDone(name, FileTransferState.fromProgressState(state), progress.getTotalSize());
@@ -243,15 +241,17 @@ public class Pivot {
     }
 
     private HashMap<String, String> buildParams(File... files) {
-        JSONArray ja = new JSONArray();
-        for (File file : files) {
-            JSONObject jo = new JSONObject();
-            jo.put("name", file.getName());
-            jo.put("type", file.getType().name());
-            ja.add(jo);
+        @SuppressWarnings("rawtypes")
+        Map[] maps = new Map[files.length];
+        for (int i = 0; i < files.length; i++) {
+            Map<String, String> map= new HashMap<>();
+            map.put("name", files[i].getName());
+            map.put("type", files[i].getType().name());
+            maps[i] = map;
         }
+
         return new HashMap<String, String>(1) {{
-            put("files", ja.toJSONString());
+            put("files", GSON.toJson(maps));
         }};
     }
 

@@ -12,7 +12,6 @@
  ********************************************************************************/
 package org.eclipse.jifa.master.http;
 
-import com.alibaba.fastjson.JSON;
 import com.google.common.base.Strings;
 import org.eclipse.jifa.common.ErrorCode;
 import org.eclipse.jifa.master.Constant;
@@ -23,6 +22,7 @@ import org.eclipse.jifa.master.model.User;
 import org.eclipse.jifa.master.vo.PendingJob;
 
 import static org.eclipse.jifa.common.util.Assertion.ASSERT;
+import static org.eclipse.jifa.common.util.GsonHolder.GSON;
 
 class BaseRoute implements Constant {
 
@@ -52,7 +52,7 @@ class BaseRoute implements Constant {
 
     void assertJobInProgress(Job job) {
         ASSERT.isTrue(job.getState() != JobState.PENDING, ErrorCode.PENDING_JOB,
-                      () -> JSON.toJSONString(new PendingJob(job)))
+                      () -> GSON.toJson(new PendingJob(job)))
               .isTrue(job.getState() == JobState.IN_PROGRESS, ErrorCode.SANITY_CHECK);
     }
 
