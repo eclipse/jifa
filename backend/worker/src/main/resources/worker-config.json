@@ -7,7 +7,7 @@
     "password": "IamMaster"
   },
   "cacheConfig": {
-    "expireAfterAccess": 2,
-    "expireAfterAccessTimeUnit": "HOURS"
+    "expireAfterAccess": 10,
+    "expireAfterAccessTimeUnit": "MINUTES"
   }
 }

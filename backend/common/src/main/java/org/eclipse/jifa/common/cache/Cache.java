@@ -31,7 +31,7 @@ class Cache {
                 .newBuilder()
                 .softValues()
                 .recordStats()
-                .expireAfterWrite(2, TimeUnit.HOURS)
+                .expireAfterAccess(10, TimeUnit.MINUTES)
                 .build();
     }
 
