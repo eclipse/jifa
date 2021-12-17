@@ -44,4 +44,10 @@ public interface Constant extends org.eclipse.jifa.common.Constant {
         String HOOKS_NAME_KEY = "hooks.className";
         String SERVER_UPLOAD_DIR_KEY = "server.uploadDir";
     }
+
+    interface CacheConfig {
+        String CACHE_CONFIG = "cacheConfig";
+        String EXPIRE_AFTER_ACCESS = "expireAfterAccess";
+        String EXPIRE_AFTER_ACCESS_TIME_UNIT = "expireAfterAccessTimeUnit";
+    }
 }

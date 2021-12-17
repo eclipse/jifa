@@ -72,13 +72,22 @@ public class WorkerGlobal {
         return CONFIG.getString(key);
     }
 
-    static String stringConfig(String... keys) {
+    public static String stringConfig(String... keys) {
         JsonObject o = CONFIG;
         for (int i = 0; i < keys.length - 1; i++) {
             o = o.getJsonObject(keys[i]);
         }
 
         return o.getString(keys[keys.length - 1]);
+    }
+
+    public static int intConfig(String... keys) {
+        JsonObject o = CONFIG;
+        for (int i = 0; i < keys.length - 1; i++) {
+            o = CONFIG.getJsonObject(keys[i]);
+        }
+
+        return o.getInteger(keys[keys.length - 1]);
     }
 
     public static boolean booleanConfig(String... keys) {

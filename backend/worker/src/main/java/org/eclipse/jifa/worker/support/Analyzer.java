@@ -23,7 +23,9 @@ import org.eclipse.jifa.common.util.FileUtil;
 import org.eclipse.jifa.hda.api.DefaultProgressListener;
 import org.eclipse.jifa.hda.api.HeapDumpAnalyzer;
 import org.eclipse.jifa.hda.api.ProgressListener;
+import org.eclipse.jifa.worker.Constant;
 import org.eclipse.jifa.worker.Worker;
+import org.eclipse.jifa.worker.WorkerGlobal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,9 +34,11 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.ServiceLoader;
+import java.util.concurrent.TimeUnit;
 
 import static org.eclipse.jifa.common.enums.FileType.HEAP_DUMP;
 import static org.eclipse.jifa.common.util.Assertion.ASSERT;
+import static org.eclipse.jifa.worker.Constant.CacheConfig.*;
 
 public class Analyzer {
 
@@ -58,7 +62,15 @@ public class Analyzer {
 
     private Analyzer() {
         listeners = new HashMap<>();
-        cache = CacheBuilder.newBuilder().build();
+        cache = CacheBuilder
+                .newBuilder()
+                .softValues()
+                .recordStats()
+                .expireAfterWrite(
+                        WorkerGlobal.intConfig(CACHE_CONFIG, EXPIRE_AFTER_ACCESS),
+                        TimeUnit.valueOf(WorkerGlobal.stringConfig(CACHE_CONFIG, EXPIRE_AFTER_ACCESS_TIME_UNIT))
+                )
+                .build();
     }
 
     private static <T> T getOrBuild(String key, Builder<T> builder) {
