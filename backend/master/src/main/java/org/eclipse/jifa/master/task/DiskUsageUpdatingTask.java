@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.eclipse.jifa.common.util.Assertion.ASSERT;
+import static org.eclipse.jifa.common.util.GsonHolder.GSON;
 import static org.eclipse.jifa.master.Constant.uri;
 import static org.eclipse.jifa.master.service.impl.helper.SQLHelper.ja;
 
@@ -53,15 +54,10 @@ public class DiskUsageUpdatingTask extends BaseTask {
             workerList -> Observable.fromIterable(workerList)
                                     .flatMapSingle(
                                         worker -> WorkerClient.get(worker.getHostIP(), uri(Constant.SYSTEM_DISK_USAGE))
-                                                              .doOnSuccess(resp -> ASSERT
-                                                                  .isTrue(resp.bodyAsJson(DiskUsage.class) != null))
-                                                              .map(resp -> resp.bodyAsJson(DiskUsage.class))
-                                                              .flatMap(
-                                                                  usage -> updateWorkerDiskUsage(worker.getHostIP(),
-                                                                                                 usage
-                                                                                                     .getTotalSpaceInMb(),
-                                                                                                 usage
-                                                                                                     .getUsedSpaceInMb()))
+                                                              .map(resp -> GSON.fromJson(resp.bodyAsString(), DiskUsage.class))
+                                                              .flatMap(usage -> updateWorkerDiskUsage(worker.getHostIP(),
+                                                                                                      usage.getTotalSpaceInMb(),
+                                                                                                      usage.getUsedSpaceInMb()))
                                     )
         ).ignoreElements().subscribe(this::end, t -> {
             LOGGER.error("Execute {} error", name(), t);
