@@ -51,6 +51,7 @@ exports.default = {
     progress: 'Progress',
     analyze: 'analyze',
     reanalyze: 'Reanalyze',
+    release: 'release',
     download: 'Download File',
     edit: 'edit',
     delete: 'Delete',
