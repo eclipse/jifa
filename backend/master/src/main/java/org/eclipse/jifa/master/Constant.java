@@ -62,6 +62,7 @@ public interface Constant extends org.eclipse.jifa.common.Constant {
     String FILE_SET_SHARED = "/file/setShared";
     String FILE_UNSET_SHARED = "/file/unsetShared";
     String FILE_DELETE = "/file/delete";
+    String FILE_BATCH_DELETE = "/file/batchDelete";
     String FILE_SYNC = "/file/sync";
     String TRANSFER_BY_URL = "/file/transferByURL";
     String TRANSFER_BY_SCP = "/file/transferBySCP";

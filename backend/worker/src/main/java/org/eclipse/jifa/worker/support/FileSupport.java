@@ -217,6 +217,16 @@ public class FileSupport {
         }
     }
 
+    public static void delete(FileInfo[] fileInfos) {
+        for (FileInfo fileInfo : fileInfos) {
+            try {
+                delete(fileInfo.getType(), fileInfo.getName());
+            } catch (Throwable t) {
+                LOGGER.error("Delete file failed", t);
+            }
+        }
+    }
+
     public static void updateTransferState(FileType type, String name, FileTransferState state) {
         FileInfo info = info(type, name);
         info.setTransferState(state);

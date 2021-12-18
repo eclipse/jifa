@@ -250,7 +250,8 @@ public class Pivot {
             maps[i] = map;
         }
 
-        return new HashMap<String, String>(1) {{
+        LOGGER.info("files : {}", GSON.toJson(maps));
+        return new HashMap<>(1) {{
             put("files", GSON.toJson(maps));
         }};
     }
@@ -272,7 +273,7 @@ public class Pivot {
                                                    .ignoreElements()
                                                    .andThen(
                                                        deleteFileRecords(conn, deleter, files.toArray(new File[0])))
-                                                   .andThen(post(hostIP, uri(Constant.FILE_DELETE),
+                                                   .andThen(post(hostIP, uri(Constant.FILE_BATCH_DELETE),
                                                                  buildParams(files.toArray(new File[0]))))
                                                    .doOnSuccess(resp -> SERVICE_ASSERT
                                                        .isTrue(resp.statusCode() == Constant.HTTP_POST_CREATED_STATUS,

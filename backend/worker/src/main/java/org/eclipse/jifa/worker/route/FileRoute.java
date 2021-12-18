@@ -44,6 +44,7 @@ import java.util.Set;
 
 import static org.eclipse.jifa.common.Constant.*;
 import static org.eclipse.jifa.common.util.Assertion.ASSERT;
+import static org.eclipse.jifa.common.util.GsonHolder.GSON;
 
 class FileRoute extends BaseRoute {
 
@@ -254,5 +255,12 @@ class FileRoute extends BaseRoute {
     void getOrGenInfo(Promise<FileInfo> promise, @ParamKey("fileType") FileType fileType,
                       @ParamKey("filename") String name) {
         promise.complete(FileSupport.getOrGenInfo(fileType, name));
+    }
+
+    @RouteMeta(path = "/file/batchDelete", method = HttpMethod.POST)
+    void batchDelete(Promise<Void> promise, @ParamKey("files") String files) {
+        promise.complete();
+        FileInfo[] fileInfos = GSON.fromJson(files, FileInfo[].class);
+        FileSupport.delete(fileInfos);
     }
 }
