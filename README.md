@@ -71,27 +71,13 @@ $ ./run_worker.sh
 The other mode is to start the entire Jifa, which includes worker and master. 
 This mode needs to set up the database in advance. 
 
-Here we have prepared an example to demonstrate how to get started. First, configure the database:
+Here we have prepared an example to demonstrate how to get started.
 ```bash
+$ ./gradlew buildJifa -x test # build Jifa and skit test
 $ cd demo
 $ docker-compose build
-$ docker-compose up # start mysql server
+$ docker-compose up
 ```
-Then build the Jifa:
-``` bash
-$ ./gradlew clean buildJifa
-```
-Artifacts can be found in the `./deploy` directory. 
-In production mode, we could use `nginx` as a static front-end resource server, 
-and then start multiple workers and at least one master.
-
-For the sake of simplicity, we demonstrate how to start them in development mode:
-
-+ `Frontend`: `cd frontend && npm run serve`
-+ `Master node` : `./gradlew :backend:master:run`
-+ `Worker node` : `./gradlew :backend:worker:run` 
-
-This would work for further developing and testing. 
 
 # Documents
 + 1. [Jifa Customization](CUSTOMIZATION.md)

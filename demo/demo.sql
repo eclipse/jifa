@@ -157,7 +157,7 @@ CREATE TABLE `worker` (
 
 INSERT INTO `global_lock` (`id`,`name`,`last_modified_time`,`creation_time`) VALUES (1,'MASTER-JOB-LOCK','2019-07-18 14:46:21','2019-07-18 14:46:21');
 
-INSERT INTO `worker` (`id`,`host_ip`,`host_name`,`current_load`,`cpu_count`,`memory_used`,`memory_total`,`disk_used`,`disk_total`,`last_modified_time`,`creation_time`,`max_load`) VALUES (2,'127.0.0.1','localhost',95,8,0,100,23,239072,'2020-10-26 13:23:43','2019-06-20 10:47:25',98765);
+INSERT INTO `worker` (`id`,`host_ip`,`host_name`,`current_load`,`cpu_count`,`memory_used`,`memory_total`,`disk_used`,`disk_total`,`last_modified_time`,`creation_time`,`max_load`) VALUES (2,'worker','worker',95,8,0,100,23,239072,'2020-10-26 13:23:43','2019-06-20 10:47:25',98765);
 
 INSERT INTO `master` (`id`,`host_ip`,`host_name`,`last_modified_time`,`creation_time`,`leader`) VALUES (1,'localhost','DEV','2020-10-26 13:21:22','2019-07-18 11:55:38',1);
 
