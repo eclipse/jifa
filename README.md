@@ -79,6 +79,13 @@ $ docker-compose build
 $ docker-compose up
 ```
 
+## How to run from the relase
+```
+unzip jifa-0.1.zip
+cd jifa-0.1
+./bin/worker
+```
+
 # Documents
 + 1. [Jifa Customization](CUSTOMIZATION.md)
 + 2. [Contribution Guide](CONTRIBUTING.md)
