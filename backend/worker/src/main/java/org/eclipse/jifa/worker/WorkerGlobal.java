@@ -84,7 +84,7 @@ public class WorkerGlobal {
     public static int intConfig(String... keys) {
         JsonObject o = CONFIG;
         for (int i = 0; i < keys.length - 1; i++) {
-            o = CONFIG.getJsonObject(keys[i]);
+            o = o.getJsonObject(keys[i]);
         }
 
         return o.getInteger(keys[keys.length - 1]);
