@@ -67,6 +67,12 @@ $ cd demo
 $ ./run_worker.sh
 ```
 
+We also prepared a docker image for this mode, so you don't need to clone the repository.
+```bash
+$ docker pull jifadocker/jifa-worker:demo
+$ docker run -p 8102:8102 jifadocker/jifa-worker:demo
+```
+
 ## 2. Full cluster mode
 The other mode is to start the entire Jifa, which includes worker and master. 
 This mode needs to set up the database in advance. 
