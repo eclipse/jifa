@@ -31,11 +31,17 @@ services:
       - MYSQL_DATABASE=jifa
       - MYSQL_USER=admin
       - MYSQL_PASSWORD=123456
+    healthcheck:
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      interval: 10S
+      timeout: 10s
+      retries: 10
 
   master:
     image: openjdk:11
     depends_on:
-      - database
+      database:
+        condition: service_healthy
     command: /bin/bash -c "cd /jifa/deploy && rm -rf master-1.0 && unzip master-1.0.zip && cd master-1.0 && ./bin/master"
     ports:
       - "9102:9102"
@@ -51,7 +57,7 @@ services:
     depends_on:
       - master
     ports:
-      - 8089:8089
+      - "8089:8089"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
       - ../frontend/build:/jifa-static
