@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2021 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -43,5 +43,11 @@ public interface Constant extends org.eclipse.jifa.common.Constant {
         String PASSWORD = "password";
         String HOOKS_NAME_KEY = "hooks.className";
         String SERVER_UPLOAD_DIR_KEY = "server.uploadDir";
+    }
+
+    interface CacheConfig {
+        String CACHE_CONFIG = "cacheConfig";
+        String EXPIRE_AFTER_ACCESS = "expireAfterAccess";
+        String EXPIRE_AFTER_ACCESS_TIME_UNIT = "expireAfterAccessTimeUnit";
     }
 }

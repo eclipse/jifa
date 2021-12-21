@@ -5,5 +5,9 @@
     "enabled": true,
     "username": "jifa",
     "password": "IamMaster"
+  },
+  "cacheConfig": {
+    "expireAfterAccess": 10,
+    "expireAfterAccessTimeUnit": "MINUTES"
   }
 }

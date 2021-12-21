@@ -20,13 +20,19 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 class Cache {
 
     private final com.google.common.cache.Cache<CacheKey, Object> cache;
 
     public Cache() {
-        cache = CacheBuilder.newBuilder().build();
+        cache = CacheBuilder
+                .newBuilder()
+                .softValues()
+                .recordStats()
+                .expireAfterAccess(10, TimeUnit.MINUTES)
+                .build();
     }
 
     @SuppressWarnings("unchecked")
