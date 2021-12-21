@@ -33,7 +33,7 @@ services:
       - MYSQL_PASSWORD=123456
     healthcheck:
       test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
-      interval: 10S
+      interval: 10s
       timeout: 10s
       retries: 10
 
