@@ -73,6 +73,8 @@ $ docker pull jifadocker/jifa-worker:demo
 $ docker run -p 8102:8102 jifadocker/jifa-worker:demo
 ```
 
+Then visit http://127.0.0.1:8102 in your browser.
+
 ## 2. Full cluster mode
 The other mode is to start the entire Jifa, which includes worker and master. 
 This mode needs to set up the database in advance. 
@@ -84,6 +86,8 @@ $ cd demo
 $ docker-compose build
 $ docker-compose up
 ```
+
+Then visit http://127.0.0.1:8089 in your browser.
 
 ## How to run from the relase
 ```
