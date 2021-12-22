@@ -22,9 +22,8 @@ services:
         condition: service_healthy
     ports:
       - "3306:3306"
-    command: --init-file /data/demo.sql
     volumes:
-      - ./demo.sql:/data/demo.sql
+      - "./demo.sql:/docker-entrypoint-initdb.d/1.sql"
     environment:
       - MYSQL_ROOT_USER=root
       - MYSQL_ROOT_PASSWORD=123456
@@ -32,7 +31,7 @@ services:
       - MYSQL_USER=admin
       - MYSQL_PASSWORD=123456
     healthcheck:
-      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost", "-u", "admin", "-p123456"]
       interval: 10s
       timeout: 10s
       retries: 10
