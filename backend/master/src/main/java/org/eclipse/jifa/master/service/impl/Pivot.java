@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2021 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -51,7 +51,6 @@ import org.eclipse.jifa.master.service.sql.GlobalLockSQL;
 import org.eclipse.jifa.master.service.sql.JobSQL;
 import org.eclipse.jifa.master.service.sql.MasterSQL;
 import org.eclipse.jifa.master.service.sql.WorkerSQL;
-import org.eclipse.jifa.master.support.DefaultWorkerScheduler;
 import org.eclipse.jifa.master.support.Factory;
 import org.eclipse.jifa.master.support.Pattern;
 import org.eclipse.jifa.master.support.WorkerClient;
