@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
  * Periodically clean up dump files that stored at k8s persistent volume claim.
  */
 public class PVCCleanupTask extends BaseTask {
-    private static final String WORKSPACE = "/root/grace_workspace";
+    private static final String WORKSPACE = "/root/jifa_workspace";
 
     public PVCCleanupTask(Pivot pivot, Vertx vertx) {
         super(pivot, vertx);

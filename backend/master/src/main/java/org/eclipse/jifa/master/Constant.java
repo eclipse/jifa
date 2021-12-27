@@ -39,10 +39,10 @@ public interface Constant extends org.eclipse.jifa.common.Constant {
     /**
      * JWT
      */
-    String JWT_SUBJECT = "Grace Master";
-    String JWT_ISSUER = "Grace Master";
+    String JWT_SUBJECT = "Jifa Master";
+    String JWT_ISSUER = "Jifa Master";
     String JWT_ALGORITHM_HS256 = "HS256";
-    String JWT_ALGORITHM_HS256_PUBLIC_KEY = "Grace Master Public Key";
+    String JWT_ALGORITHM_HS256_PUBLIC_KEY = "Jifa Master Public Key";
     int JWT_EXPIRES_IN_MINUTES = 7 * 24 * 60; // seven days
 
     /**

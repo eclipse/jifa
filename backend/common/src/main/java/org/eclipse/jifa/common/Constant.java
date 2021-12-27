@@ -20,7 +20,7 @@ public interface Constant {
     String CONTENT_TYPE_JSON_FORM = "application/json; charset=UTF-8";
     String CONTENT_TYPE_FILE_FORM = "application/octet-stream";
 
-    String COOKIE_AUTHORIZATION = "grace-authorization";
+    String COOKIE_AUTHORIZATION = "jifa-authorization";
     String HEADER_AUTHORIZATION_PREFIX = "Bearer ";
 
     int HTTP_GET_OK_STATUS_CODE = 200;

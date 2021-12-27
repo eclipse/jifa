@@ -51,7 +51,7 @@ export JAVA_OPTS="""\
 
 export MASTER_OPTS="""\
 -Dlog4j.configurationFile=log4j2-test.xml \
--Dgrace.master.config=master-config.json  \
+-Djifa.master.config=master-config.json  \
 """
 
 mkdir frontend
