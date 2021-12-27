@@ -346,7 +346,7 @@ public class Pivot {
                 .flatMapCompletable(worker -> updateWorkerLoad(conn, worker.getHostIP(),
                                                                worker.getCurrentLoad() - job.getEstimatedLoad()))
                 .andThen(insertHistoricalJob(conn, job))
-                // delete old joPivot.javab
+                // delete old job
                 .andThen(deleteActiveJob(conn, job))
                 .andThen(this.setFileUnused(conn, job))
                 .andThen(post.apply(conn))
