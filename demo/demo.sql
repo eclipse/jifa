@@ -173,3 +173,4 @@ INSERT INTO `config` (`id`,`name`,`value`,`last_modified_time`,`creation_time`) 
 INSERT INTO `config` (`id`,`name`,`value`,`last_modified_time`,`creation_time`) VALUES (14,'JOB-DISK-USAGE-UPDATING-PERIODIC','10000','2019-10-23 11:22:06','2019-10-22 16:46:50');
 INSERT INTO `config` (`id`,`name`,`value`,`last_modified_time`,`creation_time`) VALUES (15,'TASK-ENABLE-DISK-CLEANUP','0','2019-10-24 14:36:52','2019-10-22 21:37:09');
 INSERT INTO `config` (`id`,`name`,`value`,`last_modified_time`,`creation_time`) VALUES (29,'JOB-CLEAN-STALE-FILES','true','2020-10-26 13:34:54','2020-10-26 13:22:27');
+INSERT INTO `config` (`id`,`name`,`value`,`last_modified_time`,`creation_time`) VALUES (30,'SCHEDULER-PATTERN','DEFAULT','2021-12-27 08:00:00','2021-12-27 08:00:00');

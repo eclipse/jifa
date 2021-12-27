@@ -39,10 +39,10 @@ public interface Constant extends org.eclipse.jifa.common.Constant {
     /**
      * JWT
      */
-    String JWT_SUBJECT = "Grace Master";
-    String JWT_ISSUER = "Grace Master";
+    String JWT_SUBJECT = "Jifa Master";
+    String JWT_ISSUER = "Jifa Master";
     String JWT_ALGORITHM_HS256 = "HS256";
-    String JWT_ALGORITHM_HS256_PUBLIC_KEY = "Grace Master Public Key";
+    String JWT_ALGORITHM_HS256_PUBLIC_KEY = "Jifa Master Public Key";
     int JWT_EXPIRES_IN_MINUTES = 7 * 24 * 60; // seven days
 
     /**
@@ -105,8 +105,17 @@ public interface Constant extends org.eclipse.jifa.common.Constant {
     String PASSWORD = "password";
     String PORT = "port";
     String SYSTEM_DISK_USAGE = "/system/diskUsage";
+    String PING = "/system/ping";
 
     long MAX_SIZE_FOR_DOWNLOAD = 512 * 1024 * 1024; // 512MB
+
+    /**
+     * K8S CLOUD CONFIG
+     */
+    String K8S_KEYWORD = "k8s-config";
+    String K8S_NAMESPACE = "namespace";
+    String K8S_WORKER_IMAGE = "worker-image";
+    String K8S_MINIMAL_MEM_REQ = "minimal-mem-req";
 
     /**
      * DEV
