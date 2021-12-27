@@ -61,4 +61,13 @@ public interface FileSQL {
 
     String SELECT_FILES_FOR_SYNC =
         "SELECT * FROM file  WHERE host_ip = ? AND transfer_state = 'SUCCESS' AND deleted = false AND type != 'JINSIGHT'";
+
+    String SELECT_DATED_FILES =
+        "SELECT f.* FROM file f LEFT JOIN active_job aj ON f.name=aj.target " +
+        "WHERE aj.target is null and " +
+        "f.deleted=0 and " +
+        "f.cas_state=0 and " +
+        "f.transfer_state='SUCCESS' and " +
+        "f.last_modified_time < now() - interval 30 day " +
+        "LIMIT 50";
 }

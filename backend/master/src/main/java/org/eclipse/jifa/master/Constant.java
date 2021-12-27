@@ -105,8 +105,17 @@ public interface Constant extends org.eclipse.jifa.common.Constant {
     String PASSWORD = "password";
     String PORT = "port";
     String SYSTEM_DISK_USAGE = "/system/diskUsage";
+    String PING = "/system/ping";
 
     long MAX_SIZE_FOR_DOWNLOAD = 512 * 1024 * 1024; // 512MB
+
+    /**
+     * K8S CLOUD CONFIG
+     */
+    String K8S_KEYWORD = "k8s-config";
+    String K8S_NAMESPACE = "namespace";
+    String K8S_WORKER_IMAGE = "worker-image";
+    String K8S_MINIMAL_MEM_REQ = "minimal-mem-req";
 
     /**
      * DEV
