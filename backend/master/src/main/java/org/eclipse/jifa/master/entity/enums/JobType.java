@@ -20,11 +20,7 @@ public enum JobType {
 
     HEAP_DUMP_ANALYSIS,
 
-    METASPACE_DUMP_ANALYSIS,
-
-    JINSIGHT,
-
-    PORTRAIT;
+    ;
 
     public boolean isFileTransfer() {
         return this == FILE_TRANSFER;
