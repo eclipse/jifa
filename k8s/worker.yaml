@@ -18,6 +18,6 @@ metadata:
 spec:
   containers:
     - name: my-jifa-worker
-      image: docker.io/kelthuzadx/jifa-worker-open
+      image: docker.io/jifadocker/jifa-worker-open
       ports:
         - containerPort: 8102

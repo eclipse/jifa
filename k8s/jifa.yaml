@@ -86,7 +86,7 @@ spec:
         claimName: worker-pvc
   containers:
     - name: my-jifa-master
-      image: docker.io/kelthuzadx/jifa-master-open
+      image: docker.io/jifa-docker/jifa-master-open
       volumeMounts:
         - name: master-volume
           mountPath: /root

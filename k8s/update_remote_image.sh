@@ -11,8 +11,8 @@
 # SPDX-License-Identifier: EPL-2.0
 #
 
-docker tag $(docker images jifa-master-open -q) kelthuzadx/jifa-master-open
-docker push kelthuzadx/jifa-master-open
+docker tag $(docker images jifa-master-open -q) jifadocker/jifa-master-open
+docker push jifadocker/jifa-master-open
 
-docker tag $(docker images jifa-worker-open -q) kelthuzadx/jifa-worker-open
-docker push kelthuzadx/jifa-worker-open
+docker tag $(docker images jifa-worker-open -q) jifadocker/jifa-worker-open
+docker push jifadocker/jifa-worker-open
