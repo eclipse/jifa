@@ -14,6 +14,7 @@ package org.eclipse.jifa.master.support;
 
 import io.reactivex.Completable;
 import io.reactivex.Single;
+import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.ext.sql.SQLConnection;
 import org.eclipse.jifa.master.entity.Job;
@@ -33,7 +34,7 @@ public class DefaultWorkerScheduler implements WorkerScheduler {
     private Pivot pivot;
 
     @Override
-    public void initialize(Pivot pivot, Vertx vertx, Map<String, String> configs) {
+    public void initialize(Pivot pivot, Vertx vertx, JsonObject configs) {
         this.pivot = pivot;
         if (pivot.isLeader()) {
             new DiskCleaningTask(pivot, vertx);

@@ -110,7 +110,7 @@ public class Pivot {
     private Pivot() {
     }
 
-    public static synchronized Pivot instance(Vertx vertx, JDBCClient dbClient) {
+    public static synchronized Pivot instance(Vertx vertx, JDBCClient dbClient, JsonObject config) {
         if (SINGLETON != null) {
             return SINGLETON;
         }
@@ -135,7 +135,7 @@ public class Pivot {
             SQLConnection sqlConnection = dbClient.rxGetConnection().blockingGet();
             jm.currentMaster = jm.selectMaster(sqlConnection, ip).doFinally(sqlConnection::close).blockingGet();
 
-            jm.scheduler.initialize(jm, vertx, Maps.newHashMap());
+            jm.scheduler.initialize(jm, vertx, config);
         } catch (Throwable t) {
             LOGGER.error("Init job service error", t);
             System.exit(-1);

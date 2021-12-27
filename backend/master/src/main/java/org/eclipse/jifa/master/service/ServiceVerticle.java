@@ -15,6 +15,7 @@ package org.eclipse.jifa.master.service;
 import com.alibaba.druid.pool.DruidDataSource;
 import io.reactivex.Single;
 import io.vertx.core.Promise;
+import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.core.AbstractVerticle;
 import io.vertx.reactivex.ext.jdbc.JDBCClient;
 import org.eclipse.jifa.master.Constant;
@@ -32,10 +33,11 @@ public class ServiceVerticle extends AbstractVerticle implements Constant {
         vertx.rxExecuteBlocking(future -> {
             // init Data source
             DruidDataSource ds = new DruidDataSource();
-            ds.setUrl(config().getString(DB_URL));
-            ds.setUsername(config().getString(DB_USERNAME));
-            ds.setPassword(config().getString(DB_PASSWORD));
-            ds.setDriverClassName(config().getString(DB_DRIVER_CLASS_NAME));
+            JsonObject dbConfig = config().getJsonObject(DB_KEYWORD);
+            ds.setUrl(dbConfig.getString(DB_URL));
+            ds.setUsername(dbConfig.getString(DB_USERNAME));
+            ds.setPassword(dbConfig.getString(DB_PASSWORD));
+            ds.setDriverClassName(dbConfig.getString(DB_DRIVER_CLASS_NAME));
 
             // create proxy first
             AdminService.createProxy(vertx);
@@ -47,7 +49,7 @@ public class ServiceVerticle extends AbstractVerticle implements Constant {
 
             JDBCClient jdbcClient = new JDBCClient(io.vertx.ext.jdbc.JDBCClient.create(vertx.getDelegate(), ds));
 
-            Pivot pivot = Pivot.instance(vertx, jdbcClient);
+            Pivot pivot = Pivot.instance(vertx, jdbcClient, config());
 
             JobService.create(vertx, pivot, jdbcClient);
             FileService.create(vertx, pivot, jdbcClient);

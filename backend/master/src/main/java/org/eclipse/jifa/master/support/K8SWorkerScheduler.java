@@ -27,6 +27,7 @@ import io.kubernetes.client.openapi.models.V1VolumeMount;
 import io.kubernetes.client.util.Config;
 import io.reactivex.Completable;
 import io.reactivex.Single;
+import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.buffer.Buffer;
 import io.vertx.reactivex.ext.sql.SQLConnection;
@@ -47,6 +48,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+
+import static org.eclipse.jifa.master.Constant.*;
 
 public class K8SWorkerScheduler implements WorkerScheduler {
 
@@ -115,7 +118,7 @@ public class K8SWorkerScheduler implements WorkerScheduler {
     }
 
     @Override
-    public void initialize(Pivot pivot, Vertx vertx, Map<String, String> configs) {
+    public void initialize(Pivot pivot, Vertx vertx, JsonObject config) {
         new RetiringTask(pivot, vertx);
         new TransferJobResultFillingTask(pivot, vertx);
         new PVCCleanupTask(pivot, vertx);
@@ -126,9 +129,10 @@ public class K8SWorkerScheduler implements WorkerScheduler {
             client = Config.defaultClient();
             Configuration.setDefaultApiClient(client);
             api = new CoreV1Api();
-            NAMESPACE = configs.get(Constant.K8S_NAMESPACE);
-            WORKER_IMAGE = configs.get(Constant.K8S_WORKER_IMAGE);
-            MINIMAL_MEM_REQ = Long.parseLong(configs.get(Constant.K8S_MINIMAL_MEM_REQ));
+            JsonObject k8sConfig = config.getJsonObject(K8S_KEYWORD);
+            NAMESPACE = k8sConfig.getString(K8S_NAMESPACE);
+            WORKER_IMAGE = k8sConfig.getString(K8S_WORKER_IMAGE);
+            MINIMAL_MEM_REQ = k8sConfig.getLong(K8S_MINIMAL_MEM_REQ);
             LOGGER.info("K8S Namespace: " + NAMESPACE + ", Image: " + WORKER_IMAGE + ", Minimal memory request:" +
                         MINIMAL_MEM_REQ);
         } catch (IOException e) {

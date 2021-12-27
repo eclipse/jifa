@@ -15,6 +15,7 @@ package org.eclipse.jifa.master.support;
 
 import io.reactivex.Completable;
 import io.reactivex.Single;
+import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.ext.sql.SQLConnection;
 import org.eclipse.jifa.master.entity.Job;
@@ -28,7 +29,7 @@ public interface WorkerScheduler {
     /**
      * init the scheduler
      */
-    void initialize(Pivot pivot, Vertx vertx, Map<String, String> configs);
+    void initialize(Pivot pivot, Vertx vertx, JsonObject config);
 
     /**
      * @param job related job
