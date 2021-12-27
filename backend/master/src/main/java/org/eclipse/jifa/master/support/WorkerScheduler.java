@@ -25,20 +25,30 @@ import java.util.Map;
 
 public interface WorkerScheduler {
 
+    /**
+     * init the scheduler
+     */
     void initialize(Pivot pivot, Vertx vertx, Map<String, String> configs);
 
-
+    /**
+     * @param job related job
+     * @param conn sql connection
+     * @return worker to run the job
+     */
     Single<Worker> decide(Job job, SQLConnection conn);
 
-
+    /**
+     * @return true is the scheduler supports pending job
+     */
     boolean supportPendingJob();
 
+    /**
+     * @param job start the worker by job
+     */
     Completable start(Job job);
 
     /**
-     * stop the worker identified by id
-     *
-     * @param id worker id
+     * stop the worker by job
      */
     Completable stop(Job job);
 }
