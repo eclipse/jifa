@@ -26,3 +26,6 @@ backend/config/jifa-ssh-key.pub
 
 mat-deps
 *.iml
+
+k8s/*.tgz
+cloud/
