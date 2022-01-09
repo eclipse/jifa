@@ -374,7 +374,7 @@
       },
 
       search() {
-        if (this.query) {
+        if (this.query && !this.searching) {
           this.searching = true
           this.clear()
           this.fetchResult(this.query)
