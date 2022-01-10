@@ -65,15 +65,17 @@
                     </span>
                   </el-tooltip>
 
-                  <el-tooltip class="item" effect="light" :content="$t('jifa.tip.rename')" placement="top-start">
-                    <span v-if="file(row,col).hasOwnProperty('displayName')">
-                    <el-divider direction="vertical"></el-divider>
-                    <el-link icon="el-icon-edit" :underline="false" @click="updateFile(file(row,col))"/>
-                  </span>
+                  <el-tooltip class="item" effect="light" :content="$t('jifa.tip.rename')" placement="top-start"
+                              v-if="file(row,col).hasOwnProperty('displayName')">
+                    <span>
+                      <el-divider direction="vertical"></el-divider>
+                      <el-link icon="el-icon-edit" :underline="false" @click="updateFile(file(row,col))"/>
+                    </span>
                   </el-tooltip>
 
-                  <el-tooltip class="item" effect="light" :content="$t('jifa.tip.setShare')" placement="top-start">
-                    <span v-if="file(row,col).hasOwnProperty('shared')">
+                  <el-tooltip class="item" effect="light" :content="$t('jifa.tip.setShare')" placement="top-start"
+                              v-if="file(row,col).hasOwnProperty('shared')">
+                    <span>
                       <el-divider direction="vertical"></el-divider>
                       <el-link :icon="file(row, col).shared ? 'el-icon-unlock' : 'el-icon-lock'"
                                v-on:click="toggleSharedState(file(row, col))"
@@ -95,12 +97,13 @@
                     </span>
                   </el-tooltip>
 
-                  <el-tooltip class="item" effect="light" :content="$t('jifa.tip.deleteFile')" placement="top-start">
-                    <span v-if="canDelete(file(row,col))">
-                    <el-divider direction="vertical"></el-divider>
-                    <el-link icon="el-icon-delete" :underline="false"
-                             v-on:click="fileToDelete =  file(row, col).name"/>
-                  </span>
+                  <el-tooltip class="item" effect="light" :content="$t('jifa.tip.deleteFile')" placement="top-start"
+                              v-if="canDelete(file(row,col))">
+                    <span>
+                      <el-divider direction="vertical"></el-divider>
+                      <el-link icon="el-icon-delete" :underline="false"
+                               v-on:click="fileToDelete =  file(row, col).name"/>
+                    </span>
                   </el-tooltip>
                 </el-col>
               </el-row>
@@ -165,16 +168,16 @@
 </template>
 
 <script>
-  import axios from 'axios'
-  import Footer from "./footer"
+import axios from 'axios'
+import Footer from "./footer"
 
 
-  import {formatDate} from 'element-ui/src/utils/date-util'
-  import {service, toSizeString} from '../util'
-  import TransferFile from './transferFile'
-  import ViewMenu from './menu/ViewMenu'
+import {formatDate} from 'element-ui/src/utils/date-util'
+import {service, toSizeString} from '../util'
+import TransferFile from './transferFile'
+import ViewMenu from './menu/ViewMenu'
 
-  const defaultMenuItem = 'HEAP_DUMP'
+const defaultMenuItem = 'HEAP_DUMP'
 
   export default {
     components: {TransferFile, ViewMenu, Footer},
