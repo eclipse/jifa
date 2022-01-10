@@ -49,7 +49,7 @@
           <el-card class="box-card" shadow="hover" style="margin: 20px">
             <div>
               <el-row type="flex">
-                <el-col :span="16">
+                <el-col :span="13">
                   <p style='font-size: 15px; margin:0 auto; white-space: nowrap; text-overflow:ellipsis; overflow:hidden;
                             color: #606266;'>
                     <i class="el-icon-document"></i>
@@ -64,7 +64,6 @@
                                :underline="false" target="_blank"/>
                     </span>
                   </el-tooltip>
-
 
                   <el-tooltip class="item" effect="light" :content="$t('jifa.tip.rename')" placement="top-start">
                     <span v-if="file(row,col).hasOwnProperty('displayName')">
