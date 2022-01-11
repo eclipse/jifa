@@ -22,3 +22,10 @@ include ':backend:heap-dump-analyzer:eclipse-mat-deps'
 include ':backend:heap-dump-analyzer:provider'
 include ':frontend'
 include ':docker'
+
+def mapGradleBuildFile(p) {
+    p.buildFileName = "${p.name}.gradle".toLowerCase()
+    p.children.each { c -> mapGradleBuildFile(c) }
+}
+
+mapGradleBuildFile(rootProject)
