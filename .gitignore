@@ -29,3 +29,4 @@ mat-deps
 
 k8s/*.tgz
 cloud/
+*.tgz

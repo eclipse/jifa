@@ -54,47 +54,13 @@ Prerequisites for building Jifa:
 - Install JDK 11, and make sure $JAVA_HOME is set properly
 - Install npm
 
-Jifa provides two modes of running: worker-only mode and full cluster mode. The following shows how to use the these two mode, respectively.
+Jifa provides two deploy patterns: `K8S Pattern` and `Default Pattern`:
++ `K8S Pattern`: Deploy master only, it starts worker only when necessary.
++ `Default Pattern`: 
+  + `Master+Worker`: Deploy one master and several workers.
+  + `Worker Only`: Deploy worker only.
 
-## 1. Worker-only mode
-Only using worker as a standalone application is a simple and lightweight mode. 
-In this mode, we only need to deploy the front end and worker side without any database configuration. 
-To use this mode, we need to forward the http requests to the workers:
-```bash
-$ ./gradlew clean
-$ ./gradlew buildWorker
-$ cd demo
-$ ./run_worker.sh
-```
-
-We also prepared a docker image for this mode, so you don't need to clone the repository.
-```bash
-$ docker pull jifadocker/jifa-worker:demo
-$ docker run -p 8102:8102 jifadocker/jifa-worker:demo
-```
-
-Then visit http://127.0.0.1:8102 in your browser.
-
-## 2. Full cluster mode
-The other mode is to start the entire Jifa, which includes worker and master. 
-This mode needs to set up the database in advance. 
-
-Here we have prepared an example to demonstrate how to get started.
-```bash
-$ ./gradlew buildJifa -x test # build Jifa and skit test
-$ cd demo
-$ docker-compose build
-$ docker-compose up
-```
-
-Then visit http://127.0.0.1:8089 in your browser.
-
-## How to run from the relase
-```
-unzip jifa-0.1.zip
-cd jifa-0.1
-./bin/worker
-```
+See [deployment document](deploy_scripts/README.md) for more details.
 
 # Documents
 + 1. [Jifa Customization](CUSTOMIZATION.md)

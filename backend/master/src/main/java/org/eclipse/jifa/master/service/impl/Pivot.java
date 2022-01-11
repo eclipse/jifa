@@ -12,7 +12,6 @@
  ********************************************************************************/
 package org.eclipse.jifa.master.service.impl;
 
-import com.google.common.collect.Maps;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.Single;
@@ -120,7 +119,8 @@ public class Pivot {
             jm.dbClient = dbClient;
             jm.vertx = vertx;
 
-            jm.scheduler = Factory.create(Pattern.valueOf(ConfigHelper.getString(jm.config(SCHEDULER_PATTERN))));
+            Pattern pattern = Pattern.valueOf(ConfigHelper.getString(jm.config(SCHEDULER_PATTERN)));
+            jm.scheduler = Factory.create(pattern);
 
             jm.pendingJobMaxCount = ConfigHelper.getInt(jm.config(PENDING_JOB_MAX_COUNT_KEY));
 
@@ -129,7 +129,9 @@ public class Pivot {
             jm.triggerSchedulingActionDelay = ConfigHelper.getLong(jm.config(TRIGGER_SCHEDULING_ACTION_DELAY));
 
             String ip =
-                org.eclipse.jifa.master.Master.DEV_MODE ? LOCAL_HOST : InetAddress.getLocalHost().getHostAddress();
+                org.eclipse.jifa.master.Master.DEV_MODE || pattern == Pattern.K8S ?
+                        LOCAL_HOST :
+                        InetAddress.getLocalHost().getHostAddress();
             LOGGER.info("Current Master Host IP is {}", ip);
 
             SQLConnection sqlConnection = dbClient.rxGetConnection().blockingGet();
