@@ -51,7 +51,7 @@ public class WorkerClient {
     }
 
     public static Single<HttpResponse<Buffer>> post(String hostIP, String uri) {
-        return send(HttpMethod.POST, hostIP, PORT, uri, (Map<String, String>) null);
+        return send(HttpMethod.POST, hostIP, PORT, uri, (MultiMap) null);
     }
 
     public static Single<HttpResponse<Buffer>> post(String hostIP, String uri, MultiMap params) {
@@ -59,7 +59,7 @@ public class WorkerClient {
     }
 
     public static Single<HttpResponse<Buffer>> get(String hostIP, String uri) {
-        return send(HttpMethod.GET, hostIP, PORT, uri, (Map<String, String>) null);
+        return send(HttpMethod.GET, hostIP, PORT, uri, (MultiMap) null);
     }
 
     public static Single<HttpResponse<Buffer>> get(String hostIP, String uri, Map<String, String> params) {
@@ -80,27 +80,26 @@ public class WorkerClient {
 
     private static Single<HttpResponse<Buffer>> send(HttpMethod method, String hostIP, int port, String uri,
                                                      Map<String, String> params) {
-        HttpRequest<Buffer> request = request(method, hostIP, port, uri);
-        if (params != null) {
-            request.queryParams().addAll(params);
-        }
-        return request.basicAuthentication(USERNAME, PASSWORD).rxSend();
+        return send(method, hostIP, port, uri, MultiMap.caseInsensitiveMultiMap().addAll(params));
     }
 
     private static Single<HttpResponse<Buffer>> send(HttpMethod method, String hostIP, int port, String uri,
                                                      MultiMap params) {
-        HttpRequest<Buffer> request = request(method, hostIP, port, uri);
-        if (params != null) {
-            request.queryParams().addAll(params);
-        }
-        return request.basicAuthentication(USERNAME, PASSWORD).rxSend();
+        return send(request(method, hostIP, port, uri), method == HttpMethod.POST, params);
     }
 
-    public static Single<HttpResponse<Buffer>> send(HttpRequest<Buffer> request, MultiMap params) {
+    public static Single<HttpResponse<Buffer>> send(HttpRequest<Buffer> request, boolean post, MultiMap params) {
+        request.basicAuthentication(USERNAME, PASSWORD);
+        if (post) {
+            if (params == null) {
+                return request.rxSend();
+            }
+            return request.rxSendForm(params);
+        }
         if (params != null) {
             request.queryParams().addAll(params);
         }
-        return request.basicAuthentication(USERNAME, PASSWORD).rxSend();
+        return request.rxSend();
     }
 
     private static HttpRequest<Buffer> request(HttpMethod method, String hostIP, int port, String uri) {

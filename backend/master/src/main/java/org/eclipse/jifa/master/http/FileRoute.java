@@ -13,6 +13,7 @@
 package org.eclipse.jifa.master.http;
 
 import io.reactivex.Single;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.core.MultiMap;
 import io.vertx.reactivex.core.Vertx;
@@ -333,7 +334,7 @@ class FileRoute extends BaseRoute implements Constant {
                             .putHeader(HEADER_CONTENT_TYPE_KEY, CONTENT_TYPE_FILE_FORM);
                     HttpRequest<Buffer> workerRequest = WorkerClient.request(context.request().method(), file.getHostIP(), context.request().uri());
                     workerRequest.as(BodyCodec.pipe(context.response()));
-                    return WorkerClient.send(workerRequest, null);
+                    return WorkerClient.send(workerRequest, context.request().method() == HttpMethod.POST, null);
                 })
                 .subscribe(resp -> context.response().end(),
                         t -> HTTPRespGuarder.fail(context, t));
