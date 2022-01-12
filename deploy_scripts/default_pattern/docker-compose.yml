@@ -7,7 +7,7 @@ services:
     ports:
       - "8102:8102"
     volumes:
-      - ../:/jifa
+      - ../../:/jifa
     working_dir: /jifa
     healthcheck:
       test: ["CMD", "curl", "http://localhost:8102"]
@@ -28,10 +28,8 @@ services:
       - MYSQL_ROOT_USER=root
       - MYSQL_ROOT_PASSWORD=123456
       - MYSQL_DATABASE=jifa
-      - MYSQL_USER=admin
-      - MYSQL_PASSWORD=123456
     healthcheck:
-      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost", "-u", "admin", "-p123456"]
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost", "-u", "root", "-p123456"]
       interval: 10s
       timeout: 10s
       retries: 10
@@ -45,7 +43,7 @@ services:
     ports:
       - "9102:9102"
     volumes:
-      - ../:/jifa
+      - ../../:/jifa
     working_dir: /jifa
     links:
       - database
@@ -59,6 +57,6 @@ services:
       - "8089:8089"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
-      - ../frontend/build:/jifa-static
+      - ../../frontend/build:/jifa-static
     links:
       - master

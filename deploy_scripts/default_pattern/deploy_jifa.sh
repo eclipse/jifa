@@ -10,18 +10,5 @@
 #
 # SPDX-License-Identifier: EPL-2.0
 #
-
-set -e
-cd ..
-rm -rf deploy
-./gradlew clean
-./gradlew buildJifa -x test
-tar caf jifa.tgz deploy
-mv jifa.tgz k8s
-cd k8s
-
-# For non-minikube users, simply remove this line
-eval $(minikube docker-env)
-
-docker build -t jifa-master-open "." -f Dockerfile_master
-docker build -t jifa-worker-open "." -f Dockerfile_worker
+docker-compose build
+docker-compose up

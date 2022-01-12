@@ -123,7 +123,7 @@ public class K8SWorkerScheduler implements WorkerScheduler {
         new TransferJobResultFillingTask(pivot, vertx);
         new PVCCleanupTask(pivot, vertx);
 
-        // Orders are important
+        // Order is important
         ApiClient client;
         try {
             client = Config.defaultClient();
