@@ -15,8 +15,8 @@ ARG VERSION
 
 WORKDIR /wd
 
-COPY ./deploy/worker-$VERSION.zip .
-COPY ./deploy/frontend-$VERSION.zip .
+COPY ./artifacts/worker-$VERSION.zip .
+COPY ./artifacts/frontend-$VERSION.zip .
 
 RUN unzip worker-$VERSION.zip && mv worker-$VERSION worker && mkdir webroot && unzip frontend-$VERSION.zip -d webroot && rm worker-$VERSION.zip frontend-$VERSION.zip
 

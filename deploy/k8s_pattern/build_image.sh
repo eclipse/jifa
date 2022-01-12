@@ -13,12 +13,12 @@
 
 set -e
 cd ../../
-rm -rf deploy
+rm -rf artifacts
 ./gradlew clean
 ./gradlew buildJifa -x test
-tar caf jifa.tgz deploy
-mv jifa.tgz deploy_scripts/k8s_pattern/
-cd deploy_scripts/k8s_pattern
+tar caf jifa.tgz artifacts
+mv jifa.tgz deploy/k8s_pattern/
+cd deploy/k8s_pattern
 
 docker build -t jifa-master-open "." -f Dockerfile_master
 docker build -t jifa-worker-open "." -f Dockerfile_worker

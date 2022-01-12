@@ -28,9 +28,9 @@ tar -xf jifa.tgz
 
 mkdir -p /home/admin/logs
 mkdir -p /home/admin/.ssh/
-cp deploy/config/jifa-ssh-key.pub /home/admin/.ssh/
+cp artifacts/config/jifa-ssh-key.pub /home/admin/.ssh/
 
-mv deploy/${MASTER_ZIP} ./
+mv artifacts/${MASTER_ZIP} ./
 unzip ${MASTER_ZIP}
 
 export JAVA_OPTS="""\
