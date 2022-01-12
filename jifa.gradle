@@ -29,7 +29,7 @@ task deleteSSHConfig(type: Delete) {
 }
 
 task generateSSHConfig(dependsOn: deleteSSHConfig, type: Exec) {
-    commandLine "ssh-keygen", "-b", "2048", "-t", "rsa", "-f", "${rootProject.rootDir}/backend/config/jifa-ssh-key", "-q", "-N", "\"\""
+    commandLine "ssh-keygen", "-b", "2048", "-t", "rsa", "-f", "${rootProject.rootDir}/backend/config/jifa-ssh-key", "-q"
 }
 
 task copySSHConfig(dependsOn: generateSSHConfig, type: Copy) {
