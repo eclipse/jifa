@@ -26,8 +26,8 @@ import io.vertx.ext.web.handler.BasicAuthHandler;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.CorsHandler;
 import io.vertx.ext.web.handler.StaticHandler;
-import org.eclipse.jifa.common.JifaHooks;
 import org.eclipse.jifa.common.JifaException;
+import org.eclipse.jifa.common.JifaHooks;
 import org.eclipse.jifa.common.util.FileUtil;
 import org.eclipse.jifa.worker.route.RouteFiller;
 import org.slf4j.Logger;
@@ -44,7 +44,7 @@ import static org.eclipse.jifa.worker.WorkerGlobal.stringConfig;
 
 public class Worker extends AbstractVerticle {
     private static final Logger LOGGER = LoggerFactory.getLogger(Worker.class);
-    private static final CountDownLatch count = new CountDownLatch(Runtime.getRuntime().availableProcessors());
+    private static CountDownLatch count = new CountDownLatch(Runtime.getRuntime().availableProcessors());
     private static long startTime;
 
     public static void main(String[] args) throws InterruptedException {
@@ -72,6 +72,15 @@ public class Worker extends AbstractVerticle {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    // test support
+    public static void setCount(CountDownLatch count) {
+        Worker.count = count;
+    }
+
+    public static void resetCount() {
+        count = new CountDownLatch(Runtime.getRuntime().availableProcessors());
     }
 
     @SuppressWarnings("unchecked")
@@ -184,4 +193,8 @@ public class Worker extends AbstractVerticle {
         });
     }
 
+    @Override
+    public void stop() {
+        WorkerGlobal.reset();
+    }
 }
