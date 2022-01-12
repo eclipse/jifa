@@ -4,5 +4,9 @@
   "workspace": ".test_jifa_workspace",
   "basicAuth": {
     "enabled": false
+  },
+  "cacheConfig": {
+    "expireAfterAccess": 10,
+    "expireAfterAccessTimeUnit": "MINUTES"
   }
 }
