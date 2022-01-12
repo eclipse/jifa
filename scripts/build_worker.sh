@@ -10,7 +10,9 @@
 #
 # SPDX-License-Identifier: EPL-2.0
 #
+set -e
 
-cd ../..
+cd ..
+rm -rf artifacts
 ./gradlew clean
 ./gradlew buildWorker -x test
