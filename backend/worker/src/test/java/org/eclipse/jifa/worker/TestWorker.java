@@ -50,6 +50,10 @@ public class TestWorker {
         Map<String, Object> auth = new HashMap<>();
         auth.put("enabled", false);
         cfg.put("basicAuth", auth);
+        Map<String, Object> cache = new HashMap<>();
+        cache.put("expireAfterAccess", 10);
+        cache.put("expireAfterAccessTimeUnit", "MINUTES");
+        cfg.put("cacheConfig", cache);
 
         Async async = context.async();
 
@@ -92,6 +96,10 @@ public class TestWorker {
         auth.put("enabled", false);
         cfg.put("basicAuth", auth);
         cfg.put("hooks.className", FakeHooks.class.getName());
+        Map<String, Object> cache = new HashMap<>();
+        cache.put("expireAfterAccess", 10);
+        cache.put("expireAfterAccessTimeUnit", "MINUTES");
+        cfg.put("cacheConfig", cache);
 
         Async async = context.async();
 
