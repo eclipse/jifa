@@ -11,14 +11,7 @@
 # SPDX-License-Identifier: EPL-2.0
 #
 
-set -e
-cd ../../
+cd ..
 rm -rf artifacts
 ./gradlew clean
 ./gradlew buildJifa -x test
-tar caf jifa.tgz artifacts
-mv jifa.tgz deploy/k8s_pattern/
-cd deploy/k8s_pattern
-
-docker build -t jifa-master-open "." -f Dockerfile_master
-docker build -t jifa-worker-open "." -f Dockerfile_worker

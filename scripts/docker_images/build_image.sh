@@ -11,6 +11,14 @@
 # SPDX-License-Identifier: EPL-2.0
 #
 
-cd ../..
+set -e
+cd ../../
+rm -rf artifacts
 ./gradlew clean
 ./gradlew buildJifa -x test
+tar caf jifa.tgz artifacts
+mv jifa.tgz scripts/docker_images/
+cd scripts/docker_images
+
+docker build -t jifa-master-open "." -f Dockerfile_master
+docker build -t jifa-worker-open "." -f Dockerfile_worker

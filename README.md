@@ -54,7 +54,25 @@ Prerequisites for building Jifa:
 - Install JDK 11, and make sure $JAVA_HOME is set properly
 - Install npm
 
-Jifa provides two deploy patterns: `K8S Pattern` and `Default Pattern`:
+Jifa actually has two application: *Master* and *Worker*. *Master* accepts requests, does some authentications, clears disk periodically,
+etc, then it forwards requests to *Worker*, that's the real place where heap dump parsing/analyzing happens. If you don't need these
+advanced features, you can just build *Worker* and deploy it, otherwise, you can build the whole Jifa, which contains either *Master*
+and *Worker*.
+
+### 1. Build
+First of all, we need to build Jifa:
+```bash
+$ cd scripts
+$ ./build_jifa.sh   # build the whole Jifa
+$ ./build_worker.sh # build the worker only
+$ cd docker_images
+$ ./build_image.sh  # build the whole Jifa and create docker images(Advanced use case)
+```
+If all goes well, you would see a top-level `artifacts` directory. That's what we need when deploying.
+Also, you can build docker images via the following command:
+
+### 2. Deploy
+Jifa provides several deploy patterns:
 + `K8S Pattern`: Deploy master only, it starts worker only when necessary.
 + `Default Pattern`: 
   + `Master+Worker`: Deploy one master and several workers.
