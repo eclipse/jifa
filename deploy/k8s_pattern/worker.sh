@@ -24,7 +24,7 @@ cd target
 
 tar -xf jifa.tgz
 
-mv deploy/${WORKER_ZIP} ./
+mv artifacts/${WORKER_ZIP} ./
 unzip ${WORKER_ZIP}
 
 mkdir -p /home/admin/logs

@@ -60,7 +60,7 @@ Jifa provides two deploy patterns: `K8S Pattern` and `Default Pattern`:
   + `Master+Worker`: Deploy one master and several workers.
   + `Worker Only`: Deploy worker only.
 
-See [deployment document](deploy_scripts/README.md) for more details.
+See [deployment document](deploy/README.md) for more details.
 
 # Documents
 + 1. [Jifa Customization](CUSTOMIZATION.md)

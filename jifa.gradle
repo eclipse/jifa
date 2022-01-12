@@ -35,22 +35,22 @@ task generateSSHConfig(dependsOn: deleteSSHConfig, type: Exec) {
 task copySSHConfig(dependsOn: generateSSHConfig, type: Copy) {
     from "${rootProject.rootDir}/backend/config/jifa-ssh-key" as Object,
             "${rootProject.rootDir}/backend/config/jifa-ssh-key.pub" as Object
-    into "${rootProject.rootDir}/deploy/config" as Object
+    into "${rootProject.rootDir}/artifacts/config" as Object
 }
 
 task copyMasterDist(type: Copy, dependsOn: ':backend:master:build') {
     from "${rootProject.rootDir}/backend/master/build/distributions/master-1.0.zip" as Object
-    into "${rootProject.rootDir}/deploy" as Object
+    into "${rootProject.rootDir}/artifacts" as Object
 }
 
 task copyWorkerDist(type: Copy, dependsOn: ':backend:worker:build') {
     from "${rootProject.rootDir}/backend/worker/build/distributions/worker-1.0.zip" as Object
-    into "${rootProject.rootDir}/deploy" as Object
+    into "${rootProject.rootDir}/artifacts" as Object
 }
 
 task compressFrontendDist(type: Zip) {
     from "${rootProject.rootDir}/frontend/build"
-    destinationDirectory = file("${rootProject.rootDir}/deploy")
+    destinationDirectory = file("${rootProject.rootDir}/artifacts")
     archiveBaseName.set('frontend')
     archiveVersion.set('1.0')
     archiveExtension.set('zip')
@@ -58,7 +58,7 @@ task compressFrontendDist(type: Zip) {
 
 task buildWorker {
     doFirst {
-        ant.replaceregexp(match:'workerOnly.*?,', replace:'workerOnly:true,', flags:'g', byline:true) {
+        ant.replaceregexp(match:'workerOnly.*?,', replace:'workerOnly: true,', flags:'g', byline:true) {
             fileset(dir: "${rootProject.rootDir}/frontend/src", includes: 'config.js')
         }
     }
@@ -76,7 +76,7 @@ task buildJifa{
 
 task clean {
     doFirst {
-        delete files("${projectDir}/deploy")
+        delete files("${projectDir}/artifacts")
     }
 }
 
