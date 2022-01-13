@@ -55,7 +55,7 @@ export MASTER_OPTS="""\
 """
 
 mkdir frontend
-mv deploy/${FRONTEND_ZIP} frontend
+mv artifacts/${FRONTEND_ZIP} frontend
 cd frontend
 unzip ${FRONTEND_ZIP}
 
