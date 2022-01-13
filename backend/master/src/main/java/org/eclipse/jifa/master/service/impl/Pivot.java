@@ -282,7 +282,6 @@ public class Pivot {
             maps[i] = map;
         }
 
-        LOGGER.info("files : {}", GSON.toJson(maps));
         return new HashMap<>(1) {{
             put("files", GSON.toJson(maps));
         }};
