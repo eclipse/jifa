@@ -13,7 +13,6 @@
 package org.eclipse.jifa.worker.route;
 
 import io.vertx.core.Promise;
-import io.vertx.core.file.FileSystem;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.ext.web.RoutingContext;
@@ -40,7 +39,6 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
-import java.util.Set;
 
 import static org.eclipse.jifa.common.Constant.*;
 import static org.eclipse.jifa.common.util.Assertion.ASSERT;
@@ -227,15 +225,24 @@ class FileRoute extends BaseRoute {
 
     @RouteMeta(path = "/file/upload", method = HttpMethod.POST)
     void upload(RoutingContext context, @ParamKey("type") FileType type) {
-        Set<FileUpload> fileUploads = context.fileUploads();
-        for (FileUpload upload : fileUploads) {
-            String fileName = decorateFileName(upload.fileName());
-            FileSupport.initInfoFile(type, upload.fileName(), fileName);
-            FileSystem fileSystem = context.vertx().fileSystem();
-            fileSystem.moveBlocking(upload.uploadedFileName(), FileSupport.filePath(type, fileName));
-            FileSupport.updateTransferState(type, fileName, FileTransferState.SUCCESS);
+        FileUpload[] uploads = context.fileUploads().toArray(new FileUpload[0]);
+        try {
+            if (uploads.length > 0) {
+                // only process the first file
+                FileUpload file = uploads[0];
+                String fileName = decorateFileName(file.fileName());
+                FileSupport.initInfoFile(type, file.fileName(), fileName);
+                context.vertx().fileSystem()
+                       .moveBlocking(file.uploadedFileName(), FileSupport.filePath(type, fileName));
+                FileSupport.updateTransferState(type, fileName, FileTransferState.SUCCESS);
+            }
+            HTTPRespGuarder.ok(context);
+        } finally {
+            // remove other files
+            for (int i = 1; i < uploads.length; i++) {
+                context.vertx().fileSystem().deleteBlocking(uploads[i].uploadedFileName());
+            }
         }
-        HTTPRespGuarder.ok(context);
     }
 
     @RouteMeta(path = "/file/download", contentType = {CONTENT_TYPE_FILE_FORM})
