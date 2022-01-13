@@ -48,16 +48,8 @@
         <el-col :span="6" v-for="col in (row < rows ? cols : colsOfLastRow)" :key="col">
           <el-card class="box-card" shadow="hover" style="margin: 20px">
             <div>
-              <el-row type="flex">
-                <el-col :span="13">
-                  <p style='font-size: 15px; margin:0 auto; white-space: nowrap; text-overflow:ellipsis; overflow:hidden;
-                            color: #606266;'>
-                    <i class="el-icon-document"></i>
-                    {{file(row, col).displayName ? file(row, col).displayName : file(row, col).name}}
-                  </p>
-                </el-col>
-
-                <el-col :span="11" align="right" class="icons-col">
+              <el-row style="margin: -15px -8px 8px -8px">
+                <el-col align="right" class="icons-col">
                   <el-tooltip class="item" effect="light" :content="$t('jifa.tip.copyName')" placement="top-start">
                     <span>
                       <el-link icon="el-icon-document-copy" v-clipboard:copy="file(row, col).name"
@@ -107,22 +99,34 @@
                   </el-tooltip>
                 </el-col>
               </el-row>
+
+              <el-row type="flex">
+                <el-col>
+                  <p style='font-size: 15px; margin:0 auto; white-space: nowrap; text-overflow:ellipsis; overflow:hidden;
+                            color: #606266;'>
+                    <i class="el-icon-document"></i>
+                    {{file(row, col).displayName ? file(row, col).displayName : file(row, col).name}}
+                  </p>
+                </el-col>
+              </el-row>
+
               <el-row :align='"middle"' type="flex">
                 <el-col :span="12">
                   <p style="font-size: 12px; margin: 10px auto 7px; white-space: nowrap; color: #606266;" align="left">
                     {{toSizeString(file(row, col).size)}}</p>
                 </el-col>
+
                 <el-col :span="12">
                   <p style="font-size: 12px; margin:10px auto 7px; white-space: nowrap; color: #606266;" align="right">
                     {{formatDate(new Date(file(row, col).creationTime), "yyyy-MM-dd HH:mm:ss")}}</p>
                 </el-col>
               </el-row>
+
               <el-row>
-                <hr style="margin: 0 auto 7px;"/>
+                <hr style="margin: 0 -8px 7px -8px;"/>
               </el-row>
 
               <el-row type="flex" justify="space-around" style="margin-bottom: -15px">
-
                 <el-col :span="8" align="middle"
                         v-if="file(row, col).transferState === 'NOT_STARTED' || file(row, col).transferState ==='IN_PROGRESS'">
                   <el-button type="text"><i class="el-icon-loading"></i> {{$t('jifa.transferring')}}</el-button>
