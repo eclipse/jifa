@@ -442,6 +442,7 @@ public class Pivot {
         return Completable.fromAction(() -> {
             switch (type) {
                 case HEAP_DUMP_ANALYSIS:
+                case GCLOG_ANALYSIS:
                     vertx.setTimer(notifyWorkerActionDelay, ignored -> {
                         String url = "/jifa-api/" + type.getTag() + "/" + target + "/release";
                         Single<HttpResponse<Buffer>> post = post(job.getHostIP(), url);

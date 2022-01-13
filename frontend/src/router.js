@@ -18,6 +18,8 @@ import finder from "./components/finder"
 
 import heapDump from "./components/heapdump/HeapDump"
 
+import GCLog from "./components/gclog/GCLog"
+
 import auth from "./components/auth/Auth"
 
 import axios from "axios"
@@ -79,6 +81,12 @@ const routes = [
     name: 'heapDump',
     path: "/heapDump",
     component: heapDump,
+    props: (route) => ({file: route.query.file})
+  },
+  {
+    name: 'gcLog',
+    path: "/gcLog",
+    component: GCLog,
     props: (route) => ({file: route.query.file})
   },
   {path: '*', component: notFound}

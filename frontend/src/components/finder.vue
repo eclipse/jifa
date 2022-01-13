@@ -210,6 +210,8 @@ const defaultMenuItem = 'HEAP_DUMP'
         switch (this.currentMenuItem) {
           case "HEAP_DUMP":
             return this.$i18n.t('jifa.addHeapDumpFile');
+          case "GC_LOG":
+            return this.$i18n.t('jifa.addGCLogFile');
           default:
             return this.$i18n.t('jifa.addFile');
         }

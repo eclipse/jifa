@@ -18,6 +18,12 @@
       <i class="el-icon-coin" style="margin-right: 3px"/> {{$t("jifa.heapDumpAnalysis")}}
     </b-nav-item>
 
+    <b-nav-item @click="$emit('chooseMenu', 'GC_LOG')"
+                v-if="$jifa.fileManagement"
+                :active="fileType==='GC_LOG'">
+      <i class="el-icon-toilet-paper" style="margin-right: 3px"/> {{$t("jifa.gclogAnalysis")}}
+    </b-nav-item>
+
     <b-nav-item @click="handleAddFile" v-if="$jifa.fileManagement">
       <i class="el-icon-plus" style="margin-right: 3px"/> {{this.title}}
     </b-nav-item>

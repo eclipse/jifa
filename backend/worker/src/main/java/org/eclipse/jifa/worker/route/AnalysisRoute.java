@@ -26,7 +26,11 @@ import org.eclipse.jifa.worker.support.FileSupport;
 import java.io.File;
 import java.util.Map;
 
-@MappingPrefix(value = {"/heap-dump/:file"})
+@MappingPrefix(
+        value = {
+                "/heap-dump/:file",
+                "/gc-log/:file"}
+)
 class AnalysisRoute extends BaseRoute {
     private final Analyzer helper = Analyzer.getInstance();
 

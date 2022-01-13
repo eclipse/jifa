@@ -20,6 +20,7 @@ public enum JobType {
 
     HEAP_DUMP_ANALYSIS,
 
+    GCLOG_ANALYSIS,
     ;
 
     public boolean isFileTransfer() {
@@ -30,6 +31,8 @@ public enum JobType {
         switch (this) {
             case HEAP_DUMP_ANALYSIS:
                 return FileType.HEAP_DUMP.getTag();
+            case GCLOG_ANALYSIS:
+                return FileType.GC_LOG.getTag();
             default:
                 throw new IllegalStateException();
         }
