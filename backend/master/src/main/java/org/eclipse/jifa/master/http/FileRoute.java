@@ -184,7 +184,12 @@ class FileRoute extends BaseRoute implements Constant {
         String origin = extractOriginalName(sb.toString());
         FileType type = FileType.valueOf(context.request().getParam("type"));
 
-        String name = buildFileName(userId, origin);
+        String name;
+        if (context.request().getParam("retry") != null) {
+            name = context.request().getParam("retry");
+        } else {
+            name = buildFileName(userId, origin);
+        }
         request.params().add("fileName", name);
 
         fileService.rxTransfer(userId, type, origin, name, way, convert(request.params()))

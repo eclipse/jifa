@@ -55,6 +55,7 @@ import org.eclipse.jifa.master.support.Factory;
 import org.eclipse.jifa.master.support.Pattern;
 import org.eclipse.jifa.master.support.WorkerClient;
 import org.eclipse.jifa.master.support.WorkerScheduler;
+import org.eclipse.jifa.master.support.*;
 import org.eclipse.jifa.master.task.SchedulingTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -277,7 +278,7 @@ public class Pivot {
         @SuppressWarnings("rawtypes")
         Map[] maps = new Map[files.length];
         for (int i = 0; i < files.length; i++) {
-            Map<String, String> map= new HashMap<>();
+            Map<String, String> map = new HashMap<>();
             map.put("name", files[i].getName());
             map.put("type", files[i].getType().name());
             maps[i] = map;
@@ -344,9 +345,15 @@ public class Pivot {
 
     private Completable finish(Job job, Function<SQLConnection, Completable> post) {
         return inTransactionAndLock(
-            conn -> selectWorker(conn, job.getHostIP())
-                .flatMapCompletable(worker -> updateWorkerLoad(conn, worker.getHostIP(),
-                                                               worker.getCurrentLoad() - job.getEstimatedLoad()))
+            conn -> scheduler.decide(job, conn)
+                .flatMapCompletable(worker -> {
+                    if (scheduler instanceof K8SWorkerScheduler) {
+                        return Completable.complete();
+                    } else {
+                        return updateWorkerLoad(conn, worker.getHostIP(),
+                                worker.getCurrentLoad() - job.getEstimatedLoad());
+                    }
+                })
                 .andThen(insertHistoricalJob(conn, job))
                 // delete old job
                 .andThen(deleteActiveJob(conn, job))
