@@ -21,11 +21,16 @@ import io.vertx.reactivex.core.http.HttpServerRequest;
 import io.vertx.reactivex.ext.web.client.HttpRequest;
 import io.vertx.reactivex.ext.web.client.HttpResponse;
 import io.vertx.reactivex.ext.web.client.WebClient;
+import io.vertx.reactivex.ext.web.multipart.MultipartForm;
+import org.eclipse.jifa.common.enums.FileType;
 import org.eclipse.jifa.master.Constant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.util.Map;
+
+import static org.eclipse.jifa.master.Constant.*;
 
 public class WorkerClient {
 
@@ -100,6 +105,15 @@ public class WorkerClient {
             request.queryParams().addAll(params);
         }
         return request.rxSend();
+    }
+
+    public static Single<HttpResponse<Buffer>> uploadFile(String hostIp, File file, String name, FileType type) {
+        HttpRequest<Buffer> request = request(HttpMethod.POST, hostIp, PORT, uri(FILE_UPLOAD));
+        MultipartForm formDataParts = MultipartForm.create();
+        formDataParts.attribute("fileName", name)
+                     .attribute("type", type.name())
+                     .binaryFileUpload(file.getName(), file.getName(), file.getPath(), "application/octet-stream");
+        return request.rxSendMultipartForm(formDataParts);
     }
 
     private static HttpRequest<Buffer> request(HttpMethod method, String hostIP, int port, String uri) {

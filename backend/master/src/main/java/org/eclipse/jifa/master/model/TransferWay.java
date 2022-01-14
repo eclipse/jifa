@@ -20,7 +20,11 @@ public enum TransferWay {
 
     SCP(uri(TRANSFER_BY_SCP), "path"),
 
-    OSS(uri(TRANSFER_BY_OSS), "objectName");
+    OSS(uri(TRANSFER_BY_OSS), "objectName"),
+
+    S3(uri(TRANSFER_BY_S3), "objectName"),
+
+    UPLOAD(uri(FILE_UPLOAD), "");
 
     private String[] pathKey;
 

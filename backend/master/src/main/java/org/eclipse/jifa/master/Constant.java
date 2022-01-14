@@ -64,9 +64,11 @@ public interface Constant extends org.eclipse.jifa.common.Constant {
     String FILE_DELETE = "/file/delete";
     String FILE_BATCH_DELETE = "/file/batchDelete";
     String FILE_SYNC = "/file/sync";
+    String FILE_UPLOAD = "/file/upload";
     String TRANSFER_BY_URL = "/file/transferByURL";
     String TRANSFER_BY_SCP = "/file/transferBySCP";
     String TRANSFER_BY_OSS = "/file/transferByOSS";
+    String TRANSFER_BY_S3 = "/file/transferByS3";
     String TRANSFER_PROGRESS = "/file/transferProgress";
 
     String FILE_UPDATE_DISPLAY_NAME = "/file/updateDisplayName";

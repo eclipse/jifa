@@ -224,17 +224,26 @@ class FileRoute extends BaseRoute {
     }
 
     @RouteMeta(path = "/file/upload", method = HttpMethod.POST)
-    void upload(RoutingContext context, @ParamKey("type") FileType type) {
+    void upload(RoutingContext context, @ParamKey("type") FileType type,
+                @ParamKey(value = "fileName", mandatory = false) String fileName) {
         FileUpload[] uploads = context.fileUploads().toArray(new FileUpload[0]);
         try {
             if (uploads.length > 0) {
                 // only process the first file
                 FileUpload file = uploads[0];
-                String fileName = decorateFileName(file.fileName());
-                FileSupport.initInfoFile(type, file.fileName(), fileName);
-                context.vertx().fileSystem()
-                       .moveBlocking(file.uploadedFileName(), FileSupport.filePath(type, fileName));
-                FileSupport.updateTransferState(type, fileName, FileTransferState.SUCCESS);
+                if (fileName == null || fileName.isBlank()) {
+                    fileName = decorateFileName(file.fileName());
+                }
+                TransferListener listener = FileSupport.createTransferListener(type, file.fileName(), fileName);
+                listener.updateState(ProgressState.IN_PROGRESS);
+                try {
+                    context.vertx().fileSystem()
+                           .moveBlocking(file.uploadedFileName(), FileSupport.filePath(type, fileName));
+                    FileSupport.updateTransferState(type, fileName, FileTransferState.SUCCESS);
+                } finally {
+                    FileSupport.updateTransferState(type, fileName, FileTransferState.ERROR);
+                    FileSupport.removeTransferListener(fileName);
+                }
             }
             HTTPRespGuarder.ok(context);
         } finally {

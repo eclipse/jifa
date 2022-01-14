@@ -37,6 +37,7 @@ import org.eclipse.jifa.master.entity.Worker;
 import org.eclipse.jifa.master.entity.enums.Deleter;
 import org.eclipse.jifa.master.entity.enums.JobState;
 import org.eclipse.jifa.master.entity.enums.JobType;
+import org.eclipse.jifa.master.model.TransferWay;
 import org.eclipse.jifa.master.service.impl.helper.ConfigHelper;
 import org.eclipse.jifa.master.service.impl.helper.FileHelper;
 import org.eclipse.jifa.master.service.impl.helper.JobHelper;
@@ -404,10 +405,15 @@ public class Pivot {
                 return inTransaction(
                     conn -> conn.rxUpdateWithParams(FileSQL.INSERT, params)
                                 .doOnSuccess(SQLAssert::assertUpdated).ignoreElement()
-                                .andThen(post(job.getHostIP(), file.getTransferWay().getUri(), file.getTransferInfo()))
-                                .doOnSuccess(resp -> SERVICE_ASSERT
-                                    .isTrue(resp.statusCode() == Constant.HTTP_POST_CREATED_STATUS,
-                                            resp.bodyAsString())))
+                                .andThen(
+                                    // upload file need special process
+                                    file.getTransferWay() != TransferWay.UPLOAD ?
+                                    post(job.getHostIP(), file.getTransferWay().getUri(), file.getTransferInfo())
+                                        .doOnSuccess(resp -> SERVICE_ASSERT.isTrue(
+                                            resp.statusCode() == Constant.HTTP_POST_CREATED_STATUS,
+                                            resp.bodyAsString())).ignoreElement() :
+                                    Completable.complete()
+                                ).toSingleDefault(job))
                     .doOnError(e -> finish(job).subscribe()).ignoreElement();
             default:
                 return Completable.complete();

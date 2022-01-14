@@ -19,6 +19,7 @@ import io.vertx.reactivex.core.MultiMap;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.core.buffer.Buffer;
 import io.vertx.reactivex.core.http.HttpServerRequest;
+import io.vertx.reactivex.ext.web.FileUpload;
 import io.vertx.reactivex.ext.web.Router;
 import io.vertx.reactivex.ext.web.RoutingContext;
 import io.vertx.reactivex.ext.web.client.HttpRequest;
@@ -104,6 +105,7 @@ class FileRoute extends BaseRoute implements Constant {
         apiRouter.post().path(TRANSFER_BY_URL).handler(context -> transfer(context, TransferWay.URL));
         apiRouter.post().path(TRANSFER_BY_SCP).handler(context -> transfer(context, TransferWay.SCP));
         apiRouter.post().path(TRANSFER_BY_OSS).handler(context -> transfer(context, TransferWay.OSS));
+        apiRouter.post().path(TRANSFER_BY_S3).handler(context -> transfer(context, TransferWay.S3));
 
         apiRouter.get().path(TRANSFER_PROGRESS).handler(this::fileTransportProgress);
         apiRouter.get().path(PUBLIC_KEY).handler(this::publicKey);
@@ -117,6 +119,8 @@ class FileRoute extends BaseRoute implements Constant {
         apiRouter.get().path(UPLOAD_TO_OSS_PROGRESS).handler(this::uploadToOSSProgress);
 
         apiRouter.get().path(DOWNLOAD).handler(this::download);
+
+        apiRouter.post().path(FILE_UPLOAD).handler(this::upload);
     }
 
     private void files(RoutingContext context) {
@@ -339,5 +343,45 @@ class FileRoute extends BaseRoute implements Constant {
                 .subscribe(resp -> context.response().end(),
                         t -> HTTPRespGuarder.fail(context, t));
 
+    }
+
+    private void upload(RoutingContext context) {
+        FileUpload[] fileUploads = context.fileUploads().toArray(new FileUpload[0]);
+        if (fileUploads.length == 0) {
+            HTTPRespGuarder.ok(context);
+            return;
+        }
+        FileUpload file = fileUploads[0];
+        String userId = context.<User>get(USER_INFO_KEY).getId();
+        HttpServerRequest request = context.request();
+        String origin = file.fileName();
+        FileType type = FileType.valueOf(context.request().getParam("type"));
+
+        String name = buildFileName(userId, origin);
+        request.params().add("fileName", name);
+
+        fileService.rxTransfer(userId, type, origin, name, TransferWay.UPLOAD, convert(request.params()))
+                   .flatMap(job -> WorkerClient.uploadFile(job.getHostIP(),
+                                                           new java.io.File(file.uploadedFileName()),
+                                                           name,
+                                                           type))
+                   .subscribe(resp -> {
+                                  FileTransferState state = resp.statusCode() == Constant.HTTP_POST_CREATED_STATUS ?
+                                                            FileTransferState.SUCCESS : FileTransferState.ERROR;
+                                  fileService.rxTransferDone(name, state, file.size())
+                                             .subscribe(
+                                                 () -> HTTPRespGuarder
+                                                     .ok(context, resp.statusCode(), new TransferringFile(name)),
+                                                 t -> HTTPRespGuarder.fail(context, t)
+                                             );
+                                  context.vertx().executeBlocking(
+                                      p -> {
+                                          for (FileUpload f : fileUploads) {
+                                              context.vertx().fileSystem().delete(f.uploadedFileName());
+                                          }
+                                      }
+                                  );
+                              },
+                              t -> HTTPRespGuarder.fail(context, t));
     }
 }

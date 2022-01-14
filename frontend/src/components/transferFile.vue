@@ -55,7 +55,7 @@
       </b-card>
     </el-dialog>
 
-    <el-tabs value="scp" style="margin-top: 10px">
+    <el-tabs value="upload" style="margin-top: 10px">
       <el-tab-pane label="Upload" name="upload">
         <div align="center">
           <el-upload ref="uploadComp"
