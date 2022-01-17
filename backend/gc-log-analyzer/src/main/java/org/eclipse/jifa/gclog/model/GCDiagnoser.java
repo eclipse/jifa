@@ -114,12 +114,15 @@ public class GCDiagnoser {
         }
         I18nStringView problem = null;
         I18nStringView suggestion;
-        if ((double) model.basicInfo.getYoungGenSize() / model.basicInfo.getHeapSize() < SMALL_GENERATION_THRESHOLD) {
+        double percent = (double) model.basicInfo.getYoungGenSize() / model.basicInfo.getHeapSize();
+        if (percent < SMALL_GENERATION_THRESHOLD) {
             problem = new I18nStringView("jifa.gclog.diagnosis.problems.smallYoungGen",
-                    "percent", (int) ((double) model.basicInfo.getYoungGenSize() / model.basicInfo.getHeapSize()));
-        } else if ((double) model.basicInfo.getOldGenSize() / model.basicInfo.getHeapSize() < SMALL_GENERATION_THRESHOLD) {
+                    "percent", String.format("%.2f", 100 * percent));
+        }
+        percent = (double) model.basicInfo.getOldGenSize() / model.basicInfo.getHeapSize();
+        if (percent < SMALL_GENERATION_THRESHOLD) {
             problem = new I18nStringView("jifa.gclog.diagnosis.problems.smallOldGen",
-                    "percent", (int) ((double) model.basicInfo.getOldGenSize() / model.basicInfo.getHeapSize()));
+                    "percent", String.format("%.2f", 100 * percent));
         }
         if (problem != null) {
             suggestion = new I18nStringView("jifa.gclog.diagnosis.suggestions.setReasonableXmn");
