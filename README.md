@@ -80,6 +80,15 @@ Jifa provides several deploy patterns:
 
 See [deployment document](deploy/README.md) for more details.
 
-# Documents
+## Quick demo
+
+A docker image is prepared for quick demo:
+
+```bash
+$ docker pull jifadocker/jifa-worker:demo
+$ docker run -p 8102:8102 jifadocker/jifa-worker:demo
+```
+
+## Documents
 + 1. [Jifa Customization](CUSTOMIZATION.md)
 + 2. [Contribution Guide](CONTRIBUTING.md)
