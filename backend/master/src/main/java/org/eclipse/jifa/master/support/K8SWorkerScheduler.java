@@ -200,9 +200,9 @@ public class K8SWorkerScheduler implements WorkerScheduler {
         }
 
         if (getWorkerInfo(id) != null) {
-            LOGGER.debug("Create worker " + id + " but it already exists");
+            LOGGER.debug("Create worker {} but it already exists", id);
         } else {
-            LOGGER.debug("Create worker " + id + "[MemRequest:" + requestMemSize + "bytes]");
+            LOGGER.debug("Create worker {} [MemRequest: {}bytes]", id, requestMemSize);
             createWorker(id, requestMemSize);
         }
     }
