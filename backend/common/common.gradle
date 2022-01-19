@@ -15,7 +15,7 @@ plugins {
 }
 
 dependencies {
-    api "org.apache.logging.log4j:log4j-slf4j-impl:2.16.0"
+    api "org.apache.logging.log4j:log4j-slf4j-impl:2.17.1"
 
     api 'commons-lang:commons-lang:2.6'
 
