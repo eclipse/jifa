@@ -51,10 +51,7 @@ import org.eclipse.jifa.master.service.sql.GlobalLockSQL;
 import org.eclipse.jifa.master.service.sql.JobSQL;
 import org.eclipse.jifa.master.service.sql.MasterSQL;
 import org.eclipse.jifa.master.service.sql.WorkerSQL;
-import org.eclipse.jifa.master.support.Factory;
-import org.eclipse.jifa.master.support.Pattern;
-import org.eclipse.jifa.master.support.WorkerClient;
-import org.eclipse.jifa.master.support.WorkerScheduler;
+import org.eclipse.jifa.master.support.*;
 import org.eclipse.jifa.master.task.SchedulingTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -107,6 +104,8 @@ public class Pivot {
 
     private WorkerScheduler scheduler;
 
+    private boolean isDefaultPattern;
+
     private Pivot() {
     }
 
@@ -121,6 +120,7 @@ public class Pivot {
             jm.vertx = vertx;
 
             Pattern pattern = Pattern.valueOf(ConfigHelper.getString(jm.config(SCHEDULER_PATTERN)));
+            jm.isDefaultPattern = pattern == Pattern.DEFAULT;
             jm.scheduler = Factory.create(pattern);
 
             jm.pendingJobMaxCount = ConfigHelper.getInt(jm.config(PENDING_JOB_MAX_COUNT_KEY));
@@ -150,6 +150,11 @@ public class Pivot {
 
     public boolean isLeader() {
         return currentMaster.isLeader();
+    }
+
+    public boolean isDefaultPattern() {
+        SERVICE_ASSERT.isTrue(scheduler instanceof DefaultWorkerScheduler, "must be");
+        return isDefaultPattern;
     }
 
     public void setSchedulingTask(SchedulingTask task) {
@@ -277,7 +282,7 @@ public class Pivot {
         @SuppressWarnings("rawtypes")
         Map[] maps = new Map[files.length];
         for (int i = 0; i < files.length; i++) {
-            Map<String, String> map= new HashMap<>();
+            Map<String, String> map = new HashMap<>();
             map.put("name", files[i].getName());
             map.put("type", files[i].getType().name());
             maps[i] = map;
@@ -344,9 +349,14 @@ public class Pivot {
 
     private Completable finish(Job job, Function<SQLConnection, Completable> post) {
         return inTransactionAndLock(
-            conn -> selectWorker(conn, job.getHostIP())
-                .flatMapCompletable(worker -> updateWorkerLoad(conn, worker.getHostIP(),
-                                                               worker.getCurrentLoad() - job.getEstimatedLoad()))
+            conn -> scheduler.decide(job, conn)
+                .flatMapCompletable(worker -> {
+                    if (isDefaultPattern()) {
+                        return updateWorkerLoad(conn, worker.getHostIP(), worker.getCurrentLoad() - job.getEstimatedLoad());
+                    } else {
+                        return Completable.complete();
+                    }
+                })
                 .andThen(insertHistoricalJob(conn, job))
                 // delete old job
                 .andThen(deleteActiveJob(conn, job))

@@ -30,3 +30,6 @@ mat-deps
 k8s/*.tgz
 cloud/
 *.tgz
+
+bin
+deploy/k8s_pattern/*.log

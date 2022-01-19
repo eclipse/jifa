@@ -20,12 +20,47 @@ import heapDump from "./components/heapdump/HeapDump"
 
 import auth from "./components/auth/Auth"
 
-import axios from "axios";
+import axios from "axios"
 
 import notFound from "./components/404"
 
 import VueInsatence from "./main"
-import JifaGlobal from "./Jifa";
+
+import JifaGlobal from "./Jifa"
+
+import axiosRetry from "axios-retry"
+
+axiosRetry(axios, {
+  retries: 120,
+  retryDelay: (retryCount) => {
+    return 2000;
+  },
+  retryCondition: (error) => {
+    let resp = error.response
+    if (resp) {
+      // Retry original request when rresponded something like
+      // {errorCode: "RETRY", "ServiceException: target_file_name"}
+      let status = resp.status
+      let data = resp.data
+      if (status === 500 || status === 400 || status === 401 || status === 403) {
+        if (data && data.hasOwnProperty('errorCode')) {
+          if (data.errorCode === 'RETRY' && data.message !== undefined) {
+            let [, targetName] = data.message.split(": ");
+            if (error.config.data !== undefined) {
+              if (error.config.data.indexOf("&retry=") === -1) {
+                error.config.data = error.config.data + "&retry=" + targetName
+              }
+            } else {
+              error.config.data = "retry=" + targetName
+            }
+            return true;
+          }
+        }
+      }
+    }
+    return false;
+  }
+});
 
 Vue.use(VueRouter)
 

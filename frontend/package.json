@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "axios": "^0.18.1",
+    "axios-retry": "^3.2.4",
     "bootstrap-vue": "^2.0.0-rc.19",
     "chart.js": "^2.8.0",
     "echarts": "^4.6.0",

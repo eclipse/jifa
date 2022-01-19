@@ -71,6 +71,8 @@ public enum ErrorCode {
 
     FILE_TOO_BIG,
 
+    RETRY,
+
     RELEASE_PENDING_JOB;
 
     public boolean isFatal() {

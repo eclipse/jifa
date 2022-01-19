@@ -17,25 +17,18 @@ import io.kubernetes.client.openapi.ApiClient;
 import io.kubernetes.client.openapi.ApiException;
 import io.kubernetes.client.openapi.Configuration;
 import io.kubernetes.client.openapi.apis.CoreV1Api;
-import io.kubernetes.client.openapi.models.V1ContainerPort;
-import io.kubernetes.client.openapi.models.V1PersistentVolumeClaimVolumeSource;
-import io.kubernetes.client.openapi.models.V1Pod;
-import io.kubernetes.client.openapi.models.V1PodBuilder;
-import io.kubernetes.client.openapi.models.V1ResourceRequirements;
-import io.kubernetes.client.openapi.models.V1Volume;
-import io.kubernetes.client.openapi.models.V1VolumeMount;
+import io.kubernetes.client.openapi.models.*;
 import io.kubernetes.client.util.Config;
 import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.core.Vertx;
-import io.vertx.reactivex.core.buffer.Buffer;
 import io.vertx.reactivex.ext.sql.SQLConnection;
-import io.vertx.reactivex.ext.web.client.HttpResponse;
-import org.eclipse.jifa.master.Constant;
+import io.vertx.serviceproxy.ServiceException;
+import org.eclipse.jifa.common.ErrorCode;
+import org.eclipse.jifa.common.JifaException;
 import org.eclipse.jifa.master.entity.Job;
 import org.eclipse.jifa.master.entity.Worker;
-import org.eclipse.jifa.master.entity.enums.JobType;
 import org.eclipse.jifa.master.model.WorkerInfo;
 import org.eclipse.jifa.master.service.impl.Pivot;
 import org.eclipse.jifa.master.task.PVCCleanupTask;
@@ -45,6 +38,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.net.ConnectException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -54,6 +48,8 @@ import static org.eclipse.jifa.master.Constant.*;
 public class K8SWorkerScheduler implements WorkerScheduler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(K8SWorkerScheduler.class);
+
+    private static final String WORKER_PREFIX = "jifa-worker";
 
     private static String NAMESPACE;
 
@@ -142,7 +138,12 @@ public class K8SWorkerScheduler implements WorkerScheduler {
 
     @Override
     public Single<Worker> decide(Job job, SQLConnection conn) {
-        return null;
+        String name = buildWorkerName(job);
+        String workerIp = getWorkerInfo(name).getIp();
+        Worker handmake = new Worker();
+        handmake.setHostIP(workerIp);
+        handmake.setHostName(name);
+        return Single.just(handmake);
     }
 
     @Override
@@ -151,34 +152,46 @@ public class K8SWorkerScheduler implements WorkerScheduler {
     }
 
     private String buildWorkerName(Job job) {
-        return "my-worker" + job.getTarget().hashCode();
+        return WORKER_PREFIX + job.getTarget().hashCode();
     }
 
     @Override
     public Completable start(Job job) {
+        String name = buildWorkerName(job);
+        Map<String, String> config = new HashMap<>();
+        // FIXME
+        config.put("requestMemSize", Long.toString(512 * 1024 * 1024));
 
-        return Completable.fromAction(() -> {
-            String name = buildWorkerName(job);
-            Map<String, String> config = new HashMap<>();
-            if (job.getType() != JobType.FILE_TRANSFER) {
-                // see AnalyzerRoute.calculateLoad
-                long size = job.getEstimatedLoad() / 10 * 1024 * 1024 * 1024;
-                config.put("requestMemSize", Long.toString(size));
-            }
-            schedule(name, config);
+        schedule(name, config);
 
-            // FIXME
-            while (true) {
-                HttpResponse<Buffer> response =
-                    WorkerClient.get(getWorkerInfo(name).getIp(), Constant.uri(Constant.PING)).blockingGet();
-                if (response.statusCode() == Constant.HTTP_GET_OK_STATUS_CODE) {
-                    return;
-                }
-            }
-        });
+        String workerIp = getWorkerInfo(name).getIp();
+
+        if (workerIp == null) {
+            // Front-end would retry original request until worker pod has been started or
+            // timeout threshold reached.
+            return Completable.error(new ServiceException(ErrorCode.RETRY.ordinal(), job.getTarget()));
+        }
+        return WorkerClient.get(workerIp, uri(PING))
+                .flatMap(resp -> Single.just("OK"))
+                .onErrorReturn(err -> {
+                    if (err instanceof ConnectException) {
+                        // ConnectionException is tolerable because it simply indicates worker is still
+                        // starting
+                        return "RETRY";
+                    }
+                    return err.getMessage();
+                }).flatMapCompletable(msg -> {
+                    if (msg.equals("OK")) {
+                        return Completable.complete();
+                    } else if (msg.equals("RETRY")) {
+                        return Completable.error(new ServiceException(ErrorCode.RETRY.ordinal(), job.getTarget()));
+                    } else {
+                        return Completable.error(new JifaException("Can not start worker due to internal error: " + msg));
+                    }
+                });
     }
 
-    public void schedule(String id, Map<String, String> config) {
+    private void schedule(String id, Map<String, String> config) {
         long requestMemSize = 0L;
 
         String tmp = config.get("requestMemSize");
@@ -187,9 +200,9 @@ public class K8SWorkerScheduler implements WorkerScheduler {
         }
 
         if (getWorkerInfo(id) != null) {
-            LOGGER.debug("Start worker " + id + " but it already exists");
+            LOGGER.debug("Create worker {} but it already exists", id);
         } else {
-            LOGGER.debug("Start worker " + id + "[MemRequest:" + requestMemSize + "bytes]");
+            LOGGER.debug("Create worker {} [MemRequest: {}bytes]", id, requestMemSize);
             createWorker(id, requestMemSize);
         }
     }
@@ -207,7 +220,7 @@ public class K8SWorkerScheduler implements WorkerScheduler {
         });
     }
 
-    public WorkerInfo getWorkerInfo(String id) {
+    private WorkerInfo getWorkerInfo(String id) {
         V1Pod npod = null;
         try {
             npod = api.readNamespacedPod(id, NAMESPACE, null, null, null);

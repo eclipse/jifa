@@ -12,6 +12,7 @@
  ********************************************************************************/
 package org.eclipse.jifa.common.vo;
 
+import io.vertx.serviceproxy.ServiceException;
 import lombok.Data;
 import org.eclipse.jifa.common.ErrorCode;
 import org.eclipse.jifa.common.JifaException;
@@ -26,6 +27,12 @@ public class ErrorResult {
     public ErrorResult(Throwable t) {
         if (t instanceof JifaException) {
             errorCode = ((JifaException) t).getCode();
+        }
+        if (t instanceof ServiceException) {
+            ServiceException se = (ServiceException) t;
+            if (ErrorCode.values().length > se.failureCode() && se.failureCode() >= 0) {
+                errorCode = ErrorCode.values()[se.failureCode()];
+            }
         }
 
         if (t instanceof IllegalArgumentException) {

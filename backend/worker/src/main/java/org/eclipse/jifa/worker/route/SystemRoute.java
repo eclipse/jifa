@@ -32,4 +32,9 @@ class SystemRoute extends BaseRoute {
 
         promise.complete(new DiskUsage(totalSpaceInMb, usedSpaceInMb));
     }
+
+    @RouteMeta(path = "/system/ping")
+    void ping(Promise<Void> promise) {
+        promise.complete();
+    }
 }

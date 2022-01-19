@@ -20,5 +20,7 @@ tar caf jifa.tgz artifacts
 mv jifa.tgz scripts/docker_images/
 cd scripts/docker_images
 
+# For non minikube users, please comment out below line
+eval $(minikube docker-env)
 docker build -t jifa-master-open "." -f Dockerfile_master
 docker build -t jifa-worker-open "." -f Dockerfile_worker
