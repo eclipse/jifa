@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020, 2021 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -13,7 +13,7 @@
 package org.eclipse.jifa.worker.route.heapdump;
 
 import org.eclipse.jifa.hda.api.HeapDumpAnalyzer;
-import org.eclipse.jifa.hda.api.ProgressListener;
+import org.eclipse.jifa.common.listener.ProgressListener;
 import org.eclipse.jifa.worker.route.BaseRoute;
 import org.eclipse.jifa.worker.route.MappingPrefix;
 import org.eclipse.jifa.worker.support.Analyzer;

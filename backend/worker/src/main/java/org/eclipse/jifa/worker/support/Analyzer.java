@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020, 2021 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -20,10 +20,9 @@ import org.eclipse.jifa.common.enums.FileType;
 import org.eclipse.jifa.common.enums.ProgressState;
 import org.eclipse.jifa.common.util.ErrorUtil;
 import org.eclipse.jifa.common.util.FileUtil;
-import org.eclipse.jifa.hda.api.DefaultProgressListener;
+import org.eclipse.jifa.common.listener.DefaultProgressListener;
 import org.eclipse.jifa.hda.api.HeapDumpAnalyzer;
-import org.eclipse.jifa.hda.api.ProgressListener;
-import org.eclipse.jifa.worker.Constant;
+import org.eclipse.jifa.common.listener.ProgressListener;
 import org.eclipse.jifa.worker.Worker;
 import org.eclipse.jifa.worker.WorkerGlobal;
 import org.slf4j.Logger;

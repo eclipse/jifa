@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -25,7 +25,7 @@ import org.eclipse.jifa.common.vo.support.SortTableGenerator;
 import org.eclipse.jifa.hda.api.AnalysisException;
 import org.eclipse.jifa.hda.api.HeapDumpAnalyzer;
 import org.eclipse.jifa.hda.api.Model;
-import org.eclipse.jifa.hda.api.ProgressListener;
+import org.eclipse.jifa.common.listener.ProgressListener;
 import org.eclipse.mat.SnapshotException;
 import org.eclipse.mat.internal.snapshot.SnapshotQueryContext;
 import org.eclipse.mat.parser.model.ClassImpl;
@@ -88,7 +88,7 @@ import java.util.stream.Collectors;
 
 import static org.eclipse.jifa.common.vo.support.SearchPredicate.createPredicate;
 import static org.eclipse.jifa.hda.api.Model.*;
-import static org.eclipse.jifa.hda.api.ProgressListener.NoOpProgressListener;
+import static org.eclipse.jifa.common.listener.ProgressListener.NoOpProgressListener;
 import static org.eclipse.jifa.hda.impl.AnalysisContext.ClassLoaderExplorerData;
 import static org.eclipse.jifa.hda.impl.AnalysisContext.DirectByteBufferData;
 

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -15,7 +15,7 @@ package org.eclipse.jifa.hdp.provider;
 
 import org.eclipse.jifa.common.JifaException;
 import org.eclipse.jifa.hda.api.HeapDumpAnalyzer;
-import org.eclipse.jifa.hda.api.ProgressListener;
+import org.eclipse.jifa.common.listener.ProgressListener;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.Constants;
@@ -60,6 +60,7 @@ public class MATProvider implements HeapDumpAnalyzer.Provider {
             commonBase + ".cache",
             commonBase + ".vo",
             commonBase + ".vo.support",
+            commonBase + ".listener",
             "net.sf.cglib.beans",
             "net.sf.cglib.core",
             "net.sf.cglib.core.internal",

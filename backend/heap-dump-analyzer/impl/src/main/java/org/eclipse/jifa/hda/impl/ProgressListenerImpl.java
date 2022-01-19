@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -14,7 +14,7 @@
 package org.eclipse.jifa.hda.impl;
 
 import org.eclipse.jifa.hda.api.FilterProgressListener;
-import org.eclipse.jifa.hda.api.ProgressListener;
+import org.eclipse.jifa.common.listener.ProgressListener;
 import org.eclipse.mat.util.IProgressListener;
 
 public class ProgressListenerImpl extends FilterProgressListener implements IProgressListener {
