@@ -75,7 +75,7 @@ spec:
 apiVersion: v1
 kind: Pod
 metadata:
-  name: my-jifa-master
+  name: jifa-master
   labels:
     app: jifa-master
 spec:

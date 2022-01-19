@@ -31,10 +31,5 @@ k8s/*.tgz
 cloud/
 *.tgz
 
-backend/common/bin/
-backend/heap-dump-analyzer/api/bin/
-backend/heap-dump-analyzer/impl/bin/
-backend/heap-dump-analyzer/provider/bin/
-backend/master/bin/
-backend/worker/bin/
+bin
 deploy/k8s_pattern/*.log

@@ -49,7 +49,7 @@ public class K8SWorkerScheduler implements WorkerScheduler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(K8SWorkerScheduler.class);
 
-    private static final String WORKER_PREFIX = "my-worker";
+    private static final String WORKER_PREFIX = "jifa-worker";
 
     private static String NAMESPACE;
 

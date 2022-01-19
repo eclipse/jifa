@@ -17,7 +17,7 @@ metadata:
     name: jifa-worker
 spec:
   containers:
-    - name: my-jifa-worker
+    - name: jifa-worker-test
       image: docker.io/jifadocker/jifa-worker-open
       ports:
         - containerPort: 8102
