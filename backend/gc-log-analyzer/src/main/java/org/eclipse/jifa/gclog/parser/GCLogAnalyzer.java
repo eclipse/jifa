@@ -14,8 +14,8 @@
 package org.eclipse.jifa.gclog.parser;
 
 import org.eclipse.jifa.common.JifaException;
+import org.eclipse.jifa.common.listener.ProgressListener;
 import org.eclipse.jifa.gclog.model.GCModel;
-import org.eclipse.jifa.hda.api.ProgressListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

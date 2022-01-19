@@ -13,9 +13,9 @@
 
 package org.eclipse.jifa.gclog;
 
+import org.eclipse.jifa.common.listener.DefaultProgressListener;
 import org.eclipse.jifa.gclog.model.*;
 import org.eclipse.jifa.gclog.vo.*;
-import org.eclipse.jifa.hda.api.DefaultProgressListener;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

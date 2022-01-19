@@ -13,6 +13,7 @@
 
 package org.eclipse.jifa.gclog.model;
 
+import org.eclipse.jifa.common.listener.ProgressListener;
 import org.eclipse.jifa.common.util.ErrorUtil;
 import org.eclipse.jifa.gclog.model.TimeLineChartView.TimeLineChartEvent;
 import org.eclipse.jifa.gclog.util.DoubleData;
@@ -24,7 +25,6 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.eclipse.jifa.common.request.PagingRequest;
 import org.eclipse.jifa.common.vo.PageView;
-import org.eclipse.jifa.hda.api.ProgressListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

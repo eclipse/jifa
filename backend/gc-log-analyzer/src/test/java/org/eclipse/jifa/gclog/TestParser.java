@@ -13,13 +13,13 @@
 
 package org.eclipse.jifa.gclog;
 
+import org.eclipse.jifa.common.listener.DefaultProgressListener;
 import org.eclipse.jifa.gclog.model.*;
 import org.eclipse.jifa.gclog.parser.*;
 import org.eclipse.jifa.gclog.vo.GCCollectionResultItem;
 import org.eclipse.jifa.gclog.vo.GCCollectorType;
 import org.eclipse.jifa.gclog.vo.GCLogMetadata;
 import org.eclipse.jifa.gclog.vo.GCLogStyle;
-import org.eclipse.jifa.hda.api.DefaultProgressListener;
 import org.junit.Assert;
 import org.junit.Test;
 
