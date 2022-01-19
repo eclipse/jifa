@@ -25,6 +25,7 @@ import io.vertx.reactivex.ext.jdbc.JDBCClient;
 import io.vertx.reactivex.ext.sql.SQLClientHelper;
 import io.vertx.reactivex.ext.sql.SQLConnection;
 import io.vertx.reactivex.ext.web.client.HttpResponse;
+
 import org.eclipse.jifa.common.ErrorCode;
 import org.eclipse.jifa.common.enums.FileTransferState;
 import org.eclipse.jifa.common.enums.ProgressState;
@@ -108,6 +109,8 @@ public class Pivot {
 
     private WorkerScheduler scheduler;
 
+    private boolean isDefaultPattern;
+
     private Pivot() {
     }
 
@@ -122,6 +125,7 @@ public class Pivot {
             jm.vertx = vertx;
 
             Pattern pattern = Pattern.valueOf(ConfigHelper.getString(jm.config(SCHEDULER_PATTERN)));
+            jm.isDefaultPattern = pattern == Pattern.DEFAULT;
             jm.scheduler = Factory.create(pattern);
 
             jm.pendingJobMaxCount = ConfigHelper.getInt(jm.config(PENDING_JOB_MAX_COUNT_KEY));
@@ -151,6 +155,11 @@ public class Pivot {
 
     public boolean isLeader() {
         return currentMaster.isLeader();
+    }
+
+    public boolean isDefaultPattern() {
+        SERVICE_ASSERT.isTrue(scheduler instanceof DefaultWorkerScheduler, "must be");
+        return isDefaultPattern;
     }
 
     public void setSchedulingTask(SchedulingTask task) {
@@ -347,11 +356,10 @@ public class Pivot {
         return inTransactionAndLock(
             conn -> scheduler.decide(job, conn)
                 .flatMapCompletable(worker -> {
-                    if (scheduler instanceof K8SWorkerScheduler) {
-                        return Completable.complete();
+                    if (isDefaultPattern()) {
+                        return updateWorkerLoad(conn, worker.getHostIP(), worker.getCurrentLoad() - job.getEstimatedLoad());
                     } else {
-                        return updateWorkerLoad(conn, worker.getHostIP(),
-                                worker.getCurrentLoad() - job.getEstimatedLoad());
+                        return Completable.complete();
                     }
                 })
                 .andThen(insertHistoricalJob(conn, job))
