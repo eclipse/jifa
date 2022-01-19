@@ -55,7 +55,6 @@ import org.eclipse.jifa.master.support.Factory;
 import org.eclipse.jifa.master.support.Pattern;
 import org.eclipse.jifa.master.support.WorkerClient;
 import org.eclipse.jifa.master.support.WorkerScheduler;
-import org.eclipse.jifa.master.support.*;
 import org.eclipse.jifa.master.task.SchedulingTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
