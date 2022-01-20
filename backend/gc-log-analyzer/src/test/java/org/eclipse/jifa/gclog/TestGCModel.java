@@ -183,29 +183,29 @@ public class TestGCModel {
         Assert.assertEquals(model.getKpi().get(PROMOTION_MAX.getName()).getValue(), 2 * 1024, DELTA);
         Assert.assertEquals(model.getKpi().get(PROMOTION_SPEED.getName()).getValue(), (2 + 2) * 1024 / 32.3, DELTA);
 
-        // monitor data
-        TimeLineChartView count = model.getMonitorChartView("count", 300000, 0);
+        // graph data
+        TimeLineChartView count = model.getGraphView("count", 300000, 0);
         Assert.assertEquals(count.getDataByTimes().get(0).getData().get(1000L), 1, DELTA);
         Assert.assertEquals(count.getDataByTimes().get(3).getData().get(3000L), 1, DELTA);
 
-        TimeLineChartView pause = model.getMonitorChartView("pause", 300000, 0);
+        TimeLineChartView pause = model.getGraphView("pause", 300000, 0);
         Assert.assertEquals(pause.getDataByTimes().get(0).getData().get(1500L), 500, DELTA);
         Assert.assertEquals(pause.getDataByTimes().get(3).getData().get(12200L), 200, DELTA);
 
-        TimeLineChartView alloRec = model.getMonitorChartView("alloRec", 10800000, 0);
+        TimeLineChartView alloRec = model.getGraphView("alloRec", 10800000, 0);
         Assert.assertEquals(alloRec.getDataByTimes().get(0).getData().get(0L), (40 + 40 + 18 + 22 + 6) / 60.0, DELTA);
         Assert.assertEquals(alloRec.getDataByTimes().get(1).getData().get(0L), (8 + 10 + 32 + 10) / 60.0, DELTA);
 
-        TimeLineChartView promotion = model.getMonitorChartView("promotion", 10800000, 0);
+        TimeLineChartView promotion = model.getGraphView("promotion", 10800000, 0);
         Assert.assertEquals(promotion.getDataByTimes().get(0).getData().get(0L), (2 + 2) * 1024 / 60.0, DELTA);
 
-        TimeLineChartView heap = model.getMonitorChartView("heap", 10800000, 0);
+        TimeLineChartView heap = model.getGraphView("heap", 10800000, 0);
         Assert.assertEquals(heap.getDataByTimes().get(0).getData().get(1000L), 20, DELTA);
         Assert.assertEquals(heap.getDataByTimes().get(0).getData().get(1500L), 10, DELTA);
         Assert.assertEquals(heap.getDataByTimes().get(1).getData().get(1000L), 10, DELTA);
         Assert.assertEquals(heap.getDataByTimes().get(1).getData().get(1500L), 12, DELTA);
 
-        TimeLineChartView metaspace = model.getMonitorChartView("metaspace", 10800000, 0);
+        TimeLineChartView metaspace = model.getGraphView("metaspace", 10800000, 0);
         Assert.assertEquals(metaspace.getDataByTimes().get(0).getData().get(1000L), 15, DELTA);
         Assert.assertEquals(metaspace.getDataByTimes().get(0).getData().get(1500L), 15, DELTA);
         Assert.assertEquals(metaspace.getDataByTimes().get(1).getData().get(1500L), 20, DELTA);

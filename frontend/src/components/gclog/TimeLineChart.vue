@@ -13,7 +13,7 @@
 <template>
   <div class="box" :loading = "loading">
     <h5>{{this.title}}</h5>
-    <div style="text-align: center" v-show="noData">{{$t('jifa.gclog.monitors.noData')}}</div>
+    <div style="text-align: center" v-show="noData">{{$t('jifa.gclog.graphs.noData')}}</div>
     <div ref="canvas"  class="canvas" v-show="!noData"></div>
   </div>
 </template>
@@ -57,7 +57,7 @@ export default {
           timePoint: this.timePoint
         }
       }
-      axios.get(gclogService(this.file, 'monitor'), params).then(resp => {
+      axios.get(gclogService(this.file, 'graph'), params).then(resp => {
         const data = resp.data;
         if (data.dataByTimes.length === 0) {
           this.noData = true

@@ -15,7 +15,7 @@
     <el-col :span="22" :offset="1" v-loading="loadingMetadata">
       <el-card>
         <el-row>
-          <span style="margin-right: 30px" class="label" @change="optionChange">{{$t('jifa.gclog.monitors.timeSpan')}}:</span>
+          <span style="margin-right: 30px" class="label" @change="optionChange">{{$t('jifa.gclog.graphs.timeSpan')}}:</span>
           <el-radio-group v-model="timeSpan">
             <el-radio-button label="300000">5{{$t('jifa.gclog.minute')}}</el-radio-button>
             <el-radio-button :disabled="endTime - startTime < 30000" label="3600000">1{{$t('jifa.gclog.hour')}}</el-radio-button>
@@ -26,7 +26,7 @@
         </el-row>
         <el-row>
           <span style="margin-right: 30px" class="label">
-            {{$t('jifa.gclog.monitors.timePoint')}}:
+            {{$t('jifa.gclog.graphs.timePoint')}}:
             <el-tooltip effect="dark"
                         :content="this.$t('jifa.gclog.noRealTime')"
                         v-if="referenceTimestamp < 0"
@@ -62,7 +62,7 @@
                 :time-point="chartTimePoint"
                 :reference-timestamp="referenceTimestamp"
                 :type="'count'"
-                :title="$t('jifa.gclog.monitors.gcCount')"
+                :title="$t('jifa.gclog.graphs.gcCount')"
             />
           </el-col>
           <el-col :span="10" :offset="2">
@@ -73,7 +73,7 @@
                 :time-point="chartTimePoint"
                 :reference-timestamp="referenceTimestamp"
                 :type="'pause'"
-                :title="$t('jifa.gclog.monitors.gcPause')"
+                :title="$t('jifa.gclog.graphs.gcPause')"
             />
           </el-col>
         </el-row>
@@ -87,7 +87,7 @@
                 :time-point="chartTimePoint"
                 :reference-timestamp="referenceTimestamp"
                 :type="'heap'"
-                :title="$t('jifa.gclog.monitors.heap')"
+                :title="$t('jifa.gclog.graphs.heap')"
             />
           </el-col>
           <el-col :span="10" :offset="2">
@@ -98,7 +98,7 @@
                 :time-point="chartTimePoint"
                 :reference-timestamp="referenceTimestamp"
                 :type="'metaspace'"
-                :title="$t('jifa.gclog.monitors.metaspace')"
+                :title="$t('jifa.gclog.graphs.metaspace')"
             />
           </el-col>
         </el-row>
@@ -112,7 +112,7 @@
                 :time-point="chartTimePoint"
                 :reference-timestamp="referenceTimestamp"
                 :type="'alloRec'"
-                :title="$t('jifa.gclog.monitors.alloRec')"
+                :title="$t('jifa.gclog.graphs.alloRec')"
             />
           </el-col>
           <el-col :span="10" :offset="2">
@@ -123,7 +123,7 @@
                 :time-point="chartTimePoint"
                 :reference-timestamp="referenceTimestamp"
                 :type="'promotion'"
-                :title="$t('jifa.gclog.monitors.promotion')"
+                :title="$t('jifa.gclog.graphs.promotion')"
             />
           </el-col>
           <el-col :span="10" :offset="2">
@@ -134,7 +134,7 @@
                 :time-point="chartTimePoint"
                 :reference-timestamp="referenceTimestamp"
                 :type="'gccycle'"
-                :title="$t('jifa.gclog.monitors.gccycle')"
+                :title="$t('jifa.gclog.graphs.gccycle')"
             />
           </el-col>
         </el-row>

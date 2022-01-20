@@ -144,7 +144,7 @@ exports.default = {
       gcPhase: 'GC阶段',
       gcCauseAndPhase: '原因与阶段',
       gcDetail: 'GC详情',
-      monitor: '监控图',
+      graph: '时间图',
       count: '次数',
       avgPause: '平均暂停',
       maxPause: '最大暂停',
@@ -225,8 +225,8 @@ exports.default = {
         g1Compaction:'就是G1 Full gc',
         g1Preventive:'提前触发gc来防止出现to-space exhausted',
       },
-      monitors:{
-        noData: '在该时间段没有数据,请调整一下要查看的的时间点',
+      graphs:{
+        noData: '在该时间段没有数据',
         timeSpan:"时间跨度",
         timePoint:"时间点",
         gcCount: 'GC次数',

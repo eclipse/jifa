@@ -1043,8 +1043,8 @@ public abstract class GCModel {
         return metadata;
     }
 
-    public TimeLineChartView getMonitorChartView(String type, double timeSpan, double timePoint) {
-        double[] chartStartEndTime = decideMonitorChartStartEndTime(timePoint, timeSpan);
+    public TimeLineChartView getGraphView(String type, double timeSpan, double timePoint) {
+        double[] chartStartEndTime = decideGraphStartEndTime(timePoint, timeSpan);
         chartStartEndTime[0] = Math.floor(chartStartEndTime[0] / MS2S) * MS2S;
         chartStartEndTime[1] = Math.ceil(chartStartEndTime[1] / MS2S) * MS2S;
         double bucketInterval = getBucketInterval(timeSpan);
@@ -1088,7 +1088,7 @@ public abstract class GCModel {
         return 0;
     }
 
-    private double[] decideMonitorChartStartEndTime(double timePoint, double timeSpan) {
+    private double[] decideGraphStartEndTime(double timePoint, double timeSpan) {
         double start = timePoint - timeSpan / 2;
         double end = timePoint + timeSpan / 2;
         if (start < getStartTime()) {

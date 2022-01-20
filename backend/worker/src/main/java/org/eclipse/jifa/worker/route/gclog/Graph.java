@@ -20,14 +20,14 @@ import org.eclipse.jifa.worker.route.ParamKey;
 import org.eclipse.jifa.worker.route.RouteMeta;
 import org.eclipse.jifa.worker.support.Analyzer;
 
-public class Monitor extends GCLogBaseRoute {
-    @RouteMeta(path = "/monitor")
+public class Graph extends GCLogBaseRoute {
+    @RouteMeta(path = "/graph")
     void count(Promise<TimeLineChartView> promise,
                @ParamKey("file") String file,
                @ParamKey("type") String type,
                @ParamKey("timeSpan") double timeSpan,
                @ParamKey("timePoint") double timePoint) {
         final GCModel model = Analyzer.getOrOpenGCLogModel(file);
-        promise.complete(model.getMonitorChartView(type, timeSpan, timePoint));
+        promise.complete(model.getGraphView(type, timeSpan, timePoint));
     }
 }

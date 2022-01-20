@@ -45,9 +45,9 @@
               <GCOverview :file="file"/>
             </el-tab-pane>
 
-            <el-tab-pane name="monitor" :lazy="true">
-              <span slot="label">{{$t('jifa.gclog.monitor')}}</span>
-              <Monitor :file="file"/>
+            <el-tab-pane name="graph" :lazy="true">
+              <span slot="label">{{$t('jifa.gclog.graph')}}</span>
+              <Graphs :file="file"/>
             </el-tab-pane>
 
             <el-tab-pane name="gcCauseAndPhase" :lazy="true">
@@ -75,7 +75,7 @@
   import GCOverview from "./GCOverview";
   import GCCause from "./GCCause";
   import GCPhase from "./GCPhase";
-  import Monitor from "./Monitor";
+  import Graphs from "./Graphs";
   import GGCDetail from "./GCDetail";
 
   export default {
@@ -97,7 +97,7 @@
       GCCause,
       GCPhase,
       ViewMenu,
-      Monitor,
+      Graphs,
       GGCDetail,
     },
     methods: {

@@ -27,7 +27,7 @@ public class GCLogBaseRoute extends BaseRoute {
         ROUTES.add(GCCauseRoute.class);
         ROUTES.add(GCPhaseRoute.class);
         ROUTES.add(GCOverviewRoute.class);
-        ROUTES.add(Monitor.class);
+        ROUTES.add(Graph.class);
         ROUTES.add(GCDetailRoute.class);
         ROUTES.add(GCMetadataRoute.class);
     }
