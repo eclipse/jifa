@@ -139,11 +139,16 @@ public class K8SWorkerScheduler implements WorkerScheduler {
     @Override
     public Single<Worker> decide(Job job, SQLConnection conn) {
         String name = buildWorkerName(job);
-        String workerIp = getWorkerInfo(name).getIp();
-        Worker handmake = new Worker();
-        handmake.setHostIP(workerIp);
-        handmake.setHostName(name);
-        return Single.just(handmake);
+        WorkerInfo workerInfo = getWorkerInfo(name);
+        if (workerInfo == null) {
+            return Single.just(Worker.NOT_FOUND);
+        } else {
+            String workerIp = getWorkerInfo(name).getIp();
+            Worker handmake = new Worker();
+            handmake.setHostIP(workerIp);
+            handmake.setHostName(name);
+            return Single.just(handmake);
+        }
     }
 
     @Override
