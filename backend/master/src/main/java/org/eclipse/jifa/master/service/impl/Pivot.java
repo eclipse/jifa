@@ -153,7 +153,6 @@ public class Pivot {
     }
 
     public boolean isDefaultPattern() {
-        SERVICE_ASSERT.isTrue(scheduler instanceof DefaultWorkerScheduler, "must be");
         return isDefaultPattern;
     }
 
@@ -350,7 +349,7 @@ public class Pivot {
     private Completable finish(Job job, Function<SQLConnection, Completable> post) {
         return inTransactionAndLock(
             conn -> scheduler.decide(job, conn)
-                .flatMapCompletable(worker -> {
+                    .flatMapCompletable(worker -> {
                     if (isDefaultPattern()) {
                         return updateWorkerLoad(conn, worker.getHostIP(), worker.getCurrentLoad() - job.getEstimatedLoad());
                     } else {

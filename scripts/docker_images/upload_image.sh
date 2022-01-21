@@ -11,6 +11,7 @@
 # SPDX-License-Identifier: EPL-2.0
 #
 
+eval $(minikube docker-env)
 docker tag $(docker images jifa-master-open -q) jifadocker/jifa-master-open
 docker push jifadocker/jifa-master-open
 
