@@ -137,7 +137,7 @@ public class K8SWorkerScheduler implements WorkerScheduler {
     }
 
     @Override
-    public Single<Worker> decide(Job job, SQLConnection conn) {
+    public Single<Worker> decide(Job job) {
         String name = buildWorkerName(job);
         WorkerInfo workerInfo = getWorkerInfo(name);
         if (workerInfo == null) {

@@ -33,10 +33,9 @@ public interface WorkerScheduler {
 
     /**
      * @param job related job
-     * @param conn sql connection
      * @return worker to run the job
      */
-    Single<Worker> decide(Job job, SQLConnection conn);
+    Single<Worker> decide(Job job);
 
     /**
      * @return true is the scheduler supports pending job

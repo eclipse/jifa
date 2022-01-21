@@ -102,7 +102,7 @@ public class SchedulingTask extends BaseTask {
 
     private Single<Boolean> processNoBindingJob(Job job) {
         return pivot.inTransactionAndLock(
-            conn -> pivot.selectMostIdleWorker(conn).flatMap(
+            conn -> pivot.selectMostIdleWorker().flatMap(
                 worker -> {
                     long loadSum = worker.getCurrentLoad() + job.getEstimatedLoad();
                     if (loadSum > worker.getMaxLoad()) {
@@ -120,7 +120,7 @@ public class SchedulingTask extends BaseTask {
 
     private Single<Boolean> processBindingJob(Job job) {
         return pivot.inTransactionAndLock(
-            conn -> pivot.selectWorker(conn, job.getHostIP()).flatMap(
+            conn -> pivot.selectWorker(job.getHostIP()).flatMap(
                 worker -> {
                     String hostIP = worker.getHostIP();
                     if (pinnedHostIPs.contains(hostIP)) {

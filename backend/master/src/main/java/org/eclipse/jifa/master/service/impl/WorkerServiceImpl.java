@@ -66,7 +66,7 @@ public class WorkerServiceImpl implements WorkerService, WorkerSQL {
     @Override
     public void selectMostIdleWorker(Handler<AsyncResult<Worker>> handler) {
         dbClient.rxGetConnection()
-                .flatMap(conn -> pivot.selectMostIdleWorker(conn).doOnTerminate(conn::close))
+                .flatMap(conn -> pivot.selectMostIdleWorker().doOnTerminate(conn::close))
                 .subscribe(SingleHelper.toObserver(handler));
     }
 
