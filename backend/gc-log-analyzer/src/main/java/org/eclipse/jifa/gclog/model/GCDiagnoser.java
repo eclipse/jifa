@@ -224,6 +224,9 @@ public class GCDiagnoser {
             if (event.getCause().equals(METASPACE_GC_THRESHOLD) && event.getEventType() != FULL_GC) {
                 continue;
             }
+            if (event.getCause().equals(SYSTEM_GC) && event.getEventType() != FULL_GC) {
+                continue;
+            }
             causes.put(event.getCause());
         }
 
