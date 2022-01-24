@@ -47,8 +47,8 @@ public class DefaultWorkerScheduler implements WorkerScheduler {
     }
 
     @Override
-    public Single<Worker> decide(Job job) {
-        return pivot.decideWorker(job);
+    public Single<Worker> decide(Job job, SQLConnection conn) {
+        return pivot.decideWorker(conn, job);
     }
 
     @Override

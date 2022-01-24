@@ -127,7 +127,8 @@ public class Pivot {
                         InetAddress.getLocalHost().getHostAddress();
             LOGGER.info("Current Master Host IP is {}", ip);
 
-            jm.currentMaster = jm.selectMaster(ip).blockingGet();
+            SQLConnection sqlConnection = dbClient.rxGetConnection().blockingGet();
+            jm.currentMaster = jm.selectMaster(sqlConnection, ip).doFinally(sqlConnection::close).blockingGet();
 
             jm.scheduler.initialize(jm, vertx, config);
         } catch (Throwable t) {
@@ -192,7 +193,7 @@ public class Pivot {
             return conn.rxUpdateWithParams(INSERT_ACTIVE, buildActiveParams(job)).map(i -> job);
         }
 
-        return setFileUsed(conn, job).andThen(scheduler.decide(job).flatMap(
+        return setFileUsed(conn, job).andThen(scheduler.decide(job, conn).flatMap(
             worker -> {
                 if (scheduler.supportPendingJob()) {
                     String selectedHostIP = worker.getHostIP();
@@ -243,34 +244,34 @@ public class Pivot {
 
     public Completable processTimeoutTransferJob(Job job) {
         return dbClient.rxGetConnection()
-                       .flatMap(conn -> selectFileOrNotFount(conn, job.getTarget()).doOnTerminate(conn::close))
-                       .flatMapCompletable(
-                           file -> {
-                               if (file.found()) {
-                                   return scheduler.decide(job)
-                                       .flatMapCompletable(worker -> {
-                                           if (worker == Worker.NOT_FOUND) {
-                                               // Job has been timeout, but there is no corresponding worker which indicated
-                                               // by Job's hostIP, this only happens in K8S mode, i.e. worker has been stopped
-                                               // due to some reasons but Job is still presented. We would update Job transferState
-                                               // as Error unconditionally.
-                                               return Completable.complete()
-                                                   .doOnComplete(() -> SERVICE_ASSERT.isTrue(!isDefaultPattern, "Only happens in K8S Mode"))
-                                                   .andThen(transferDone(job.getTarget(), FileTransferState.ERROR, 0));
-                                           } else {
-                                               return WorkerClient.get(job.getHostIP(), uri(Constant.TRANSFER_PROGRESS),
-                                                       buildQueryFileTransferProgressParams(file))
-                                                   .flatMapCompletable(
-                                                       resp -> processTransferProgressResult(job.getTarget(), resp));
-                                           }
-                                       });
-                               } else {
-                                   return finish(job);
-                               }
-                           }
-                       )
-                       .doOnError((t) -> LOGGER.warn("Process time out transfer job {} error", job.getTarget(), t))
-                       .onErrorComplete();
+            .flatMapCompletable(conn ->
+                selectFileOrNotFount(conn, job.getTarget())
+                    .flatMapCompletable(file -> {
+                        if (file.found()) {
+                            return scheduler.decide(job, conn)
+                                .flatMapCompletable(worker -> {
+                                    if (worker == Worker.NOT_FOUND) {
+                                        // Job has been timeout, but there is no corresponding worker which indicated
+                                        // by Job's hostIP, this only happens in K8S mode, i.e. worker has been stopped
+                                        // due to some reasons but Job is still presented. We would update Job transferState
+                                        // as Error unconditionally.
+                                        return Completable.complete()
+                                            .doOnComplete(() -> SERVICE_ASSERT.isTrue(!isDefaultPattern, "Only happens in K8S Mode"))
+                                            .andThen(transferDone(job.getTarget(), FileTransferState.ERROR, 0));
+                                    } else {
+                                        return WorkerClient.get(job.getHostIP(), uri(Constant.TRANSFER_PROGRESS),
+                                                buildQueryFileTransferProgressParams(file))
+                                            .flatMapCompletable(
+                                                resp -> processTransferProgressResult(job.getTarget(), resp));
+                                    }
+                                });
+                        } else {
+                            return finish(job);
+                        }
+                    }).doOnTerminate(conn::close)
+            )
+            .doOnError((t) -> LOGGER.warn("Process time out transfer job {} error", job.getTarget(), t))
+            .onErrorComplete();
     }
 
     Completable transferDone(String name, FileTransferState transferState, long size) {
@@ -352,7 +353,7 @@ public class Pivot {
 
     private Completable finish(Job job, Function<SQLConnection, Completable> post) {
         return inTransactionAndLock(
-            conn -> scheduler.decide(job)
+            conn -> scheduler.decide(job, conn)
                     .flatMapCompletable(worker -> {
                     if (isDefaultPattern()) {
                         return updateWorkerLoad(conn, worker.getHostIP(), worker.getCurrentLoad() - job.getEstimatedLoad());
@@ -517,38 +518,26 @@ public class Pivot {
         return Single.just(0);
     }
 
-    public Single<Worker> decideWorker(Job job) {
-        return job.getHostIP() == null ? selectMostIdleWorker() : selectWorker(job.getHostIP());
+    public Single<Worker> decideWorker(SQLConnection conn, Job job) {
+        return job.getHostIP() == null ? selectMostIdleWorker(conn) : selectWorker(conn, job.getHostIP());
     }
 
-    private Single<Master> selectMaster(String hostIP) {
-        return dbClient.rxGetConnection()
-            .flatMap(conn ->
-                conn.rxQueryWithParams(MasterSQL.SELECT, ja(hostIP))
-                    .map(SQLHelper::singleRow)
-                    .map(MasterHelper::fromDBRecord)
-                    .doOnTerminate(conn::close)
-            );
+    private Single<Master> selectMaster(SQLConnection conn, String hostIP) {
+        return conn.rxQueryWithParams(MasterSQL.SELECT, ja(hostIP))
+            .map(SQLHelper::singleRow)
+            .map(MasterHelper::fromDBRecord);
     }
 
-    public Single<Worker> selectMostIdleWorker() {
-        return dbClient.rxGetConnection()
-            .flatMap(conn ->
-                conn.rxQuery(WorkerSQL.SELECT_MOST_IDLE)
-                    .map(SQLHelper::singleRow)
-                    .map(WorkerHelper::fromDBRecord)
-                    .doOnTerminate(conn::close)
-            );
+    public Single<Worker> selectMostIdleWorker(SQLConnection conn) {
+        return conn.rxQuery(WorkerSQL.SELECT_MOST_IDLE)
+            .map(SQLHelper::singleRow)
+            .map(WorkerHelper::fromDBRecord);
     }
 
-    public Single<Worker> selectWorker(String hostIP) {
-        return dbClient.rxGetConnection()
-            .flatMap(conn ->
-                conn.rxQueryWithParams(WorkerSQL.SELECT_BY_IP, ja(hostIP))
-                    .map(SQLHelper::singleRow)
-                    .map(WorkerHelper::fromDBRecord)
-                    .doOnTerminate(conn::close)
-            );
+    public Single<Worker> selectWorker(SQLConnection conn, String hostIP) {
+        return conn.rxQueryWithParams(WorkerSQL.SELECT_BY_IP, ja(hostIP))
+            .map(SQLHelper::singleRow)
+            .map(WorkerHelper::fromDBRecord);
     }
 
     public Completable updateWorkerLoad(SQLConnection conn, String hostIP, long load) {
