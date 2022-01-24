@@ -34,47 +34,45 @@ The frontend of Jifa uses Vue as the main framework.
 
 ## Getting Started
 
-Then, you can visit Jifa at `http://localhost:8102`
-
 ### Build
 
-> Prerequisites
-> - jdk 11, and make sure $JAVA_HOME is set properly
-> - npm
+- Prerequisites
+  - jdk 11, and make sure $JAVA_HOME is set properly
+  - npm
 
-#### Build All
+- Build All
+  
+  ```bash
+  $ ./gradlew buildJifa
+  ```
 
-```bash
-$ ./gradlew buildJifa
-```
+- Build Worker Only
 
-#### Build Worker Only
-
-```bash
-$ ./gradlew buildWorker
-```
+  ```bash
+  $ ./gradlew buildWorker
+  ```
 
 ### Run & Deploy
 
-#### Master & Worker
+- Master & Worker
 
-- Default pattern
+  - Default pattern
+    ```bash
+    $ cd deploy/default_pattern
+    $ ./deploy_jifa.sh
+    ```
+
+  - K8S pattern, workers are scheduled by K8S
+    ```bash
+    $ cd deploy/k8s_pattern
+    $ ./deploy.sh
+    ```
+    
+- Worker Only
   ```bash
-  $ cd deploy/default_pattern
-  $ ./deploy_jifa.sh
+  $ cd deploy
+  $ ./depoy_worker.sh
   ```
-
-- K8S pattern, workers are scheduled by K8S
-  ```bash
-  $ cd deploy/k8s_pattern
-  $ ./deploy.sh
-  ```
-
-#### Worker Only
-```bash
-$ cd deploy
-$ ./depoy_worker.sh
-```
 
 See [deployment document](deploy/README.md) for more details.
 
@@ -84,6 +82,8 @@ See [deployment document](deploy/README.md) for more details.
 $ docker pull jifadocker/jifa-worker:demo
 $ docker run -p 8102:8102 jifadocker/jifa-worker:demo
 ```
+
+Then, you can visit Jifa at `http://localhost:8102`
 
 ## Documents
 
