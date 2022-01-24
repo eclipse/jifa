@@ -24,16 +24,7 @@ Eclipse Jifa uses Vert.x as the main backend framework, and uses Vue 2.0 as the 
 
 Currently, supported features:
 
-Heap dump Analysis:
-- Overview
-- Leak Suspects
-- GC Roots
-- Dominator Tree
-- Thread Overview
-- OQL
-- Other features
-
-![Jifa Sample](https://raw.githubusercontent.com/wiki/eclipse/jifa/resources/jifa-sample.jpg)
+- [Heap Dump Analysis](backend/heap-dump-analyzer/README.md)
 
 ## Goal
 We believe that many companies have encountered problems when troubleshooting Java problems
