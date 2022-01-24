@@ -268,7 +268,8 @@ public class Pivot {
                         } else {
                             return finish(job);
                         }
-                    }).doOnTerminate(conn::close)
+                    })
+                    .doOnTerminate(conn::close)
             )
             .doOnError((t) -> LOGGER.warn("Process time out transfer job {} error", job.getTarget(), t))
             .onErrorComplete();
@@ -524,20 +525,20 @@ public class Pivot {
 
     private Single<Master> selectMaster(SQLConnection conn, String hostIP) {
         return conn.rxQueryWithParams(MasterSQL.SELECT, ja(hostIP))
-            .map(SQLHelper::singleRow)
-            .map(MasterHelper::fromDBRecord);
+                   .map(SQLHelper::singleRow)
+                   .map(MasterHelper::fromDBRecord);
     }
 
     public Single<Worker> selectMostIdleWorker(SQLConnection conn) {
         return conn.rxQuery(WorkerSQL.SELECT_MOST_IDLE)
-            .map(SQLHelper::singleRow)
-            .map(WorkerHelper::fromDBRecord);
+                   .map(SQLHelper::singleRow)
+                   .map(WorkerHelper::fromDBRecord);
     }
 
     public Single<Worker> selectWorker(SQLConnection conn, String hostIP) {
         return conn.rxQueryWithParams(WorkerSQL.SELECT_BY_IP, ja(hostIP))
-            .map(SQLHelper::singleRow)
-            .map(WorkerHelper::fromDBRecord);
+                   .map(SQLHelper::singleRow)
+                   .map(WorkerHelper::fromDBRecord);
     }
 
     public Completable updateWorkerLoad(SQLConnection conn, String hostIP, long load) {
