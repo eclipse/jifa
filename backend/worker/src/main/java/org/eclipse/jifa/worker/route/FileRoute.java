@@ -241,7 +241,6 @@ class FileRoute extends BaseRoute {
                            .moveBlocking(file.uploadedFileName(), FileSupport.filePath(type, fileName));
                     FileSupport.updateTransferState(type, fileName, FileTransferState.SUCCESS);
                 } finally {
-                    FileSupport.updateTransferState(type, fileName, FileTransferState.ERROR);
                     FileSupport.removeTransferListener(fileName);
                 }
             }
