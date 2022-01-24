@@ -15,6 +15,7 @@ package org.eclipse.jifa.common.util;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.RoutingContext;
+import io.vertx.serviceproxy.ServiceException;
 import org.eclipse.jifa.common.Constant;
 import org.eclipse.jifa.common.ErrorCode;
 import org.eclipse.jifa.common.JifaException;
@@ -96,6 +97,13 @@ public class HTTPRespGuarder implements Constant {
 
         if (t instanceof JifaException) {
             shouldLogError = ((JifaException) t).getCode().isFatal();
+        }
+
+        if ( t instanceof  ServiceException) {
+            // FIXME: should we use ServiceException.failureCode?
+            ServiceException se = (ServiceException) t;
+            shouldLogError = se.failureCode() != ErrorCode.RETRY.ordinal();
+            LOGGER.debug("Starting worker for target {}", se.getMessage());
         }
 
         if (shouldLogError) {
