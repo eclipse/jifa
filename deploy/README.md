@@ -25,7 +25,7 @@ Then visit http://127.0.0.1:80 in your browser. This contains full features of J
 ### 2. Worker Only
 If you want to deploy worker only, run script directly
 ```bash
-$ cd deploy/default_pattern
+$ cd deploy
 $ ./deploy_worker.sh
 ```
 Then visit http://127.0.0.1:8102 in your browser. This is the simplest way to get started with Jifa, we recommend using this for personal use.

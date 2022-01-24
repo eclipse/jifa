@@ -10,7 +10,7 @@ Analyzing heap dump can help troubleshoot memory-leak problems and optimize memo
 ### Feature List
 Eclipse Jifa uses [Eclipse MAT](https://www.eclipse.org/mat/) as the underlying API ti implement heap dump analysis.
 
-The currently supported features are as follows:
+The supported features are as follows:
 
 - Overview
 - Leak Suspects

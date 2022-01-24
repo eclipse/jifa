@@ -12,64 +12,73 @@
  -->
 
 # Eclipse Jifa
+
 [![License](https://img.shields.io/badge/License-EPL%202.0-green.svg)](https://opensource.org/licenses/EPL-2.0)
 
 [Eclipse Jifa](https://eclipse.org/jifa) is open-source software for better troubleshooting common problems that occurred in Java applications.
 
 Many of the useful tools are client-based. When faced with problems in the production environment or the cloud environment, such tools cannot be used directly due to network or resource problems. Jifa provides a web solution, allowing developers to use the browser to troubleshoot.
 
-Currently, supported features:
+The following features are supported:
 
 - [Heap Dump Analysis](backend/heap-dump-analyzer/README.md)
 
-## Goal
-We believe that many companies have encountered problems when troubleshooting Java problems
-in their production environments, and we hope that Jifa will grow into a popular product to
-help developers quickly address production problems.
+The backend of Jifa uses Vert.x as the main framework and consists of two modules:
 
-Looking forward to more users and contributors :-)
+- Master
+    - manage workers and route the requests from browser to the workers
+- Worker
+    - do the real analysis work
+  
+The frontend of Jifa uses Vue as the main framework.
 
-## Links
-- Join the Eclipse Jifa developer community [mailing list](https://accounts.eclipse.org/mailing-list/jifa-dev).
-  The community primarily uses this list for project announcements and administrative discussions amongst committers.
-  Questions are welcome here as well.
-- **Ask a question or start a discussion via the [GitHub issue](https://github.com/eclipse/jifa/issues).(Recommend)**
-- Slack channel: [Eclipse Jifa](https://eclipsejifa.slack.com)
+## Getting Started
 
-## Quick start
-Prerequisites for building Jifa:
-- Install JDK 11, and make sure $JAVA_HOME is set properly
-- Install npm
+Then, you can visit Jifa at `http://localhost:8102`
 
-Jifa actually has two application: *Master* and *Worker*. *Master* accepts requests, does some authentications, clears disk periodically,
-etc, then it forwards requests to *Worker*, that's the real place where heap dump parsing/analyzing happens. If you don't need these
-advanced features, you can just build *Worker* and deploy it, otherwise, you can build the whole Jifa, which contains either *Master*
-and *Worker*.
+### Build
 
-### 1. Build
-First of all, we need to build Jifa:
+> Prerequisites
+> - jdk 11, and make sure $JAVA_HOME is set properly
+> - npm
+
+#### Build All
+
 ```bash
-$ cd scripts
-$ ./build_jifa.sh   # build the whole Jifa
-$ ./build_worker.sh # build the worker only
-$ cd docker_images
-$ ./build_image.sh  # build the whole Jifa and create docker images(Advanced use case)
+$ ./gradlew buildJifa
 ```
-If all goes well, you would see a top-level `artifacts` directory. That's what we need when deploying.
-Also, you can build docker images via the following command:
 
-### 2. Deploy
-Jifa provides several deploy patterns:
-+ `K8S Pattern`: Deploy master only, it starts worker only when necessary.
-+ `Default Pattern`: 
-  + `Master+Worker`: Deploy one master and several workers.
-  + `Worker Only`: Deploy worker only.
+#### Build Worker Only
+
+```bash
+$ ./gradlew buildWorker
+```
+
+### Run & Deploy
+
+#### Master & Worker
+
+- Default pattern
+  ```bash
+  $ cd deploy/default_pattern
+  $ ./deploy_jifa.sh
+  ```
+
+- K8S pattern, workers are scheduled by K8S
+  ```bash
+  $ cd deploy/k8s_pattern
+  $ ./deploy.sh
+  ```
+
+#### Worker Only
+```bash
+$ cd deploy
+$ ./depoy_worker.sh
+```
 
 See [deployment document](deploy/README.md) for more details.
 
-## Quick demo
-
-A docker image is prepared for quick demo:
+## Quick Demo
 
 ```bash
 $ docker pull jifadocker/jifa-worker:demo
@@ -77,5 +86,14 @@ $ docker run -p 8102:8102 jifadocker/jifa-worker:demo
 ```
 
 ## Documents
-+ 1. [Jifa Customization](CUSTOMIZATION.md)
-+ 2. [Contribution Guide](CONTRIBUTING.md)
+
+- [Jifa Customization](CUSTOMIZATION.md)
+- [Contribution Guide](CONTRIBUTING.md)
+    
+## Links
+
+- Join the Eclipse Jifa developer community [mailing list](https://accounts.eclipse.org/mailing-list/jifa-dev).
+  The community primarily uses this list for project announcements and administrative discussions amongst committers.
+  Questions are welcome here as well.
+- **Ask a question or start a discussion via the [GitHub issue](https://github.com/eclipse/jifa/issues).(Recommend)**
+- Slack channel: [Eclipse Jifa](https://eclipsejifa.slack.com)
