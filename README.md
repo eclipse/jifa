@@ -14,13 +14,9 @@
 # Eclipse Jifa
 [![License](https://img.shields.io/badge/License-EPL%202.0-green.svg)](https://opensource.org/licenses/EPL-2.0)
 
-[Eclipse Jifa](https://eclipse.org/jifa) is a web application based on the Eclipse Memory Analyser Tooling (MAT)
-that provides HTTP services so that users can view the heap dump files analysis through a browser.
-Users can deploy Jifa to their production environments, and share the same analysis result to different users
-via their browsers, we believe it's a more convenient way to troubleshoot Java heap issues.
+[Eclipse Jifa](https://eclipse.org/jifa) is open-source software for better troubleshooting common problems that occurred in Java applications.
 
-## Introduction
-Eclipse Jifa uses Vert.x as the main backend framework, and uses Vue 2.0 as the frontend framework.
+Many of the useful tools are client-based. When faced with problems in the production environment or the cloud environment, such tools cannot be used directly due to network or resource problems. Jifa provides a web solution, allowing developers to use the browser to troubleshoot.
 
 Currently, supported features:
 
