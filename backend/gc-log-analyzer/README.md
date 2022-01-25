@@ -30,3 +30,7 @@ Then main entrance of the feature is in GCLogAnalyzer.parse. There are 3 main st
 2. GCModel.calculateDerivedInfo will calculate more metrics we can get from original info, such as promotion of single event and max pause time of the whole process. All these data are saved in GCModel.
 
 3. Frontend pages displays information through gclog backend apis.
+
+### Sample
+
+![GC Log Analysis Sample](https://raw.githubusercontent.com/wiki/eclipse/jifa/resources/jifa-gc-log-analysis-sample.jpg)
