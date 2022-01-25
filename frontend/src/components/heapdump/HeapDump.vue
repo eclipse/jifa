@@ -247,6 +247,7 @@
   import ClassLoaders from './ClassLoaders'
   import DirectByteBuffer from './DirectByteBuffer'
   import HeapFileCompare from './HeapFileCompare'
+  import {Loading} from "element-ui";
 
   export default {
     props: ['file'],
@@ -438,12 +439,14 @@
       },
     },
     mounted() {
+      let loadingInstance = Loading.service({fullscreen: true})
       axios.get(heapDumpService(this.file, 'isFirstAnalysis')).then(resp => {
         if (resp.data.result) {
           this.optionViewVisible = true
         } else {
           this.doAnalyzeHeapDump(new FormData())
         }
+        loadingInstance.close()
       })
     }
   }
