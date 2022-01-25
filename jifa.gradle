@@ -57,6 +57,8 @@ task compressFrontendDist(type: Zip) {
 }
 
 task buildWorker {
+    group 'Build Jifa'
+    description 'Build worker and frontend only.'
     doFirst {
         ant.replaceregexp(match:'workerOnly.*?,', replace:'workerOnly: true,', flags:'g', byline:true) {
             fileset(dir: "${rootProject.rootDir}/frontend/src", includes: 'config.js')
@@ -68,6 +70,8 @@ task buildWorker {
 }
 
 task buildJifa{
+    group 'Build Jifa'
+    description 'Build all components: master, worker, and frontend.'
     dependsOn ':frontend:build'
     dependsOn ':backend:master:build'
     dependsOn ':backend:worker:build'
