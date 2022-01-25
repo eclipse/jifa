@@ -25,6 +25,7 @@ import io.vertx.reactivex.ext.jdbc.JDBCClient;
 import io.vertx.reactivex.ext.sql.SQLClientHelper;
 import io.vertx.reactivex.ext.sql.SQLConnection;
 import io.vertx.reactivex.ext.web.client.HttpResponse;
+import org.apache.commons.io.FileUtils;
 import org.eclipse.jifa.common.ErrorCode;
 import org.eclipse.jifa.common.enums.FileTransferState;
 import org.eclipse.jifa.common.enums.ProgressState;
@@ -38,8 +39,19 @@ import org.eclipse.jifa.master.entity.enums.Deleter;
 import org.eclipse.jifa.master.entity.enums.JobState;
 import org.eclipse.jifa.master.entity.enums.JobType;
 import org.eclipse.jifa.master.model.TransferWay;
-import org.eclipse.jifa.master.service.impl.helper.*;
-import org.eclipse.jifa.master.service.sql.*;
+import org.eclipse.jifa.master.service.impl.helper.ConfigHelper;
+import org.eclipse.jifa.master.service.impl.helper.FileHelper;
+import org.eclipse.jifa.master.service.impl.helper.JobHelper;
+import org.eclipse.jifa.master.service.impl.helper.MasterHelper;
+import org.eclipse.jifa.master.service.impl.helper.SQLAssert;
+import org.eclipse.jifa.master.service.impl.helper.SQLHelper;
+import org.eclipse.jifa.master.service.impl.helper.WorkerHelper;
+import org.eclipse.jifa.master.service.sql.ConfigSQL;
+import org.eclipse.jifa.master.service.sql.FileSQL;
+import org.eclipse.jifa.master.service.sql.GlobalLockSQL;
+import org.eclipse.jifa.master.service.sql.JobSQL;
+import org.eclipse.jifa.master.service.sql.MasterSQL;
+import org.eclipse.jifa.master.service.sql.WorkerSQL;
 import org.eclipse.jifa.master.support.Factory;
 import org.eclipse.jifa.master.support.Pattern;
 import org.eclipse.jifa.master.support.WorkerClient;
@@ -315,12 +327,33 @@ public class Pivot {
                                                    .ignoreElements()
                                                    .andThen(
                                                        deleteFileRecords(conn, deleter, files.toArray(new File[0])))
-                                                   .andThen(post(hostIP, uri(Constant.FILE_BATCH_DELETE),
-                                                                 buildParams(files.toArray(new File[0]))))
-                                                   .doOnSuccess(resp -> SERVICE_ASSERT
-                                                       .isTrue(resp.statusCode() == Constant.HTTP_POST_CREATED_STATUS,
-                                                               resp.bodyAsString()))
-                                                   .ignoreElement());
+                                                   .andThen(
+                                                       isDefaultPattern ?
+                                                       post(hostIP, uri(Constant.FILE_BATCH_DELETE),
+                                                            buildParams(files.toArray(new File[0])))
+                                                           .doOnSuccess(resp -> SERVICE_ASSERT
+                                                               .isTrue(resp.statusCode() ==
+                                                                       Constant.HTTP_POST_CREATED_STATUS,
+                                                                       resp.bodyAsString())).ignoreElement()
+                                                                        :
+                                                       Completable.fromAction(
+                                                           () -> {
+                                                               for (File file : files) {
+                                                                   // FIXME: consider adding delete files
+                                                                   //        api in worker scheduler
+                                                                   // copy from pvc clean up task
+                                                                   java.io.File pf =
+                                                                       new java.io.File("/root/jifa_workspace" +
+                                                                                        java.io.File.separator +
+                                                                                        file.getType().getTag() +
+                                                                                        java.io.File.separator +
+                                                                                        file.getName());
+                                                                   FileUtils.deleteDirectory(pf);
+                                                               }
+                                                           }
+                                                       )
+                                                   )
+            );
     }
 
     public Completable deleteFile(Deleter deleter, String... fileNames) {
