@@ -270,7 +270,7 @@ exports.default = {
           reviewHuge:'Check if there is too many large object allocation. You can use Heap Dump Analysis of Grace.',
           addGCThread:"Add parallel gc thread count(no more than CPU count) by -XX:ParallelGCThreads.",
           enlargeHeap:"Use a larger heap size by -Xmx -Xms.",
-          enlargeMetaspace:"Enlarge metaspace size by -XX:MetaspaceSize -XX:MaxMetaspaceSize, at least 512M recommended.",
+          enlargeMetaspace:"Enlarge metaspace size by -XX:MetaspaceSize -XX:MaxMetaspaceSize.",
           reviewMetaspace:"Check what objects is metaspace filled with.",
           reviewSystemGC:"Check if it is necessary to call System.gc().",
           disableSystemGC:"Just disable System.gc() by -XX:+DisableExplicitGC.",
@@ -283,7 +283,7 @@ exports.default = {
           setReasonableXmn:"Please set reasonable Xmn (or similar JVM options like MaxNewSize)",
           addConcurrentGCThread:"Add concurrent gc thread count by -XX:ConcGCThreads.",
           enlargeHeapWithRecommend:"Use a larger heap, recommend setting is -Xmx{size}g -Xms{size}g",
-          addZGCAllocationSpikeTolerance:"Increase -XX:ZAllocationSpikeTolerance or Decrease -XX:ZHighUsagePercent (default: 95, trigger gc if the heap reaches 95% high usage)",
+          addZGCAllocationSpikeTolerance:"Increase -XX:ZAllocationSpikeTolerance",
         }
       },
     },

@@ -280,7 +280,7 @@ exports.default = {
           setReasonableXmn:"请合理设置Xmn(或者MaxNewSize等类似参数)",
           addConcurrentGCThread:"适当提高并发GC线程数 -XX:ConcGCThreads",
           enlargeHeapWithRecommend:"使用更大的堆，推荐 -Xmx{size}g -Xms{size}g",
-          addZGCAllocationSpikeTolerance:"适当增加 -XX:ZAllocationSpikeTolerance 或 降低 -XX:ZHighUsagePercent (缺省值95，代表高水位95%）",
+          addZGCAllocationSpikeTolerance:"适当增加 -XX:ZAllocationSpikeTolerance",
         }
       }
     },
