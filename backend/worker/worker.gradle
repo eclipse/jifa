@@ -18,6 +18,7 @@ dependencies {
     implementation project(':backend:common')
     implementation project(':backend:heap-dump-analyzer:api')
     runtimeOnly project(':backend:heap-dump-analyzer:provider')
+    implementation project(':backend:gc-log-analyzer')
 
     implementation group: 'io.vertx', name: 'vertx-core', version: "${vertx_version}"
     implementation group: 'io.vertx', name: 'vertx-config', version: "${vertx_version}"

@@ -31,7 +31,7 @@ import org.eclipse.jifa.master.service.reactivex.JobService;
 import org.eclipse.jifa.master.support.WorkerClient;
 
 import static org.eclipse.jifa.common.util.Assertion.ASSERT;
-import static org.eclipse.jifa.master.entity.enums.JobType.HEAP_DUMP_ANALYSIS;
+import static org.eclipse.jifa.master.entity.enums.JobType.*;
 
 class AnalyzerRoute extends BaseRoute {
 
@@ -58,6 +58,10 @@ class AnalyzerRoute extends BaseRoute {
         // Do not change the order !!
         apiRouter.route().path(HEAP_DUMP_RELEASE).handler(context -> release(context, HEAP_DUMP_ANALYSIS));
         apiRouter.route().path(HEAP_DUMP_COMMON).handler(context -> process(context, HEAP_DUMP_ANALYSIS));
+
+        // gclog
+        apiRouter.route().path(GCLOG_RELEASE).handler(context -> release(context, GCLOG_ANALYSIS));
+        apiRouter.route().path(GCLOG_COMMON).handler(context -> process(context, GCLOG_ANALYSIS));
     }
 
     private Single<Job> findOrAllocate(User user, File file, JobType jobType) {

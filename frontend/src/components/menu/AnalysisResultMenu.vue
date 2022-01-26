@@ -51,7 +51,7 @@
 </template>
 <script>
   import axios from 'axios'
-  import {heapDumpService, service} from '../../util'
+  import {heapDumpService, gclogService, service} from '../../util'
 
   export default {
     props: ['file', 'analysisState', 'type', 'showInspector'],
@@ -125,6 +125,8 @@
         switch (this.type) {
           case "HEAP_DUMP":
             return heapDumpService(this.file, uri);
+          case "GC_LOG":
+            return gclogService(this.file, uri);
           default:
             return ""
         }

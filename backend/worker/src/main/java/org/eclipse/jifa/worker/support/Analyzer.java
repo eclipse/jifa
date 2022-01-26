@@ -12,6 +12,8 @@
  ********************************************************************************/
 package org.eclipse.jifa.worker.support;
 
+import org.eclipse.jifa.gclog.model.GCModel;
+import org.eclipse.jifa.gclog.parser.GCLogAnalyzer;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import io.vertx.core.Promise;
@@ -35,6 +37,7 @@ import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.concurrent.TimeUnit;
 
+import static org.eclipse.jifa.common.enums.FileType.GC_LOG;
 import static org.eclipse.jifa.common.enums.FileType.HEAP_DUMP;
 import static org.eclipse.jifa.common.util.Assertion.ASSERT;
 import static org.eclipse.jifa.worker.Constant.CacheConfig.*;
@@ -132,6 +135,9 @@ public class Analyzer {
                 switch (fileType) {
                     case HEAP_DUMP:
                         getOrBuildHeapDumpAnalyzer(fileName, options, progressListener);
+                        break;
+                    case GC_LOG:
+                        getOrOpenGCLogModel(fileName,progressListener);
                         break;
                     default:
                         break;
@@ -245,5 +251,15 @@ public class Analyzer {
 
     private static class Singleton {
         static Analyzer INSTANCE = new Analyzer();
+    }
+
+    public static GCModel getOrOpenGCLogModel(String info) {
+        return getOrOpenGCLogModel(info, ProgressListener.NoOpProgressListener);
+    }
+
+    private static GCModel getOrOpenGCLogModel(String gclogFile, ProgressListener listener) {
+        return getOrBuild(gclogFile,
+                key -> new GCLogAnalyzer(new File(FileSupport.filePath(GC_LOG,  gclogFile)),
+                        listener).parse());
     }
 }

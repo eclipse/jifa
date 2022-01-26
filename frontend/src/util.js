@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -28,6 +28,27 @@ export function toCountString(counts) {
   return (counts / Math.pow(k, i)).toPrecision(4) + ' ' + suffix[i]
 }
 
+export function fromSizeString(str) {
+  let k = 1024, suffix = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
+  let [a, b] = str.split(' ')
+  if (suffix.indexOf(b) === -1) {
+    throw "should not reach here";
+  }
+  return parseFloat(a) * Math.pow(k, suffix.indexOf(b))
+}
+
+export function fromCountString(str) {
+  let k = 1000, suffix = [' ', 'k', 'm', 'g', 't', 'p', 'e', 'z', 'y']
+  let [a, b] = str.split(' ')
+  if (b === '') {
+    return parseFloat(a);
+  }
+  if (suffix.indexOf(b) === -1) {
+    throw "should not reach here";
+  }
+  return parseFloat(a) * Math.pow(k, suffix.indexOf(b))
+}
+
 const SERVICE_PREFIX = '/jifa-api'
 
 export function service(suffix) {
@@ -36,6 +57,10 @@ export function service(suffix) {
 
 export function heapDumpService(file, api) {
   return SERVICE_PREFIX + '/heap-dump/' + file + '/' + api;
+}
+
+export function gclogService(file, api) {
+  return SERVICE_PREFIX + '/gc-log/' + file + '/' + api;
 }
 
 export function matchSearch(data,val){
@@ -68,6 +93,34 @@ export function formatTime (number, format) {
     format = format.replace(formatArr[i], newArr[i])
   }
   return format;
+}
+
+// e.g 100,000 (ms) -> '1min 40s'
+export function formatTimePeriod(time) {
+  // negative means not available
+  if (time < 0 || typeof time === "undefined") {
+    return "N/A"
+  }
+  if (time < 100) {
+    const digit = time < 0.001 ? 0 : time < 10 ? 3 : 1;
+    return `${time.toFixed(digit)}ms`
+  }
+  const ms = Math.floor(time % 1000);
+  const second = Math.floor(time % 60000 / 1000);
+  const minute = Math.floor(time % 3600000 / 60000);
+  const hour = Math.floor(time / 3600000);
+  const unit = ['h', 'min', 's', 'ms'];
+  let parts = [];
+  [hour, minute, second, ms].forEach((value, index) => {
+    if (value !== 0 && (index !== 3 || time < 60000)) {
+      parts.push(value + unit[index])
+    }
+  })
+  return parts.join(' ');
+}
+
+export function toSizeSpeedString(bytes) {
+  return toSizeString(bytes)+"/s"
 }
 
 function formatNumber (n) {

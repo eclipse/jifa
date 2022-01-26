@@ -89,6 +89,12 @@ public interface Constant extends org.eclipse.jifa.common.Constant {
     String HEAP_DUMP_COMMON = "/heap-dump/:file/*";
 
     /**
+     * GC LOG URL
+     */
+    String GCLOG_RELEASE = "/gc-log/:file/release";
+    String GCLOG_COMMON = "/gc-log/:file/*";
+
+    /**
      * WORKER URL
      */
     String QUERY_ALL_WORKERS = "/workers";

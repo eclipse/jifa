@@ -19,8 +19,9 @@ def HEAP_DUMP_ANALYZER_API = 'heap-dump-analyzer:api'
 def HEAP_DUMP_ANALYZER_IMPL = 'heap-dump-analyzer:impl'
 def HEAP_DUMP_ANALYZER_ECLIPSE_MAT_DEPS = 'heap-dump-analyzer:eclipse-mat-deps'
 def HEAP_DUMP_ANALYZER_PROVIDER = 'heap-dump-analyzer:provider'
+def GC_LOG_ANALYZER = 'gc-log-analyzer'
 
-[COMMON, WORKER, MASTER, HEAP_DUMP_ANALYZER_API, HEAP_DUMP_ANALYZER_IMPL, HEAP_DUMP_ANALYZER_PROVIDER].each {
+[COMMON, WORKER, MASTER, HEAP_DUMP_ANALYZER_API, HEAP_DUMP_ANALYZER_IMPL, HEAP_DUMP_ANALYZER_PROVIDER, GC_LOG_ANALYZER].each {
     name ->
         project("$name") {
             apply plugin: 'java'
@@ -40,7 +41,7 @@ def HEAP_DUMP_ANALYZER_PROVIDER = 'heap-dump-analyzer:provider'
         }
 }
 
-[COMMON, WORKER, MASTER, HEAP_DUMP_ANALYZER_API].each {
+[COMMON, WORKER, MASTER, HEAP_DUMP_ANALYZER_API, GC_LOG_ANALYZER].each {
     name ->
         project("$name") {
             ext {

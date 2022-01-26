@@ -16,6 +16,8 @@ import static org.eclipse.jifa.common.util.ErrorUtil.shouldNotReachHere;
 
 public enum FileType {
     HEAP_DUMP("heap-dump"),
+
+    GC_LOG("gc-log"),
     ;
 
     private String tag;

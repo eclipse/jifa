@@ -17,6 +17,7 @@ import io.vertx.ext.web.Router;
 import org.eclipse.jifa.common.ErrorCode;
 import org.eclipse.jifa.common.JifaException;
 import org.eclipse.jifa.common.util.HTTPRespGuarder;
+import org.eclipse.jifa.worker.route.gclog.GCLogBaseRoute;
 import org.eclipse.jifa.worker.Constant;
 import org.eclipse.jifa.worker.WorkerGlobal;
 import org.eclipse.jifa.worker.route.heapdump.HeapBaseRoute;
@@ -47,6 +48,9 @@ public class RouteFiller {
             register(SystemRoute.class);
 
             for (Class<? extends HeapBaseRoute> route : HeapBaseRoute.routes()) {
+                register(route);
+            }
+            for (Class<? extends GCLogBaseRoute> route: GCLogBaseRoute.routes()){
                 register(route);
             }
         } catch (Exception e) {
