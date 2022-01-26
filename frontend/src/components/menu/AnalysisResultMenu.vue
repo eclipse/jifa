@@ -142,6 +142,7 @@
       axios.get(service('/file'), {
         params: {
           name: this.file,
+          type: this.type
         }
       }).then(resp => {
         let data = resp.data;
