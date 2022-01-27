@@ -33,15 +33,15 @@ import org.eclipse.jifa.master.model.WorkerInfo;
 import org.eclipse.jifa.master.service.impl.Pivot;
 import org.eclipse.jifa.master.task.PVCCleanupTask;
 import org.eclipse.jifa.master.task.RetiringTask;
+import org.eclipse.jifa.master.task.StopAbnormalWorkerTask;
 import org.eclipse.jifa.master.task.TransferJobResultFillingTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.ConnectException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.eclipse.jifa.master.Constant.*;
 
@@ -58,6 +58,8 @@ public class K8SWorkerScheduler implements WorkerScheduler {
     private static CoreV1Api api;
 
     private static long MINIMAL_MEM_REQ;
+
+    private static String MASTER_POD_NAME;
 
     private static V1Pod createWorker(String name, long requestMemSize) {
         requestMemSize = Math.max(requestMemSize, MINIMAL_MEM_REQ);
@@ -103,6 +105,21 @@ public class K8SWorkerScheduler implements WorkerScheduler {
         return npod;
     }
 
+    public static String getWorkerPrefix() {
+        return WORKER_PREFIX;
+    }
+
+    private static List<V1Pod> listWorker() {
+        List<V1Pod> pods = null;
+        try {
+            V1PodList list = api.listNamespacedPod(NAMESPACE, null, null, null, null, null, null, null, null, null);
+            pods = list.getItems();
+        } catch (ApiException e) {
+            e.printStackTrace();
+        }
+        return pods;
+    }
+
     private static V1Pod removeWorker(String name) {
         V1Pod npod = null;
         try {
@@ -118,6 +135,7 @@ public class K8SWorkerScheduler implements WorkerScheduler {
         new RetiringTask(pivot, vertx);
         new TransferJobResultFillingTask(pivot, vertx);
         new PVCCleanupTask(pivot, vertx);
+        new StopAbnormalWorkerTask(pivot, vertx);
 
         // Order is important
         ApiClient client;
@@ -129,6 +147,7 @@ public class K8SWorkerScheduler implements WorkerScheduler {
             NAMESPACE = k8sConfig.getString(K8S_NAMESPACE);
             WORKER_IMAGE = k8sConfig.getString(K8S_WORKER_IMAGE);
             MINIMAL_MEM_REQ = k8sConfig.getLong(K8S_MINIMAL_MEM_REQ);
+            MASTER_POD_NAME = k8sConfig.getString(K8S_MASTER_POD_NAME);
             LOGGER.info("K8S Namespace: " + NAMESPACE + ", Image: " + WORKER_IMAGE + ", Minimal memory request:" +
                         MINIMAL_MEM_REQ);
         } catch (IOException e) {
@@ -141,7 +160,9 @@ public class K8SWorkerScheduler implements WorkerScheduler {
         String name = buildWorkerName(job);
         WorkerInfo workerInfo = getWorkerInfo(name);
         if (workerInfo == null) {
-            return Single.just(Worker.NOT_FOUND);
+            Worker none = Worker.NOT_FOUND;
+            none.setHostName(name);
+            return Single.just(none);
         } else {
             String workerIp = getWorkerInfo(name).getIp();
             Worker handmake = new Worker();
@@ -223,6 +244,36 @@ public class K8SWorkerScheduler implements WorkerScheduler {
                 removeWorker(id);
             }
         });
+    }
+
+    @Override
+    public Completable stop(Worker worker) {
+        return Completable.fromAction(() -> {
+            String id = worker.getHostName();
+            if (getWorkerInfo(id) == null) {
+                LOGGER.debug("Stop worker " + id + " but it does not exist");
+            } else {
+                LOGGER.debug("Stop worker " + id);
+                removeWorker(id);
+            }
+        });
+    }
+
+    @Override
+    public Single<List<Worker>> list() {
+        List<V1Pod> pods = listWorker();
+        if (pods != null) {
+            List<Worker> workers = pods.stream().map(pod -> {
+                Worker w = new Worker();
+                w.setHostName(pod.getMetadata().getName());
+                w.setHostIP(pod.getStatus().getPodIP());
+                return w;
+            }).collect(Collectors.toList());
+            return Single.just(workers);
+        }
+        return Single.just(new ArrayList<>() {{
+            add(Worker.NOT_FOUND);
+        }});
     }
 
     private WorkerInfo getWorkerInfo(String id) {
