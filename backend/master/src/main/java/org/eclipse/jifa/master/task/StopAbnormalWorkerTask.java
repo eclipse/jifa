@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -45,7 +45,7 @@ public class StopAbnormalWorkerTask extends BaseTask {
 
     @Override
     public void doPeriodic() {
-        pivot.getDbClient().rxQuery(FileSQL.SELECT_LIMITED_ACTIVE_JOBS)
+        pivot.getDbClient().rxQuery(FileSQL.SELECT_ALL_ACTIVE_JOBS)
             .map(result -> result.getRows().stream().map(JobHelper::fromDBRecord).collect(Collectors.toList()))
             .flatMap(jobs -> {
                 // Every active job has its own worker, they should never be stopped
