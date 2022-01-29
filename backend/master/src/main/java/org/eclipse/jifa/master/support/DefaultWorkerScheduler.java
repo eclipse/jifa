@@ -17,6 +17,7 @@ import io.reactivex.Single;
 import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.ext.sql.SQLConnection;
+import org.eclipse.jifa.common.JifaException;
 import org.eclipse.jifa.master.entity.Job;
 import org.eclipse.jifa.master.entity.Worker;
 import org.eclipse.jifa.master.service.impl.Pivot;
@@ -27,6 +28,7 @@ import org.eclipse.jifa.master.task.RetiringTask;
 import org.eclipse.jifa.master.task.SchedulingTask;
 import org.eclipse.jifa.master.task.TransferJobResultFillingTask;
 
+import java.util.List;
 import java.util.Map;
 
 public class DefaultWorkerScheduler implements WorkerScheduler {
@@ -64,5 +66,15 @@ public class DefaultWorkerScheduler implements WorkerScheduler {
     @Override
     public Completable stop(Job job) {
         return Completable.complete();
+    }
+
+    @Override
+    public Completable stop(Worker worker) {
+        throw new JifaException("Unimplemented");
+    }
+
+    @Override
+    public Single<List<Worker>> list() {
+        throw new JifaException("Unimplemented");
     }
 }

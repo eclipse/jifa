@@ -113,6 +113,10 @@ public class Pivot {
     private Pivot() {
     }
 
+    public WorkerScheduler getScheduler() {
+        return scheduler;
+    }
+
     public static synchronized Pivot instance(Vertx vertx, JDBCClient dbClient, JsonObject config) {
         if (SINGLETON != null) {
             return SINGLETON;

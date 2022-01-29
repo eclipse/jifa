@@ -18,6 +18,7 @@
     "namespace": "jifa-test",
     "worker-pvc-name": "worker-pvc",
     "worker-image": "docker.io/jifadocker/jifa-worker-open",
-    "minimal-mem-req": 512
+    "minimal-mem-req": 512,
+    "master-pod-name": "jifa-master"
   }
 }

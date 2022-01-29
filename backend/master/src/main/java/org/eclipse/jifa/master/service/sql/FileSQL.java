@@ -13,6 +13,7 @@
 package org.eclipse.jifa.master.service.sql;
 
 public interface FileSQL {
+    String SELECT_ALL_ACTIVE_JOBS = "SELECT * FROM active_job";
 
     String INSERT = "INSERT INTO file(user_id, original_name, name, type, size, host_ip, transfer_state, shared, " +
                     "downloadable, in_shared_disk, deleted, cas_state) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";

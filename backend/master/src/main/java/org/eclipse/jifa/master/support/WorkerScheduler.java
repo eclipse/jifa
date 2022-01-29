@@ -22,6 +22,7 @@ import org.eclipse.jifa.master.entity.Job;
 import org.eclipse.jifa.master.entity.Worker;
 import org.eclipse.jifa.master.service.impl.Pivot;
 
+import java.util.List;
 import java.util.Map;
 
 public interface WorkerScheduler {
@@ -52,4 +53,16 @@ public interface WorkerScheduler {
      * stop the worker by job
      */
     Completable stop(Job job);
+
+    /**
+     * stop the worker by Worker entity
+     */
+    Completable stop(Worker worker);
+
+    /**
+     * List existing workers
+     *
+     * @return list of worker
+     */
+    Single<List<Worker>>list();
 }
