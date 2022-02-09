@@ -514,7 +514,7 @@ public class TestParser {
                 " [Times: user=0.20 sys=0.01, real=0.07 secs]\n" +
                 "19.630: [GC concurrent-cleanup-start]\n" +
                 "19.631: [GC concurrent-cleanup-end, 0.0010377 secs]\n" +
-                "23.346: [Full GC (Metadata GC Threshold) 7521M->7002M(46144M), 1.9242692 secs]\n" +
+                "23.346: [Full GC (Metadata GC Threshold)  7521M->7002M(46144M), 1.9242692 secs]\n" +
                 "   [Eden: 0.0B(1760.0M)->0.0B(2304.0M) Survivors: 544.0M->0.0B Heap: 7521.7M(46144.0M)->7002.8M(46144.0M)], [Metaspace: 1792694K->291615K(698368K)]\n" +
                 " [Times: user=2.09 sys=0.19, real=1.92 secs]\n" +
                 "79.619: [GC pause (G1 Evacuation Pause) (mixed)79.636: [SoftReference, 1 refs, 0.0000415 secs]79.636: [WeakReference, 2 refs, 0.0000061 secs]79.636: [FinalReference, 3 refs, 0.0000049 secs]79.636: [PhantomReference, 4 refs, 5 refs, 0.0000052 secs]79.636: [JNI Weak Reference, 0.0000117 secs] (to-space exhausted), 0.0264971 secs]\n" +
@@ -619,6 +619,57 @@ public class TestParser {
         for (GCEvent phase : mixedGC.getPhases()) {
             Assert.assertTrue(phase.getDuration() != UNKNOWN_DOUBLE);
         }
+    }
+
+    @Test
+    public void testJDK8G1GCParserAdaptiveSize() throws Exception {
+        // although we don't read anything from options like -XX:+PrintAdaptiveSizePolicy, they should not
+        // affect parsing
+        String log = "2022-02-09T15:55:55.807+0800: 0.683: [GC pause (G1 Evacuation Pause) (young)\n" +
+                "Desired survivor size 3670016 bytes, new threshold 15 (max 15)\n" +
+                " 0.683: [G1Ergonomics (CSet Construction) start choosing CSet, _pending_cards: 0, predicted base time: 10.00 ms, remaining time: 240.00 ms, target pause time: 250.00 ms]\n" +
+                " 0.683: [G1Ergonomics (CSet Construction) add young regions to CSet, eden: 51 regions, survivors: 0 regions, predicted young region time: 1298.76 ms]\n" +
+                " 0.683: [G1Ergonomics (CSet Construction) finish choosing CSet, eden: 51 regions, survivors: 0 regions, old: 0 regions, predicted pause time: 1308.76 ms, target pause time: 250.00 ms]\n" +
+                ", 0.0085898 secs]\n" +
+                "   [Parallel Time: 5.5 ms, GC Workers: 4]\n" +
+                "      [GC Worker Start (ms): Min: 682.6, Avg: 682.6, Max: 682.7, Diff: 0.0]\n" +
+                "      [Ext Root Scanning (ms): Min: 0.8, Avg: 1.2, Max: 1.6, Diff: 0.8, Sum: 4.8]\n" +
+                "      [Update RS (ms): Min: 0.0, Avg: 0.0, Max: 0.0, Diff: 0.0, Sum: 0.0]\n" +
+                "         [Processed Buffers: Min: 0, Avg: 0.0, Max: 0, Diff: 0, Sum: 0]\n" +
+                "      [Scan RS (ms): Min: 0.0, Avg: 0.0, Max: 0.0, Diff: 0.0, Sum: 0.0]\n" +
+                "      [Code Root Scanning (ms): Min: 0.0, Avg: 0.2, Max: 0.9, Diff: 0.9, Sum: 0.9]\n" +
+                "      [Object Copy (ms): Min: 3.5, Avg: 3.9, Max: 4.5, Diff: 1.0, Sum: 15.7]\n" +
+                "      [Termination (ms): Min: 0.0, Avg: 0.0, Max: 0.0, Diff: 0.0, Sum: 0.1]\n" +
+                "         [Termination Attempts: Min: 1, Avg: 6.8, Max: 9, Diff: 8, Sum: 27]\n" +
+                "      [GC Worker Other (ms): Min: 0.0, Avg: 0.0, Max: 0.0, Diff: 0.0, Sum: 0.1]\n" +
+                "      [GC Worker Total (ms): Min: 5.4, Avg: 5.4, Max: 5.4, Diff: 0.0, Sum: 21.6]\n" +
+                "      [GC Worker End (ms): Min: 688.1, Avg: 688.1, Max: 688.1, Diff: 0.0]\n" +
+                "   [Code Root Fixup: 0.0 ms]\n" +
+                "   [Code Root Purge: 0.0 ms]\n" +
+                "   [Clear CT: 0.1 ms]\n" +
+                "   [Other: 3.0 ms]\n" +
+                "      [Choose CSet: 0.0 ms]\n" +
+                "      [Ref Proc: 2.6 ms]\n" +
+                "      [Ref Enq: 0.0 ms]\n" +
+                "      [Redirty Cards: 0.1 ms]\n" +
+                "      [Humongous Register: 0.0 ms]\n" +
+                "      [Humongous Reclaim: 0.0 ms]\n" +
+                "      [Free CSet: 0.1 ms]\n" +
+                "   [Eden: 52224.0K(52224.0K)->0.0B(45056.0K) Survivors: 0.0B->7168.0K Heap: 52224.0K(1024.0M)->8184.0K(1024.0M)]\n" +
+                " [Times: user=0.02 sys=0.01, real=0.01 secs] ";
+        JDK8G1GCLogParser parser = (JDK8G1GCLogParser)
+                (new GCLogParserFactory().getParser(stringToBufferedReader(log)));
+
+        G1GCModel model = (G1GCModel) parser.parse(stringToBufferedReader(log));
+        model.calculateDerivedInfo(new DefaultProgressListener());
+        Assert.assertNotNull(model);
+        Assert.assertEquals(model.getGcEvents().size(), 1);
+        GCEvent youngGC = model.getGcEvents().get(0);
+        Assert.assertEquals(youngGC.getStartTime(), 683, DELTA);
+        Assert.assertEquals(youngGC.getDuration(), 8.5898, DELTA);
+        Assert.assertEquals(youngGC.getEventType(), GCEventType.YOUNG_GC);
+        Assert.assertEquals(youngGC.getCause(), "G1 Evacuation Pause");
+        Assert.assertEquals(youngGC.getCollectionResult().getSummary().getPreUsed(), 52224);
     }
 
     @Test

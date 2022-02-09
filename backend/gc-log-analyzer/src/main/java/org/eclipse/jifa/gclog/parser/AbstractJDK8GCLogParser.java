@@ -518,8 +518,7 @@ public abstract class AbstractJDK8GCLogParser extends AbstractGCLogParser {
                 }
                 end = rightBracket + 1;
             }
-            // g1 does not have an extra space
-            if (parser.getMetadata().getCollector() != GCCollectorType.G1 && line.charAt(end) == ' ') {
+            if (end < line.length() && line.charAt(end) == ' ') {
                 end++;
             }
             return new GCLogToken(line.substring(index, end), end);
@@ -722,12 +721,26 @@ public abstract class AbstractJDK8GCLogParser extends AbstractGCLogParser {
                 }
 
                 for (GCLogTokenType tokenType : GC_TRACETIME_END_TOKEN_TYPES) {
-                    if (checkNextToken(tokenType)) {
-                        if (sentence == null) {
-                            sentence = parser.pollSentenceToAssemble();
-                        }
-                        sentence.add(lastToken);
+                    if (!checkNextToken(tokenType)) {
+                        continue;
                     }
+                    if (sentence == null) {
+                        if (tokenType == TOKEN_SAFEPOINT || tokenType == TOKEN_REFERENCE_GC) {
+                            // They are always printed together with timestamp
+                            sentence = parser.pollSentenceToAssemble();
+                        } else {
+                            // Filter out some invalid sentence. This may be useful when
+                            // the log is using unsupported options
+                            do {
+                                sentence = parser.pollSentenceToAssemble();
+                            } while (sentence != null &&
+                                    sentence.get(sentence.size() - 1).getType() != TOKEN_GC_TRACETIME_TITLE);
+                        }
+                        if (sentence == null) {
+                            break; // log is incomplete?
+                        }
+                    }
+                    sentence.add(lastToken);
                 }
                 if (sentence != null) {
                     continue;
