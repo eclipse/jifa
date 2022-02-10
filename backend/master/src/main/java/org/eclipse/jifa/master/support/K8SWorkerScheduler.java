@@ -25,6 +25,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.ext.sql.SQLConnection;
 import io.vertx.serviceproxy.ServiceException;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.eclipse.jifa.common.ErrorCode;
 import org.eclipse.jifa.common.JifaException;
 import org.eclipse.jifa.master.entity.Job;
@@ -42,6 +43,10 @@ import java.io.IOException;
 import java.net.ConnectException;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 import static org.eclipse.jifa.master.Constant.*;
 
@@ -178,7 +183,8 @@ public class K8SWorkerScheduler implements WorkerScheduler {
     }
 
     private String buildWorkerName(Job job) {
-        return WORKER_PREFIX + job.getTarget().hashCode();
+        String target = DigestUtils.md5Hex(job.getTarget().getBytes(StandardCharsets.UTF_8)).substring(0, 16);
+        return WORKER_PREFIX + "-" + target;
     }
 
     @Override
