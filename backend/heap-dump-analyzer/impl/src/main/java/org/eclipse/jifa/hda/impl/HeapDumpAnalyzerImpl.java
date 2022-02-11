@@ -12,6 +12,7 @@
  ********************************************************************************/
 package org.eclipse.jifa.hda.impl;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.eclipse.jifa.common.Constant;
 import org.eclipse.jifa.common.JifaException;
 import org.eclipse.jifa.common.cache.Cacheable;
@@ -292,7 +293,7 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer {
 
     private String getObjectValue(IObject o) {
         String text = o.getClassSpecificName();
-        return text != null ? text : o.getTechnicalName();
+        return text != null ? StringEscapeUtils.unescapeJava(text) : o.getTechnicalName();
     }
 
     private PageView<Model.FieldView> buildPageViewOfFields(List<Field> fields, int page, int pageSize) {
