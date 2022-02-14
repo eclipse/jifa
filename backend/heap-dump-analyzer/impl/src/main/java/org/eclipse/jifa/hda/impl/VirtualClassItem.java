@@ -13,11 +13,11 @@
 
 package org.eclipse.jifa.hda.impl;
 
+import org.eclipse.jifa.common.util.EscapeUtil;
 import org.eclipse.mat.SnapshotException;
 import org.eclipse.mat.query.Bytes;
 import org.eclipse.mat.query.IStructuredResult;
 import org.eclipse.mat.snapshot.ISnapshot;
-import org.eclipse.mat.snapshot.model.IObject;
 import org.eclipse.jifa.common.util.UseAccessor;
 import org.eclipse.jifa.hda.api.AnalysisException;
 import static org.eclipse.jifa.hda.api.Model.DominatorTree;
@@ -67,7 +67,7 @@ public class VirtualClassItem extends DominatorTree.ClassItem {
 
     @Override
     public String getLabel() {
-        return (String) results.getColumnValue(e, COLUMN_LABEL);
+        return EscapeUtil.unescapeLabel((String) results.getColumnValue(e, COLUMN_LABEL));
     }
 
     @Override

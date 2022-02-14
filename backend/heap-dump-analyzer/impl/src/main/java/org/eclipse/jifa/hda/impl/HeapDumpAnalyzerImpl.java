@@ -18,6 +18,7 @@ import org.eclipse.jifa.common.cache.Cacheable;
 import org.eclipse.jifa.common.request.PagingRequest;
 import org.eclipse.jifa.common.util.PageViewBuilder;
 import org.eclipse.jifa.common.util.ReflectionUtil;
+import org.eclipse.jifa.common.util.EscapeUtil;
 import org.eclipse.jifa.common.vo.PageView;
 import org.eclipse.jifa.common.vo.support.SearchPredicate;
 import org.eclipse.jifa.common.vo.support.SearchType;
@@ -292,7 +293,7 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer {
 
     private String getObjectValue(IObject o) {
         String text = o.getClassSpecificName();
-        return text != null ? text : o.getTechnicalName();
+        return text != null ? EscapeUtil.unescapeJava(text) : o.getTechnicalName();
     }
 
     private PageView<Model.FieldView> buildPageViewOfFields(List<Field> fields, int page, int pageSize) {
@@ -404,7 +405,7 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer {
         return $(() -> {
             IObject object = context.snapshot.getObject(objectId);
             String text = object.getClassSpecificName();
-            return text != null ? text : Constant.EMPTY_STRING;
+            return text != null ? EscapeUtil.unescapeJava(text) : Constant.EMPTY_STRING;
         });
     }
 
@@ -1128,7 +1129,7 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer {
                         for (int i = 0; i < columns.length; i++) {
                             Object columnValue = table.getColumnValue(o, i);
 
-                            l.add(columnValue != null ? columnValue.toString() : null);
+                            l.add(columnValue != null ? EscapeUtil.unescapeJava(columnValue.toString()) : null);
                         }
                         IContextObject co = table.getContext(o);
                         return new CalciteSQLResult.TableResult.Entry(co != null ? co.getObjectId() : Helper.ILLEGAL_OBJECT_ID,
