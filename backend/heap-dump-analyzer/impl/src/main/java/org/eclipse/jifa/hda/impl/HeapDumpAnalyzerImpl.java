@@ -240,7 +240,7 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer {
             JavaObject ho = new JavaObject();
             IObject object = context.snapshot.getObject(objectId);
             ho.setObjectId(objectId);
-            ho.setLabel(object.getDisplayName());
+            ho.setLabel(EscapeUtil.unescapeLabel(object.getDisplayName()));
             ho.setShallowSize(object.getUsedHeapSize());
             ho.setRetainedSize(object.getRetainedHeapSize());
             ho.setObjectType(typeOf(object));
