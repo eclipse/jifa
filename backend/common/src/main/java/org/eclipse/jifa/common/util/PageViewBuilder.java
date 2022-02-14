@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020, 2021 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -75,6 +75,15 @@ public class PageViewBuilder<A, B extends Searchable> {
                 .limit(paging.getPageSize())
                 .mapToObj(mapper)
                 .collect(Collectors.toList());
+        return new PageView<>(paging, total.length, result);
+    }
+
+    public static <S, R> PageView<R> build(S[] total, PagingRequest paging, Function<S, R> mapper) {
+        List<R> result = Arrays.stream(total)
+                               .skip(paging.from())
+                               .limit(paging.getPageSize())
+                               .map(mapper)
+                               .collect(Collectors.toList());
         return new PageView<>(paging, total.length, result);
     }
 

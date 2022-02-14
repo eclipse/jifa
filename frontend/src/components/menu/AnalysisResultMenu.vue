@@ -1,5 +1,5 @@
 <!--
-    Copyright (c) 2020 Contributors to the Eclipse Foundation
+    Copyright (c) 2020, 2022 Contributors to the Eclipse Foundation
 
     See the NOTICE file(s) distributed with this work for additional
     information regarding copyright ownership.
@@ -51,7 +51,7 @@
 </template>
 <script>
   import axios from 'axios'
-  import {heapDumpService, gclogService, service} from '../../util'
+  import {heapDumpService, gclogService, threadDumpService, service} from '../../util'
 
   export default {
     props: ['file', 'analysisState', 'type', 'showInspector'],
@@ -127,6 +127,8 @@
             return heapDumpService(this.file, uri);
           case "GC_LOG":
             return gclogService(this.file, uri);
+          case "THREAD_DUMP":
+            return threadDumpService(this.file, uri);
           default:
             return ""
         }

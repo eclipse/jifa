@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -62,6 +62,10 @@ class AnalyzerRoute extends BaseRoute {
         // gclog
         apiRouter.route().path(GCLOG_RELEASE).handler(context -> release(context, GCLOG_ANALYSIS));
         apiRouter.route().path(GCLOG_COMMON).handler(context -> process(context, GCLOG_ANALYSIS));
+
+        // thread dump
+        apiRouter.route().path(THREAD_DUMP_RELEASE).handler(context -> release(context, THREAD_DUMP_ANALYSIS));
+        apiRouter.route().path(THREAD_DUMP_COMMON).handler(context -> process(context, THREAD_DUMP_ANALYSIS));
     }
 
     private Single<Job> findOrAllocate(User user, File file, JobType jobType) {

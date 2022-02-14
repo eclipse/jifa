@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -28,12 +28,12 @@ class Handler implements MethodInterceptor {
 
     private final List<Method> cacheableMethods;
 
-    public Handler(Object target) {
+    public Handler(Class<?> target) {
         cache = new Cache();
         cacheableMethods = new ArrayList<>();
 
         try {
-            Method[] methods = target.getClass().getDeclaredMethods();
+            Method[] methods = target.getDeclaredMethods();
             for (Method method : methods) {
                 if (method.getAnnotation(Cacheable.class) != null) {
                     method.setAccessible(true);

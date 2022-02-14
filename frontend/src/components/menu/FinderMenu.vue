@@ -1,5 +1,5 @@
 <!--
-    Copyright (c) 2020 Contributors to the Eclipse Foundation
+    Copyright (c) 2020, 2022 Contributors to the Eclipse Foundation
 
     See the NOTICE file(s) distributed with this work for additional
     information regarding copyright ownership.
@@ -22,6 +22,12 @@
                 v-if="$jifa.fileManagement"
                 :active="fileType==='GC_LOG'">
       <i class="el-icon-toilet-paper" style="margin-right: 3px"/> {{$t("jifa.gclogAnalysis")}}
+    </b-nav-item>
+
+    <b-nav-item @click="$emit('chooseMenu', 'THREAD_DUMP')"
+                v-if="$jifa.fileManagement"
+                :active="fileType==='THREAD_DUMP'">
+      <i class="el-icon-s-operation" style="margin-right: 3px"/> {{$t("jifa.threadDump.title")}}
     </b-nav-item>
 
     <b-nav-item @click="handleAddFile" v-if="$jifa.fileManagement">

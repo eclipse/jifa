@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -19,6 +19,8 @@ import finder from "./components/finder"
 import heapDump from "./components/heapdump/HeapDump"
 
 import GCLog from "./components/gclog/GCLog"
+
+import threadDump from "./components/threaddump/ThreadDump"
 
 import auth from "./components/auth/Auth"
 
@@ -87,6 +89,12 @@ const routes = [
     name: 'gcLog',
     path: "/gcLog",
     component: GCLog,
+    props: (route) => ({file: route.query.file})
+  },
+  {
+    name: 'threadDump',
+    path: "/threadDump",
+    component: threadDump,
     props: (route) => ({file: route.query.file})
   },
   {path: '*', component: notFound}
