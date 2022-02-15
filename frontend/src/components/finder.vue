@@ -1,5 +1,5 @@
 <!--
-    Copyright (c) 2020 Contributors to the Eclipse Foundation
+    Copyright (c) 2020, 2022 Contributors to the Eclipse Foundation
 
     See the NOTICE file(s) distributed with this work for additional
     information regarding copyright ownership.
@@ -212,6 +212,8 @@ const defaultMenuItem = 'HEAP_DUMP'
             return this.$i18n.t('jifa.addHeapDumpFile');
           case "GC_LOG":
             return this.$i18n.t('jifa.addGCLogFile');
+          case "THREAD_DUMP":
+            return this.$i18n.t('jifa.threadDump.addFile');
           default:
             return this.$i18n.t('jifa.addFile');
         }

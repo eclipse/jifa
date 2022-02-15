@@ -63,6 +63,10 @@ export function gclogService(file, api) {
   return SERVICE_PREFIX + '/gc-log/' + file + '/' + api;
 }
 
+export function threadDumpService(file, api) {
+  return SERVICE_PREFIX + '/thread-dump/' + file + '/' + api;
+}
+
 export function matchSearch(data,val){
   let temp = [];
   for(let index in data){

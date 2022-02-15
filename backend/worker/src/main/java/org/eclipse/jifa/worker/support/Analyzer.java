@@ -25,6 +25,7 @@ import org.eclipse.jifa.common.util.FileUtil;
 import org.eclipse.jifa.common.listener.DefaultProgressListener;
 import org.eclipse.jifa.hda.api.HeapDumpAnalyzer;
 import org.eclipse.jifa.common.listener.ProgressListener;
+import org.eclipse.jifa.tda.ThreadDumpAnalyzer;
 import org.eclipse.jifa.worker.Worker;
 import org.eclipse.jifa.worker.WorkerGlobal;
 import org.slf4j.Logger;
@@ -37,8 +38,7 @@ import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.concurrent.TimeUnit;
 
-import static org.eclipse.jifa.common.enums.FileType.GC_LOG;
-import static org.eclipse.jifa.common.enums.FileType.HEAP_DUMP;
+import static org.eclipse.jifa.common.enums.FileType.*;
 import static org.eclipse.jifa.common.util.Assertion.ASSERT;
 import static org.eclipse.jifa.worker.Constant.CacheConfig.*;
 
@@ -139,6 +139,9 @@ public class Analyzer {
                     case GC_LOG:
                         getOrOpenGCLogModel(fileName,progressListener);
                         break;
+                    case THREAD_DUMP:
+                        threadDumpAnalyzerOf(fileName, progressListener);
+                        break;
                     default:
                         break;
                 }
@@ -169,6 +172,11 @@ public class Analyzer {
         File index = new File(FileSupport.indexPath(fileType, fileName));
         if (index.exists()) {
             ASSERT.isTrue(index.delete(), "Delete index file failed");
+        }
+
+        File kryo = new File(FileSupport.filePath(fileType, fileName, fileName + ".kryo"));
+        if (kryo.exists()) {
+            ASSERT.isTrue(kryo.delete(), "Delete kryo file failed");
         }
     }
 
@@ -261,5 +269,16 @@ public class Analyzer {
         return getOrBuild(gclogFile,
                 key -> new GCLogAnalyzer(new File(FileSupport.filePath(GC_LOG,  gclogFile)),
                         listener).parse());
+    }
+
+    public static ThreadDumpAnalyzer threadDumpAnalyzerOf(String threadDumpFile) {
+        return threadDumpAnalyzerOf(threadDumpFile, ProgressListener.NoOpProgressListener);
+    }
+
+    public static ThreadDumpAnalyzer threadDumpAnalyzerOf(String threadDumpFile,
+                                                          ProgressListener listener) {
+        return getOrBuild(threadDumpFile,
+                          key -> ThreadDumpAnalyzer
+                              .build(new File(FileSupport.filePath(THREAD_DUMP, threadDumpFile)).toPath(), listener));
     }
 }

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -17,11 +17,20 @@ import net.sf.cglib.proxy.Enhancer;
 
 public class ProxyBuilder {
 
-    @SuppressWarnings("unchecked")
-    public static <T> T build(T target) {
+    private static <T> Enhancer buildEnhancer(Class<T> clazz) {
         Enhancer e = new Enhancer();
-        e.setSuperclass(target.getClass());
-        e.setCallback(new Handler(target));
-        return (T) e.create();
+        e.setSuperclass(clazz);
+        e.setCallback(new Handler(clazz));
+        return e;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> T build(Class<T> clazz) {
+        return (T) buildEnhancer(clazz).create();
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> T build(Class<T> clazz, Class<?>[] argTypes, Object[] args) {
+        return (T) buildEnhancer(clazz).create(argTypes, args);
     }
 }

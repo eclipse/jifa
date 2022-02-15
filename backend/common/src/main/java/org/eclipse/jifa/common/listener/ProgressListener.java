@@ -25,6 +25,8 @@ public interface ProgressListener {
 
     void sendUserMessage(Level level, String s, Throwable throwable);
 
+    default void reset() {}
+
     String log();
 
     double percent();

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020, 2021 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -259,7 +259,7 @@ public class FileSupport {
         return filePath(type, name, name);
     }
 
-    private static String filePath(FileType type, String name, String childrenName) {
+    public static String filePath(FileType type, String name, String childrenName) {
         String defaultFilePath = dirPath(type, name) + File.separator + childrenName;
         return WorkerGlobal.hooks().mapFilePath(type, name, childrenName, defaultFilePath);
     }

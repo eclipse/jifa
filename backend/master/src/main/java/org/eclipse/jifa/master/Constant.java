@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -93,6 +93,12 @@ public interface Constant extends org.eclipse.jifa.common.Constant {
      */
     String GCLOG_RELEASE = "/gc-log/:file/release";
     String GCLOG_COMMON = "/gc-log/:file/*";
+
+    /**
+     * THREAD DUMP URL
+     */
+    String THREAD_DUMP_RELEASE = "/thread-dump/:file/release";
+    String THREAD_DUMP_COMMON = "/thread-dump/:file/*";
 
     /**
      * WORKER URL

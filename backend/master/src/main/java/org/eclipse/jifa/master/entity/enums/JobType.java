@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -21,7 +21,8 @@ public enum JobType {
     HEAP_DUMP_ANALYSIS,
 
     GCLOG_ANALYSIS,
-    ;
+
+    THREAD_DUMP_ANALYSIS;
 
     public boolean isFileTransfer() {
         return this == FILE_TRANSFER;
@@ -33,6 +34,8 @@ public enum JobType {
                 return FileType.HEAP_DUMP.getTag();
             case GCLOG_ANALYSIS:
                 return FileType.GC_LOG.getTag();
+            case THREAD_DUMP_ANALYSIS:
+                return FileType.THREAD_DUMP.getTag();
             default:
                 throw new IllegalStateException();
         }
