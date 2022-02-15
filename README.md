@@ -25,6 +25,8 @@ The following features are supported:
 
 - [GC Log Analysis](backend/gc-log-analyzer/README.md)
 
+- [Thread Dump Analysis](backend/thread-dump-analyzer/README.md)
+
 The backend of Jifa uses Vert.x as the main framework and consists of two modules:
 
 - Master
