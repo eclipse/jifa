@@ -52,9 +52,9 @@ public class WorkerServiceImpl implements WorkerService, WorkerSQL {
 
     @Override
     public void diskCleanup(String hostIP, Handler<AsyncResult<Void>> handler) {
-        dbClient.rxUpdateWithParams(FileSQL.UPDATE_AS_PENDING_DELETE, ja(hostIP))
+        dbClient.rxUpdateWithParams(FileSQL.UPDATE_AS_PENDING_DELETE_BY_HOST, ja(hostIP))
                 .ignoreElement()
-                .andThen(dbClient.rxQueryWithParams(FileSQL.SELECT_PENDING_DELETE, ja(hostIP))
+                .andThen(dbClient.rxQueryWithParams(FileSQL.SELECT_PENDING_DELETE_BY_HOST, ja(hostIP))
                                  .map(rs -> rs.getRows().stream().map(row -> row.getString("name"))
                                               .collect(Collectors.toList()))
                                  .flatMapCompletable(

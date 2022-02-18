@@ -35,7 +35,7 @@ import JifaGlobal from "./Jifa"
 import axiosRetry from "axios-retry"
 
 axiosRetry(axios, {
-  retries: 120,
+  retries: 60,
   retryDelay: (retryCount) => {
     return 2000;
   },

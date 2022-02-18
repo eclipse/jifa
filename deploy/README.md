@@ -33,9 +33,9 @@ Then visit http://127.0.0.1:8102 in your browser. This is the simplest way to ge
 ## K8S Pattern
 For K8S pattern, you can launch a single node cluster using `minikube start --driver=hyperkit`, then deploy Jifa by the following commands:
 ```bash
-$ cd scripts
+$ cd scripts/docker_images
 $ ./build_image.sh
-$ cd ..
+$ cd ../..
 $ cd deploy/k8s_pattern
 $ ./deploy.sh
 ```
