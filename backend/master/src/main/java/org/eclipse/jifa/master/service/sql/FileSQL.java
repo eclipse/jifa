@@ -50,10 +50,15 @@ public interface FileSQL {
     String UPDATE_FILE_AS_UNUSED =
         "UPDATE file SET cas_state = 0 WHERE name = ? and deleted = false AND (cas_state = 1 OR cas_state = 0)";
 
-    String UPDATE_AS_PENDING_DELETE = "UPDATE file SET cas_state = 2 WHERE host_ip = ? AND deleted = false AND " +
+    String UPDATE_AS_PENDING_DELETE_BY_HOST = "UPDATE file SET cas_state = 2 WHERE host_ip = ? AND deleted = false AND " +
                                       "cas_state = 0 AND transfer_state != 'IN_PROGRESS' ORDER BY creation_time ASC LIMIT 10";
 
-    String SELECT_PENDING_DELETE = "SELECT * FROM file WHERE host_ip = ? AND cas_state = 2 AND deleted = false";
+    String UPDATE_AS_PENDING_DELETE_BY_FILE_NAME = "UPDATE file SET cas_state = 2 WHERE name = ? AND deleted = false AND " +
+        "cas_state = 0 AND transfer_state != 'IN_PROGRESS' ORDER BY creation_time ASC LIMIT 10";
+
+    String SELECT_PENDING_DELETE_BY_HOST = "SELECT * FROM file WHERE host_ip = ? AND cas_state = 2 AND deleted = false";
+
+    String SELECT_PENDING_DELETE_BY_FILE_NAME = "SELECT * FROM file WHERE name = ? AND cas_state = 2 AND deleted = false";
 
     String DELETE_FILE_BY_NAME =
         "UPDATE file SET deleted = true, deleter = ?, deleted_time = now(), cas_state = 0 WHERE name= ? AND deleted = false";
@@ -69,6 +74,6 @@ public interface FileSQL {
         "f.deleted=0 and " +
         "f.cas_state=0 and " +
         "f.transfer_state='SUCCESS' and " +
-        "f.last_modified_time < now() - interval 30 day " +
+        "f.last_modified_time < now() - interval 7 day " +
         "LIMIT 50";
 }

@@ -59,9 +59,9 @@ public class DiskCleaningTask extends BaseTask {
                                                               List<String> workerIpList) {
         return Observable.fromIterable(workerIpList)
                          .flatMap(
-                             workerIp -> jdbcClient.rxUpdateWithParams(FileSQL.UPDATE_AS_PENDING_DELETE, ja(workerIp))
+                             workerIp -> jdbcClient.rxUpdateWithParams(FileSQL.UPDATE_AS_PENDING_DELETE_BY_HOST, ja(workerIp))
                                                    .ignoreElement()
-                                                   .andThen(jdbcClient.rxQueryWithParams(FileSQL.SELECT_PENDING_DELETE,
+                                                   .andThen(jdbcClient.rxQueryWithParams(FileSQL.SELECT_PENDING_DELETE_BY_HOST,
                                                                                          ja(workerIp))
                                                                       .map(rs -> rs.getRows().stream()
                                                                                    .map(row -> row.getString("name"))
