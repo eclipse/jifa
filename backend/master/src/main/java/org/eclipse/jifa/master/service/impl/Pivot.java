@@ -39,19 +39,8 @@ import org.eclipse.jifa.master.entity.enums.Deleter;
 import org.eclipse.jifa.master.entity.enums.JobState;
 import org.eclipse.jifa.master.entity.enums.JobType;
 import org.eclipse.jifa.master.model.TransferWay;
-import org.eclipse.jifa.master.service.impl.helper.ConfigHelper;
-import org.eclipse.jifa.master.service.impl.helper.FileHelper;
-import org.eclipse.jifa.master.service.impl.helper.JobHelper;
-import org.eclipse.jifa.master.service.impl.helper.MasterHelper;
-import org.eclipse.jifa.master.service.impl.helper.SQLAssert;
-import org.eclipse.jifa.master.service.impl.helper.SQLHelper;
-import org.eclipse.jifa.master.service.impl.helper.WorkerHelper;
-import org.eclipse.jifa.master.service.sql.ConfigSQL;
-import org.eclipse.jifa.master.service.sql.FileSQL;
-import org.eclipse.jifa.master.service.sql.GlobalLockSQL;
-import org.eclipse.jifa.master.service.sql.JobSQL;
-import org.eclipse.jifa.master.service.sql.MasterSQL;
-import org.eclipse.jifa.master.service.sql.WorkerSQL;
+import org.eclipse.jifa.master.service.impl.helper.*;
+import org.eclipse.jifa.master.service.sql.*;
 import org.eclipse.jifa.master.support.Factory;
 import org.eclipse.jifa.master.support.Pattern;
 import org.eclipse.jifa.master.support.WorkerClient;
@@ -117,7 +106,11 @@ public class Pivot {
         return scheduler;
     }
 
-    public static synchronized Pivot instance(Vertx vertx, JDBCClient dbClient, JsonObject config) {
+    public static Pivot getInstance() {
+        return SINGLETON;
+    }
+
+    public static synchronized Pivot createInstance(Vertx vertx, JDBCClient dbClient, JsonObject config) {
         if (SINGLETON != null) {
             return SINGLETON;
         }
@@ -234,6 +227,19 @@ public class Pivot {
                 }
             }
         ));
+    }
+
+    public Single<Boolean> isDBConnectivity() {
+        return dbClient.rxGetConnection()
+            .flatMap(conn -> selectTrue(conn).doOnTerminate(
+                () -> {
+                    LOGGER.info("Close connection for DB connectivity test");
+                    conn.close();
+                }))
+            .onErrorReturn(t -> {
+                t.printStackTrace();
+                return Boolean.FALSE;
+            });
     }
 
     private Map<String, String> buildQueryFileTransferProgressParams(File file) {
@@ -591,6 +597,16 @@ public class Pivot {
         return conn.rxUpdateWithParams(INSERT_ACTIVE, buildActiveParams(job))
                    .doOnSuccess(SQLAssert::assertUpdated)
                    .ignoreElement();
+    }
+
+    private Single<Boolean> selectTrue(SQLConnection conn) {
+        return conn.rxQuery(SQL.SELECT_TRUE)
+            .map(SQLHelper::singleRow)
+            .map(value -> value.getInteger("TRUE") == 1 ? Boolean.TRUE : Boolean.FALSE)
+            .onErrorReturn(e -> {
+                e.printStackTrace();
+                return Boolean.FALSE;
+            });
     }
 
     private Completable deleteActiveJob(SQLConnection conn, Job job) {

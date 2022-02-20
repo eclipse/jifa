@@ -59,7 +59,7 @@ public class StopAbnormalWorkerTask extends BaseTask {
                     .flatMap(workers -> {
                         for (Worker worker : workers) {
                             if (worker.getHostName().startsWith(K8SWorkerScheduler.getWorkerPrefix())) {
-                                if (!activeWorkers.contains(worker)) {
+                                if (!activeWorkers.contains(worker.getHostName())) {
                                     return pivot.getScheduler().stop(worker).toSingleDefault(worker);
                                 }
                             }

@@ -53,7 +53,7 @@ public class PVCCleanupTask extends BaseTask {
     public void doPeriodic() {
         pivot.getDbClient().rxQuery(FileSQL.SELECT_DATED_FILES)
             .map(result -> result.getRows().stream().map(FileHelper::fromDBRecord).collect(Collectors.toList()))
-            .doOnSuccess(files -> LOGGER.info("Found dated files: {}", files.size()))
+            .doOnSuccess(files -> LOGGER.info("Found dated files for deletion: {}", files.size()))
             .flatMapCompletable(files ->
                 Observable.fromIterable(files.stream().map(File::getName).collect(Collectors.toList()))
                     .flatMapCompletable(
