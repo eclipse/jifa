@@ -41,12 +41,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.ConnectException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
 
 import static org.eclipse.jifa.master.Constant.*;
 
@@ -191,8 +188,14 @@ public class K8SWorkerScheduler implements WorkerScheduler {
     public Completable start(Job job) {
         String name = buildWorkerName(job);
         Map<String, String> config = new HashMap<>();
-        // FIXME
-        config.put("requestMemSize", Long.toString(512 * 1024 * 1024));
+        // Roughly a reverse operation of calculateLoad
+        long estimateLoad = job.getEstimatedLoad();
+        estimateLoad = Math.max(10, estimateLoad);
+        double fileSizeGb = estimateLoad / 10.0;
+        fileSizeGb *= 1.3; // occupy 130% memory of filesize
+        fileSizeGb = Math.min(fileSizeGb, 18.0); // limit to 18g
+        long fileSizeKb = (long) (fileSizeGb * 1024 * 1024 * 1024);
+        config.put("requestMemSize", Long.toString(fileSizeKb));
 
         schedule(name, config);
 
