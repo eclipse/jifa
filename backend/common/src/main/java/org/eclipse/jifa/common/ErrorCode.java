@@ -73,7 +73,9 @@ public enum ErrorCode {
 
     RETRY,
 
-    RELEASE_PENDING_JOB;
+    RELEASE_PENDING_JOB,
+
+    READINESS_PROBE_FAILURE;
 
     public boolean isFatal() {
         switch (this) {

@@ -45,17 +45,19 @@ public class ServiceVerticle extends AbstractVerticle implements Constant {
             ConfigService.createProxy(vertx);
             WorkerService.createProxy(vertx);
             FileService.createProxy(vertx);
+            SupportService.createProxy(vertx);
             LOGGER.info("Create service proxy done");
 
             JDBCClient jdbcClient = new JDBCClient(io.vertx.ext.jdbc.JDBCClient.create(vertx.getDelegate(), ds));
 
-            Pivot pivot = Pivot.instance(vertx, jdbcClient, config());
+            Pivot pivot = Pivot.createInstance(vertx, jdbcClient, config());
 
             JobService.create(vertx, pivot, jdbcClient);
             FileService.create(vertx, pivot, jdbcClient);
             ConfigService.create(vertx, jdbcClient);
             AdminService.create(vertx, jdbcClient);
             WorkerService.create(vertx, jdbcClient, pivot);
+            SupportService.create(vertx, jdbcClient, pivot);
             LOGGER.info("Create service done");
 
             future.complete(Single.just(this));

@@ -105,6 +105,7 @@ public interface Constant extends org.eclipse.jifa.common.Constant {
      */
     String QUERY_ALL_WORKERS = "/workers";
     String WORKER_DISK_CLEANUP = "/worker/diskCleanup";
+    String HEALTH_CHECK = "/worker/healthCheck";
 
     /**
      * ADMIN URL

@@ -15,4 +15,6 @@ package org.eclipse.jifa.master.service.sql;
 public interface SQL {
 
     String COUNT_NAME = "COUNT(*)";
+
+    String SELECT_TRUE = "SELECT TRUE";
 }
