@@ -28,6 +28,7 @@ import org.eclipse.jifa.master.model.User;
 import org.eclipse.jifa.master.service.ProxyDictionary;
 import org.eclipse.jifa.master.service.reactivex.FileService;
 import org.eclipse.jifa.master.service.reactivex.JobService;
+import org.eclipse.jifa.master.support.Utils;
 import org.eclipse.jifa.master.support.WorkerClient;
 
 import static org.eclipse.jifa.common.util.Assertion.ASSERT;
@@ -38,18 +39,6 @@ class AnalyzerRoute extends BaseRoute {
     private JobService jobService;
 
     private FileService fileService;
-
-    // TODO: current algorithm used isn't good enough
-    private static long calculateLoad(File file) {
-        double size = file.getSize();
-        double G = 1024 * 1024 * 1024;
-
-        long load = (long) Math.ceil(size / G) * 10;
-        load = Math.max(load, 10);
-        load = Math.min(load, 200);
-
-        return load;
-    }
 
     void init(Vertx vertx, JsonObject config, Router apiRouter) {
         jobService = ProxyDictionary.lookup(JobService.class);
@@ -74,7 +63,7 @@ class AnalyzerRoute extends BaseRoute {
                          .flatMap(job -> job.found() ?
                                          Single.just(job) :
                                          jobService.rxAllocate(user.getId(), file.getHostIP(), jobType,
-                                                               target, EMPTY_STRING, calculateLoad(file), false)
+                                                               target, EMPTY_STRING, Utils.calculateLoadFromSize(file.getSize()), false)
                          );
     }
 
