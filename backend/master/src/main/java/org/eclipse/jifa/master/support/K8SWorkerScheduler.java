@@ -188,13 +188,11 @@ public class K8SWorkerScheduler implements WorkerScheduler {
     public Completable start(Job job) {
         String name = buildWorkerName(job);
         Map<String, String> config = new HashMap<>();
-        // Roughly a reverse operation of calculateLoad
-        long estimateLoad = job.getEstimatedLoad();
-        estimateLoad = Math.max(10, estimateLoad);
-        double fileSizeGb = estimateLoad / 10.0;
+
+        double fileSizeGb = Utils.calculateSizeFromLoad(job.getEstimatedLoad());
         fileSizeGb *= 1.3; // occupy 130% memory of filesize
         fileSizeGb = Math.min(fileSizeGb, 18.0); // limit to 18g
-        long fileSizeKb = (long) (fileSizeGb * 1024 * 1024 * 1024);
+        long fileSizeKb = (long) (fileSizeGb * 1024 * 1024 * 1024); // convert gb to kb
         config.put("requestMemSize", Long.toString(fileSizeKb));
 
         schedule(name, config);
