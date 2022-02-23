@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -43,6 +43,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.eclipse.jifa.master.Constant.*;
+import static org.eclipse.jifa.master.Constant.K8S_WORKER_PVC_NAME;
 
 public class K8SWorkerScheduler implements WorkerScheduler {
 
@@ -60,12 +61,14 @@ public class K8SWorkerScheduler implements WorkerScheduler {
 
     private static String MASTER_POD_NAME;
 
+    private static String WORKER_PVC_NAME;
+
     private static V1Pod createWorker(String name, long requestMemSize) {
         requestMemSize = Math.max(requestMemSize, MINIMAL_MEM_REQ);
 
         V1Volume volume = new V1Volume();
         volume.setName("dumpfile-volume");
-        volume.persistentVolumeClaim(new V1PersistentVolumeClaimVolumeSource().claimName("worker-pvc"));
+        volume.persistentVolumeClaim(new V1PersistentVolumeClaimVolumeSource().claimName(WORKER_PVC_NAME));
 
         V1Pod npod;
         npod = new V1PodBuilder()
@@ -148,6 +151,7 @@ public class K8SWorkerScheduler implements WorkerScheduler {
             WORKER_IMAGE = k8sConfig.getString(K8S_WORKER_IMAGE);
             MINIMAL_MEM_REQ = k8sConfig.getLong(K8S_MINIMAL_MEM_REQ);
             MASTER_POD_NAME = k8sConfig.getString(K8S_MASTER_POD_NAME);
+            WORKER_PVC_NAME = k8sConfig.getString(K8S_WORKER_PVC_NAME);
             LOGGER.info("K8S Namespace: " + NAMESPACE + ", Image: " + WORKER_IMAGE + ", Minimal memory request:" +
                         MINIMAL_MEM_REQ);
         } catch (IOException e) {

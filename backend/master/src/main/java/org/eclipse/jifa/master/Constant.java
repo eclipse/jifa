@@ -132,6 +132,7 @@ public interface Constant extends org.eclipse.jifa.common.Constant {
     String K8S_WORKER_IMAGE = "worker-image";
     String K8S_MINIMAL_MEM_REQ = "minimal-mem-req";
     String K8S_MASTER_POD_NAME = "master-pod-name";
+    String K8S_WORKER_PVC_NAME = "worker-pvc-name";
 
     /**
      * DEV
