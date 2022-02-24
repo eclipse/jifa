@@ -46,6 +46,8 @@ class UserRoute implements Constant {
         jwtOptions = new JWTOptions();
         jwtOptions.setSubject(JWT_SUBJECT).setIssuer(JWT_ISSUER).setExpiresInMinutes(JWT_EXPIRES_IN_MINUTES);
 
+        apiRouter.routeWithRegex("^(?" + HEALTH_CHECK +"$).*").handler(this::noAuth);
+
         apiRouter.routeWithRegex("^(?!" + AUTH +"$).*").handler(this::authWithCookie);
 
         apiRouter.routeWithRegex("^(?!" + AUTH +"$).*").handler(JWTAuthHandler.create(jwtAuth));
@@ -65,13 +67,16 @@ class UserRoute implements Constant {
         context.next();
     }
 
+    private void noAuth(RoutingContext context) {
+        context.next();
+    }
+
     private void auth(RoutingContext context) {
         Single.just(context.request())
               .flatMap(req -> {
                   String username = req.getParam("username");
                   String password = req.getParam("password");
-                  if (("admin".equals(username) && "admin".equals(password)) ||
-                      context.request().uri().contains(HEALTH_CHECK)/*skip authentication for health check*/) {
+                  if (("admin".equals(username) && "admin".equals(password)){
                       return Single.just(new JsonObject()
                                              .put(USER_ID_KEY, "12345")
                                              .put(USER_NAME_KEY, "admin")

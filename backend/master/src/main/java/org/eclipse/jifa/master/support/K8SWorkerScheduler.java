@@ -226,6 +226,10 @@ public class K8SWorkerScheduler implements WorkerScheduler {
                         // ConnectionException is tolerable because it simply indicates worker is still
                         // starting
                         return MSG_RETRY;
+                    } else if (err instanceof IOException) {
+                        if (err.getMessage() != null && err.getMessage().contains("Connection reset by peer")) {
+                            return MSG_RETRY;
+                        }
                     }
                     return err.getMessage();
                 }).flatMapCompletable(msg -> {
