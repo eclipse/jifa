@@ -51,6 +51,8 @@ public class K8SWorkerScheduler implements WorkerScheduler {
 
     private static final String WORKER_PREFIX = "jifa-worker";
 
+    private static final String SPECIAL_WORKER_PREFIX = "jifa-special";
+
     private static String NAMESPACE;
 
     private static String WORKER_IMAGE;
@@ -107,8 +109,12 @@ public class K8SWorkerScheduler implements WorkerScheduler {
         return npod;
     }
 
-    public static String getWorkerPrefix() {
+    public static String getNormalWorkerPrefix() {
         return WORKER_PREFIX;
+    }
+
+    public static String getSpecialWorkerPrefix() {
+        return SPECIAL_WORKER_PREFIX;
     }
 
     private static List<V1Pod> listWorker() {
@@ -182,8 +188,13 @@ public class K8SWorkerScheduler implements WorkerScheduler {
     }
 
     private String buildWorkerName(Job job) {
-        String target = DigestUtils.md5Hex(job.getTarget().getBytes(StandardCharsets.UTF_8)).substring(0, 16);
-        return WORKER_PREFIX + "-" + target;
+        String target = job.getTarget();
+        if (target.startsWith(SPECIAL_WORKER_PREFIX)) {
+            return target;
+        } else {
+            target = DigestUtils.md5Hex(job.getTarget().getBytes(StandardCharsets.UTF_8)).substring(0, 16);
+            return WORKER_PREFIX + "-" + target;
+        }
     }
 
     @Override
@@ -206,19 +217,21 @@ public class K8SWorkerScheduler implements WorkerScheduler {
             // timeout threshold reached.
             return Completable.error(new ServiceException(ErrorCode.RETRY.ordinal(), job.getTarget()));
         }
+        final String MSG_RETRY = "RETRY";
+        final String MSG_OK = "OK";
         return WorkerClient.get(workerIp, uri(PING))
-                .flatMap(resp -> Single.just("OK"))
+                .flatMap(resp -> Single.just(MSG_OK))
                 .onErrorReturn(err -> {
                     if (err instanceof ConnectException) {
                         // ConnectionException is tolerable because it simply indicates worker is still
                         // starting
-                        return "RETRY";
+                        return MSG_RETRY;
                     }
                     return err.getMessage();
                 }).flatMapCompletable(msg -> {
-                    if (msg.equals("OK")) {
+                    if (msg.equals(MSG_OK)) {
                         return Completable.complete();
-                    } else if (msg.equals("RETRY")) {
+                    } else if (msg.equals(MSG_RETRY)) {
                         return Completable.error(new ServiceException(ErrorCode.RETRY.ordinal(), job.getTarget()));
                     } else {
                         return Completable.error(new JifaException("Can not start worker due to internal error: " + msg));

@@ -66,12 +66,13 @@ public class PVCCleanupTask extends BaseTask {
                                         .rxQueryWithParams(FileSQL.SELECT_PENDING_DELETE_BY_FILE_NAME, ja(fileName))
                                         .map(rs -> rs.getRows().stream().map(row -> row.getString("name")).collect(Collectors.toList()))
                                         .flatMapCompletable(fileNames -> pivot
-                                            .deleteFile(Deleter.SYSTEM, fileNames.toArray(new String[0])))
+                                            .deleteFile(Deleter.SYSTEM, fileNames.toArray(new String[0]))
+                                            .doOnComplete(()->LOGGER.info("Deleted {} files by {}", fileNames.size(), this.name()))
+                                        )
                                 )
                     )
             )
             .subscribe(() -> {
-                    LOGGER.info("Deleted PVC files");
                     this.end();
                 },
                 t -> {

@@ -99,8 +99,6 @@ spec:
           path: /jifa-api/worker/healthCheck
           port: 9102
           httpHeaders:
-            - name: "Authorization"
-              value: "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpZCI6IjEyMzQ1IiwibmFtZSI6ImFkbWluIiwiaXNBZG1pbiI6dHJ1ZSwiaWF0IjoxNjQ1MTY1MzU1LCJleHAiOjE2NDU3NzAxNTUsImlzcyI6IkppZmEgTWFzdGVyIiwic3ViIjoiSmlmYSBNYXN0ZXIifQ.UCvfjwnBavk9bBqhrGQClRsM6qml5NRta6Qa494KTHQ" # admin:123456
             - name: "Accept"
               value: "*/*"
         initialDelaySeconds: 25

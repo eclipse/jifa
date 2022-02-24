@@ -58,7 +58,8 @@ public class StopAbnormalWorkerTask extends BaseTask {
                     .list()
                     .flatMap(workers -> {
                         for (Worker worker : workers) {
-                            if (worker.getHostName().startsWith(K8SWorkerScheduler.getWorkerPrefix())) {
+                            // Only watch upon normal worker groups, any other special workers have their special lifecycle
+                            if (worker.getHostName().startsWith(K8SWorkerScheduler.getNormalWorkerPrefix())) {
                                 if (!activeWorkers.contains(worker.getHostName())) {
                                     return pivot.getScheduler().stop(worker).toSingleDefault(worker);
                                 }
