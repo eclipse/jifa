@@ -76,7 +76,7 @@ class UserRoute implements Constant {
               .flatMap(req -> {
                   String username = req.getParam("username");
                   String password = req.getParam("password");
-                  if (("admin".equals(username) && "admin".equals(password)){
+                  if (("admin".equals(username) && "admin".equals(password))) {
                       return Single.just(new JsonObject()
                                              .put(USER_ID_KEY, "12345")
                                              .put(USER_NAME_KEY, "admin")
