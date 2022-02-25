@@ -32,10 +32,7 @@ import org.eclipse.jifa.master.entity.Job;
 import org.eclipse.jifa.master.entity.Worker;
 import org.eclipse.jifa.master.model.WorkerInfo;
 import org.eclipse.jifa.master.service.impl.Pivot;
-import org.eclipse.jifa.master.task.PVCCleanupTask;
-import org.eclipse.jifa.master.task.RetiringTask;
-import org.eclipse.jifa.master.task.StopAbnormalWorkerTask;
-import org.eclipse.jifa.master.task.TransferJobResultFillingTask;
+import org.eclipse.jifa.master.task.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -138,6 +135,7 @@ public class K8SWorkerScheduler implements WorkerScheduler {
         new TransferJobResultFillingTask(pivot, vertx);
         new PVCCleanupTask(pivot, vertx);
         new StopAbnormalWorkerTask(pivot, vertx);
+        new FileSyncForK8STask(pivot, vertx);
 
         // Order is important
         ApiClient client;

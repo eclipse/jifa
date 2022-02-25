@@ -52,4 +52,8 @@ public interface JobSQL {
 
     String UPDATE_TO_IN_PROGRESS =
         "UPDATE active_job SET state = 'IN_PROGRESS', host_ip = ?, access_time = ? WHERE type = ? AND target = ?";
+
+    String SELECT_ALL_ACTIVE_JOBS = "SELECT * FROM active_job";
+
+    String SELECT_TRANSFER_JOB_BY_NAME = "SELECT * FROM active_job WHERE type = 'FILE_TRANSFER' AND target = ?";
 }

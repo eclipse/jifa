@@ -13,7 +13,6 @@
 package org.eclipse.jifa.master.service.sql;
 
 public interface FileSQL {
-    String SELECT_ALL_ACTIVE_JOBS = "SELECT * FROM active_job";
 
     String INSERT = "INSERT INTO file(user_id, original_name, name, type, size, host_ip, transfer_state, shared, " +
                     "downloadable, in_shared_disk, deleted, cas_state) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -76,4 +75,9 @@ public interface FileSQL {
         "f.transfer_state='SUCCESS' and " +
         "f.last_modified_time < now() - interval 7 day " +
         "LIMIT 50";
+
+    String SELECT_TIMEOUT_IN_PROGRESS_FILE = "SELECT * FROM file WHERE transfer_state = 'IN_PROGRESS' AND " +
+        "last_modified_time < now() - INTERVAL 1 day ";
+
+    String UPDATE_IN_PROGRESS_FILE_AS_ERROR_BY_NAME = "UPDATE file SET transfer_state = 'ERROR' WHERE name = ? and transfer_state = 'IN_PROGRESS'";
 }
