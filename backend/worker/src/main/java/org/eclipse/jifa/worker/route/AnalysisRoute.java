@@ -50,8 +50,8 @@ class AnalysisRoute extends BaseRoute {
 
     @RouteMeta(path = "/analyze", method = HttpMethod.POST)
     void analyze(HttpServerRequest request, Promise<Void> promise, @ParamKey("file") String file,
-                 @ParamMap(keys = {"keep_unreachable_objects", "heap_layout"},
-                           mandatory = {false, false}) Map<String, String> options) {
+                 @ParamMap(keys = {"keep_unreachable_objects", "strictness"},
+                           mandatory = {false, false, false}) Map<String, String> options) {
         helper.analyze(promise, typeOf(request), file, options);
     }
 

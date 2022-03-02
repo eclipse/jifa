@@ -19,6 +19,7 @@ def HEAP_DUMP_ANALYZER_API = 'heap-dump-analyzer:api'
 def HEAP_DUMP_ANALYZER_IMPL = 'heap-dump-analyzer:impl'
 def HEAP_DUMP_ANALYZER_ECLIPSE_MAT_DEPS = 'heap-dump-analyzer:eclipse-mat-deps'
 def HEAP_DUMP_ANALYZER_PROVIDER = 'heap-dump-analyzer:provider'
+def HEAP_DUMP_ANALYZER_HOOK = 'heap-dump-analyzer:hook'
 def GC_LOG_ANALYZER = 'gc-log-analyzer'
 def THREAD_DUMP_ANALYZER = 'thread-dump-analyzer'
 
@@ -67,7 +68,7 @@ def THREAD_DUMP_ANALYZER = 'thread-dump-analyzer'
 
 def deps_dir_name = "mat-deps"
 def deps_dir_path = project(HEAP_DUMP_ANALYZER_ECLIPSE_MAT_DEPS).projectDir.parentFile.path + '/' + deps_dir_name
-[HEAP_DUMP_ANALYZER_ECLIPSE_MAT_DEPS, HEAP_DUMP_ANALYZER_IMPL, HEAP_DUMP_ANALYZER_PROVIDER, WORKER].each {
+[HEAP_DUMP_ANALYZER_ECLIPSE_MAT_DEPS, HEAP_DUMP_ANALYZER_IMPL, HEAP_DUMP_ANALYZER_PROVIDER, WORKER, HEAP_DUMP_ANALYZER_HOOK].each {
     name ->
         project("$name") {
             ext {

@@ -1,0 +1,25 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: %Bundle-Name
+Bundle-SymbolicName: org.eclipse.mat.hprof;singleton:=true
+Bundle-Version: 1.12.0.qualifier
+Bundle-Vendor: %Bundle-Vendor
+Require-Bundle: org.eclipse.mat.parser;bundle-version="1.12.0",
+ org.eclipse.core.runtime;bundle-version="3.4",
+ org.eclipse.core.commands;bundle-version="3.3.100"
+Export-Package: org.eclipse.mat.hprof.extension,org.eclipse.mat.hprof.ui
+Import-Package: org.eclipse.jface.preference;resolution:=optional,
+ org.eclipse.jface.dialogs;resolution:=optional,
+ org.eclipse.swt.widgets;resolution:=optional,
+ org.eclipse.ui;ui.workbench="split";resolution:=optional,
+ org.eclipse.ui.help;resolution:=optional,
+ org.eclipse.ui.preferences;resolution:=optional
+Bundle-Activator: org.eclipse.mat.hprof.HprofPlugin
+Bundle-ActivationPolicy: lazy;exclude:="org.eclipse.mat.hprof.describer"
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-Localization: plugin
+Bundle-Copyright: Copyright (c) 2008, 2021 SAP AG and IBM Corporation. 
+ All rights reserved. This program and the accompanying materials 
+ are made available under the terms of the Eclipse Public License 2.0 
+ which accompanies this distribution, and is available at 
+ https://www.eclipse.org/legal/epl-2.0/

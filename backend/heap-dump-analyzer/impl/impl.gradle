@@ -18,10 +18,10 @@ jar {
     manifest {
         attributes(
                 "Bundle-SymbolicName": "org.eclipse.jifa.hda.implementation; singleton:=true",
-                "Require-Bundle": "org.eclipse.mat.api,org.eclipse.mat.parser,org.eclipse.osgi,MatCalcitePlugin",
+                "Require-Bundle": "org.eclipse.mat.api,org.eclipse.mat.parser,org.eclipse.mat.hprof,org.eclipse.osgi,MatCalcitePlugin",
                 "Bundle-Activator": "org.eclipse.jifa.hda.impl.Activator",
                 "Import-Package":
-                        "org.eclipse.mat.snapshot,org.eclipse.mat.util,org.eclipse.mat.query,org.eclipse.mat.parser.model",
+                        "org.eclipse.mat.snapshot,org.eclipse.mat.util,org.eclipse.mat.query,org.eclipse.mat.parser.model,org.eclipse.mat.hprof.ui",
                 "Bundle-Version": "1.0"
         )
     }
@@ -39,8 +39,11 @@ dependencies {
         include "org.eclipse.mat.parser_*.jar"
         include "org.eclipse.mat.report_*.jar"
         include "org.eclipse.mat.api_*.jar"
+        include "org.eclipse.mat.hprof_*.jar"
     }
 }
+
+compileJava.dependsOn(':backend:heap-dump-analyzer:hook:hookPreferences')
 
 task installJar(type: Copy, dependsOn: jar) {
     from "${buildDir}/libs"

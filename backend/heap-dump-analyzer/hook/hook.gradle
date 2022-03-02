@@ -1,0 +1,58 @@
+plugins {
+    id 'java-library'
+}
+
+dependencies {
+
+    def prefix = "${mat_deps_dir_path}/"
+
+    implementation fileTree(prefix) {
+        include "org.eclipse.osgi_*.jar"
+        include "org.eclipse.core.runtime_*.jar"
+        include "org.eclipse.mat.hprof_*.jar"
+        include "org.eclipse.equinox.preferences_*.jar"
+    }
+}
+
+@SuppressWarnings('GrMethodMayBeStatic')
+def findHprofJarName() {
+    for (String name : file(mat_deps_dir_path).list()) {
+        if (name.contains('hprof')) {
+            return name;
+        }
+    }
+    throw new IllegalStateException("Hprof jar not found");
+}
+
+task hookPreferences(type: Zip, dependsOn: compileJava) {
+    def hprof = findHprofJarName()
+    def preferences = 'org/eclipse/mat/hprof/ui/HprofPreferences.class'
+
+    from(zipTree("${mat_deps_dir_path}/${hprof}")) {
+        exclude preferences
+        exclude 'META-INF/MANIFEST.MF'
+    }
+
+    from(file("${buildDir}/classes/java/main")) {
+        include preferences
+    }
+
+    from(file("${projectDir}/src/main/resources")) {
+    }
+
+    archiveName hprof
+
+    outputs.upToDateWhen {
+        false
+    }
+
+    doLast {
+        delete(file(file("${mat_deps_dir_path}/${hprof}")))
+
+        copy {
+            from(file("${buildDir}/distributions/${hprof}"))
+            into(file(mat_deps_dir_path))
+            duplicatesStrategy = DuplicatesStrategy.INCLUDE
+        }
+    }
+}

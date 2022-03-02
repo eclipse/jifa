@@ -31,11 +31,20 @@
               :close-on-press-escape=false :close-on-click-modal=false :show-close=false
               append-to-body
               modal>
-        <div>
-          <div>
-            <el-checkbox v-model="options.keepUnreachableObjects">Keep unreachable objects</el-checkbox>
-          </div>
-        </div>
+
+        <el-form label-position="top" size="mini">
+          <el-form-item label="Keep unreachable objects">
+            <el-switch v-model="options.keepUnreachableObjects"></el-switch>
+          </el-form-item>
+
+          <el-form-item label="Strictness">
+            <el-radio-group v-model="options.strictness">
+              <el-radio label="stop">stop</el-radio>
+              <el-radio label="warn">warn</el-radio>
+              <el-radio label="permissive">permissive</el-radio>
+            </el-radio-group>
+          </el-form-item>
+        </el-form>
 
         <span slot="footer" class="dialog-footer">
           <el-button @click="analyzeHeapDump" round>{{$t('jifa.confirm')}}</el-button>
@@ -227,29 +236,29 @@
 </template>
 
 <script>
-  import axios from 'axios'
-  import {heapDumpService} from '../../util'
-  import Footer from "../footer"
+import axios from 'axios'
+import {heapDumpService} from '../../util'
+import Footer from "../footer"
 
-  import Overview from './Overview'
-  import Inspector from './Inspector'
-  import LeakSuspects from './LeakSuspects'
-  import ViewMenu from "../menu/ViewMenu"
-  import SystemProperty from "./SystemProperty"
-  import Thread from "./Thread";
-  import Histogram from "./Histogram"
-  import DuplicatedClasses from "./DuplicatedClasses"
-  import Query from "./Query"
-  import DynamicResultSlot from "./DynamicResultSlot"
-  import DominatorTree from "./DominatorTree"
-  import GCRoots from "./GCRoots"
-  import UnreachableObjects from './UnreachableObjects'
-  import ClassLoaders from './ClassLoaders'
-  import DirectByteBuffer from './DirectByteBuffer'
-  import HeapFileCompare from './HeapFileCompare'
-  import {Loading} from "element-ui";
+import Overview from './Overview'
+import Inspector from './Inspector'
+import LeakSuspects from './LeakSuspects'
+import ViewMenu from "../menu/ViewMenu"
+import SystemProperty from "./SystemProperty"
+import Thread from "./Thread";
+import Histogram from "./Histogram"
+import DuplicatedClasses from "./DuplicatedClasses"
+import Query from "./Query"
+import DynamicResultSlot from "./DynamicResultSlot"
+import DominatorTree from "./DominatorTree"
+import GCRoots from "./GCRoots"
+import UnreachableObjects from './UnreachableObjects'
+import ClassLoaders from './ClassLoaders'
+import DirectByteBuffer from './DirectByteBuffer'
+import HeapFileCompare from './HeapFileCompare'
+import {Loading} from "element-ui";
 
-  export default {
+export default {
     props: ['file'],
     data() {
       return {
@@ -257,6 +266,7 @@
         optionViewVisible: false,
         options: {
           keepUnreachableObjects: true,
+          strictness: 'stop'
         },
         progress: 0,
         progressState: 'info',
@@ -428,6 +438,7 @@
         this.optionViewVisible = false;
         let params = new FormData();
         params.append('keep_unreachable_objects', this.options.keepUnreachableObjects);
+        params.append('strictness', this.options.strictness);
         this.doAnalyzeHeapDump(params);
       },
 
