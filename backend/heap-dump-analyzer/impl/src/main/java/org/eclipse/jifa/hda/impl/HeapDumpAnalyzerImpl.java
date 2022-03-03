@@ -15,10 +15,11 @@ package org.eclipse.jifa.hda.impl;
 import org.eclipse.jifa.common.Constant;
 import org.eclipse.jifa.common.JifaException;
 import org.eclipse.jifa.common.cache.Cacheable;
+import org.eclipse.jifa.common.listener.ProgressListener;
 import org.eclipse.jifa.common.request.PagingRequest;
+import org.eclipse.jifa.common.util.EscapeUtil;
 import org.eclipse.jifa.common.util.PageViewBuilder;
 import org.eclipse.jifa.common.util.ReflectionUtil;
-import org.eclipse.jifa.common.util.EscapeUtil;
 import org.eclipse.jifa.common.vo.PageView;
 import org.eclipse.jifa.common.vo.support.SearchPredicate;
 import org.eclipse.jifa.common.vo.support.SearchType;
@@ -26,8 +27,9 @@ import org.eclipse.jifa.common.vo.support.SortTableGenerator;
 import org.eclipse.jifa.hda.api.AnalysisException;
 import org.eclipse.jifa.hda.api.HeapDumpAnalyzer;
 import org.eclipse.jifa.hda.api.Model;
-import org.eclipse.jifa.common.listener.ProgressListener;
 import org.eclipse.mat.SnapshotException;
+import org.eclipse.mat.hprof.extension.HprofPreferencesAccess;
+import org.eclipse.mat.hprof.ui.HprofPreferences;
 import org.eclipse.mat.internal.snapshot.SnapshotQueryContext;
 import org.eclipse.mat.parser.model.ClassImpl;
 import org.eclipse.mat.parser.model.XClassHistogramRecord;
@@ -87,9 +89,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static org.eclipse.jifa.common.listener.ProgressListener.NoOpProgressListener;
 import static org.eclipse.jifa.common.vo.support.SearchPredicate.createPredicate;
 import static org.eclipse.jifa.hda.api.Model.*;
-import static org.eclipse.jifa.common.listener.ProgressListener.NoOpProgressListener;
 import static org.eclipse.jifa.hda.impl.AnalysisContext.ClassLoaderExplorerData;
 import static org.eclipse.jifa.hda.impl.AnalysisContext.DirectByteBufferData;
 
@@ -1846,7 +1848,17 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer {
         public HeapDumpAnalyzer provide(Path path, Map<String, String> arguments,
                                         ProgressListener listener) {
             return new HeapDumpAnalyzerImpl(new AnalysisContext(
-                $(() -> SnapshotFactory.openSnapshot(path.toFile(), arguments, new ProgressListenerImpl(listener)))
+                $(() ->
+                  {
+                      try {
+                          HprofPreferencesAccess.setStrictness(arguments.get("strictness"));
+                          return SnapshotFactory.openSnapshot(path.toFile(),
+                                                              arguments,
+                                                              new ProgressListenerImpl(listener));
+                      } finally {
+                          HprofPreferencesAccess.setStrictness(null);
+                      }
+                  })
             ));
         }
     }
