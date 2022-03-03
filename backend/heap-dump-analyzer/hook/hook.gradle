@@ -27,17 +27,15 @@ def findHprofJarName() {
 task hookPreferences(type: Zip, dependsOn: compileJava) {
     def hprof = findHprofJarName()
     def preferences = 'org/eclipse/mat/hprof/ui/HprofPreferences.class'
+    def access = 'org/eclipse/mat/hprof/extension/HprofPreferencesAccess.class'
 
     from(zipTree("${mat_deps_dir_path}/${hprof}")) {
         exclude preferences
-        exclude 'META-INF/MANIFEST.MF'
     }
 
     from(file("${buildDir}/classes/java/main")) {
         include preferences
-    }
-
-    from(file("${projectDir}/src/main/resources")) {
+        include access
     }
 
     archiveName hprof

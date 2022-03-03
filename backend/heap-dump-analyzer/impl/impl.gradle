@@ -21,7 +21,7 @@ jar {
                 "Require-Bundle": "org.eclipse.mat.api,org.eclipse.mat.parser,org.eclipse.mat.hprof,org.eclipse.osgi,MatCalcitePlugin",
                 "Bundle-Activator": "org.eclipse.jifa.hda.impl.Activator",
                 "Import-Package":
-                        "org.eclipse.mat.snapshot,org.eclipse.mat.util,org.eclipse.mat.query,org.eclipse.mat.parser.model,org.eclipse.mat.hprof.ui",
+                        "org.eclipse.mat.snapshot,org.eclipse.mat.util,org.eclipse.mat.query,org.eclipse.mat.parser.model,org.eclipse.mat.hprof.extension",
                 "Bundle-Version": "1.0"
         )
     }

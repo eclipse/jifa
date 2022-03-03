@@ -28,6 +28,7 @@ import org.eclipse.jifa.hda.api.AnalysisException;
 import org.eclipse.jifa.hda.api.HeapDumpAnalyzer;
 import org.eclipse.jifa.hda.api.Model;
 import org.eclipse.mat.SnapshotException;
+import org.eclipse.mat.hprof.extension.HprofPreferencesAccess;
 import org.eclipse.mat.hprof.ui.HprofPreferences;
 import org.eclipse.mat.internal.snapshot.SnapshotQueryContext;
 import org.eclipse.mat.parser.model.ClassImpl;
@@ -1842,21 +1843,6 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer {
         V run() throws Exception;
     }
 
-    private static HprofPreferences.HprofStrictness parseStrictness(Map<String, String> arguments) {
-        String strictness = arguments == null ? null : arguments.remove("strictness");
-        if (strictness == null) {
-            return HprofPreferences.DEFAULT_STRICTNESS;
-        }
-        switch (strictness) {
-            case "warn":
-                return HprofPreferences.HprofStrictness.STRICTNESS_WARNING;
-            case "permissive":
-                return HprofPreferences.HprofStrictness.STRICTNESS_PERMISSIVE;
-            default:
-                return HprofPreferences.DEFAULT_STRICTNESS;
-        }
-    }
-
     private static class ProviderImpl implements HeapDumpAnalyzer.Provider {
         @Override
         public HeapDumpAnalyzer provide(Path path, Map<String, String> arguments,
@@ -1865,12 +1851,12 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer {
                 $(() ->
                   {
                       try {
-                          HprofPreferences.setStrictness(parseStrictness(arguments));
+                          HprofPreferencesAccess.setStrictness(arguments.get("strictness"));
                           return SnapshotFactory.openSnapshot(path.toFile(),
                                                               arguments,
                                                               new ProgressListenerImpl(listener));
                       } finally {
-                          HprofPreferences.setStrictness(null);
+                          HprofPreferencesAccess.setStrictness(null);
                       }
                   })
             ));
