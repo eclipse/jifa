@@ -223,6 +223,13 @@ class FileRoute extends BaseRoute {
         }
     }
 
+    @RouteMeta(path = "/file/sync", method = HttpMethod.POST)
+    void sync(Promise<Void> promise, @ParamKey("files") String files, @ParamKey("cleanStale") boolean cleanStale) {
+        promise.complete();
+        FileInfo[] fileInfos = GSON.fromJson(files, FileInfo[].class);
+        FileSupport.sync(fileInfos, cleanStale);
+    }
+
     @RouteMeta(path = "/file/upload", method = HttpMethod.POST)
     void upload(RoutingContext context, @ParamKey("type") FileType type,
                 @ParamKey(value = "fileName", mandatory = false) String fileName) {

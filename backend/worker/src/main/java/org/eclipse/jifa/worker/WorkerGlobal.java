@@ -65,7 +65,7 @@ public class WorkerGlobal {
         CONFIG = config;
         HOOKS = hooks;
 
-        WORKSPACE = CONFIG.getString(Constant.ConfigKey.WORKSPACE, Constant.Misc.DEFAULT_WORKSPACE);
+        WORKSPACE = CONFIG.getString(Constant.ConfigKey.WORKSPACE, org.eclipse.jifa.common.Constant.DEFAULT_WORKSPACE);
         LOGGER.debug("Workspace: {}", WORKSPACE);
 
         File workspaceDir = new File(WORKSPACE);

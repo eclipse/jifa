@@ -34,6 +34,7 @@ import net.schmizz.sshj.xfer.FileSystemFile;
 import net.schmizz.sshj.xfer.scp.SCPDownloadClient;
 import net.schmizz.sshj.xfer.scp.SCPFileTransfer;
 import org.apache.commons.io.FileUtils;
+import org.eclipse.jifa.common.Constant;
 import org.eclipse.jifa.common.ErrorCode;
 import org.eclipse.jifa.common.JifaException;
 import org.eclipse.jifa.common.enums.FileTransferState;
@@ -51,6 +52,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -223,6 +225,38 @@ public class FileSupport {
                 delete(fileInfo.getType(), fileInfo.getName());
             } catch (Throwable t) {
                 LOGGER.error("Delete file failed", t);
+            }
+        }
+    }
+
+    public static void sync(FileInfo[] fileInfos, boolean cleanStale) {
+        Map<FileType, List<String>> files = new HashMap<>(){{
+            for (FileType ft : FileType.values()) {
+                // In case no files returned
+                this.put(ft, new ArrayList<>());
+            }
+        }};
+
+        for (FileInfo fi : fileInfos) {
+            files.get(fi.getType()).add(fi.getName());
+        }
+
+        long lastModified = System.currentTimeMillis() - Constant.STALE_THRESHOLD;
+        for (FileType ft : files.keySet()) {
+            List<String> names = files.get(ft);
+            File[] listFiles = new File(dirPath(ft)).listFiles();
+            if (listFiles == null) {
+                continue;
+            }
+            for (File lf : listFiles) {
+                if (names.contains(lf.getName())) {
+                    continue;
+                }
+                LOGGER.info("{} is not synchronized", lf.getName());
+                if (cleanStale && lf.lastModified() < lastModified) {
+                    LOGGER.info("Delete stale file {}", lf.getName());
+                    delete(ft, lf.getName());
+                }
             }
         }
     }

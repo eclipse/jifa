@@ -15,7 +15,6 @@ package org.eclipse.jifa.worker;
 public interface Constant extends org.eclipse.jifa.common.Constant {
 
     interface Misc {
-        String DEFAULT_WORKSPACE = System.getProperty("user.home") + java.io.File.separator + "jifa_workspace";
         String DEFAULT_VERTX_CONFIG_FILE = "vertx-config.json";
         String DEFAULT_WORKER_CONFIG_FILE = "worker-config.json";
         String DEFAULT_HOST = "0.0.0.0";

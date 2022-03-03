@@ -18,7 +18,7 @@ import org.eclipse.jifa.master.entity.Worker;
 import org.eclipse.jifa.master.service.impl.Pivot;
 import org.eclipse.jifa.master.service.impl.helper.ConfigHelper;
 import org.eclipse.jifa.master.service.impl.helper.JobHelper;
-import org.eclipse.jifa.master.service.sql.FileSQL;
+import org.eclipse.jifa.master.service.sql.JobSQL;
 import org.eclipse.jifa.master.support.K8SWorkerScheduler;
 
 import java.util.List;
@@ -45,7 +45,7 @@ public class StopAbnormalWorkerTask extends BaseTask {
 
     @Override
     public void doPeriodic() {
-        pivot.getDbClient().rxQuery(FileSQL.SELECT_ALL_ACTIVE_JOBS)
+        pivot.getDbClient().rxQuery(JobSQL.SELECT_ALL_ACTIVE_JOBS)
             .map(result -> result.getRows().stream().map(JobHelper::fromDBRecord).collect(Collectors.toList()))
             .flatMap(jobs -> {
                 // Every active job has its own worker, they should never be stopped
