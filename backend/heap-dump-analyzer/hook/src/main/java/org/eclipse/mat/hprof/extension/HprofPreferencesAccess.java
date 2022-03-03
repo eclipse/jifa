@@ -32,7 +32,6 @@ public final class HprofPreferencesAccess {
     }
 
     public static void setStrictness(String strictness) {
-        System.out.println("set " + parseStrictness(strictness));
         HprofPreferences.setStrictness(parseStrictness(strictness));
     }
 }
