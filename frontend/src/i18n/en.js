@@ -134,6 +134,12 @@ exports.default = {
 
       pathToGCRoots: 'Path to GC Roots',
       mergePathToGCRoots: 'Merge Path to GC Roots',
+
+      descOfKeepUnreachableObjects: 'If this option is enabled, the analyzer will treat the unreachable objects as the unreachable roots, and then analyze the reference relationship in them. Otherwise, no further analysis will be performed on the unreachable objects, but only the statistics of types of the unreachable object, that is Unreachable Objects Histogram',
+      descOfStrictness: '\'strictness\' indicates the follow-up action when an error occurred',
+      descOfStopStrictness: 'Throw an error and stop analyzing the dump',
+      descOfWarnStrictness: 'Raise a warning and continue',
+      descOfPermissiveStrictness: 'Raise a warning and try to "fix" it',
     },
 
     gclog:{

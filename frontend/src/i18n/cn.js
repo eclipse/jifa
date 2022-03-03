@@ -132,6 +132,12 @@ exports.default = {
 
       pathToGCRoots: 'GC 根路径',
       mergePathToGCRoots: '合并GC 根路径',
+
+      descOfKeepUnreachableObjects: '如果启用此选项，分析器会将不可达对象视为不可达根，进而分析其中的引用关系。 否则，将不对不可达对象进行进一步的分析，仅统计类型信息，即不可达类视图',
+      descOfStrictness: '\'strictness\' 表示当分析过程中遇到错误时的后续动作',
+      descOfStopStrictness: '终止分析',
+      descOfWarnStrictness: '报告警告信息并继续分析',
+      descOfPermissiveStrictness: '报告警告信息，尝试修复错误并继续分析',
     },
 
     gclog:{

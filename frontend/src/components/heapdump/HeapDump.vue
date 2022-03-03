@@ -26,24 +26,56 @@
 
       <el-dialog
               :title="$t('jifa.options')"
-              width="30%"
+              width="20%"
               :visible.sync="optionViewVisible"
               :close-on-press-escape=false :close-on-click-modal=false :show-close=false
               append-to-body
               modal>
 
         <el-form label-position="top" size="mini">
-          <el-form-item label="Keep unreachable objects">
-            <el-switch v-model="options.keepUnreachableObjects"></el-switch>
-          </el-form-item>
+          <el-popover
+              placement="left"
+              trigger="hover"
+              width="500">
+            <el-alert
+                type="info"
+                style="word-break: keep-all"
+                :closable="false"
+                :description="$t('jifa.heap.descOfKeepUnreachableObjects')">
+            </el-alert>
+            <el-form-item label="Keep unreachable objects" slot="reference">
+              <el-switch v-model="options.keepUnreachableObjects"></el-switch>
+            </el-form-item>
+          </el-popover>
 
-          <el-form-item label="Strictness">
-            <el-radio-group v-model="options.strictness">
-              <el-radio label="stop">stop</el-radio>
-              <el-radio label="warn">warn</el-radio>
-              <el-radio label="permissive">permissive</el-radio>
-            </el-radio-group>
-          </el-form-item>
+          <el-popover
+              placement="left"
+              trigger="hover"
+              width="500">
+            <el-alert
+                type="info"
+                style="word-break: keep-all"
+                :closable="false"
+                :title="$t('jifa.heap.descOfStrictness')">
+              <div slot="default">
+                <br/>
+                <span>stop - {{ $t('jifa.heap.descOfStopStrictness') }}</span>
+                <br/>
+                <br/>
+                <span>warn - {{ $t('jifa.heap.descOfWarnStrictness') }}</span>
+                <br/>
+                <br/>
+                <span>permissive - {{ $t('jifa.heap.descOfPermissiveStrictness') }}</span>
+              </div>
+            </el-alert>
+            <el-form-item label="Strictness" slot="reference">
+              <el-radio-group v-model="options.strictness">
+                <el-radio label="stop">stop</el-radio>
+                <el-radio label="warn">warn</el-radio>
+                <el-radio label="permissive">permissive</el-radio>
+              </el-radio-group>
+            </el-form-item>
+          </el-popover>
         </el-form>
 
         <span slot="footer" class="dialog-footer">
