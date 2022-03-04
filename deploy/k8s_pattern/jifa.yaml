@@ -101,8 +101,8 @@ spec:
           httpHeaders:
             - name: "Accept"
               value: "*/*"
-        initialDelaySeconds: 25
-        periodSeconds: 60
+        initialDelaySeconds: 20
+        periodSeconds: 300
         timeoutSeconds: 60
 ---
 apiVersion: v1

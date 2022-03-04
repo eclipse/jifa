@@ -46,13 +46,12 @@ class UserRoute implements Constant {
         jwtOptions = new JWTOptions();
         jwtOptions.setSubject(JWT_SUBJECT).setIssuer(JWT_ISSUER).setExpiresInMinutes(JWT_EXPIRES_IN_MINUTES);
 
-        apiRouter.routeWithRegex("^(?" + HEALTH_CHECK +"$).*").handler(this::noAuth);
-
-        apiRouter.routeWithRegex("^(?!" + AUTH +"$).*").handler(this::authWithCookie);
-
-        apiRouter.routeWithRegex("^(?!" + AUTH +"$).*").handler(JWTAuthHandler.create(jwtAuth));
+        final String excludeURI = String.join("|", HEALTH_CHECK, AUTH);
+        apiRouter.routeWithRegex("^(?!" + excludeURI +"$).*").handler(this::authWithCookie);
+        apiRouter.routeWithRegex("^(?!" + excludeURI +"$).*").handler(JWTAuthHandler.create(jwtAuth));
 
         apiRouter.post().path(AUTH).handler(this::auth);
+        apiRouter.get().path(HEALTH_CHECK).handler(this::authSpecial);
 
         apiRouter.route().handler(this::extractInfo);
 
@@ -67,7 +66,13 @@ class UserRoute implements Constant {
         context.next();
     }
 
-    private void noAuth(RoutingContext context) {
+    private void authSpecial(RoutingContext context) {
+        context.setUser(io.vertx.reactivex.ext.auth.User.create(
+            new JsonObject()
+                .put(USER_ID_KEY, "88888888")
+                .put(USER_NAME_KEY, "upperclass")
+                .put(Constant.USER_IS_ADMIN_KEY, true))
+        );
         context.next();
     }
 
