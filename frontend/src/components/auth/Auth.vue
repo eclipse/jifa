@@ -26,8 +26,6 @@
         let loadingInstance = Loading.service({fullscreen: true})
 
         let params = new FormData()
-        params.append("username", "admin")
-        params.append("password", "admin")
         axios.post(service("/auth"), new URLSearchParams(params)).then(resp => {
           this.$jifa.reset_authorization_header(resp.data.token)
           loadingInstance.close()

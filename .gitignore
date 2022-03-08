@@ -16,6 +16,7 @@ gradle-app.setting
 
 file-uploads
 backend/master/src/main/generated/**
+backend/common/src/main/generated/**
 artifacts/
 
 backend/config/jifa-ssh-key

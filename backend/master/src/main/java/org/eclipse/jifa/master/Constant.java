@@ -29,14 +29,6 @@ public interface Constant extends org.eclipse.jifa.common.Constant {
     String DB_DRIVER_CLASS_NAME = "com.mysql.jdbc.Driver";
 
     /**
-     * User
-     */
-    String USER_ID_KEY = "id";
-    String USER_NAME_KEY = "name";
-    String USER_IS_ADMIN_KEY = "isAdmin";
-    String USER_INFO_KEY = "userInfo";
-
-    /**
      * JWT
      */
     String JWT_SUBJECT = "Jifa Master";

@@ -17,9 +17,9 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.reactivex.core.Vertx;
 import io.vertx.reactivex.ext.web.Router;
 import io.vertx.reactivex.ext.web.RoutingContext;
+import org.eclipse.jifa.common.Constant;
 import org.eclipse.jifa.common.ErrorCode;
 import org.eclipse.jifa.common.util.HTTPRespGuarder;
-import org.eclipse.jifa.master.Constant;
 import org.eclipse.jifa.master.entity.File;
 import org.eclipse.jifa.master.entity.Job;
 import org.eclipse.jifa.master.entity.enums.JobState;
@@ -68,7 +68,7 @@ class AnalyzerRoute extends BaseRoute {
     }
 
     private void release(RoutingContext context, JobType jobType) {
-        User user = context.get(Constant.USER_INFO_KEY);
+        User user = context.get(org.eclipse.jifa.common.Constant.USER_INFO_KEY);
         String fileName = context.request().getParam("file");
 
         fileService.rxFile(fileName)

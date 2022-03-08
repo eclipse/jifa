@@ -53,7 +53,7 @@ class WorkerRoute extends BaseRoute {
     }
 
     private void queryAll(RoutingContext context) {
-        User user = context.get(Constant.USER_INFO_KEY);
+        User user = context.get(org.eclipse.jifa.common.Constant.USER_INFO_KEY);
         ASSERT.isTrue(user.isAdmin(), ErrorCode.FORBIDDEN);
         workerService.rxQueryAll()
             .subscribe(
@@ -63,7 +63,7 @@ class WorkerRoute extends BaseRoute {
     }
 
     private void diskCleanup(RoutingContext context) {
-        User user = context.get(Constant.USER_INFO_KEY);
+        User user = context.get(org.eclipse.jifa.common.Constant.USER_INFO_KEY);
         ASSERT.isTrue(user.isAdmin(), ErrorCode.FORBIDDEN);
         HttpServerRequest request = context.request();
         String hostIP = request.getParam("host_ip");

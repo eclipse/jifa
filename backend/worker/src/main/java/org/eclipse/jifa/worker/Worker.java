@@ -12,22 +12,18 @@
  ********************************************************************************/
 package org.eclipse.jifa.worker;
 
-import io.vertx.core.AbstractVerticle;
-import io.vertx.core.DeploymentOptions;
-import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
-import io.vertx.core.VertxOptions;
+import io.vertx.core.*;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.User;
+import io.vertx.ext.auth.authentication.AuthenticationProvider;
+import io.vertx.ext.auth.authentication.UsernamePasswordCredentials;
 import io.vertx.ext.web.Router;
-import io.vertx.ext.web.handler.AuthenticationHandler;
-import io.vertx.ext.web.handler.BasicAuthHandler;
-import io.vertx.ext.web.handler.BodyHandler;
-import io.vertx.ext.web.handler.CorsHandler;
-import io.vertx.ext.web.handler.StaticHandler;
+import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.handler.*;
 import org.eclipse.jifa.common.JifaException;
 import org.eclipse.jifa.common.JifaHooks;
+import org.eclipse.jifa.common.auth.DefaultAuthHandlerImpl;
 import org.eclipse.jifa.common.util.FileUtil;
 import org.eclipse.jifa.worker.route.RouteFiller;
 import org.slf4j.Logger;
@@ -36,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.util.Base64;
 import java.util.concurrent.CountDownLatch;
 
 import static org.eclipse.jifa.worker.Constant.ConfigKey.*;
@@ -102,8 +99,45 @@ public class Worker extends AbstractVerticle {
         return hook != null ? hook : new JifaHooks.EmptyHooks();
     }
 
+    static class WorkerAuthHandler extends DefaultAuthHandlerImpl {
+        public WorkerAuthHandler(AuthenticationProvider authProvider) {
+            super(authProvider);
+        }
+
+        @Override
+        public void authenticate(RoutingContext context, Handler<AsyncResult<User>> handler) {
+            parseAuthorization(context, res -> {
+                final String suser;
+                final String spass;
+                try {
+                    // decode the payload
+                    String decoded = new String(Base64.getDecoder().decode(res.result()));
+                    int colonIdx = decoded.indexOf(":");
+                    if (colonIdx != -1) {
+                        suser = decoded.substring(0, colonIdx);
+                        spass = decoded.substring(colonIdx + 1);
+                    } else {
+                        suser = decoded;
+                        spass = null;
+                    }
+                } catch (RuntimeException e) {
+                    handler.handle(Future.failedFuture(new JifaException("authentication failure")));
+                    return;
+                }
+
+                authProvider.authenticate(new UsernamePasswordCredentials(suser, spass), authn -> {
+                    if (authn.failed()) {
+                        handler.handle(Future.failedFuture(new JifaException("authentication failure")));
+                    } else {
+                        handler.handle(authn);
+                    }
+                });
+            });
+        }
+    }
+
     private void setupBasicAuthHandler(Router router) {
-        AuthenticationHandler authHandler = BasicAuthHandler.create((authInfo, resultHandler) -> {
+        AuthenticationHandler authHandler = new WorkerAuthHandler((authInfo, resultHandler) -> {
             Promise<User> promise = Promise.promise();
             if (stringConfig(BASIC_AUTH, USERNAME).equals(authInfo.getString(USERNAME)) &&
                 stringConfig(BASIC_AUTH, PASSWORD).equals(authInfo.getString(PASSWORD))) {

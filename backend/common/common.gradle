@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020, 2021 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -30,4 +30,36 @@ dependencies {
     api group: 'io.vertx', name: 'vertx-web', version: "${vertx_version}"
     api group: 'io.vertx', name: 'vertx-rx-java2', version: "${vertx_version}"
     api group: 'io.vertx', name: 'vertx-service-proxy', version: "${vertx_version}"
+}
+
+task runVertxCodeGen(type: JavaCompile, group: 'build') {
+    def generated = project.file('src/main/generated')
+    delete generated
+    source = sourceSets.main.java
+    classpath = sourceSets.main.compileClasspath
+    options.annotationProcessorPath = sourceSets.main.compileClasspath
+    destinationDirectory = generated
+    options.compilerArgs = [
+            "-proc:only",
+            "-processor",
+            'lombok.launch.AnnotationProcessorHider$AnnotationProcessor,io.vertx.codegen.CodeGenProcessor',
+    ]
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs += 'src/main/generated'
+        }
+    }
+}
+
+compileJava {
+    dependsOn runVertxCodeGen
+}
+
+clean {
+    doFirst {
+        delete files("${projectDir}/src/main/generated")
+    }
 }

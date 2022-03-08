@@ -44,4 +44,12 @@ public interface Constant {
     String DEFAULT_WORKSPACE = System.getProperty("user.home") + java.io.File.separator + "jifa_workspace";
 
     long STALE_THRESHOLD = TimeUnit.HOURS.toMillis(6);
+
+    /**
+     * User
+     */
+    String USER_ID_KEY = "id";
+    String USER_NAME_KEY = "name";
+    String USER_IS_ADMIN_KEY = "isAdmin";
+    String USER_INFO_KEY = "userInfo";
 }
