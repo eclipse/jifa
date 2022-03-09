@@ -86,7 +86,7 @@ class WorkerRoute extends BaseRoute {
                             new RetryStartingWorker(30))
                         .andThen(supportService.rxStopDummyWorker())
                         .subscribe(() -> HTTPRespGuarder.ok(context, "SUCCESS"),
-                            e -> HTTPRespGuarder.fail(context, new JifaException("Can not start testing worker")));
+                            e -> HTTPRespGuarder.fail(context, new JifaException("Can not start testing worker due to " + e)));
                 }
             }, e -> HTTPRespGuarder.fail(context, e));
 

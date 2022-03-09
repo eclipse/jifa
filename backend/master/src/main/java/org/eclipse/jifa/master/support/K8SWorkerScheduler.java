@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021,2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -43,12 +43,15 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.eclipse.jifa.master.Constant.*;
+import static org.eclipse.jifa.master.Constant.K8S_WORKER_PVC_NAME;
 
 public class K8SWorkerScheduler implements WorkerScheduler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(K8SWorkerScheduler.class);
 
     private static final String WORKER_PREFIX = "jifa-worker";
+
+    private static final String SPECIAL_WORKER_PREFIX = "jifa-special";
 
     private static String NAMESPACE;
 
@@ -60,12 +63,14 @@ public class K8SWorkerScheduler implements WorkerScheduler {
 
     private static String MASTER_POD_NAME;
 
+    private static String WORKER_PVC_NAME;
+
     private static V1Pod createWorker(String name, long requestMemSize) {
         requestMemSize = Math.max(requestMemSize, MINIMAL_MEM_REQ);
 
         V1Volume volume = new V1Volume();
         volume.setName("dumpfile-volume");
-        volume.persistentVolumeClaim(new V1PersistentVolumeClaimVolumeSource().claimName("worker-pvc"));
+        volume.persistentVolumeClaim(new V1PersistentVolumeClaimVolumeSource().claimName(WORKER_PVC_NAME));
 
         V1Pod npod;
         npod = new V1PodBuilder()
@@ -104,8 +109,12 @@ public class K8SWorkerScheduler implements WorkerScheduler {
         return npod;
     }
 
-    public static String getWorkerPrefix() {
+    public static String getNormalWorkerPrefix() {
         return WORKER_PREFIX;
+    }
+
+    public static String getSpecialWorkerPrefix() {
+        return SPECIAL_WORKER_PREFIX;
     }
 
     private static List<V1Pod> listWorker() {
@@ -148,6 +157,7 @@ public class K8SWorkerScheduler implements WorkerScheduler {
             WORKER_IMAGE = k8sConfig.getString(K8S_WORKER_IMAGE);
             MINIMAL_MEM_REQ = k8sConfig.getLong(K8S_MINIMAL_MEM_REQ);
             MASTER_POD_NAME = k8sConfig.getString(K8S_MASTER_POD_NAME);
+            WORKER_PVC_NAME = k8sConfig.getString(K8S_WORKER_PVC_NAME);
             LOGGER.info("K8S Namespace: " + NAMESPACE + ", Image: " + WORKER_IMAGE + ", Minimal memory request:" +
                         MINIMAL_MEM_REQ);
         } catch (IOException e) {
@@ -178,8 +188,13 @@ public class K8SWorkerScheduler implements WorkerScheduler {
     }
 
     private String buildWorkerName(Job job) {
-        String target = DigestUtils.md5Hex(job.getTarget().getBytes(StandardCharsets.UTF_8)).substring(0, 16);
-        return WORKER_PREFIX + "-" + target;
+        String target = job.getTarget();
+        if (target.startsWith(SPECIAL_WORKER_PREFIX)) {
+            return target;
+        } else {
+            target = DigestUtils.md5Hex(job.getTarget().getBytes(StandardCharsets.UTF_8)).substring(0, 16);
+            return WORKER_PREFIX + "-" + target;
+        }
     }
 
     @Override
@@ -202,19 +217,25 @@ public class K8SWorkerScheduler implements WorkerScheduler {
             // timeout threshold reached.
             return Completable.error(new ServiceException(ErrorCode.RETRY.ordinal(), job.getTarget()));
         }
+        final String MSG_RETRY = "RETRY";
+        final String MSG_OK = "OK";
         return WorkerClient.get(workerIp, uri(PING))
-                .flatMap(resp -> Single.just("OK"))
+                .flatMap(resp -> Single.just(MSG_OK))
                 .onErrorReturn(err -> {
                     if (err instanceof ConnectException) {
                         // ConnectionException is tolerable because it simply indicates worker is still
                         // starting
-                        return "RETRY";
+                        return MSG_RETRY;
+                    } else if (err instanceof IOException) {
+                        if (err.getMessage() != null && err.getMessage().contains("Connection reset by peer")) {
+                            return MSG_RETRY;
+                        }
                     }
                     return err.getMessage();
                 }).flatMapCompletable(msg -> {
-                    if (msg.equals("OK")) {
+                    if (msg.equals(MSG_OK)) {
                         return Completable.complete();
-                    } else if (msg.equals("RETRY")) {
+                    } else if (msg.equals(MSG_RETRY)) {
                         return Completable.error(new ServiceException(ErrorCode.RETRY.ordinal(), job.getTarget()));
                     } else {
                         return Completable.error(new JifaException("Can not start worker due to internal error: " + msg));

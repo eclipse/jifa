@@ -41,7 +41,7 @@ public class SupportServiceImpl implements SupportService {
     public void startDummyWorker(Handler<AsyncResult<Void>> handler) {
         assert pivot.getScheduler() instanceof K8SWorkerScheduler : "unexpected call";
 
-        String testWorkerName = K8SWorkerScheduler.getWorkerPrefix() + "-health-test";
+        String testWorkerName = K8SWorkerScheduler.getSpecialWorkerPrefix() + "-health-test";
         Job dummyJob = new Job();
         dummyJob.setTarget(testWorkerName);
         pivot.getScheduler().start(dummyJob).subscribe(CompletableHelper.toObserver(handler));
@@ -51,7 +51,7 @@ public class SupportServiceImpl implements SupportService {
     public void stopDummyWorker(Handler<AsyncResult<Void>> handler) {
         assert pivot.getScheduler() instanceof K8SWorkerScheduler : "unexpected call";
 
-        String testWorkerName = K8SWorkerScheduler.getWorkerPrefix() + "-health-test";
+        String testWorkerName = K8SWorkerScheduler.getSpecialWorkerPrefix() + "-health-test";
         Job dummyJob = new Job();
         dummyJob.setTarget(testWorkerName);
         pivot.getScheduler().stop(dummyJob).subscribe(CompletableHelper.toObserver(handler));
