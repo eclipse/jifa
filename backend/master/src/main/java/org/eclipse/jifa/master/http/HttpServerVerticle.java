@@ -63,10 +63,7 @@ public class HttpServerVerticle extends AbstractVerticle implements Constant {
                 LOGGER.info("Master-Http-Server-Verticle started successfully, port is {}", port);
                 future.complete(Single.just(this));
             }, future::fail);
-        }).subscribe(f -> startFuture.complete(), e->{
-            e.printStackTrace();
-            startFuture.fail(e);
-        });
+        }).subscribe(f -> startFuture.complete(), startFuture::fail);
     }
 
     void error(RoutingContext context) {

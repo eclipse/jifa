@@ -51,9 +51,8 @@ class UserRoute implements Constant {
         apiRouter.routeWithRegex("^(?!" + excludeURI +"$).*").handler(JWTAuthHandler.create(jwtAuth));
 
         apiRouter.post().path(AUTH).handler(this::auth);
-        apiRouter.get().path(HEALTH_CHECK).handler(this::authSpecial);
 
-        apiRouter.route().handler(this::extractInfo);
+        apiRouter.routeWithRegex("^(?!" + excludeURI +"$).*").handler(this::extractInfo);
 
         apiRouter.get().path(USER_INFO).handler(this::userInfo);
     }
@@ -63,16 +62,6 @@ class UserRoute implements Constant {
         if (!context.request().headers().contains(HEADER_AUTHORIZATION) && authCookie != null) {
             context.request().headers().add(HEADER_AUTHORIZATION, HEADER_AUTHORIZATION_PREFIX + authCookie.getValue());
         }
-        context.next();
-    }
-
-    private void authSpecial(RoutingContext context) {
-        context.setUser(io.vertx.reactivex.ext.auth.User.create(
-            new JsonObject()
-                .put(USER_ID_KEY, "88888888")
-                .put(USER_NAME_KEY, "upperclass")
-                .put(Constant.USER_IS_ADMIN_KEY, true))
-        );
         context.next();
     }
 
