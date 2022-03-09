@@ -33,6 +33,10 @@ import org.slf4j.LoggerFactory;
 class UserRoute implements Constant {
     private static final Logger LOGGER = LoggerFactory.getLogger(UserRoute.class);
 
+    private static final String EXCLUDE_URI = String.join("|", HEALTH_CHECK, AUTH);
+
+    private static final String EXCLUDE_ROUTE_REGEX = "^(?!" + EXCLUDE_URI +"$).*";
+
     private JWTAuth jwtAuth;
 
     private JWTOptions jwtOptions;
@@ -46,13 +50,12 @@ class UserRoute implements Constant {
         jwtOptions = new JWTOptions();
         jwtOptions.setSubject(JWT_SUBJECT).setIssuer(JWT_ISSUER).setExpiresInMinutes(JWT_EXPIRES_IN_MINUTES);
 
-        final String excludeURI = String.join("|", HEALTH_CHECK, AUTH);
-        apiRouter.routeWithRegex("^(?!" + excludeURI +"$).*").handler(this::authWithCookie);
-        apiRouter.routeWithRegex("^(?!" + excludeURI +"$).*").handler(JWTAuthHandler.create(jwtAuth));
+        apiRouter.routeWithRegex(EXCLUDE_ROUTE_REGEX).handler(this::authWithCookie);
+        apiRouter.routeWithRegex(EXCLUDE_ROUTE_REGEX).handler(JWTAuthHandler.create(jwtAuth));
 
         apiRouter.post().path(AUTH).handler(this::auth);
 
-        apiRouter.routeWithRegex("^(?!" + excludeURI +"$).*").handler(this::extractInfo);
+        apiRouter.routeWithRegex(EXCLUDE_ROUTE_REGEX).handler(this::extractInfo);
 
         apiRouter.get().path(USER_INFO).handler(this::userInfo);
     }
