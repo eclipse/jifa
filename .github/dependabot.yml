@@ -17,3 +17,4 @@ updates:
     directory: "/frontend"
     schedule:
       interval: "daily"
+    open-pull-requests-limit: 0
