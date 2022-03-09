@@ -13,7 +13,7 @@
     "axios": "^0.21.1",
     "axios-retry": "^3.2.4",
     "bootstrap-vue": "^2.0.0-rc.19",
-    "chart.js": "^2.9.4",
+    "chart.js": "^3.7.1",
     "echarts": "^4.6.0",
     "element-ui": "^2.13.1",
     "font-awesome": "^4.7.0",
