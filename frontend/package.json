@@ -24,7 +24,7 @@
     "tar": "^4.4.8",
     "v-charts": "^1.9.0",
     "v-contextmenu": "^2.8.0",
-    "vue": "^2.6.10",
+    "vue": "^3.2.31",
     "vue-ads-table-tree": "^2.4.2",
     "vue-chartjs": "^3.4.2",
     "vue-click-outside": "^1.0.7",
