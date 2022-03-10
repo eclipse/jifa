@@ -41,7 +41,7 @@ The frontend of Jifa uses Vue as the main framework.
 ### Build
 
 - Prerequisites
-  - jdk 11, and make sure $JAVA_HOME is set properly
+  - JDK 11 or 17, and make sure $JAVA_HOME is set properly
   - npm
 
 - Build All
