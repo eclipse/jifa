@@ -50,12 +50,13 @@ def THREAD_DUMP_ANALYZER = 'thread-dump-analyzer'
                 vertx_version = '4.2.5'
             }
 
+            def lombok_version = '1.18.22'
             dependencies {
-                compileOnly 'org.projectlombok:lombok:1.18.22'
-                annotationProcessor 'org.projectlombok:lombok:1.18.22'
+                compileOnly "org.projectlombok:lombok:$lombok_version"
+                annotationProcessor "org.projectlombok:lombok:$lombok_version"
 
-                testCompileOnly 'org.projectlombok:lombok:1.18.22'
-                testAnnotationProcessor 'org.projectlombok:lombok:1.18.22'
+                testCompileOnly "org.projectlombok:lombok:$lombok_version"
+                testAnnotationProcessor "org.projectlombok:lombok:$lombok_version"
 
                 constraints {
                     implementation('io.netty:netty-codec-http:4.1.53.Final') {
