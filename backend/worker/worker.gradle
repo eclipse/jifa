@@ -61,7 +61,7 @@ startScripts {
 
     doLast {
         unixScript.text = unixScript.text.replace(
-                'THE_DEFAULT_JVM_OPTS', '-D' + "${mat_deps_dir_name}" + '=$APP_HOME/' + "${mat_deps_dir_name}"
+                '\'\"THE_DEFAULT_JVM_OPTS\"\'', '-D' + "${mat_deps_dir_name}" + '=$APP_HOME/' + "${mat_deps_dir_name}"
         )
 
         unixScript.text = unixScript.text.replace(
