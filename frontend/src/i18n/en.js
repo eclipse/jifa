@@ -269,6 +269,7 @@ exports.default = {
           smallOldGen:"Old generation is too small，just {percent}% of the whole heap",
           zgcTooFrequent:"GCs are too frequent.",
           allocationStall:"There are too many allocation stalls, which may lead to long pauses.",
+          g1YoungSuddenlyBecomesSmall:"Young gen suddenly becomes very small at {time}",
         },
         suggestions:{
           addHeapRegionSize:'Enlarge heap region size by -XX:G1HeapRegionSize',
@@ -290,6 +291,8 @@ exports.default = {
           addConcurrentGCThread:"Add concurrent gc thread count by -XX:ConcGCThreads.",
           enlargeHeapWithRecommend:"Use a larger heap, recommend setting is -Xmx{size}g -Xms{size}g",
           addZGCAllocationSpikeTolerance:"Increase -XX:ZAllocationSpikeTolerance",
+          longPauseToShrinkYoung:"This could be caused by long gc pause and too many surviving objects",
+          updateJDK:"Consider updating JDK version",
         }
       },
     },

@@ -315,8 +315,30 @@ public class GCEvent {
         return false;
     }
 
+
+    /*
+     * This function is mainly used in diagnose, displays only one of timestamp or uptime
+     */
+    public String getStartTimeString() {
+        if (startTimestamp != UNKNOWN_DOUBLE) {
+            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+            return format.format((long) getStartTimestamp());
+        }
+
+        if (startTime != UNKNOWN_DOUBLE) {
+            return String.format("%.3f", getStartTime() / 1000);
+        }
+
+        // should not reach here
+        return "";
+    }
+
     private static final HeapGeneration[] TO_STRING_GENERATION_ORDER = {YOUNG, OLD, HUMONGOUS, TOTAL, METASPACE};
 
+    /*
+     * This function is mainly used in toString, that displays both timestamp and uptime,
+     * just like the format in preunified gclogs
+     */
     protected void appendStartTime(StringBuilder sb) {
         if (startTimestamp != UNKNOWN_DOUBLE) {
             SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
