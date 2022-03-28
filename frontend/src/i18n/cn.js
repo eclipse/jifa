@@ -266,6 +266,7 @@ exports.default = {
           smallOldGen:"老年代太小，只占堆总大小的{percent}%",
           zgcTooFrequent:"GC时间占总运行时间比例过大，达{percent}%",
           allocationStall:"存在大量Allocation Stall的情况,可能导致应用长时间暂停",
+          g1YoungSuddenlyBecomesSmall:"在{time}时年轻代突然急剧缩小",
         },
         suggestions:{
           addHeapRegionSize:'增大Heap Region Size -XX:G1HeapRegionSize',
@@ -287,6 +288,8 @@ exports.default = {
           addConcurrentGCThread:"适当提高并发GC线程数 -XX:ConcGCThreads",
           enlargeHeapWithRecommend:"使用更大的堆，推荐 -Xmx{size}g -Xms{size}g",
           addZGCAllocationSpikeTolerance:"适当增加 -XX:ZAllocationSpikeTolerance",
+          longPauseToShrinkYoung:"这可能是GC暂停时间变长和活对象突然变多导致的",
+          updateJDK:"考虑升级JDK版本",
         }
       }
     },

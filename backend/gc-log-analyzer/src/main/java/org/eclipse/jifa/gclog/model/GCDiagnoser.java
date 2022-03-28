@@ -16,6 +16,7 @@ package org.eclipse.jifa.gclog.model;
 import org.eclipse.jifa.gclog.model.GCModel.KPIItem;
 import org.eclipse.jifa.gclog.vo.GCCollectorType;
 import org.eclipse.jifa.gclog.vo.GCSpecialSituation;
+import org.eclipse.jifa.gclog.vo.HeapGeneration;
 
 import java.util.*;
 
@@ -37,12 +38,44 @@ public class GCDiagnoser {
         cause();
         g1Humongous();
         g1FrequentConcurrentCycle();
+        g1YoungSuddenlyBecomesSmall();
         cmsFrequentConcurrentMark();
         specialSituation();
         eventType();
         generationSize();
         allocationStall();
         return diagnosis;
+    }
+
+    private static final int G1_YOUNG_BECOME_SMALL_THRESHOLD = 3;
+
+    private void g1YoungSuddenlyBecomesSmall() {
+        if (model.getCollectorType() != GCCollectorType.G1) {
+            return;
+        }
+        int lastYoungSize = 0;
+        int lastHeapSize = 0;
+        for (GCEvent event : model.getGcEvents()) {
+            if (event.getCollectionAgg() == null && event.getEventType() != FULL_GC) {
+                continue;
+            }
+            int youngSize = event.getCollectionAgg().get(HeapGeneration.YOUNG).getTotal();
+            int heapSize = event.getCollectionAgg().get(HeapGeneration.TOTAL).getTotal();
+            if (youngSize <= 0 || heapSize <= 0) {
+                continue;
+            }
+            if (lastHeapSize == heapSize && lastYoungSize / youngSize >= G1_YOUNG_BECOME_SMALL_THRESHOLD) {
+                addDiagnose(new GCModel.ProblemAndSuggestion(
+                        new I18nStringView("jifa.gclog.diagnosis.problems.g1YoungSuddenlyBecomesSmall",
+                                "time", event.getStartTimeString()),
+                        new I18nStringView("jifa.gclog.diagnosis.suggestions.longPauseToShrinkYoung"),
+                        new I18nStringView("jifa.gclog.diagnosis.suggestions.updateJDK")
+                ));
+                return;
+            }
+            lastYoungSize = youngSize;
+            lastHeapSize = heapSize;
+        }
     }
 
     private void kpi() {
