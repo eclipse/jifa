@@ -1092,7 +1092,12 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer {
         return $(() -> {
             Map<String, Object> args = new HashMap<>();
             args.put("sql", sql);
-            IResult result = queryByCommand(context, "calcite", args);
+            IResult result;
+            try {
+                result = queryByCommand(context, "calcite", args);
+            } catch (Throwable t) {
+                return new CalciteSQLResult.TextResult(t.getMessage());
+            }
             if (result instanceof IResultTree) {
                 return new CalciteSQLResult.TreeResult(
                     PageViewBuilder.build(
@@ -1140,9 +1145,8 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer {
                 return new CalciteSQLResult.TableResult(cs, pv);
             } else if (result instanceof TextResult) {
                 return new CalciteSQLResult.TextResult(((TextResult) result).getText());
-            } else {
-                throw new AnalysisException("Unsupported Calcite SQL result type");
             }
+            return new CalciteSQLResult.TextResult("Unsupported Calcite SQL result type");
         });
     }
 
