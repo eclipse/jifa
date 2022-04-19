@@ -47,7 +47,7 @@ def THREAD_DUMP_ANALYZER = 'thread-dump-analyzer'
     name ->
         project("$name") {
             ext {
-                vertx_version = '4.2.5'
+                vertx_version = '4.1.2'
             }
 
             def lombok_version = '1.18.22'
