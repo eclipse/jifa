@@ -25,7 +25,7 @@
     <el-table-column label="Value" prop="value">
     </el-table-column>
     <el-table-column align="right">
-      <template slot="header">
+      <template slot="header" slot-scope="scope">
         <el-input size="mini" v-model="keyword" style="width: 50%;"
                   :placeholder="$t('jifa.typeKeyWord')" clearable/>
       </template>
