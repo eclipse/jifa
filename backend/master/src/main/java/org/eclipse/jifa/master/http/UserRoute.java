@@ -102,6 +102,7 @@ class UserRoute implements Constant {
             authHeader = authHeader.substring(HEADER_AUTHORIZATION_PREFIX.length());
             if (authCookie == null || !authHeader.equals(authCookie.getValue())) {
                 Cookie cookie = Cookie.cookie(COOKIE_AUTHORIZATION, authHeader);
+                cookie.setPath("/");
                 context.addCookie(cookie);
             }
         }
