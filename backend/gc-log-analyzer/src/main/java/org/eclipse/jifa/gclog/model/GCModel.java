@@ -1145,7 +1145,7 @@ public abstract class GCModel {
     @AllArgsConstructor
     public static class ProblemAndSuggestion {
         private I18nStringView problem;
-        private List<I18nStringView> suggestions = new ArrayList<>();
+        private List<I18nStringView> suggestions = new ArrayList<>(4);
 
         public void addSuggestion(I18nStringView suggestion) {
             suggestions.add(suggestion);
@@ -1153,12 +1153,12 @@ public abstract class GCModel {
 
         public ProblemAndSuggestion(I18nStringView problem, I18nStringView suggestion) {
             this.problem = problem;
-            this.suggestions = Collections.singletonList(suggestion);
+            this.suggestions.add(suggestion);
         }
 
         public ProblemAndSuggestion(I18nStringView problem, I18nStringView... suggestion) {
             this.problem = problem;
-            this.suggestions = Arrays.asList(suggestion);
+            Collections.addAll(suggestions, suggestion);
         }
     }
 

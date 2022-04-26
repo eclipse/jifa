@@ -28,9 +28,9 @@
             </el-table-column>
             <el-table-column prop="suggestions" :label="$t('jifa.gclog.gcOverview.suggestions')">
               <template slot-scope="scope">
-                <p v-for="(line,index) of scope.row.suggestions" :key="index">
-                  {{ (1 + index) + '. ' + line }}
-                </p>
+                <p v-for="(line,index) of scope.row.suggestions" :key="index"
+                   v-html="(1 + index) + '. ' + line"
+                ></p>
               </template>
             </el-table-column>
           </el-table>

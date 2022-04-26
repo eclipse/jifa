@@ -270,6 +270,7 @@ exports.default = {
           zgcTooFrequent:"GCs are too frequent.",
           allocationStall:"There are too many allocation stalls, which may lead to long pauses.",
           g1YoungSuddenlyBecomesSmall:"Young gen suddenly becomes very small at {time}",
+          jdk11cms:"Still using CMS GC under JDK11 or later",
         },
         suggestions:{
           addHeapRegionSize:'Enlarge heap region size by -XX:G1HeapRegionSize',
@@ -293,6 +294,8 @@ exports.default = {
           addZGCAllocationSpikeTolerance:"Increase -XX:ZAllocationSpikeTolerance",
           longPauseToShrinkYoung:"This could be caused by long gc pause and too many surviving objects",
           updateJDK:"Consider updating JDK version",
+          dontUseCMSAnyMore:"CMS GC is deprecated and has been removed in JDK14. G1, ZGC or Shenandoah is recommended. See <a href='http://openjdk.java.net/jeps/363'>JEP 363</a>",
+          updateToJDK11G1:"Update to G1 under JDK11 or later for there is great improvement in G1",
         }
       },
     },
