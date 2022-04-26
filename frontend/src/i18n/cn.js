@@ -267,6 +267,7 @@ exports.default = {
           zgcTooFrequent:"GC时间占总运行时间比例过大，达{percent}%",
           allocationStall:"存在大量Allocation Stall的情况,可能导致应用长时间暂停",
           g1YoungSuddenlyBecomesSmall:"在{time}时年轻代突然急剧缩小",
+          jdk11cms:"在 JDK 11+ 上仍然使用 CMS GC",
         },
         suggestions:{
           addHeapRegionSize:'增大Heap Region Size -XX:G1HeapRegionSize',
@@ -290,6 +291,8 @@ exports.default = {
           addZGCAllocationSpikeTolerance:"适当增加 -XX:ZAllocationSpikeTolerance",
           longPauseToShrinkYoung:"这可能是GC暂停时间变长和活对象突然变多导致的",
           updateJDK:"考虑升级JDK版本",
+          dontUseCMSAnyMore:"CMS GC在JDK14中已经被完全删除，强烈建议不要再使用CMS，推荐升级到G1，ZGC或Shenandoah。 参见 <a href='http://openjdk.java.net/jeps/363'>JEP 363</a>",
+          updateToJDK11G1:"推荐升级到JDK11及以上的G1，相较于8有较大改进",
         }
       }
     },

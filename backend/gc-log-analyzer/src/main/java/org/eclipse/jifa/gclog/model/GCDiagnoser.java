@@ -15,6 +15,7 @@ package org.eclipse.jifa.gclog.model;
 
 import org.eclipse.jifa.gclog.model.GCModel.KPIItem;
 import org.eclipse.jifa.gclog.vo.GCCollectorType;
+import org.eclipse.jifa.gclog.vo.GCLogStyle;
 import org.eclipse.jifa.gclog.vo.GCSpecialSituation;
 import org.eclipse.jifa.gclog.vo.HeapGeneration;
 
@@ -34,6 +35,7 @@ public class GCDiagnoser {
     }
 
     public List<GCModel.ProblemAndSuggestion> diagnose() {
+        collector();
         kpi();
         cause();
         g1Humongous();
@@ -45,6 +47,15 @@ public class GCDiagnoser {
         generationSize();
         allocationStall();
         return diagnosis;
+    }
+
+    private void collector() {
+        if (model.getCollectorType() == GCCollectorType.CMS && model.getLogStyle() == GCLogStyle.UNIFIED_STYLE) {
+            addDiagnose(new GCModel.ProblemAndSuggestion(
+                    new I18nStringView("jifa.gclog.diagnosis.problems.jdk11cms"),
+                    new I18nStringView("jifa.gclog.diagnosis.suggestions.dontUseCMSAnyMore")
+            ));
+        }
     }
 
     private static final int G1_YOUNG_BECOME_SMALL_THRESHOLD = 3;
@@ -212,11 +223,13 @@ public class GCDiagnoser {
             if (G1_HUMONGOUS_ALLOCATION.equals(gcEvent.getCause())) {
                 for (int j = 1; j <= HUMONGOUS_TO_SPACE_THRESHOLD; j++) {
                     if (gcEvents.get(i + j).hasSpecialSituation(GCSpecialSituation.TO_SPACE_EXHAUSTED)) {
-                        addDiagnose(new GCModel.ProblemAndSuggestion(
+                        GCModel.ProblemAndSuggestion diagnose = new GCModel.ProblemAndSuggestion(
                                 new I18nStringView("jifa.gclog.diagnosis.problems.humongousToSpaceExhausted"),
                                 new I18nStringView("jifa.gclog.diagnosis.suggestions.reviewHuge"),
                                 new I18nStringView("jifa.gclog.diagnosis.suggestions.addHeapRegionSize")
-                        ));
+                        );
+                        suggestUpdateToJDK11G1(diagnose);
+                        addDiagnose(diagnose);
                         return;
                     }
                 }
@@ -327,11 +340,13 @@ public class GCDiagnoser {
         }
 
         if (counts.containKey(FULL_GC)) {
-            addDiagnose(new GCModel.ProblemAndSuggestion(
+            GCModel.ProblemAndSuggestion diagnose = new GCModel.ProblemAndSuggestion(
                     new I18nStringView("jifa.gclog.diagnosis.problems.fullGC", "count", counts.get(FULL_GC)),
                     new I18nStringView("jifa.gclog.diagnosis.suggestions.reviewFullGCCause"),
                     new I18nStringView("jifa.gclog.diagnosis.suggestions.reviewOld")
-            ));
+            );
+            suggestUpdateToJDK11G1(diagnose);
+            addDiagnose(diagnose);
         }
 
         if (model.getCollectorType() == GCCollectorType.CMS &&
@@ -348,6 +363,12 @@ public class GCDiagnoser {
     private void addDiagnose(GCModel.ProblemAndSuggestion diagnose) {
         if (diagnose != null) {
             diagnosis.add(diagnose);
+        }
+    }
+
+    private void suggestUpdateToJDK11G1(GCModel.ProblemAndSuggestion diagnose) {
+        if (model.getCollectorType() == GCCollectorType.G1) {
+            diagnose.addSuggestion(new I18nStringView("jifa.gclog.diagnosis.suggestions.updateToJDK11G1"));
         }
     }
 
