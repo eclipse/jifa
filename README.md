@@ -87,6 +87,8 @@ $ docker pull jifadocker/jifa-worker:demo
 $ docker run -p 8102:8102 jifadocker/jifa-worker:demo
 ```
 
+**Note:**  if running Apple's M1 Max chip, include the `--platform linux/amd64` switch after the `run` command.
+
 Then, you can visit Jifa at `http://localhost:8102`
 
 ## Documents
