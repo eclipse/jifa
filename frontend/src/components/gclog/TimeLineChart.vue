@@ -32,7 +32,6 @@ export default {
     return {
       loading: false,
       noData: false,
-      chart: undefined,
     }
   },
   methods: {
@@ -46,7 +45,7 @@ export default {
 
       const chart = echarts.init(canvas, undefined, {height: getCanvasHeight()});
       window.addEventListener('resize', () => chart.resize({height: getCanvasHeight()}));
-      this.chart = chart
+      return chart;
     },
     fetchDataAndUpdate() {
       this.loading = true;
@@ -85,7 +84,10 @@ export default {
             min: this.referenceTimestamp < 0 ? data.startTime / 1000 : data.startTime + this.referenceTimestamp,
             max: this.referenceTimestamp < 0 ? data.endTime / 1000 : data.endTime + this.referenceTimestamp,
           },
-          yAxis: {type: 'value'},
+          yAxis: {
+            type: 'value',
+            min: 0,
+          },
           series: []
         }
         this.noData = false;
@@ -96,6 +98,7 @@ export default {
             symbol: 'circle',
             name: label,
             type: "line",
+            sampling: "lttb",
             data: Object.keys(seriesData.data)
                 .map(time => {
                   if (this.referenceTimestamp >= 0) {
@@ -107,10 +110,13 @@ export default {
                 .sort((d1, d2) => d1[0] - d2[0])
           })
         })
-        if (this.chart === undefined) {
-          this.initialize()
+        let chart = echarts.getInstanceByDom(this.$refs.canvas);
+        if (!chart) {
+          chart = this.initialize();
+        } else {
+          chart.clear();
         }
-        this.chart.setOption(option);
+        chart.setOption(option);
         this.loading = false;
       });
     }
