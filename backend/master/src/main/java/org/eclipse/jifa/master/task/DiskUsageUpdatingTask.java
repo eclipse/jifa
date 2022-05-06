@@ -68,7 +68,7 @@ public class DiskUsageUpdatingTask extends BaseTask {
     private Single<UpdateResult> updateWorkerDiskUsage(String hostIP, long totalSpaceInMb, long usedSpaceInMb) {
         return pivot.getDbClient()
                     .rxUpdateWithParams(WorkerSQL.UPDATE_DISK_USAGE, ja(totalSpaceInMb, usedSpaceInMb, hostIP))
-                    .doOnSuccess(updateResult -> ASSERT.isTrue(updateResult.getUpdated() == 1));
+                    .doOnSuccess(updateResult -> ASSERT.isTrue(updateResult.getUpdated() <= 1));
     }
 
     private Single<List<Worker>> getWorkers() {
