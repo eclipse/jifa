@@ -90,14 +90,20 @@ public class DiskCleaningTask extends BaseTask {
         // neither deleted nor used in that worker, finally, apply real disk cleanup
         // action for every file in that list
         isEnableDiskCleaning()
-                .subscribe(val -> getHighDiskOverloadWorkers()
-                        .flatMapObservable(workerIpList -> markAndDeleteFiles(pivot.getDbClient(), pivot, workerIpList))
-                        .ignoreElements()
-                        .subscribe(
-                                () -> LOGGER.info("Execute {} successfully ", name()),
-                                t -> LOGGER.error("Execute {} error", name(), t)
-                        )
-        );
+            .subscribe(val -> getHighDiskOverloadWorkers()
+                .flatMapObservable(workerIpList -> markAndDeleteFiles(pivot.getDbClient(), pivot, workerIpList))
+                .ignoreElements()
+                .subscribe(
+                    () -> {
+                        LOGGER.info("Execute {} successfully ", name());
+                        this.end();
+                    },
+                    t -> {
+                        LOGGER.error("Execute {} error", name(), t);
+                        this.end();
+                    }
+                )
+            );
     }
 
     private Maybe<List<String>> getHighDiskOverloadWorkers() {

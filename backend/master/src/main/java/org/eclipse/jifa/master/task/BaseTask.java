@@ -35,7 +35,7 @@ public abstract class BaseTask {
 
     void end() {
         doEnd();
-        LOGGER.info("{} success", name());
+        LOGGER.info("{} end", name());
         PROCESSING.set(false);
     }
 
