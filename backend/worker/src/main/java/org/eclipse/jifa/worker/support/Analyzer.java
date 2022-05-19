@@ -189,7 +189,6 @@ public class Analyzer {
 
         if (progressListener == null) {
             org.eclipse.jifa.common.vo.Progress progress = buildProgressIfFinished(fileType, fileName);
-            ASSERT.notNull(progress);
             return progress;
         } else {
             org.eclipse.jifa.common.vo.Progress progress = new org.eclipse.jifa.common.vo.Progress();
@@ -250,7 +249,10 @@ public class Analyzer {
             result.setMessage(FileUtil.content(failed));
             return result;
         }
-        return null;
+
+        org.eclipse.jifa.common.vo.Progress result = new org.eclipse.jifa.common.vo.Progress();
+        result.setState(ProgressState.NOT_STARTED);
+        return result;
     }
 
     interface Builder<T> {
