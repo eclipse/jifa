@@ -12,16 +12,15 @@
  -->
 
 <template>
-  <vue-markdown>{{ content }}</vue-markdown>
+  <div>
+    {{ content }}
+  </div>
 </template>
 
 <script>
-import VueMarkdown from 'vue-markdown'
 
 export default {
-  components: {
-    VueMarkdown
-  },
+  components: {},
   props: ['content']
 }
 </script>
