@@ -69,8 +69,6 @@ public enum ErrorCode {
 
     FILE_IS_BEING_DELETING,
 
-    FILE_TOO_BIG,
-
     RETRY,
 
     RELEASE_PENDING_JOB,

@@ -335,7 +335,6 @@ class FileRoute extends BaseRoute implements Constant {
         fileService.rxFile(name)
                 .doOnSuccess(file -> ASSERT.isTrue(file.found(), ErrorCode.FILE_DOES_NOT_EXIST))
                 .doOnSuccess(file -> checkPermission(user, file))
-                .doOnSuccess(file -> ASSERT.isTrue(file.getSize() < MAX_SIZE_FOR_DOWNLOAD, ErrorCode.FILE_TOO_BIG))
                 .flatMap(file -> {
                     context.response()
                             .putHeader(HEADER_CONTENT_LENGTH_KEY, String.valueOf(file.getSize()))
