@@ -88,7 +88,7 @@ exports.default = {
       uploadToOSS: '上传文件到OSS',
       setShare: '设置文件共享',
       deleteFile: '删除文件',
-      downloadFile: '本地下载文件，最大支持512MB',
+      downloadFile: '本地下载文件',
     },
 
     heap: {

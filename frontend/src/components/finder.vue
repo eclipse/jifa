@@ -81,7 +81,6 @@
                     <span>
                       <el-divider direction="vertical"></el-divider>
                       <el-link icon="el-icon-download" :underline="false"
-                               :disabled="fileTooBigToDownload(file(row, col))"
                                target="_blank"
                                download
                                :href="`/jifa-api/file/download?name=${file(row,col).name}&type=${currentMenuItem}`"
@@ -265,11 +264,6 @@ const defaultMenuItem = 'HEAP_DUMP'
             new URLSearchParams(formData)).then(() => {
           file.shared = !file.shared
         })
-      },
-
-      fileTooBigToDownload(file) {
-        // don't restrict size in worker only mode
-        return file.size > 512 * 1024 * 1024 && !this.$jifa.workerOnly
       },
 
       transferIsSuccess(file) {
