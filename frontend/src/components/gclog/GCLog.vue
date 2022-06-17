@@ -36,34 +36,23 @@
         </b-card>
       </div>
 
-      <el-container v-if="analysisState === 'SUCCESS'">
+      <div v-if="analysisState === 'SUCCESS'">
+        <button
+            style="right: 5%;top: 50%; position: fixed"
+            @click="showDetail">
+          显示GC详情
+        </button>
+        <el-drawer
+            title="GC详情"
+            size="90%"
+            :visible.sync="detailVisible"
+            direction="rtl">
+          <GCDetail :file="file"/>
+        </el-drawer>
         <el-main style="padding: 10px 5px 5px;">
-          <el-tabs v-model="activeTab">
-
-            <el-tab-pane name="gcOverview" :lazy="true">
-              <span slot="label">{{$t('jifa.gclog.overview')}}</span>
-              <GCOverview :file="file"/>
-            </el-tab-pane>
-
-            <el-tab-pane name="graph" :lazy="true">
-              <span slot="label">{{$t('jifa.gclog.graph')}}</span>
-              <Graphs :file="file"/>
-            </el-tab-pane>
-
-            <el-tab-pane name="gcCauseAndPhase" :lazy="true">
-              <span slot="label">{{$t('jifa.gclog.gcCauseAndPhase')}}</span>
-              <GCCause :file="file"/>
-              <GCPhase :file="file"/>
-            </el-tab-pane>
-
-            <el-tab-pane name="gcDetail" :lazy="true">
-              <span slot="label">{{$t('jifa.gclog.gcDetail')}}</span>
-              <GGCDetail :file="file"/>
-            </el-tab-pane>
-
-          </el-tabs>
+          //todo  main
         </el-main>
-      </el-container>
+      </div>
     </el-main>
   </el-container>
 </template>
@@ -72,11 +61,7 @@
   import axios from 'axios'
   import {gclogService} from '../../util'
   import ViewMenu from "../menu/ViewMenu";
-  import GCOverview from "./GCOverview";
-  import GCCause from "./GCCause";
-  import GCPhase from "./GCPhase";
-  import Graphs from "./Graphs";
-  import GGCDetail from "./GCDetail";
+  import GCDetail from "@/components/gclog/GCDetail";
 
   export default {
     props: ['file'],
@@ -88,17 +73,14 @@
         message: '',
         progress: 0,
         pollingInternal: 500,
-        activeTab: 'gcOverview',
+
+        detailVisible: false,
       }
     },
 
     components: {
-      GCOverview,
-      GCCause,
-      GCPhase,
+      GCDetail,
       ViewMenu,
-      Graphs,
-      GGCDetail,
     },
     methods: {
       pollProgressOfAnalysis() {
@@ -145,6 +127,9 @@
           this.analysisState = "IN_PROGRESS";
           this.pollProgressOfAnalysis();
         })
+      },
+      showDetail() {
+        this.detailVisible = true;
       }
     },
     mounted() {
