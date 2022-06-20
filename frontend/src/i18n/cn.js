@@ -141,6 +141,10 @@ exports.default = {
     },
 
     gclog:{
+      analysisConfig: '分析配置',
+      logTimeRange:"日志时间段",
+      noDatestamp: '日志中没有展示GC发生的现实时间，只能根据相对于日志开始的时间进行搜索。强烈建议打开显示GC发生现实时间的选项。',
+
       minute:'分钟',
       hour:'小时',
       day:'天',
@@ -161,7 +165,7 @@ exports.default = {
       totalTime: '总时间',
       avgInterval:'平均间隔',
       timePercent: '时间占比',
-      noRealTime: '日志中没有展示GC发生的现实时间，只能根据相对于日志开始的时间进行搜索。强烈建议打开显示GC发生现实时间的选项。',
+
 
       youngGC: 'Young GC',
       fullGC: 'Full GC',

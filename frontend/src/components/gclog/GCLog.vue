@@ -17,6 +17,7 @@
         <view-menu subject="analysisResult"
                    :file="file"
                    :analysisState="analysisState"
+                   @gcLogAnalysisConfig="showAnalysisConfig"
                    :type="type"/>
     </el-header>
 
@@ -49,9 +50,31 @@
             direction="rtl">
           <GCDetail :file="file"/>
         </el-drawer>
+        <el-dialog
+            :title="$t('jifa.gclog.analysisConfig')"
+            width="700px"
+            :visible.sync="configVisible"
+            :close-on-click-modal=false
+            append-to-body>
+          <el-form ref="configForm" :model="configModel" :rules="configRules" label-width="150px" size="medium" label-position="right"
+                   style="margin-top: 10px" status-icon :show-message=false>
+            <el-form-item :label="$t('jifa.gclog.logTimeRange')" prop="timeRange">
+              <GCLogTimePicker v-model="configModel.timeRange" :metadata="metadata"/>
+            </el-form-item>
+
+            <el-form-item>
+              <el-button type="primary" @click="configChangeConfirm">{{$t('jifa.confirm')}}</el-button>
+            </el-form-item>
+          </el-form>
+        </el-dialog>
+
         <el-main style="padding: 10px 5px 5px;">
-          //todo  main
+          <!--    for debug -->
+          currentConfig: <div>{{this.currentConfig}}</div>
+          metadata: <div>{{this.metadata}}</div>
+          <!--    for debug    -->
         </el-main>
+
       </div>
     </el-main>
   </el-container>
@@ -62,6 +85,7 @@
   import {gclogService} from '../../util'
   import ViewMenu from "../menu/ViewMenu";
   import GCDetail from "@/components/gclog/GCDetail";
+  import GCLogTimePicker from "@/components/gclog/GCLogTimePicker";
 
   export default {
     props: ['file'],
@@ -74,6 +98,16 @@
         progress: 0,
         pollingInternal: 500,
 
+        configVisible: false,
+        configRules: {
+          timeRange: [], // Do not validate it. The component will guarantee it is always valid.
+        },
+        configModel: {
+          timeRange: 0,
+        },
+        analysisConfig: null,
+
+        metadata: null,
         detailVisible: false,
       }
     },
@@ -81,6 +115,7 @@
     components: {
       GCDetail,
       ViewMenu,
+      GCLogTimePicker,
     },
     methods: {
       pollProgressOfAnalysis() {
@@ -102,18 +137,24 @@
             }
             setTimeout(this.pollProgressOfAnalysis, this.pollingInternal)
           } else if (state === 'SUCCESS') {
-            this.progress = 100;
-            this.progressState = 'success';
-            this.$notify({
-              title: this.$t("jifa.goToOverViewPrompt"),
-              position: 'top-right',
-              type: "success",
-              offset: 200, // changed
-              duration: 1000,
-              showClose: true,
-              onClose: () => {
-                this.analysisState = "SUCCESS"
-              }
+            this.progress = 99;
+            this.message += 'loading gclog metadata\n'
+            axios.get(gclogService(this.file, 'metadata')).then(resp => {
+              this.metadata = resp.data;
+              this.progress = 100;
+              this.progressState = 'success';
+              this.$notify({
+                title: this.$t("jifa.goToOverViewPrompt"),
+                position: 'top-right',
+                type: "success",
+                offset: 200, // changed
+                duration: 1000,
+                showClose: true,
+                onClose: () => {
+                  this.initializePage()
+                  this.analysisState = "SUCCESS"
+                }
+              })
             })
           } else {
             this.progressState = 'danger';
@@ -122,14 +163,27 @@
           }
         })
       },
+      initializePage() {
+        this.configModel = {
+          timeRange: [this.metadata.startTime, this.metadata.endTime]
+        }
+        this.currentConfig = {...this.configModel}
+      },
       analyzeGCLog(params) {
         axios.post(gclogService(this.file, 'analyze'), new URLSearchParams(params)).then(() => {
           this.analysisState = "IN_PROGRESS";
           this.pollProgressOfAnalysis();
         })
       },
+      configChangeConfirm() {
+        this.configVisible = false;
+        this.currentConfig = {...this.configModel}
+      },
       showDetail() {
         this.detailVisible = true;
+      },
+      showAnalysisConfig() {
+        this.configVisible = true;
       }
     },
     mounted() {
