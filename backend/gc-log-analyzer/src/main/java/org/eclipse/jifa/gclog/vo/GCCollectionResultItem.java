@@ -29,19 +29,19 @@ public class GCCollectionResultItem {
     private HeapGeneration generation;
 
     // memory size in kb
-    private int preUsed = UNKNOWN_INT;
-    private int postUsed = UNKNOWN_INT;
-    private int total = UNKNOWN_INT;
+    private long preUsed = UNKNOWN_INT;
+    private long postUsed = UNKNOWN_INT;
+    private long total = UNKNOWN_INT;
 
     public GCCollectionResultItem(HeapGeneration generation) {
         this.generation = generation;
     }
 
-    public GCCollectionResultItem(HeapGeneration generation, int[] memories) {
+    public GCCollectionResultItem(HeapGeneration generation, long[] memories) {
         this(generation, memories[0], memories[1], memories[2]);
     }
 
-    public int getMemoryReduction() {
+    public long getMemoryReduction() {
         return minus(preUsed, postUsed);
     }
 
@@ -94,28 +94,28 @@ public class GCCollectionResultItem {
                 total == UNKNOWN_INT ? anotherItem.total : total);
     }
 
-    private static int plus(int x, int y) {
+    private static long plus(long x, long y) {
         if (x == UNKNOWN_INT || y == UNKNOWN_INT) {
             return UNKNOWN_INT;
         }
         return x + y;
     }
 
-    private static int plusIfPresent(int x, int y) {
+    private static long plusIfPresent(long x, long y) {
         if (x == UNKNOWN_INT || y == UNKNOWN_INT) {
             return x;
         }
         return x + y;
     }
 
-    private static int minus(int x, int y) {
+    private static long minus(long x, long y) {
         if (x == UNKNOWN_INT || y == UNKNOWN_INT) {
             return UNKNOWN_INT;
         }
         return x - y;
     }
 
-    private static int minusIfPresent(int x, int y) {
+    private static long minusIfPresent(long x, long y) {
         if (x == UNKNOWN_INT || y == UNKNOWN_INT) {
             return x;
         }
@@ -126,19 +126,19 @@ public class GCCollectionResultItem {
         this.generation = generation;
     }
 
-    public void setPreUsed(int preUsed) {
+    public void setPreUsed(long preUsed) {
         this.preUsed = preUsed;
     }
 
-    public void setPostUsed(int postUsed) {
+    public void setPostUsed(long postUsed) {
         this.postUsed = postUsed;
     }
 
-    public void setTotal(int total) {
+    public void setTotal(long total) {
         this.total = total;
     }
 
-    public void multiply(int x) {
+    public void multiply(long x) {
         if (preUsed != UNKNOWN_INT) {
             preUsed *= x;
         }
@@ -176,15 +176,15 @@ public class GCCollectionResultItem {
             sb.append("unknown");
         } else {
             if (preUsed != UNKNOWN_INT) {
-                sb.append(Math.max(0, preUsed) / (int) KB2MB).append("M->");
+                sb.append((long)(Math.max(0, preUsed) / KB2MB / KB2MB)).append("M->");
             }
             if (postUsed != UNKNOWN_INT) {
-                sb.append(Math.max(0, postUsed) / (int) KB2MB).append('M');
+                sb.append((long)(Math.max(0, postUsed) / KB2MB / KB2MB)).append('M');
             } else {
                 sb.append("unknown");
             }
             if (total != UNKNOWN_INT) {
-                sb.append('(').append(Math.max(0, total) / (int) KB2MB).append("M)");
+                sb.append('(').append((long)(Math.max(0, total) / KB2MB / KB2MB)).append("M)");
             }
         }
         return sb.toString();

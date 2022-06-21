@@ -41,7 +41,7 @@ public class TestVmOptions {
         VmOptions options = new VmOptions(optionString);
         Assert.assertEquals(options.getOriginalOptionString(),optionString);
         Assert.assertNull(options.getOptionValue("Xmn"));
-        Assert.assertEquals(4200L * 1024 * 1024, (long)options.getOptionValue("Xmx"));
+        Assert.assertEquals(4200L * 1024 * 1024 * 1024, (long)options.getOptionValue("Xmx"));
         Assert.assertTrue( options.getOptionValue("server"));
         Assert.assertFalse( options.getOptionValue("DisableExplicitGC"));
         Assert.assertEquals(50L,(long)options.getOptionValue("InitiatingHeapOccupancyPercent"));

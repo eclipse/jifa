@@ -18,6 +18,7 @@ import org.eclipse.jifa.common.util.ErrorUtil;
 import org.eclipse.jifa.gclog.model.TimeLineChartView.TimeLineChartEvent;
 import org.eclipse.jifa.gclog.util.DoubleData;
 import org.eclipse.jifa.gclog.util.IntData;
+import org.eclipse.jifa.gclog.util.LongData;
 import org.eclipse.jifa.gclog.vo.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -279,8 +280,8 @@ public abstract class GCModel {
         // Most kpi items are calculated in other calculate series functions for performance.
         // Here we just calculate the remaining.
         DoubleData pause = new DoubleData();
-        IntData allocations = new IntData();
-        IntData promotions = new IntData();
+        LongData allocations = new LongData();
+        LongData promotions = new LongData();
         for (GCEvent event : gcEvents) {
             if (event.getEventType().getPause() == GCPause.PAUSE && event.getEventType() != SAFEPOINT) {
                 pause.add(event.getPause());
@@ -289,13 +290,13 @@ public abstract class GCModel {
                     pause.add(phase.getPause());
                 }
             }
-            int promotion = event.getPromotion();
+            long promotion = event.getPromotion();
             if (promotion != UNKNOWN_INT) {
                 promotions.add(promotion);
             }
         }
         for (GCEvent event : getGcCollectionEvents()) {
-            int allocation = event.getAllocation();
+            long allocation = event.getAllocation();
             if (allocation != UNKNOWN_INT) {
                 allocations.add(allocation);
             }
@@ -323,9 +324,9 @@ public abstract class GCModel {
                 break;
             }
 
-            int promotion = gcEvent.getPromotion();
+            long promotion = gcEvent.getPromotion();
             if (promotion != UNKNOWN_INT) {
-                events.add(new TimeLineChartEvent(I18N_PROMOTION, gcEvent.getEndTime(), promotion));
+                events.add(new TimeLineChartEvent(I18N_PROMOTION, gcEvent.getEndTime(), promotion / KB2MB));
             }
         }
         return new TimeLineChartView.TimeLineChartViewBuilder()
@@ -354,14 +355,14 @@ public abstract class GCModel {
                 break;
             }
             if (!useZGCStatistics) {
-                int allocation = gcEvent.getAllocation();
+                long allocation = gcEvent.getAllocation();
                 if (allocation != UNKNOWN_INT) {
-                    events.add(new TimeLineChartEvent(I18N_ALLOCATION, gcEvent.getEndTime(), allocation / KB2MB));
+                    events.add(new TimeLineChartEvent(I18N_ALLOCATION, gcEvent.getEndTime(), allocation / KB2MB / KB2MB));
                 }
             }
-            int reclamation = gcEvent.getReclamation();
+            long reclamation = gcEvent.getReclamation();
             if (reclamation != UNKNOWN_INT) {
-                events.add(new TimeLineChartEvent(I18N_RECLAMATION, gcEvent.getEndTime(), reclamation / KB2MB));
+                events.add(new TimeLineChartEvent(I18N_RECLAMATION, gcEvent.getEndTime(), reclamation / KB2MB / KB2MB));
             }
         }
         if (collectorType == ZGC) {
@@ -527,7 +528,7 @@ public abstract class GCModel {
         }
         gcCollectionEvents.sort(Comparator.comparingDouble(GCEvent::getStartTime));
 
-        int lastTotalMemory = 0;
+        long lastTotalMemory = 0;
         for (GCEvent event : gcCollectionEvents) {
             Map<HeapGeneration, GCCollectionResultItem> collectionAgg = event.getCollectionAgg();
             GCCollectionResultItem young = collectionAgg.get(YOUNG);
@@ -543,11 +544,11 @@ public abstract class GCModel {
             if (event.getPromotion() == UNKNOWN_INT &&
                     event.hasPromotion() && event.getEventType() != G1_YOUNG_MIXED_GC) {
                 // notice: g1 young mixed gc should have promotion, but we have no way to know it exactly
-                int youngReduction = young.getMemoryReduction();
-                int totalReduction = total.getMemoryReduction();
+                long youngReduction = young.getMemoryReduction();
+                long totalReduction = total.getMemoryReduction();
                 if (youngReduction != UNKNOWN_INT && totalReduction != UNKNOWN_INT) {
-                    int promotion = youngReduction - totalReduction;
-                    int humongousReduction = humongous.getMemoryReduction();
+                    long promotion = youngReduction - totalReduction;
+                    long humongousReduction = humongous.getMemoryReduction();
                     if (humongousReduction != UNKNOWN_INT) {
                         promotion -= humongousReduction;
                     }
@@ -564,7 +565,7 @@ public abstract class GCModel {
         }
     }
 
-    private int zeroIfUnknownInt(int x) {
+    private long zeroIfUnknownInt(long x) {
         return x == UNKNOWN_INT ? 0 : x;
     }
 

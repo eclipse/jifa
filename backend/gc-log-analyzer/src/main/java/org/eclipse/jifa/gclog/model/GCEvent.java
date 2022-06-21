@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static org.eclipse.jifa.gclog.model.GCModel.*;
 import static org.eclipse.jifa.gclog.vo.GCEventLevel.*;
 import static org.eclipse.jifa.gclog.vo.HeapGeneration.*;
 
@@ -55,9 +56,9 @@ public class GCEvent {
     private double pause = UNKNOWN_DOUBLE;
     private double interval = UNKNOWN_DOUBLE;
 
-    private int promotion = UNKNOWN_INT;
-    private int allocation = UNKNOWN_INT;
-    private int reclamation = UNKNOWN_INT;
+    private long promotion = UNKNOWN_INT;
+    private long allocation = UNKNOWN_INT;
+    private long reclamation = UNKNOWN_INT;
 
     public void setCollectionResult(GCCollectionResult collectionResult) {
         this.collectionResult = collectionResult;
@@ -173,29 +174,29 @@ public class GCEvent {
         }
     }
 
-    public int getAllocation() {
+    public long getAllocation() {
         return allocation;
     }
 
-    public int getReclamation() {
+    public long getReclamation() {
         return reclamation;
     }
 
-    public void setPromotion(int promotion) {
+    public void setPromotion(long promotion) {
         if (promotion < 0) {
             promotion = 0;
         }
         this.promotion = promotion;
     }
 
-    public void setAllocation(int allocation) {
+    public void setAllocation(long allocation) {
         if (allocation < 0) {
             allocation = 0;
         }
         this.allocation = allocation;
     }
 
-    public void setReclamation(int reclamation) {
+    public void setReclamation(long reclamation) {
         if (reclamation < 0) {
             reclamation = 0;
         }
@@ -291,7 +292,7 @@ public class GCEvent {
         return pause;
     }
 
-    public int getPromotion() {
+    public long getPromotion() {
         return promotion;
     }
 
@@ -396,7 +397,7 @@ public class GCEvent {
             boolean first = true;
             sb.append(" [");
             if (getPromotion() != UNKNOWN_INT) {
-                sb.append("promotion ").append(getPromotion()).append(" K");
+                sb.append("promotion ").append(getPromotion() / (long)KB2MB).append(" K");
                 first = false;
             }
             if (getInterval() != UNKNOWN_INT) {

@@ -152,7 +152,7 @@ public abstract class JDK11G1OrGenerationalGCLogParser extends AbstractJDK11GCLo
         }
         for (String part : s.split(" ")) {
             if (part.contains("->") && part.endsWith(")") && !part.startsWith("(")) {
-                int[] memories = GCLogUtil.parseMemorySizeFromTo(part);
+                long[] memories = GCLogUtil.parseMemorySizeFromTo(part);
                 GCCollectionResultItem item = new GCCollectionResultItem(HeapGeneration.TOTAL, memories);
                 event.getOrCreateCollectionResult().setSummary(item);
             } else if (part.endsWith("ms")) {
@@ -202,7 +202,7 @@ public abstract class JDK11G1OrGenerationalGCLogParser extends AbstractJDK11GCLo
                 return true;
             }
         }
-        int[] memories = GCLogUtil.parseMemorySizeFromTo(parts[1], 1);
+        long[] memories = GCLogUtil.parseMemorySizeFromTo(parts[1], 1);
         GCCollectionResult collectionResult = event.getOrCreateCollectionResult();
         // will multiply region size before calculating derived info for g1
         GCCollectionResultItem item = new GCCollectionResultItem(generation, memories);

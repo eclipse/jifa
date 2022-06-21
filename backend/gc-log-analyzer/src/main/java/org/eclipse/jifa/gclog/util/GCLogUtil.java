@@ -27,14 +27,14 @@ public class GCLogUtil {
     private GCLogUtil() {
     }
 
-    private static final int BYTE_UNIT_GAP = 1024;
+    private static final long BYTE_UNIT_GAP = 1024;
 
     /**
-     * parse a string that represents a memory size and convert into size in KB
-     * e.g. "10m" -> 10240, "111 KB" -> 111
+     * parse a string that represents a memory size and convert into size in B
+     * e.g. "10m" -> 10485760, "111 KB" -> 113664
      * do not check format, do not consider b(bit)
      */
-    public static int toKB(String sizeString, int divideIfNoUnit) {
+    public static long toKB(String sizeString, long divideIfNoUnit) {
         sizeString = sizeString.toLowerCase();
         int mid;
         for (mid = 0; mid < sizeString.length(); mid++) {
@@ -48,26 +48,26 @@ public class GCLogUtil {
         String unit = sizeString.substring(mid).trim();
         switch (unit) {
             case "b":
-                return (int) (size / BYTE_UNIT_GAP);
+                return (long) size;
             case "k":
             case "kb":
-                return (int) size;
+                return (long) (size * BYTE_UNIT_GAP);
             case "m":
             case "mb":
-                return (int) (size * BYTE_UNIT_GAP);
+                return (long) (size * BYTE_UNIT_GAP * BYTE_UNIT_GAP);
             case "g":
             case "gb":
-                return (int) (size * BYTE_UNIT_GAP * BYTE_UNIT_GAP);
+                return (long) (size * BYTE_UNIT_GAP * BYTE_UNIT_GAP * BYTE_UNIT_GAP);
             case "t":
             case "tb":
-                return (int) (size * (BYTE_UNIT_GAP * BYTE_UNIT_GAP * BYTE_UNIT_GAP));
+                return (long) (size * (BYTE_UNIT_GAP * BYTE_UNIT_GAP * BYTE_UNIT_GAP * BYTE_UNIT_GAP));
             default:
-                return (int) (size / divideIfNoUnit);
+                return (long) (size / divideIfNoUnit);
         }
     }
 
-    public static int toKB(String sizeString) {
-        return toKB(sizeString, 1);
+    public static long toKB(String sizeString) {
+        return toKB(sizeString, BYTE_UNIT_GAP);
     }
 
     /**
@@ -163,8 +163,8 @@ public class GCLogUtil {
      * "608K(262144K)" -> [-1, 3608, 262144]
      * do not check format
      */
-    public static int[] parseMemorySizeFromTo(String s, int divideIfNoUnit) {
-        int[] result = new int[3];
+    public static long[] parseMemorySizeFromTo(String s, long divideIfNoUnit) {
+        long[] result = new long[3];
         String[] parts = parseFromToString(s);
         result[0] = parts[0] == null ? UNKNOWN_INT : toKB(parts[0], divideIfNoUnit);
         result[1] = parts[2] == null ? UNKNOWN_INT : toKB(parts[2], divideIfNoUnit);
@@ -172,8 +172,8 @@ public class GCLogUtil {
         return result;
     }
 
-    public static int[] parseMemorySizeFromTo(String s) {
-        return parseMemorySizeFromTo(s, 1);
+    public static long[] parseMemorySizeFromTo(String s) {
+        return parseMemorySizeFromTo(s, BYTE_UNIT_GAP);
     }
 
     // e.g "  Pause Young (Normal) (G1 Evacuation Pause)   " -> ["Pause", "Young", "Normal", "(G1", "Evacuation", "Pause)"]

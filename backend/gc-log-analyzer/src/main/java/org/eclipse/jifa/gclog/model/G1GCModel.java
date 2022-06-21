@@ -29,18 +29,18 @@ import static org.eclipse.jifa.gclog.model.GCEvent.*;
 import static org.eclipse.jifa.gclog.model.GCEventType.*;
 
 public class G1GCModel extends GCModel {
-    private int heapRegionSize = UNKNOWN_INT;   // in kb
+    private long heapRegionSize = UNKNOWN_INT;   // in kb
     private boolean regionSizeExact = false;
 
     public void setRegionSizeExact(boolean regionSizeExact) {
         this.regionSizeExact = regionSizeExact;
     }
 
-    public void setHeapRegionSize(int heapRegionSize) {
+    public void setHeapRegionSize(long heapRegionSize) {
         this.heapRegionSize = heapRegionSize;
     }
 
-    public int getHeapRegionSize() {
+    public long getHeapRegionSize() {
         return heapRegionSize;
     }
 
@@ -108,9 +108,9 @@ public class G1GCModel extends GCModel {
             if (event.getCollectionResult().getSummary().getPreUsed() == UNKNOWN_INT) {
                 continue;
             }
-            int regionCount = event.getCollectionResult().getItems().stream()
+            long regionCount = event.getCollectionResult().getItems().stream()
                     .filter(item -> item.getGeneration() != HeapGeneration.METASPACE)
-                    .mapToInt(GCCollectionResultItem::getPreUsed)
+                    .mapToLong(GCCollectionResultItem::getPreUsed)
                     .sum();
             double kbPerRegion = event.getCollectionResult().getSummary().getPreUsed() / (double) regionCount;
             heapRegionSize = (int) Math.pow(2, Math.ceil(Math.log(kbPerRegion) / Math.log(2)));

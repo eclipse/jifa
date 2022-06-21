@@ -242,7 +242,7 @@ public abstract class AbstractJDK8GCLogParser extends AbstractGCLogParser {
                     doParseSafePoint(event, token.getValue());
                     return;
                 } else if (token.getType() == TOKEN_MEMORY_CHANGE) {
-                    int[] memories = GCLogUtil.parseMemorySizeFromTo(token.getValue(), (int) KB2MB);
+                    long[] memories = GCLogUtil.parseMemorySizeFromTo(token.getValue(), (int) KB2MB);
                     GCCollectionResultItem item = new GCCollectionResultItem(HeapGeneration.TOTAL, memories);
                     event.getOrCreateCollectionResult().setSummary(item);
                 } else if (token.getType() == TOKEN_REFERENCE_GC) {
@@ -250,7 +250,7 @@ public abstract class AbstractJDK8GCLogParser extends AbstractGCLogParser {
                 } else if (token.getType() == TOKEN_DURATION) {
                     event.setDuration(MS2S * Double.parseDouble(token.getValue()));
                 } else if (token.getType() == TOKEN_METASPACE) {
-                    int[] memories = GCLogUtil.parseMemorySizeFromTo(token.getValue(), (int) KB2MB);
+                    long[] memories = GCLogUtil.parseMemorySizeFromTo(token.getValue(), (int) KB2MB);
                     GCCollectionResultItem item = new GCCollectionResultItem(HeapGeneration.METASPACE, memories);
                     event.getOrCreateCollectionResult().addItem(item);
                 } else if (token.getType() == TOKEN_RIGHT_BRACKET) {

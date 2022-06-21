@@ -173,7 +173,7 @@ public class JDK8G1GCLogParser extends AbstractJDK8GCLogParser {
             String generationString = StringUtils.strip(parts[i], "[:");
             HeapGeneration generation = HeapGeneration.getHeapGeneration(generationString);
             String memoryChangeString = StringUtils.strip(parts[i + 1], ",]");
-            int[] memories = GCLogUtil.parseMemorySizeFromTo(memoryChangeString);
+            long[] memories = GCLogUtil.parseMemorySizeFromTo(memoryChangeString);
             GCCollectionResultItem item = new GCCollectionResultItem(generation, memories);
             if (generation == HeapGeneration.TOTAL) {
                 collection.setSummary(item);

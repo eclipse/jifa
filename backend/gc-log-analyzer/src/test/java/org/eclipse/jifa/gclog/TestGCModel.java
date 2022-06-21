@@ -33,7 +33,7 @@ public class TestGCModel {
     public void mockModel() {
         GCCollectionResult collectionResult;
         model = new G1GCModel();
-        model.setHeapRegionSize(1024);
+        model.setHeapRegionSize(1024 * 1024);
         model.setCollectorType(GCCollectorType.G1);
         model.setStartTime(1.0 * 1000);
         model.setParallelThread(8);
@@ -50,11 +50,11 @@ public class TestGCModel {
         events[0].setDuration(0.5 * 1000);
         events[0].setCause("G1 Evacuation Pause");
         collectionResult = new GCCollectionResult();
-        collectionResult.addItem(new GCCollectionResultItem(EDEN, 20 * 1024, 0, 100 * 1024));
-        collectionResult.addItem(new GCCollectionResultItem(SURVIVOR, 0, 10 * 1024, 100 * 1024));
-        collectionResult.addItem(new GCCollectionResultItem(HUMONGOUS, 10 * 1024, 10 * 1024, UNKNOWN_INT));
-        collectionResult.addItem(new GCCollectionResultItem(METASPACE, 15 * 1024, 15 * 1024, 20 * 1024));
-        collectionResult.addItem(new GCCollectionResultItem(OLD, 10 * 1024, 12 * 1024, 100 * 1024));
+        collectionResult.addItem(new GCCollectionResultItem(EDEN, 20 * 1024 * 1024, 0, 100 * 1024 * 1024));
+        collectionResult.addItem(new GCCollectionResultItem(SURVIVOR, 0, 10 * 1024 * 1024, 100 * 1024 * 1024));
+        collectionResult.addItem(new GCCollectionResultItem(HUMONGOUS, 10 * 1024 * 1024, 10 * 1024 * 1024, UNKNOWN_INT));
+        collectionResult.addItem(new GCCollectionResultItem(METASPACE, 15 * 1024 * 1024, 15 * 1024 * 1024, 20 * 1024 * 1024));
+        collectionResult.addItem(new GCCollectionResultItem(OLD, 10 * 1024 * 1024, 12 * 1024 * 1024, 100 * 1024 * 1024));
         events[0].addSpecialSituation(GCSpecialSituation.TO_SPACE_EXHAUSTED);
 //      expected result:  collectionResult.addItem(new GCCollectionResultItem(TOTAL,40*1024,32*1024,300*1024));
         events[0].setCollectionResult(collectionResult);
@@ -64,10 +64,10 @@ public class TestGCModel {
         events[1].setDuration(0.4 * 1000);
         events[1].setCause("G1 Evacuation Pause");
         collectionResult = new GCCollectionResult();
-        collectionResult.addItem(new GCCollectionResultItem(EDEN, 30 * 1024, 0, 100 * 1024));
-        collectionResult.addItem(new GCCollectionResultItem(SURVIVOR, 0 * 1024, 0, 100 * 1024));
-        collectionResult.addItem(new GCCollectionResultItem(HUMONGOUS, 10 * 1024, 10 * 1024, UNKNOWN_INT));
-        collectionResult.addItem(new GCCollectionResultItem(OLD, 10 * 1024, 30 * 1024, 100 * 1024));
+        collectionResult.addItem(new GCCollectionResultItem(EDEN, 30 * 1024 * 1024, 0, 100 * 1024 * 1024));
+        collectionResult.addItem(new GCCollectionResultItem(SURVIVOR, 0, 0, 100 * 1024 * 1024));
+        collectionResult.addItem(new GCCollectionResultItem(HUMONGOUS, 10 * 1024 * 1024, 10 * 1024 * 1024, UNKNOWN_INT));
+        collectionResult.addItem(new GCCollectionResultItem(OLD, 10 * 1024 * 1024, 30 * 1024 * 1024, 100 * 1024 * 1024));
 //      expected result:  collectionResult.addItem(new GCCollectionResultItem(TOTAL,50,40,300));
         events[1].setCollectionResult(collectionResult);
 
@@ -76,11 +76,11 @@ public class TestGCModel {
         events[2].setDuration(1.0 * 1000);
         events[2].setCause("Metadata GC Threshold");
         collectionResult = new GCCollectionResult();
-        collectionResult.addItem(new GCCollectionResultItem(EDEN, 24 * 1024, 0, 100 * 1024));
-        collectionResult.addItem(new GCCollectionResultItem(SURVIVOR, 8 * 1024, 0, 100 * 1024));
-        collectionResult.addItem(new GCCollectionResultItem(HUMONGOUS, 20 * 1024, 20 * 1024, UNKNOWN_INT));
-        collectionResult.addItem(new GCCollectionResultItem(OLD, 10 * 1024, 10 * 1024, 100 * 1024));
-        collectionResult.addItem(new GCCollectionResultItem(TOTAL, 62 * 1024, 30 * 1024, 300 * 1024));
+        collectionResult.addItem(new GCCollectionResultItem(EDEN, 24 * 1024 * 1024, 0, 100 * 1024 * 1024));
+        collectionResult.addItem(new GCCollectionResultItem(SURVIVOR, 8 * 1024 * 1024, 0, 100 * 1024 * 1024));
+        collectionResult.addItem(new GCCollectionResultItem(HUMONGOUS, 20 * 1024 * 1024, 20 * 1024 * 1024, UNKNOWN_INT));
+        collectionResult.addItem(new GCCollectionResultItem(OLD, 10 * 1024 * 1024, 10 * 1024 * 1024, 100 * 1024 * 1024));
+        collectionResult.addItem(new GCCollectionResultItem(TOTAL, 62 * 1024 * 1024, 30 * 1024 * 1024, 300 * 1024 * 1024));
         events[2].setCollectionResult(collectionResult);
 
         events[3].setEventType(G1_CONCURRENT_CYCLE);
@@ -95,8 +95,8 @@ public class TestGCModel {
             phase.setDuration(0.2 * (i + 1) * 1000);
             phase.setStartTime(begins[i] * 1000);
         }
-        events[3].getPhases().get(0).setCollectionResult(new GCCollectionResult(new GCCollectionResultItem(TOTAL, 70 * 1024, 70 * 1024, 300 * 1024)));
-        events[3].getPhases().get(1).setCollectionResult(new GCCollectionResult(new GCCollectionResultItem(TOTAL, 70 * 1024, 70 * 1024, 300 * 1024)));
+        events[3].getPhases().get(0).setCollectionResult(new GCCollectionResult(new GCCollectionResultItem(TOTAL, 70 * 1024 * 1024, 70 * 1024 * 1024, 300 * 1024 * 1024)));
+        events[3].getPhases().get(1).setCollectionResult(new GCCollectionResult(new GCCollectionResultItem(TOTAL, 70 * 1024 * 1024, 70 * 1024 * 1024, 300 * 1024 * 1024)));
 
         events[4].setEventType(G1_CONCURRENT_CYCLE);
         events[4].setStartTime(24 * 1000);
@@ -110,20 +110,20 @@ public class TestGCModel {
             phase.setDuration(0.1 * (i + 1) * 1000);
             phase.setStartTime(begins[i] * 1000);
         }
-        events[4].getPhases().get(0).setCollectionResult(new GCCollectionResult(new GCCollectionResultItem(TOTAL, 70 * 1024, 70 * 1024, 300 * 1024)));
-        events[4].getPhases().get(1).setCollectionResult(new GCCollectionResult(new GCCollectionResultItem(TOTAL, 70 * 1024, 70 * 1024, 300 * 1024)));
+        events[4].getPhases().get(0).setCollectionResult(new GCCollectionResult(new GCCollectionResultItem(TOTAL, 70  * 1024 * 1024, 70  * 1024 * 1024, 300  * 1024 * 1024)));
+        events[4].getPhases().get(1).setCollectionResult(new GCCollectionResult(new GCCollectionResultItem(TOTAL, 70  * 1024 * 1024, 70  * 1024 * 1024, 300  * 1024 * 1024)));
 
         events[5].setEventType(YOUNG_GC);
         events[5].setStartTime(32.0 * 1000);
         events[5].setDuration(0.3 * 1000);
         events[5].setCause("G1 Evacuation Pause");
         collectionResult = new GCCollectionResult();
-        collectionResult.addItem(new GCCollectionResultItem(EDEN, 16 * 1024, 0, 100 * 1024));
-        collectionResult.addItem(new GCCollectionResultItem(SURVIVOR, 0, 4 * 1024, 100 * 1024));
-        collectionResult.addItem(new GCCollectionResultItem(HUMONGOUS, 50 * 1024, 50 * 1024, UNKNOWN_INT));
-        collectionResult.addItem(new GCCollectionResultItem(METASPACE, 15 * 1024, 15 * 1024, 40 * 1024));
+        collectionResult.addItem(new GCCollectionResultItem(EDEN, 16  * 1024 * 1024, 0, 100  * 1024 * 1024));
+        collectionResult.addItem(new GCCollectionResultItem(SURVIVOR, 0, 4  * 1024 * 1024, 100  * 1024 * 1024));
+        collectionResult.addItem(new GCCollectionResultItem(HUMONGOUS, 50  * 1024 * 1024, 50  * 1024 * 1024, UNKNOWN_INT));
+        collectionResult.addItem(new GCCollectionResultItem(METASPACE, 15  * 1024 * 1024, 15  * 1024 * 1024, 40  * 1024 * 1024));
 //      expected result:  collectionResult.addItem(new GCCollectionResultItem(OLD,10,12,100));
-        collectionResult.addItem(new GCCollectionResultItem(TOTAL, 76 * 1024, 66 * 1024, 300 * 1024));
+        collectionResult.addItem(new GCCollectionResultItem(TOTAL, 76  * 1024 * 1024, 66  * 1024 * 1024, 300  * 1024 * 1024));
         events[5].setCollectionResult(collectionResult);
 
         Safepoint safepoint = new Safepoint();
@@ -142,15 +142,15 @@ public class TestGCModel {
         Assert.assertEquals(model.getGcCollectionEvents().size(), 8);
 
         // single event info
-        Assert.assertEquals(model.getGcEvents().get(0).getAllocation(), 40 * 1024);
-        Assert.assertEquals(model.getGcEvents().get(0).getPromotion(), 2 * 1024);
-        Assert.assertEquals(model.getGcEvents().get(0).getReclamation(), 8 * 1024);
+        Assert.assertEquals(model.getGcEvents().get(0).getAllocation(), 40 * 1024 * 1024);
+        Assert.assertEquals(model.getGcEvents().get(0).getPromotion(), 2 * 1024 * 1024);
+        Assert.assertEquals(model.getGcEvents().get(0).getReclamation(), 8 * 1024 * 1024);
         Assert.assertEquals(model.getGcEvents().get(3).getPause(), 0.6 * 1000, DELTA);
         Assert.assertEquals(model.getGcEvents().get(4).getPause(), 0.3 * 1000, DELTA);
         Assert.assertEquals(model.getGcEvents().get(0).getCollectionAgg().get(TOTAL),
-                new GCCollectionResultItem(TOTAL, 40 * 1024, 32 * 1024, 300 * 1024));
+                new GCCollectionResultItem(TOTAL, 40 * 1024 * 1024, 32 * 1024 * 1024, 300 * 1024 * 1024));
         Assert.assertEquals(model.getGcEvents().get(6).getCollectionAgg().get(OLD),
-                new GCCollectionResultItem(OLD, 10 * 1024, 12 * 1024, 100 * 1024));
+                new GCCollectionResultItem(OLD, 10 * 1024 * 1024, 12 * 1024 * 1024, 100 * 1024 * 1024));
         Assert.assertEquals(model.getGcEvents().get(0).getStartTimestamp(), 2.0 * 1000, DELTA);
         Assert.assertEquals(model.getGcEvents().get(6).getEndTimestamp(), 33.3 * 1000, DELTA);
         Assert.assertEquals(model.getGcEvents().get(4).getInterval(), 6.8 * 1000, DELTA);
@@ -172,15 +172,15 @@ public class TestGCModel {
         Assert.assertEquals(promotion.getDataByTimes().get(0).getData().get(0L), (2 + 2) * 1024 / 60.0, DELTA);
 
         TimeLineChartView heap = model.getGraphView("heap", 10800000, 0);
-        Assert.assertEquals(heap.getDataByTimes().get(0).getData().get(1000L), 20, DELTA);
-        Assert.assertEquals(heap.getDataByTimes().get(0).getData().get(1500L), 10, DELTA);
-        Assert.assertEquals(heap.getDataByTimes().get(1).getData().get(1000L), 10, DELTA);
-        Assert.assertEquals(heap.getDataByTimes().get(1).getData().get(1500L), 12, DELTA);
+        Assert.assertEquals(heap.getDataByTimes().get(0).getData().get(1000L), 20 * 1024, DELTA);
+        Assert.assertEquals(heap.getDataByTimes().get(0).getData().get(1500L), 10 * 1024, DELTA);
+        Assert.assertEquals(heap.getDataByTimes().get(1).getData().get(1000L), 10 * 1024, DELTA);
+        Assert.assertEquals(heap.getDataByTimes().get(1).getData().get(1500L), 12 * 1024, DELTA);
 
         TimeLineChartView metaspace = model.getGraphView("metaspace", 10800000, 0);
-        Assert.assertEquals(metaspace.getDataByTimes().get(0).getData().get(1000L), 15, DELTA);
-        Assert.assertEquals(metaspace.getDataByTimes().get(0).getData().get(1500L), 15, DELTA);
-        Assert.assertEquals(metaspace.getDataByTimes().get(1).getData().get(1500L), 20, DELTA);
+        Assert.assertEquals(metaspace.getDataByTimes().get(0).getData().get(1000L), 15 * 1024, DELTA);
+        Assert.assertEquals(metaspace.getDataByTimes().get(0).getData().get(1500L), 15 * 1024, DELTA);
+        Assert.assertEquals(metaspace.getDataByTimes().get(1).getData().get(1500L), 20 * 1024, DELTA);
 
         // phase info
         Assert.assertEquals(model.getGcPhaseInfo().get(0).getName(), "Young GC");

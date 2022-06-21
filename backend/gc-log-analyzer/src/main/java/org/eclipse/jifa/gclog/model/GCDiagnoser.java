@@ -62,14 +62,14 @@ public class GCDiagnoser {
         if (model.getCollectorType() != GCCollectorType.G1) {
             return;
         }
-        int lastYoungSize = 0;
-        int lastHeapSize = 0;
+        long lastYoungSize = 0;
+        long lastHeapSize = 0;
         for (GCEvent event : model.getGcEvents()) {
             if (event.getCollectionAgg() == null && event.getEventType() != FULL_GC) {
                 continue;
             }
-            int youngSize = event.getCollectionAgg().get(HeapGeneration.YOUNG).getTotal();
-            int heapSize = event.getCollectionAgg().get(HeapGeneration.TOTAL).getTotal();
+            long youngSize = event.getCollectionAgg().get(HeapGeneration.YOUNG).getTotal();
+            long heapSize = event.getCollectionAgg().get(HeapGeneration.TOTAL).getTotal();
             if (youngSize <= 0 || heapSize <= 0) {
                 continue;
             }
