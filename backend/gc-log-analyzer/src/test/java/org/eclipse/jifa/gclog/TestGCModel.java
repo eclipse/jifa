@@ -22,7 +22,6 @@ import org.junit.Test;
 
 import static org.eclipse.jifa.gclog.model.GCEvent.*;
 import static org.eclipse.jifa.gclog.model.GCEventType.*;
-import static org.eclipse.jifa.gclog.model.GCModel.KPIType.*;
 import static org.eclipse.jifa.gclog.vo.HeapGeneration.*;
 
 public class TestGCModel {
@@ -156,33 +155,6 @@ public class TestGCModel {
         Assert.assertEquals(model.getGcEvents().get(6).getEndTimestamp(), 33.3 * 1000, DELTA);
         Assert.assertEquals(model.getGcEvents().get(4).getInterval(), 6.8 * 1000, DELTA);
 
-        // basic info
-        G1GCModel.G1GCModelBasicInfo basicInfo = (G1GCModel.G1GCModelBasicInfo) model.getBasicInfo();
-        Assert.assertEquals(basicInfo.getDuration(), 32.3 * 1000, DELTA);
-        Assert.assertEquals(basicInfo.getHeapSize(), 300 * 1024);
-        Assert.assertEquals(basicInfo.getYoungGenSize(), UNKNOWN_INT);
-        Assert.assertEquals(basicInfo.getMetaspaceSize(), UNKNOWN_INT);
-        Assert.assertEquals(basicInfo.getHeapRegionSize(), 1 * 1024);
-        Assert.assertEquals(basicInfo.getVmOptions(), "-Xmx2g -Xms2g");
-
-        // kpi
-        Assert.assertEquals(model.getKpi().get(THROUGHPUT.getName()).getValue(), 1 - (0.5 + 0.4 + 1 + 0.6 + 0.3 + 0.3) / 32.3, DELTA);
-        Assert.assertEquals(model.getKpi().get(MAX_PAUSE.getName()).getValue(), 1 * 1000, DELTA);
-        Assert.assertEquals(model.getKpi().get(FULL_GC_INTERVAL_AVG.getName()).getValue(), (12 - 3.4) * 1000, DELTA);
-        Assert.assertEquals(model.getKpi().get(FULL_GC_INTERVAL_MIN.getName()).getValue(), (12 - 3.4) * 1000, DELTA);
-        Assert.assertEquals(model.getKpi().get(FULL_GC_PAUSE_AVG.getName()).getValue(), ((0.4 + 1) * 1000 / 2), DELTA);
-        Assert.assertEquals(model.getKpi().get(FULL_GC_PAUSE_MAX.getName()).getValue(), 1 * 1000, DELTA);
-        Assert.assertEquals(model.getKpi().get(YOUNG_GC_INTERVAL_AVG.getName()).getValue(), 30.5 * 1000 / 1.0, DELTA);
-        Assert.assertEquals(model.getKpi().get(YOUNG_GC_INTERVAL_MIN.getName()).getValue(), 30.5 * 1000 / 1.0, DELTA);
-        Assert.assertEquals(model.getKpi().get(YOUNG_GC_PAUSE_AVG.getName()).getValue(), (0.3 + 0.5) * 1000 / 2, DELTA);
-        Assert.assertEquals(model.getKpi().get(YOUNG_GC_PAUSE_MAX.getName()).getValue(), 0.5 * 1000, DELTA);
-        Assert.assertEquals(model.getKpi().get(OLD_GC_INTERVAL_AVG.getName()).getValue(), 6.8 * 1000, DELTA);
-        Assert.assertEquals(model.getKpi().get(OLD_GC_INTERVAL_MIN.getName()).getValue(), 6.8 * 1000, DELTA);
-        Assert.assertEquals(model.getKpi().get(OBJECT_CREATION_SPEED.getName()).getValue(), (40 + 18 + 22 + 40 + 6) * 1024 / 32.3, DELTA);
-        Assert.assertEquals(model.getKpi().get(PROMOTION_AVG.getName()).getValue(), 2 * 1024, DELTA);
-        Assert.assertEquals(model.getKpi().get(PROMOTION_MAX.getName()).getValue(), 2 * 1024, DELTA);
-        Assert.assertEquals(model.getKpi().get(PROMOTION_SPEED.getName()).getValue(), (2 + 2) * 1024 / 32.3, DELTA);
-
         // graph data
         TimeLineChartView count = model.getGraphView("count", 300000, 0);
         Assert.assertEquals(count.getDataByTimes().get(0).getData().get(1000L), 1, DELTA);
@@ -219,15 +191,6 @@ public class TestGCModel {
         Assert.assertEquals(model.getGcPhaseInfo().get(1).getName(), "Full GC");
         Assert.assertEquals(model.getGcPhaseInfo().get(3).getName(), "Remark");
         Assert.assertEquals(model.getGcPhaseInfo().get(3).getAvgTime(), (0.2 + 0.1) / 2 * 1000, DELTA);
-
-        // cause
-        Assert.assertEquals(model.getGCCauseInfo().get(0).getCause(), "Full GC - Metadata GC Threshold");
-        Assert.assertEquals(model.getGCCauseInfo().get(0).getCount(), 1);
-        Assert.assertEquals(model.getGCCauseInfo().get(0).getTotalPause(), 1.0 * 1000, DELTA);
-        Assert.assertEquals(model.getGCCauseInfo().get(0).getAvgPause(), 1.0 * 1000 / 1, DELTA);
-        Assert.assertEquals(model.getGCCauseInfo().get(0).getMaxPause(), 1.0 * 1000, DELTA);
-        Assert.assertEquals(model.getGCCauseInfo().get(1).getCause(), "Young GC - G1 Evacuation Pause");
-        Assert.assertEquals(model.getGCCauseInfo().get(1).getCount(), 2);
 
         // diagnose
         Assert.assertTrue(hasDiagnose("jifa.gclog.diagnosis.problems.metaspaceFullGC"));

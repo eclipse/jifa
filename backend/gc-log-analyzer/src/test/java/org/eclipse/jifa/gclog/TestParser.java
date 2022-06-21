@@ -18,7 +18,7 @@ import org.eclipse.jifa.gclog.model.*;
 import org.eclipse.jifa.gclog.parser.*;
 import org.eclipse.jifa.gclog.vo.GCCollectionResultItem;
 import org.eclipse.jifa.gclog.vo.GCCollectorType;
-import org.eclipse.jifa.gclog.vo.GCLogMetadata;
+import org.eclipse.jifa.gclog.vo.GCLogParsingMetadata;
 import org.eclipse.jifa.gclog.vo.GCLogStyle;
 import org.junit.Assert;
 import org.junit.Test;
@@ -176,7 +176,7 @@ public class TestParser {
                 "[3.982s][info][gc,metaspace  ] GC(14) Metaspace: 21709K->21707K(1069056K)\n" +
                 "[3.982s][info][gc            ] GC(14) Pause Young (Normal) (G1 Evacuation Pause) 637M->630M(2048M) 116.771ms";
         JDK11G1GCLogParser parser = new JDK11G1GCLogParser();
-        parser.setMetadata(new GCLogMetadata(GCCollectorType.G1, GCLogStyle.UNIFIED_STYLE));
+        parser.setMetadata(new GCLogParsingMetadata(GCCollectorType.G1, GCLogStyle.UNIFIED_STYLE));
         G1GCModel model = (G1GCModel) parser.parse(stringToBufferedReader(log));
         model.calculateDerivedInfo(new DefaultProgressListener());
         // should infer region size 16m
@@ -192,7 +192,7 @@ public class TestParser {
         String log = "[2021-05-06T11:25:16.508+0800][info][gc           ] GC(0) Pause Young (Concurrent Start) (Metadata GC Threshold)\n" +
                 "[2021-05-06T11:25:16.510+0800][info][gc           ] GC(1) Pause Young (Concurrent Start) (Metadata GC Threshold)\n";
         JDK11G1GCLogParser parser = new JDK11G1GCLogParser();
-        parser.setMetadata(new GCLogMetadata(GCCollectorType.G1, GCLogStyle.UNIFIED_STYLE));
+        parser.setMetadata(new GCLogParsingMetadata(GCCollectorType.G1, GCLogStyle.UNIFIED_STYLE));
         GCModel model = parser.parse(stringToBufferedReader(log));
         Assert.assertEquals(model.getReferenceTimestamp(), 1620271516508d, DELTA);
         Assert.assertEquals(model.getGcEvents().get(1).getStartTime(), 2, DELTA);
@@ -200,7 +200,7 @@ public class TestParser {
         log = "[1000000000800ms][info][gc           ] GC(0) Pause Young (Concurrent Start) (Metadata GC Threshold)\n" +
                 "[1000000000802ms][info][gc           ] GC(1) Pause Young (Concurrent Start) (Metadata GC Threshold)\n";
         parser = new JDK11G1GCLogParser();
-        parser.setMetadata(new GCLogMetadata(GCCollectorType.G1, GCLogStyle.UNIFIED_STYLE));
+        parser.setMetadata(new GCLogParsingMetadata(GCCollectorType.G1, GCLogStyle.UNIFIED_STYLE));
         model = parser.parse(stringToBufferedReader(log));
         Assert.assertEquals(model.getReferenceTimestamp(), 1000000000800D, DELTA);
         Assert.assertEquals(model.getGcEvents().get(1).getStartTime(), 2, DELTA);

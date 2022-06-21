@@ -13,7 +13,6 @@
 
 package org.eclipse.jifa.gclog.model;
 
-import org.eclipse.jifa.gclog.model.GCModel.KPIItem;
 import org.eclipse.jifa.gclog.vo.GCCollectorType;
 import org.eclipse.jifa.gclog.vo.GCLogStyle;
 import org.eclipse.jifa.gclog.vo.GCSpecialSituation;
@@ -24,7 +23,6 @@ import java.util.*;
 import static org.eclipse.jifa.gclog.model.GCEvent.UNKNOWN_INT;
 import static org.eclipse.jifa.gclog.model.GCEventType.*;
 import static org.eclipse.jifa.gclog.model.GCModel.KB2MB;
-import static org.eclipse.jifa.gclog.model.GCModel.KPIType.*;
 
 public class GCDiagnoser {
     private GCModel model;
@@ -100,13 +98,13 @@ public class GCDiagnoser {
         if (model.getCollectorType() != GCCollectorType.ZGC) {
             return;
         }
-        KPIItem item = model.getKpi().get(GC_DURATION_PERCENTAGE.getName());
-        double percent = item.getValue();
-        if (percent > ZGC_FREQUENT_THRESHOLD) {
-            addDiagnose(zgcSuggestHeapAndThread(
-                    new I18nStringView("jifa.gclog.diagnosis.problems.zgcTooFrequent", "percent", String.format("%.2f", 100 * percent))));
-            item.setBad(true);
-        }
+//        KPIItem item = model.getKpi().get(GC_DURATION_PERCENTAGE.getName());
+//        double percent = item.getValue();
+//        if (percent > ZGC_FREQUENT_THRESHOLD) {
+//            addDiagnose(zgcSuggestHeapAndThread(
+//                    new I18nStringView("jifa.gclog.diagnosis.problems.zgcTooFrequent", "percent", String.format("%.2f", 100 * percent))));
+//            item.setBad(true);
+//        }
     }
 
     private static final double BAD_ALLOCATION_STALL_OPS_S = 1000;
@@ -138,40 +136,40 @@ public class GCDiagnoser {
         pas.setProblem(problem);
         pas.addSuggestion(new I18nStringView("jifa.gclog.diagnosis.suggestions.addConcurrentGCThread"));
         int recommendSize = model.getRecommendMaxHeapSize();
-        int actualSize = model.basicInfo.getHeapSize();
-        if (recommendSize != UNKNOWN_INT && recommendSize > actualSize &&
-                (recommendSize - actualSize) / (double) recommendSize > ZGC_HEAP_CHANGE_TOO_SMALL_THRESHOLD) {
-            pas.addSuggestion(new I18nStringView("jifa.gclog.diagnosis.suggestions.enlargeHeapWithRecommend",
-                    "size", (int) (recommendSize / KB2MB / KB2MB)));
-        } else {
-            pas.addSuggestion(new I18nStringView("jifa.gclog.diagnosis.suggestions.enlargeHeap"));
-        }
+//        int actualSize = model.basicInfo.getHeapSize();
+//        if (recommendSize != UNKNOWN_INT && recommendSize > actualSize &&
+//                (recommendSize - actualSize) / (double) recommendSize > ZGC_HEAP_CHANGE_TOO_SMALL_THRESHOLD) {
+//            pas.addSuggestion(new I18nStringView("jifa.gclog.diagnosis.suggestions.enlargeHeapWithRecommend",
+//                    "size", (int) (recommendSize / KB2MB / KB2MB)));
+//        } else {
+//            pas.addSuggestion(new I18nStringView("jifa.gclog.diagnosis.suggestions.enlargeHeap"));
+//        }
         return pas;
     }
 
     public static final double SMALL_GENERATION_THRESHOLD = 0.1;
 
     private void generationSize() {
-        if (model.basicInfo.getYoungGenSize() == UNKNOWN_INT || model.basicInfo.getOldGenSize() == UNKNOWN_INT
-                || model.basicInfo.getHeapSize() == UNKNOWN_INT) {
-            return;
-        }
-        I18nStringView problem = null;
-        I18nStringView suggestion;
-        double percent = (double) model.basicInfo.getYoungGenSize() / model.basicInfo.getHeapSize();
-        if (percent < SMALL_GENERATION_THRESHOLD) {
-            problem = new I18nStringView("jifa.gclog.diagnosis.problems.smallYoungGen",
-                    "percent", String.format("%.2f", 100 * percent));
-        }
-        percent = (double) model.basicInfo.getOldGenSize() / model.basicInfo.getHeapSize();
-        if (percent < SMALL_GENERATION_THRESHOLD) {
-            problem = new I18nStringView("jifa.gclog.diagnosis.problems.smallOldGen",
-                    "percent", String.format("%.2f", 100 * percent));
-        }
-        if (problem != null) {
-            suggestion = new I18nStringView("jifa.gclog.diagnosis.suggestions.setReasonableXmn");
-            addDiagnose(new GCModel.ProblemAndSuggestion(problem, suggestion));
-        }
+//        if (model.basicInfo.getYoungGenSize() == UNKNOWN_INT || model.basicInfo.getOldGenSize() == UNKNOWN_INT
+//                || model.basicInfo.getHeapSize() == UNKNOWN_INT) {
+//            return;
+//        }
+//        I18nStringView problem = null;
+//        I18nStringView suggestion;
+//        double percent = (double) model.basicInfo.getYoungGenSize() / model.basicInfo.getHeapSize();
+//        if (percent < SMALL_GENERATION_THRESHOLD) {
+//            problem = new I18nStringView("jifa.gclog.diagnosis.problems.smallYoungGen",
+//                    "percent", String.format("%.2f", 100 * percent));
+//        }
+//        percent = (double) model.basicInfo.getOldGenSize() / model.basicInfo.getHeapSize();
+//        if (percent < SMALL_GENERATION_THRESHOLD) {
+//            problem = new I18nStringView("jifa.gclog.diagnosis.problems.smallOldGen",
+//                    "percent", String.format("%.2f", 100 * percent));
+//        }
+//        if (problem != null) {
+//            suggestion = new I18nStringView("jifa.gclog.diagnosis.suggestions.setReasonableXmn");
+//            addDiagnose(new GCModel.ProblemAndSuggestion(problem, suggestion));
+//        }
     }
 
     private void cmsFrequentConcurrentMark() {
@@ -243,19 +241,19 @@ public class GCDiagnoser {
         if (model.getCollectorType() == GCCollectorType.ZGC) {
             return;
         }
-        KPIItem item = model.getKpi().get(THROUGHPUT.getName());
-        double throughput = item.getValue();
-        if (throughput >= 0 && throughput < LOW_THROUGHPUT_THRESHOLD) {
-            item.setBad(true);
-            GCModel.ProblemAndSuggestion problemAndSuggestion = new GCModel.ProblemAndSuggestion();
-            problemAndSuggestion.setProblem(new I18nStringView("jifa.gclog.diagnosis.problems.lowThroughput", "throughput", String.format("%.2f", 100 * throughput)));
-            problemAndSuggestion.addSuggestion(new I18nStringView("jifa.gclog.diagnosis.suggestions.addGCThread"));
-            problemAndSuggestion.addSuggestion(new I18nStringView("jifa.gclog.diagnosis.suggestions.enlargeHeap"));
-            if (model.getCollectorType() != GCCollectorType.G1) {
-                problemAndSuggestion.addSuggestion(new I18nStringView("jifa.gclog.diagnosis.suggestions.enlargeYoung"));
-            }
-            addDiagnose(problemAndSuggestion);
-        }
+//        KPIItem item = model.getKpi().get(THROUGHPUT.getName());
+//        double throughput = item.getValue();
+//        if (throughput >= 0 && throughput < LOW_THROUGHPUT_THRESHOLD) {
+//            item.setBad(true);
+//            GCModel.ProblemAndSuggestion problemAndSuggestion = new GCModel.ProblemAndSuggestion();
+//            problemAndSuggestion.setProblem(new I18nStringView("jifa.gclog.diagnosis.problems.lowThroughput", "throughput", String.format("%.2f", 100 * throughput)));
+//            problemAndSuggestion.addSuggestion(new I18nStringView("jifa.gclog.diagnosis.suggestions.addGCThread"));
+//            problemAndSuggestion.addSuggestion(new I18nStringView("jifa.gclog.diagnosis.suggestions.enlargeHeap"));
+//            if (model.getCollectorType() != GCCollectorType.G1) {
+//                problemAndSuggestion.addSuggestion(new I18nStringView("jifa.gclog.diagnosis.suggestions.enlargeYoung"));
+//            }
+//            addDiagnose(problemAndSuggestion);
+//        }
     }
 
     private final static String METASPACE_GC_THRESHOLD = "Metadata GC Threshold";

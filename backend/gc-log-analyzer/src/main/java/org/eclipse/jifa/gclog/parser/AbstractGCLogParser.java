@@ -16,7 +16,7 @@ package org.eclipse.jifa.gclog.parser;
 import org.eclipse.jifa.gclog.model.GCModel;
 import org.eclipse.jifa.gclog.model.GCModelFactory;
 import org.eclipse.jifa.gclog.parser.ParseRule.ParseRuleContext;
-import org.eclipse.jifa.gclog.vo.GCLogMetadata;
+import org.eclipse.jifa.gclog.vo.GCLogParsingMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,13 +27,13 @@ public abstract class AbstractGCLogParser implements GCLogParser {
     protected static final Logger LOGGER = LoggerFactory.getLogger(AbstractGCLogParser.class);
 
     private GCModel model;
-    private GCLogMetadata metadata;
+    private GCLogParsingMetadata metadata;
 
-    public GCLogMetadata getMetadata() {
+    public GCLogParsingMetadata getMetadata() {
         return metadata;
     }
 
-    public void setMetadata(GCLogMetadata metadata) {
+    public void setMetadata(GCLogParsingMetadata metadata) {
         this.metadata = metadata;
     }
 

@@ -15,13 +15,14 @@ package org.eclipse.jifa.worker.route.gclog;
 
 import org.eclipse.jifa.gclog.model.GCModel;
 import io.vertx.core.Promise;
+import org.eclipse.jifa.gclog.vo.GCLogMetadata;
 import org.eclipse.jifa.worker.route.ParamKey;
 import org.eclipse.jifa.worker.route.RouteMeta;
 import org.eclipse.jifa.worker.support.Analyzer;
 
 public class GCMetadataRoute extends GCLogBaseRoute {
     @RouteMeta(path = "/metadata")
-    void detailMetadata(Promise<GCModel.GCLogDetailMetadata> promise, @ParamKey("file") String file) {
+    void metadata(Promise<GCLogMetadata> promise, @ParamKey("file") String file) {
         final GCModel model = Analyzer.getOrOpenGCLogModel(file);
         promise.complete(model.getGcDetailMetadata());
     }

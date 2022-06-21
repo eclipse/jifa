@@ -24,9 +24,6 @@ public class GCLogBaseRoute extends BaseRoute {
     private static List<Class<? extends GCLogBaseRoute>> ROUTES = new ArrayList<>();
 
     static {
-        ROUTES.add(GCCauseRoute.class);
-        ROUTES.add(GCPhaseRoute.class);
-        ROUTES.add(GCOverviewRoute.class);
         ROUTES.add(Graph.class);
         ROUTES.add(GCDetailRoute.class);
         ROUTES.add(GCMetadataRoute.class);

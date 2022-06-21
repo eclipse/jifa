@@ -15,18 +15,10 @@ package org.eclipse.jifa.gclog.vo;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-
-import java.util.List;
 
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
-public class GCLogMetadata {
-    private List<String> eventTypes;
-    private List<String> causes;
-    private double startTime;
-    private double endTime;
-    private double timestamp;
-    private String collector;
+public class GCLogParsingMetadata {
+    private GCCollectorType collector;
+    private GCLogStyle style;
 }

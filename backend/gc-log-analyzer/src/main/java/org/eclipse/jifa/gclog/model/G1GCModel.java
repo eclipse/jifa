@@ -90,14 +90,6 @@ public class G1GCModel extends GCModel {
         return PAUSE_EVENT_NAMES;
     }
 
-    @Override
-    protected void calculateBasicInfo() {
-        G1GCModelBasicInfo basicInfo = new G1GCModelBasicInfo();
-        basicInfo.setHeapRegionSize(heapRegionSize);
-        this.basicInfo = basicInfo;
-        super.calculateBasicInfo();
-    }
-
     private boolean collectionResultUsingRegion(GCEvent event) {
         GCEventType type = event.getEventType();
         return (type == YOUNG_GC || type == FULL_GC || type == G1_YOUNG_MIXED_GC) &&
@@ -148,14 +140,5 @@ public class G1GCModel extends GCModel {
             inferHeapRegionSize();
             adjustMemoryInfo();
         }
-    }
-
-    @EqualsAndHashCode(callSuper = true)
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class G1GCModelBasicInfo extends GCModelBasicInfo {
-        private int heapRegionSize = UNKNOWN_INT;
-        private String periodicGCInterval = null;
     }
 }

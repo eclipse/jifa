@@ -16,13 +16,12 @@ package org.eclipse.jifa.gclog.parser;
 import org.eclipse.jifa.common.JifaException;
 import org.eclipse.jifa.common.util.ErrorUtil;
 import org.eclipse.jifa.gclog.vo.GCCollectorType;
-import org.eclipse.jifa.gclog.vo.GCLogMetadata;
+import org.eclipse.jifa.gclog.vo.GCLogParsingMetadata;
 import org.eclipse.jifa.gclog.vo.GCLogStyle;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.io.BufferedReader;
-import java.io.File;
 
 import static org.eclipse.jifa.gclog.vo.GCLogStyle.*;
 import static org.eclipse.jifa.gclog.vo.GCCollectorType.*;
@@ -56,12 +55,12 @@ public class GCLogParserFactory {
     };
 
     public GCLogParser getParser(BufferedReader br) {
-        GCLogMetadata metadata = getMetadata(br);
+        GCLogParsingMetadata metadata = getMetadata(br);
         return createParser(metadata);
     }
 
-    private GCLogMetadata getMetadata(BufferedReader br) {
-        GCLogMetadata result = new GCLogMetadata(GCCollectorType.UNKNOWN, GCLogStyle.UNKNOWN);
+    private GCLogParsingMetadata getMetadata(BufferedReader br) {
+        GCLogParsingMetadata result = new GCLogParsingMetadata(GCCollectorType.UNKNOWN, GCLogStyle.UNKNOWN);
         try {
             complete:
             for (int i = 0; i < MAX_ATTEMPT_LINE; i++) {
@@ -90,7 +89,7 @@ public class GCLogParserFactory {
         return result;
     }
 
-    private GCLogParser createParser(GCLogMetadata metadata) {
+    private GCLogParser createParser(GCLogParsingMetadata metadata) {
         AbstractGCLogParser parser = null;
         if (metadata.getStyle() == JDK8_STYLE) {
             switch (metadata.getCollector()) {

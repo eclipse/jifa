@@ -33,7 +33,6 @@ import java.util.function.Predicate;
 
 import static org.eclipse.jifa.gclog.model.GCEvent.*;
 import static org.eclipse.jifa.gclog.model.GCEventType.*;
-import static org.eclipse.jifa.gclog.model.GCModel.KPIType.*;
 import static org.eclipse.jifa.gclog.vo.GCCollectorType.*;
 import static org.eclipse.jifa.gclog.vo.HeapGeneration.*;
 
@@ -62,15 +61,10 @@ public abstract class GCModel {
     //data prepared for api
     private GCCollectorType collectorType;
     private GCLogStyle logStyle;
-    private List<GCCauseInfo> gcCauseInfos;
     private List<GCPhaseInfo> gcPhaseInfos;
     private List<String> gcEventsDetailCache;
 
-    // these fields are some kind of summary, initialize them early
-    // so that they can be modified any time
-    protected GCModelBasicInfo basicInfo;
     private List<ProblemAndSuggestion> problemAndSuggestion = new ArrayList<>();
-    private Map<String, KPIItem> kpi = new HashMap<>();
 
     public static final String NA = "N/A";
 
@@ -127,18 +121,6 @@ public abstract class GCModel {
 
     protected boolean isPauseless() {
         return false;
-    }
-
-    public void setKPI(KPIType type, double value) {
-        kpi.put(type.getName(), new KPIItem(value));
-    }
-
-    public void setKPIUnknown(KPIType type) {
-        kpi.put(type.getName(), new KPIItem(UNKNOWN_DOUBLE));
-    }
-
-    public Map<String, KPIItem> getKpi() {
-        return kpi;
     }
 
     public void setEndTime(double endTime) {
@@ -232,7 +214,6 @@ public abstract class GCModel {
         calculatePhaseInfo();
         calculateGCEventDetails();
 
-        calculateBasicInfo();
         calculateKPI();
 
         // do some diagnoses
@@ -313,36 +294,11 @@ public abstract class GCModel {
                 promotions.add(promotion);
             }
         }
-        if (!isPauseless()) {
-            if (pause.getN() != 0 && durationNotZero()) {
-                setKPI(THROUGHPUT, 1 - pause.getSum() / getDuration());
-            } else {
-                setKPIUnknown(THROUGHPUT);
-            }
-        }
-        setKPI(MAX_PAUSE, pause.getMax());
-        if (isGenerational()) {
-            if (promotions.getN() != 0 && durationNotZero()) {
-                setKPI(PROMOTION_SPEED, MS2S * promotions.getSum() / getDuration());
-            } else {
-                setKPIUnknown(PROMOTION_SPEED);
-            }
-            setKPI(PROMOTION_AVG, promotions.average());
-            setKPI(PROMOTION_MAX, promotions.getMax());
-        }
         for (GCEvent event : getGcCollectionEvents()) {
             int allocation = event.getAllocation();
             if (allocation != UNKNOWN_INT) {
                 allocations.add(allocation);
             }
-        }
-        if (collectorType == ZGC && !((ZGCModel) this).getStatistics().isEmpty()) {
-            List<Map<String, ZGCModel.ZStatistics>> statistics = ((ZGCModel) this).getStatistics();
-            setKPI(OBJECT_CREATION_SPEED, statistics.get(statistics.size() - 1).get("Memory: Allocation Rate MB/s").getAvgTotal() * KB2MB);
-        } else if (allocations.getN() != 0 && durationNotZero()) {
-            setKPI(OBJECT_CREATION_SPEED, MS2S * allocations.getSum() / getDuration());
-        } else {
-            setKPIUnknown(OBJECT_CREATION_SPEED);
         }
     }
 
@@ -351,64 +307,6 @@ public abstract class GCModel {
             this.problemAndSuggestion = new GCDiagnoser(this).diagnose();
         } catch (Exception e) {
             LOGGER.info(e.getMessage());
-        }
-    }
-
-    // override method should call super.calculateBasicInfo() at last
-    protected void calculateBasicInfo() {
-        if (basicInfo == null) {
-            basicInfo = new GCModelBasicInfo();
-        }
-        if (vmOptions == null) {
-            basicInfo.vmOptions = NA;
-        } else {
-            basicInfo.vmOptions = vmOptions.getOriginalOptionString();
-        }
-        if (collectorType == null) {
-            basicInfo.collector = NA;
-        } else {
-            basicInfo.collector = collectorType.getName();
-        }
-        basicInfo.duration = getDuration();
-        basicInfo.parallelGCThread = parallelThread;
-        basicInfo.concurrentGCThread = concurrentThread;
-        IntData youngGenSize = new IntData();
-        IntData oldGenSize = new IntData();
-        IntData totalHeapSize = new IntData();
-        for (GCEvent event : gcCollectionEvents) {
-            Map<HeapGeneration, GCCollectionResultItem> collection = event.getCollectionAgg();
-            GCCollectionResultItem young = collection.get(YOUNG);
-            GCCollectionResultItem old = collection.get(OLD);
-            GCCollectionResultItem total = collection.get(TOTAL);
-            if (young.getTotal() != UNKNOWN_INT) {
-                youngGenSize.add(young.getTotal());
-            }
-            if (old.getTotal() != UNKNOWN_INT) {
-                oldGenSize.add(old.getTotal());
-            }
-            if (total.getTotal() != UNKNOWN_INT) {
-                totalHeapSize.add(total.getTotal());
-            }
-        }
-        // size of young gen and old gen in g1 is dynamic, so this size does not make sense
-        if (getCollectorType() != G1) {
-            if (youngGenSize.getN() > 0) {
-                basicInfo.setYoungGenSize((int) youngGenSize.average());
-            }
-            if (oldGenSize.getN() > 0) {
-                basicInfo.setOldGenSize((int) oldGenSize.average());
-            }
-        }
-        if (totalHeapSize.getN() > 0) {
-            basicInfo.setHeapSize((int) totalHeapSize.average());
-        }
-        // reading max metaspace size from it is not useful since that is reserved size, so we try to get it from
-        // vm option
-        if (vmOptions != null) {
-            Long maxMetaspaceSize = vmOptions.getOptionValue("MaxMetaspaceSize");
-            if (maxMetaspaceSize != null) {
-                basicInfo.setMetaspaceSize((int) (maxMetaspaceSize / 1024));
-            }
         }
     }
 
@@ -829,10 +727,6 @@ public abstract class GCModel {
         this.vmOptions = vmOptions;
     }
 
-    public GCModelBasicInfo getBasicInfo() {
-        return basicInfo;
-    }
-
     public List<ProblemAndSuggestion> getProblemAndSuggestion() {
         return problemAndSuggestion;
     }
@@ -898,30 +792,6 @@ public abstract class GCModel {
                         intervals.getN() == 0 ? UNKNOWN_DOUBLE : intervals.average(),
                         phase.getPause() == GCPause.PAUSE
                 ));
-
-                // save kpi with available data
-                if (phase.isYoungGC()) {
-                    setKPI(YOUNG_GC_INTERVAL_AVG, intervals.average());
-                    setKPI(YOUNG_GC_INTERVAL_MIN, intervals.getMin());
-                    setKPI(YOUNG_GC_PAUSE_AVG, pauses.average());
-                    setKPI(YOUNG_GC_PAUSE_MAX, pauses.getMax());
-                } else if (phase.isFullGC()) {
-                    setKPI(FULL_GC_INTERVAL_AVG, intervals.average());
-                    setKPI(FULL_GC_INTERVAL_MIN, intervals.getMin());
-                    setKPI(FULL_GC_PAUSE_AVG, pauses.average());
-                    setKPI(FULL_GC_PAUSE_MAX, pauses.getMax());
-                    if (isPauseless()) {
-                        // currently, all pauseless gc in hotspot are not generational.
-                        if (durations.getN() > 0 && durationNotZero()) {
-                            setKPI(GC_DURATION_PERCENTAGE, durations.getSum() / getDuration());
-                        } else {
-                            setKPIUnknown(GC_DURATION_PERCENTAGE);
-                        }
-                    }
-                } else if (phase.isOldGC()) {
-                    setKPI(OLD_GC_INTERVAL_AVG, intervals.average());
-                    setKPI(OLD_GC_INTERVAL_MIN, intervals.getMin());
-                }
             }
         }
     }
@@ -983,19 +853,6 @@ public abstract class GCModel {
                 }
             }
         }
-        gcCauseInfos = new ArrayList<>();
-        for (Map.Entry<String, DoubleData> entry : gcCausePauseMap.entrySet()) {
-            DoubleData doubleData = entry.getValue();
-            gcCauseInfos.add(new GCCauseInfo(entry.getKey(),
-                    doubleData.getN(),
-                    doubleData.average(),
-                    doubleData.getMax(),
-                    doubleData.getSum()));
-        }
-        gcCauseInfos.sort((cause1, cause2) -> {
-            double diff = cause2.totalPause - cause1.totalPause;
-            return diff > 0 ? 1 : (diff < 0 ? -1 : 0);
-        });
     }
 
     public List<String> getGCDetails() {
@@ -1021,18 +878,14 @@ public abstract class GCModel {
 
     abstract protected List<String> getMetadataEventTypes();
 
-    public List<GCCauseInfo> getGCCauseInfo() {
-        return gcCauseInfos;
-    }
-
-    public GCLogDetailMetadata getGcDetailMetadata() {
+    public GCLogMetadata getGcDetailMetadata() {
         Set<String> causes = new HashSet<>();
         for (GCEvent gcEvent : getGcEvents()) {
             if (gcEvent.getCause() != null) {
                 causes.add(gcEvent.getCause());
             }
         }
-        GCLogDetailMetadata metadata = new GCLogDetailMetadata();
+        GCLogMetadata metadata = new GCLogMetadata();
         metadata.setCauses(new ArrayList<>(causes));
         metadata.setCollector(getCollectorType().toString());
         metadata.setTimestamp(getReferenceTimestamp());
@@ -1119,17 +972,6 @@ public abstract class GCModel {
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class GCCauseInfo {
-        private String cause;
-        private int count;
-        private double avgPause;
-        private double maxPause;
-        private double totalPause;
-    }
-
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
     public static class GCPhaseInfo {
         private String name;
         private int count;
@@ -1164,18 +1006,6 @@ public abstract class GCModel {
 
     @Data
     @NoArgsConstructor
-    @AllArgsConstructor
-    public static class GCLogDetailMetadata {
-        private List<String> eventTypes;
-        private List<String> causes;
-        private double startTime;
-        private double endTime;
-        private double timestamp;
-        private String collector;
-    }
-
-    @Data
-    @NoArgsConstructor
     @ToString
     public static class GCDetailFilter {
         private String eventType;
@@ -1202,58 +1032,4 @@ public abstract class GCModel {
         }
     }
 
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class GCModelBasicInfo {
-        private String vmOptions;
-        private String collector;
-        private double duration;
-        private int youngGenSize = UNKNOWN_INT;
-        private int oldGenSize = UNKNOWN_INT;
-        private int heapSize = UNKNOWN_INT;
-        private int metaspaceSize = UNKNOWN_INT;
-        private int parallelGCThread = UNKNOWN_INT;
-        private int concurrentGCThread = UNKNOWN_INT;
-    }
-
-    @Data
-    public static class KPIItem {
-        private double value;
-        private boolean bad;
-
-        public KPIItem(double value) {
-            this.value = value;
-        }
-    }
-
-    public enum KPIType {
-        THROUGHPUT("throughput"),
-        MAX_PAUSE("maxPause"),
-        YOUNG_GC_INTERVAL_AVG("youngGCIntervalAvg"),
-        YOUNG_GC_INTERVAL_MIN("youngGCIntervalMin"),
-        YOUNG_GC_PAUSE_AVG("youngGCPauseAvg"),
-        YOUNG_GC_PAUSE_MAX("youngGCPauseMax"),
-        OLD_GC_INTERVAL_AVG("oldGCIntervalAvg"),
-        OLD_GC_INTERVAL_MIN("oldGCIntervalMin"),
-        FULL_GC_INTERVAL_AVG("fullGCIntervalAvg"),
-        FULL_GC_INTERVAL_MIN("fullGCIntervalMin"),
-        FULL_GC_PAUSE_AVG("fullGCPauseAvg"),
-        FULL_GC_PAUSE_MAX("fullGCPauseMax"),
-        PROMOTION_SPEED("promotionSpeed"),
-        PROMOTION_AVG("promotionAvg"),
-        PROMOTION_MAX("promotionMax"),
-        OBJECT_CREATION_SPEED("objectCreationSpeed"),
-        GC_DURATION_PERCENTAGE("gcDurationPercentage");
-
-        private String name;
-
-        public String getName() {
-            return name;
-        }
-
-        KPIType(String name) {
-            this.name = name;
-        }
-    }
 }
