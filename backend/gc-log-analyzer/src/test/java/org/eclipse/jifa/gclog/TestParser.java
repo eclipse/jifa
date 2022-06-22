@@ -342,10 +342,10 @@ public class TestParser {
         Assert.assertEquals(gc.getAllocation(), 202 * 1024 * 1024);
         Assert.assertEquals(gc.getReclamation(), 4200L * 1024 * 1024);
 
-        List<Map<String, ZGCModel.ZStatistics>> statistics = model.getStatistics();
+        List<ZGCModel.ZStatistics> statistics = model.getStatistics();
         Assert.assertEquals(statistics.size(), 1);
-        Assert.assertEquals(72, statistics.get(0).size());
-        Assert.assertEquals(statistics.get(0).get("Collector: Garbage Collection Cycle ms").getUptime(), 7555, DELTA);
+        Assert.assertEquals(72, statistics.get(0).getStatisticItems().size());
+        Assert.assertEquals(statistics.get(0).getStartTime(), 7555, DELTA);
         Assert.assertEquals(statistics.get(0).get("System: Java Threads threads").getMax10s(), 911, DELTA);
         Assert.assertEquals(statistics.get(0).get("System: Java Threads threads").getMax10h(), 913, DELTA);
         List<GCEvent> allocationStalls = model.getAllocationStalls();

@@ -25,7 +25,7 @@ import static org.eclipse.jifa.gclog.model.GCModel.*;
 import static org.eclipse.jifa.gclog.vo.GCEventLevel.*;
 import static org.eclipse.jifa.gclog.vo.HeapGeneration.*;
 
-public class GCEvent {
+public class GCEvent extends TimedEvent {
 
     public static final double UNKNOWN_DOUBLE = -1d;
     public static final int UNKNOWN_INT = -1;
@@ -33,11 +33,7 @@ public class GCEvent {
 
     private int gcid = UNKNOWN_INT;
 
-    // unit of all time is ms
-    private double startTime = UNKNOWN_DOUBLE;
     private double startTimestamp = UNKNOWN_DOUBLE;
-    // real time duration of event
-    private double duration = UNKNOWN_DOUBLE;
     private CpuTime cpuTime;
     private ReferenceGC referenceGC;
 
@@ -119,10 +115,6 @@ public class GCEvent {
         return eventType;
     }
 
-    public double getStartTime() {
-        return startTime;
-    }
-
     public boolean isYoungGC() {
         return this.eventType != null && this.eventType.isYoungGC();
     }
@@ -133,11 +125,6 @@ public class GCEvent {
 
     public boolean isFullGC() {
         return this.eventType != null && this.eventType.isFullGC();
-    }
-
-    // use duration rather than cpu time
-    public double getDuration() {
-        return duration;
     }
 
     public List<GCSpecialSituation> getSpecialSituations() {
@@ -164,14 +151,6 @@ public class GCEvent {
 
     public CpuTime getCpuTime() {
         return cpuTime;
-    }
-
-    public double getEndTime() {
-        if (getStartTime() != UNKNOWN_DOUBLE && getDuration() != UNKNOWN_DOUBLE) {
-            return getStartTime() + getDuration();
-        } else {
-            return UNKNOWN_DOUBLE;
-        }
     }
 
     public long getAllocation() {
@@ -205,14 +184,6 @@ public class GCEvent {
 
     public void setEventType(GCEventType eventType) {
         this.eventType = eventType;
-    }
-
-    public void setStartTime(double startTime) {
-        this.startTime = startTime;
-    }
-
-    public void setDuration(double duration) {
-        this.duration = duration;
     }
 
     public void setCause(String cause) {

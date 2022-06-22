@@ -332,18 +332,19 @@ public class JDK11ZGCLogParser extends AbstractJDK11GCLogParser {
             // make unit a part of type name to deduplicate
             String type = text.substring(0, text.indexOf('/') - 1 - tokens[length - 13].length()).trim()
                     + " " + tokens[length - 1];
-            List<Map<String, ZStatistics>> statisticsList = model.getStatistics();
-            Map<String, ZStatistics> map;
+            List<ZStatistics> statisticsList = model.getStatistics();
+            ZStatistics statistics;
             if ("Collector: Garbage Collection Cycle ms".equals(type)) {
-                map = new HashMap<>();
-                statisticsList.add(map);
+                statistics = new ZStatistics();
+                statistics.setStartTime(context.get(UPTIME));
+                statisticsList.add(statistics);
             } else if (statisticsList.isEmpty()) {
                 // log is incomplete
                 return true;
             } else {
-                map = statisticsList.get(statisticsList.size() - 1);
+                statistics = statisticsList.get(statisticsList.size() - 1);
             }
-            ZStatistics statistics = new ZStatistics(context.get(UPTIME),
+            ZGCModel.ZStatisticsItem item = new ZGCModel.ZStatisticsItem(
                     Double.parseDouble(tokens[length - 13]),
                     Double.parseDouble(tokens[length - 11]),
                     Double.parseDouble(tokens[length - 10]),
@@ -352,7 +353,7 @@ public class JDK11ZGCLogParser extends AbstractJDK11GCLogParser {
                     Double.parseDouble(tokens[length - 5]),
                     Double.parseDouble(tokens[length - 4]),
                     Double.parseDouble(tokens[length - 2]));
-            map.put(type, statistics);
+            statistics.put(type, item);
             return true;
         } else {
             return false;

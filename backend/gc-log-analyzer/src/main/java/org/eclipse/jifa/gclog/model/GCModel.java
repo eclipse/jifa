@@ -366,15 +366,15 @@ public abstract class GCModel {
             }
         }
         if (collectorType == ZGC) {
-            for (Map<String, ZGCModel.ZStatistics> statistic : ((ZGCModel) this).getStatistics()) {
-                ZGCModel.ZStatistics item = statistic.get("Memory: Allocation Rate MB/s");
-                if (item.getUptime() < startTime) {
+            for (ZGCModel.ZStatistics statistic : ((ZGCModel) this).getStatistics()) {
+                if (statistic.getStartTime() < startTime) {
                     continue;
                 }
-                if (item.getUptime() > endTime) {
+                if (statistic.getStartTime() > endTime) {
                     break;
                 }
-                events.add(new TimeLineChartEvent(I18N_ALLOCATION, item.getUptime(), item.getAvg10s() * 10));
+                events.add(new TimeLineChartEvent(I18N_ALLOCATION, statistic.getStartTime(),
+                        statistic.get("Memory: Allocation Rate MB/s").getAvg10s() * 10));
             }
         }
         return new TimeLineChartView.TimeLineChartViewBuilder()

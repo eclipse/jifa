@@ -18,10 +18,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.eclipse.jifa.gclog.model.GCEvent.UNKNOWN_INT;
 import static org.eclipse.jifa.gclog.model.GCEventType.*;
@@ -30,7 +27,7 @@ public class ZGCModel extends GCModel {
 
     // key of maps here should include unit like
     // "Memory: Allocation Rate MB/s" to deduplicate
-    private List<Map<String, ZStatistics>> statistics = new ArrayList<>();
+    private List<ZStatistics> statistics = new ArrayList<>();
     private List<GCEvent> allocationStalls = new ArrayList<>();
     private int recommendMaxHeapSize = UNKNOWN_INT;
 
@@ -85,7 +82,7 @@ public class ZGCModel extends GCModel {
         return METADATA_EVENT_TYPES;
     }
 
-    public List<Map<String, ZStatistics>> getStatistics() {
+    public List<ZStatistics> getStatistics() {
         return statistics;
     }
 
@@ -114,7 +111,7 @@ public class ZGCModel extends GCModel {
                     continue;
                 }
                 while (statisticIndex < statistics.size() &&
-                        statistics.get(statisticIndex).get("Collector: Garbage Collection Cycle ms").getUptime() < collection.getEndTime()) {
+                        statistics.get(statisticIndex).getStartTime() < collection.getEndTime()) {
                     statisticIndex++;
                 }
                 if (statisticIndex >= statistics.size()) {
@@ -130,11 +127,29 @@ public class ZGCModel extends GCModel {
         return recommendMaxHeapSize;
     }
 
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ZStatistics extends TimedEvent {
+        private Map<String, ZStatisticsItem> items = new HashMap<>();
+
+        public ZStatisticsItem get(String key) {
+            return items.getOrDefault(key, null);
+        }
+
+        public void put(String key, ZStatisticsItem item) {
+            items.put(key, item);
+        }
+
+        public Map<String, ZStatisticsItem> getStatisticItems() {
+            return items;
+        }
+    }
+
+
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class ZStatistics {
-        private double uptime;
+    public static class ZStatisticsItem {
         private double avg10s;
         private double max10s;
         private double avg10m;

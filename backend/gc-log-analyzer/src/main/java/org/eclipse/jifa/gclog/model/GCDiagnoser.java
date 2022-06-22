@@ -118,7 +118,7 @@ public class GCDiagnoser {
         if (zgcModel.getStatistics().isEmpty()) {
             return;
         }
-        Map<String, ZGCModel.ZStatistics> lastStatistic = zgcModel.getStatistics().get(zgcModel.getStatistics().size() - 1);
+        ZGCModel.ZStatistics lastStatistic = zgcModel.getStatistics().get(zgcModel.getStatistics().size() - 1);
         if (lastStatistic.get("Critical: Allocation Stall ms").getMaxTotal() > BAD_ALLOCATION_STALL_MS &&
                 lastStatistic.get("Critical: Allocation Stall ops/s").getMaxTotal() > BAD_ALLOCATION_STALL_OPS_S) {
             GCModel.ProblemAndSuggestion pas =
