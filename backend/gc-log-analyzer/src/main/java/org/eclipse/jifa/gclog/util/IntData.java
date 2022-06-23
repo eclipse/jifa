@@ -24,6 +24,9 @@ public class IntData {
     private int max = Integer.MIN_VALUE;
 
     public void add(int x) {
+        if (x == UNKNOWN_INT) {
+            return;
+        }
         sum += x;
         n++;
         min = Math.min(min, x);

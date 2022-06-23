@@ -17,7 +17,6 @@ import org.eclipse.jifa.common.listener.ProgressListener;
 import org.eclipse.jifa.common.util.ErrorUtil;
 import org.eclipse.jifa.gclog.model.TimeLineChartView.TimeLineChartEvent;
 import org.eclipse.jifa.gclog.util.DoubleData;
-import org.eclipse.jifa.gclog.util.IntData;
 import org.eclipse.jifa.gclog.util.LongData;
 import org.eclipse.jifa.gclog.vo.*;
 import lombok.AllArgsConstructor;
@@ -30,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import static org.eclipse.jifa.gclog.model.GCEvent.*;
@@ -148,6 +148,69 @@ public abstract class GCModel {
         GCEvent event = new GCEvent(gcEvents.size());
         gcEvents.add(event);
         return event;
+    }
+
+    public <T extends TimedEvent> void iterateEventsWithinTimeRange(List<T> eventList, TimeRange range, Consumer<T> consumer) {
+        int indexLow = binarySearchEventIndex(eventList, range.getStart(), true);
+        int indexHigh = binarySearchEventIndex(eventList, range.getEnd(), false);
+
+        for (int i = indexLow; i < indexHigh; i++) {
+            consumer.accept(eventList.get(i));
+        }
+    }
+
+
+    // Return index of the first event after time if searchLow, first event after time if !searchLow  .
+    // eventList must be ordered by startTime.
+    private int binarySearchEventIndex(List<? extends TimedEvent> eventList, double time, boolean searchLow) {
+        if (searchLow && time <= getStartTime()) {
+            return 0;
+        } else if (!searchLow && time >= getEndTime()) {
+            return eventList.size();
+        }
+
+        TimedEvent eventForSearching = new TimedEvent();
+        eventForSearching.setStartTime(time);
+        int result = Collections.binarySearch(eventList, eventForSearching, Comparator.comparingDouble(TimedEvent::getStartTime));
+        if (result < 0) {
+            return -(result + 1);
+        } else {
+            if (searchLow) {
+                while (result >= 0 && eventList.get(result).getStartTime() >= time) {
+                    result--;
+                }
+                return result + 1;
+            } else {
+                while (result < eventList.size() && eventList.get(result).getStartTime() <= time) {
+                    result++;
+                }
+                return result;
+            }
+        }
+    }
+
+    private TimeRange makeValidTimeRange(TimeRange range) {
+        if (range == null) {
+            return new TimeRange(getStartTime(), getEndTime());
+        }
+        double start = Math.max(range.getStart(), getStartTime());
+        double end = Math.min(range.getEnd(), getEndTime());
+        return new TimeRange(start, end);
+    }
+
+    public ObjectStatistics getObjectStatistics(TimeRange range) {
+        range = makeValidTimeRange(range);
+        LongData allocation = new LongData();
+        LongData promotion = new LongData();
+        iterateEventsWithinTimeRange(gcCollectionEvents, range, event -> {
+            allocation.add(event.getAllocation());
+            promotion.add(event.getPromotion());
+        });
+        return new ObjectStatistics(
+                allocation.getSum() != UNKNOWN_DOUBLE ? allocation.getSum() / range.length() : UNKNOWN_DOUBLE,
+                promotion.getSum() != UNKNOWN_DOUBLE ? promotion.getSum() / range.length() : UNKNOWN_DOUBLE,
+                (long) promotion.average(), promotion.getMax()
+        );
     }
 
     // decide start and end time using events

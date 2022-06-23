@@ -69,8 +69,10 @@
         </el-dialog>
 
         <el-main style="padding: 10px 5px 5px;">
+<!--           todo: adjust style-->
+          <GCObjectStats :file="file" :metadata="metadata" :timeRange="analysisConfig.timeRange"/>
           <!--    for debug -->
-          currentConfig: <div>{{this.currentConfig}}</div>
+          analysisconfig: <div>{{this.analysisConfig}}</div>
           metadata: <div>{{this.metadata}}</div>
           <!--    for debug    -->
         </el-main>
@@ -86,6 +88,7 @@
   import ViewMenu from "../menu/ViewMenu";
   import GCDetail from "@/components/gclog/GCDetail";
   import GCLogTimePicker from "@/components/gclog/GCLogTimePicker";
+  import GCObjectStats from "@/components/gclog/GCObjectStats";
 
   export default {
     props: ['file'],
@@ -114,6 +117,7 @@
 
     components: {
       GCDetail,
+      GCObjectStats,
       ViewMenu,
       GCLogTimePicker,
     },
@@ -165,9 +169,12 @@
       },
       initializePage() {
         this.configModel = {
-          timeRange: [this.metadata.startTime, this.metadata.endTime]
+          timeRange: {
+            start: this.metadata.startTime,
+            end: this.metadata.endTime
+          }
         }
-        this.currentConfig = {...this.configModel}
+        this.analysisConfig = {...this.configModel}
       },
       analyzeGCLog(params) {
         axios.post(gclogService(this.file, 'analyze'), new URLSearchParams(params)).then(() => {
@@ -177,7 +184,7 @@
       },
       configChangeConfirm() {
         this.configVisible = false;
-        this.currentConfig = {...this.configModel}
+        this.analysisConfig = {...this.configModel}
       },
       showDetail() {
         this.detailVisible = true;

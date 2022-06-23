@@ -69,25 +69,29 @@ export default {
     emitValue() {
       let value;
       if (this.useUptime()) {
-        value = [
-          typeof this.low === "undefined" ? this.min : this.low * 1000,
-          typeof this.high === "undefined" ? this.max : this.high * 1000
-        ]
+        value = {
+          start: typeof this.low === "undefined" ? this.min : this.low * 1000,
+          end: typeof this.high === "undefined" ? this.max : this.high * 1000
+        }
       } else {
-        value = [
-          this.timeRange[0] === null ? this.min : this.timeRange[0].getTime() - this.metadata.timestamp,
-          this.timeRange[1] === null ? this.min : this.timeRange[1].getTime() - this.metadata.timestamp,
-        ]
+        value = {
+          start: this.timeRange[0] === null ? this.min : this.timeRange[0].getTime() - this.metadata.timestamp,
+          end: this.timeRange[1] === null ? this.min : this.timeRange[1].getTime() - this.metadata.timestamp,
+        }
       }
+      value = {
+        start: Math.max(this.metadata.startTime, value.start),
+        end: Math.min(this.metadata.endTime, value.end),
+    }
       this.$emit('input', value)
     },
     setComponentData() {
       if (this.useUptime()) {
-        this.low = Math.floor(this.value[0] / 1000);
-        this.high = Math.ceil(this.value[1] / 1000);
+        this.low = Math.floor(this.value.start / 1000);
+        this.high = Math.ceil(this.value.end / 1000);
       } else {
-        this.timeRange = [new Date(this.value[0] + this.metadata.timestamp),
-          new Date(this.value[1] + this.metadata.timestamp)]
+        this.timeRange = [new Date(this.value.start + this.metadata.timestamp),
+          new Date(this.value.end + this.metadata.timestamp)]
       }
     }
   },

@@ -163,21 +163,21 @@ public class GCEvent extends TimedEvent {
 
     public void setPromotion(long promotion) {
         if (promotion < 0) {
-            promotion = 0;
+            promotion = UNKNOWN_INT;
         }
         this.promotion = promotion;
     }
 
     public void setAllocation(long allocation) {
         if (allocation < 0) {
-            allocation = 0;
+            allocation = UNKNOWN_INT;
         }
         this.allocation = allocation;
     }
 
     public void setReclamation(long reclamation) {
         if (reclamation < 0) {
-            reclamation = 0;
+            reclamation = UNKNOWN_INT;
         }
         this.reclamation = reclamation;
     }

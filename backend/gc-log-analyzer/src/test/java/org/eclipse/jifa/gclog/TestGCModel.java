@@ -155,6 +155,14 @@ public class TestGCModel {
         Assert.assertEquals(model.getGcEvents().get(6).getEndTimestamp(), 33.3 * 1000, DELTA);
         Assert.assertEquals(model.getGcEvents().get(4).getInterval(), 6.8 * 1000, DELTA);
 
+        // object statistics
+        ObjectStatistics objectStatistics = model.getObjectStatistics(new TimeRange(500, 33000));
+        Assert.assertEquals(objectStatistics.getObjectCreationSpeed(), (40 + 18 + 22 + 40 + 6) * 1024 * 1024 / 31800.0, DELTA);
+        Assert.assertEquals(objectStatistics.getObjectPromotionSpeed(), (2 + 2) * 1024 * 1024 / 31800.0, DELTA);
+        Assert.assertEquals(objectStatistics.getObjectPromotionAvg(), 2 * 1024 * 1024 );
+        Assert.assertEquals(objectStatistics.getObjectPromotionMax(), 2 * 1024 * 1024);
+
+
         // graph data
         TimeLineChartView count = model.getGraphView("count", 300000, 0);
         Assert.assertEquals(count.getDataByTimes().get(0).getData().get(1000L), 1, DELTA);

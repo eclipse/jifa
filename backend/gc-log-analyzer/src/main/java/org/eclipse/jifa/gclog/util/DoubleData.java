@@ -24,6 +24,9 @@ public class DoubleData {
     private double max = -Double.MAX_VALUE;
 
     public void add(double x) {
+        if (x == UNKNOWN_DOUBLE) {
+            return;
+        }
         sum += x;
         n++;
         min = Math.min(min, x);

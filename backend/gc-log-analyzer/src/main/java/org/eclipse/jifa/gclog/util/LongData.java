@@ -26,6 +26,9 @@ public class LongData {
     private long max = Integer.MIN_VALUE;
 
     public void add(long x) {
+        if (x == UNKNOWN_INT) {
+            return;
+        }
         sum = sum.add(BigInteger.valueOf(x));
         n++;
         min = Math.min(min, x);

@@ -11,6 +11,9 @@
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
 export function toSizeString(bytes) {
+  if (bytes < 0) {
+    return "N/A"
+  }
   if (bytes <= 1024) return bytes + " B"
   let k = 1024,
       suffix = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'],
@@ -123,8 +126,11 @@ export function formatTimePeriod(time) {
   return parts.join(' ');
 }
 
-export function toSizeSpeedString(bytes) {
-  return toSizeString(bytes)+"/s"
+export function toSizeSpeedString(bytesPerMs) {
+  if (bytesPerMs < 0) {
+    return "N/A"
+  }
+  return toSizeString(bytesPerMs * 1000)+"/s"
 }
 
 function formatNumber (n) {
