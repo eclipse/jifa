@@ -62,6 +62,7 @@ public abstract class GCModel {
     //data prepared for api
     private GCCollectorType collectorType;
     private GCLogStyle logStyle;
+    private GCLogMetadata metadata;
     private List<GCPhaseInfo> gcPhaseInfos;
     private List<String> gcEventsDetailCache;
 
@@ -279,6 +280,7 @@ public abstract class GCModel {
         calculateGCEventDetails();
 
         calculateKPI();
+        calculateGcModelMetadata();
 
         // do some diagnoses
         progressListener.worked(250);
@@ -942,22 +944,27 @@ public abstract class GCModel {
 
     abstract protected List<String> getMetadataEventTypes();
 
-    public GCLogMetadata getGcDetailMetadata() {
+    public GCLogMetadata getGcModelMetadata() {
+        return metadata;
+    }
+
+    private void calculateGcModelMetadata() {
         Set<String> causes = new HashSet<>();
         for (GCEvent gcEvent : getGcEvents()) {
             if (gcEvent.getCause() != null) {
                 causes.add(gcEvent.getCause());
             }
         }
-        GCLogMetadata metadata = new GCLogMetadata();
+        metadata = new GCLogMetadata();
         metadata.setCauses(new ArrayList<>(causes));
-        metadata.setCollector(getCollectorType().toString());
+        metadata.setCollector(getCollectorType());
+        metadata.setLogStyle(logStyle);
+        metadata.setPauseless(isPauseless());
+        metadata.setGenerational(isGenerational());
         metadata.setTimestamp(getReferenceTimestamp());
         metadata.setStartTime(getStartTime());
         metadata.setEndTime(getEndTime());
         metadata.setEventTypes(getMetadataEventTypes());
-
-        return metadata;
     }
 
     public TimeLineChartView getGraphView(String type, double timeSpan, double timePoint) {

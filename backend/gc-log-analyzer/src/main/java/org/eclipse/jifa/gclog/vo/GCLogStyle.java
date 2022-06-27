@@ -14,7 +14,22 @@
 package org.eclipse.jifa.gclog.vo;
 
 public enum GCLogStyle {
-    JDK8_STYLE,
-    UNIFIED_STYLE,
-    UNKNOWN
+    PRE_UNIFIED("preunified"),
+    UNIFIED("unified"),
+    UNKNOWN("unknown");
+
+    private String name;
+
+    GCLogStyle(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public String toString() {
+        return name;
+    }
 }

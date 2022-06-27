@@ -29,7 +29,7 @@ public abstract class GenerationalGCModel extends GCModel {
     }
 
     private void removeYoungGCThatBecomeFullGC() {
-        if (getLogStyle() != GCLogStyle.UNIFIED_STYLE) {
+        if (getLogStyle() != GCLogStyle.UNIFIED) {
             return;
         }
         List<GCEvent> newEvents = new ArrayList<>();

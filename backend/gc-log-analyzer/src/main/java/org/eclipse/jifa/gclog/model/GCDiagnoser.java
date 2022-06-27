@@ -20,9 +20,7 @@ import org.eclipse.jifa.gclog.vo.HeapGeneration;
 
 import java.util.*;
 
-import static org.eclipse.jifa.gclog.model.GCEvent.UNKNOWN_INT;
 import static org.eclipse.jifa.gclog.model.GCEventType.*;
-import static org.eclipse.jifa.gclog.model.GCModel.KB2MB;
 
 public class GCDiagnoser {
     private GCModel model;
@@ -48,7 +46,7 @@ public class GCDiagnoser {
     }
 
     private void collector() {
-        if (model.getCollectorType() == GCCollectorType.CMS && model.getLogStyle() == GCLogStyle.UNIFIED_STYLE) {
+        if (model.getCollectorType() == GCCollectorType.CMS && model.getLogStyle() == GCLogStyle.UNIFIED) {
             addDiagnose(new GCModel.ProblemAndSuggestion(
                     new I18nStringView("jifa.gclog.diagnosis.problems.jdk11cms"),
                     new I18nStringView("jifa.gclog.diagnosis.suggestions.dontUseCMSAnyMore")

@@ -19,14 +19,23 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 
+import static org.eclipse.jifa.gclog.model.GCEvent.UNKNOWN_DOUBLE;
+
+
+/**
+ * This class provides some necessary information to the parser and frontend.
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class GCLogMetadata {
+    private GCCollectorType collector = GCCollectorType.UNKNOWN;
+    private GCLogStyle logStyle = GCLogStyle.UNKNOWN;
+    private double startTime = UNKNOWN_DOUBLE;
+    private double endTime = UNKNOWN_DOUBLE;
+    private double timestamp = UNKNOWN_DOUBLE;
+    private boolean generational = true;
+    private boolean pauseless = false;
     private List<String> eventTypes;
     private List<String> causes;
-    private double startTime;
-    private double endTime;
-    private double timestamp;
-    private String collector;
 }

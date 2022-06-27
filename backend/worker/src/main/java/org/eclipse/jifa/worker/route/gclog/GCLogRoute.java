@@ -29,7 +29,7 @@ public class GCLogRoute extends org.eclipse.jifa.worker.route.gclog.GCLogBaseRou
     @RouteMeta(path = "/metadata")
     void metadata(Promise<GCLogMetadata> promise, @ParamKey("file") String file) {
         final GCModel model = Analyzer.getOrOpenGCLogModel(file);
-        promise.complete(model.getGcDetailMetadata());
+        promise.complete(model.getGcModelMetadata());
     }
 
     @RouteMeta(path = "/objectStatistics")

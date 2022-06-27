@@ -15,10 +15,6 @@ package org.eclipse.jifa.gclog.model;
 
 import org.eclipse.jifa.gclog.vo.GCCollectionResultItem;
 import org.eclipse.jifa.gclog.vo.GCCollectorType;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
 import org.eclipse.jifa.gclog.vo.GCLogStyle;
 import org.eclipse.jifa.gclog.vo.HeapGeneration;
 
@@ -136,7 +132,7 @@ public class G1GCModel extends GCModel {
 
     @Override
     protected void doBeforeCalculatingDerivedInfo() {
-        if (getLogStyle() == GCLogStyle.UNIFIED_STYLE) {
+        if (getLogStyle() == GCLogStyle.UNIFIED) {
             inferHeapRegionSize();
             adjustMemoryInfo();
         }
