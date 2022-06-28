@@ -23,16 +23,26 @@ def HEAP_DUMP_ANALYZER_HOOK = 'heap-dump-analyzer:hook'
 def GC_LOG_ANALYZER = 'gc-log-analyzer'
 def THREAD_DUMP_ANALYZER = 'thread-dump-analyzer'
 
-[COMMON, WORKER, MASTER, HEAP_DUMP_ANALYZER_API, HEAP_DUMP_ANALYZER_IMPL, HEAP_DUMP_ANALYZER_PROVIDER, GC_LOG_ANALYZER, THREAD_DUMP_ANALYZER].each {
+[COMMON, WORKER, MASTER, HEAP_DUMP_ANALYZER_API, HEAP_DUMP_ANALYZER_IMPL, HEAP_DUMP_ANALYZER_PROVIDER, HEAP_DUMP_ANALYZER_HOOK, GC_LOG_ANALYZER, THREAD_DUMP_ANALYZER].each {
     name ->
         project("$name") {
             apply plugin: 'java'
             apply plugin: 'jacoco'
+            java {
+                toolchain {
+                    languageVersion = JavaLanguageVersion.of(11)
+                }
+            }
             compileJava {
-                options.encoding = "UTF-8"
                 targetCompatibility = JavaVersion.VERSION_11
                 sourceCompatibility = JavaVersion.VERSION_11
+                options.encoding = "UTF-8"
                 options.compilerArgs << "-Xlint:deprecation"
+            }
+            tasks.withType(JavaCompile).configureEach {
+                javaCompiler = javaToolchains.compilerFor {
+                    languageVersion = JavaLanguageVersion.of(11)
+                }
             }
             test {
                 useJUnit()
@@ -75,7 +85,7 @@ def deps_dir_path = project(HEAP_DUMP_ANALYZER_ECLIPSE_MAT_DEPS).projectDir.pare
             ext {
                 mat_deps_dir_name = deps_dir_name
                 mat_deps_dir_path = deps_dir_path
-                osgi_jar = "org.eclipse.osgi_3.16.100.v20201030-1916.jar"
+                osgi_jar = "org.eclipse.osgi_3.17.100.v20211104-1730.jar"
             }
         }
 }
