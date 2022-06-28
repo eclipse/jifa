@@ -201,3 +201,9 @@
     }
   }
 </script>
+
+<style lang="scss">
+.el-drawer.rtl {
+  overflow: scroll
+}
+</style>
