@@ -321,11 +321,9 @@ public abstract class GCModel {
 
         // data in events should not change after this line
         // calculate specific data prepared for route api, order of these calls doesn't matter
-        calculateCauseInfo();
         calculatePhaseInfo();
         calculateGCEventDetails();
 
-        calculateKPI();
         calculateGcModelMetadata();
 
         // do some diagnoses
@@ -380,37 +378,6 @@ public abstract class GCModel {
         gcEventsDetailCache = new ArrayList<>();
         for (GCEvent event : gcEvents) {
             gcEventsDetailCache.add(event.toString());
-        }
-    }
-
-    public boolean durationNotZero() {
-        return getDuration() > EPS;
-    }
-
-    private void calculateKPI() {
-        // Most kpi items are calculated in other calculate series functions for performance.
-        // Here we just calculate the remaining.
-        DoubleData pause = new DoubleData();
-        LongData allocations = new LongData();
-        LongData promotions = new LongData();
-        for (GCEvent event : gcEvents) {
-            if (event.getEventType().getPause() == GCPause.PAUSE && event.getEventType() != SAFEPOINT) {
-                pause.add(event.getPause());
-            } else if (event.getEventType().getPause() == GCPause.PARTIAL && event.getPhases() != null) {
-                for (GCEvent phase : event.getPhases()) {
-                    pause.add(phase.getPause());
-                }
-            }
-            long promotion = event.getPromotion();
-            if (promotion != UNKNOWN_INT) {
-                promotions.add(promotion);
-            }
-        }
-        for (GCEvent event : getGcCollectionEvents()) {
-            long allocation = event.getAllocation();
-            if (allocation != UNKNOWN_INT) {
-                allocations.add(allocation);
-            }
         }
     }
 
@@ -940,36 +907,6 @@ public abstract class GCModel {
         }
         if (event.getPause() != UNKNOWN_DOUBLE) {
             doubleDatas[2].add(event.getPause());
-        }
-    }
-
-    private void calculateCauseInfo() {
-        Map<String, DoubleData> gcCausePauseMap = new HashMap<>();
-        for (GCEvent event : gcEvents) {
-            double pause = event.getPause();
-            String cause = event.getCause();
-            if (pause == UNKNOWN_DOUBLE) {
-                continue;
-            }
-            if (cause != null) {
-                cause = (event.getEventType() == FULL_GC ? FULL_GC.getName() : YOUNG_GC.getName()) + " - " + cause;
-                if (!gcCausePauseMap.containsKey(cause)) {
-                    gcCausePauseMap.put(cause, new DoubleData());
-                }
-                gcCausePauseMap.get(cause).add(pause);
-            }
-            // regard some special situations as causes as well, though they are not defined as cause in Hotspot
-            if (event.getSpecialSituations() != null) {
-                for (GCSpecialSituation situation : event.getSpecialSituations()) {
-                    if (situation == GCSpecialSituation.PROMOTION_FAILED || situation == GCSpecialSituation.TO_SPACE_EXHAUSTED) {
-                        cause = situation.getName();
-                        if (!gcCausePauseMap.containsKey(cause)) {
-                            gcCausePauseMap.put(cause, new DoubleData());
-                        }
-                        gcCausePauseMap.get(cause).add(pause);
-                    }
-                }
-            }
         }
     }
 
