@@ -45,9 +45,9 @@ public abstract class JDK11G1OrGenerationalGCLogParser extends AbstractJDK11GCLo
     }
 
     private static void initializeParseRules() {
-        withoutGCIDRules = new ArrayList<>();
+        withoutGCIDRules = new ArrayList<>(AbstractJDK11GCLogParser.getSharedWithoutGCIDRules());
 
-        withGCIDRules = new ArrayList<>();
+        withGCIDRules = new ArrayList<>(AbstractJDK11GCLogParser.getSharedWithGCIDRules());
         withGCIDRules.add(JDK11G1OrGenerationalGCLogParser::parseHeap);
         withGCIDRules.add(new PrefixAndValueParseRule("Pause Young", JDK11G1OrGenerationalGCLogParser::parseYoungFullGC));
         withGCIDRules.add(new PrefixAndValueParseRule("Pause Full", JDK11G1OrGenerationalGCLogParser::parseYoungFullGC));

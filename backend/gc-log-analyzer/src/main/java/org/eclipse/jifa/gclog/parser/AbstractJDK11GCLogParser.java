@@ -21,17 +21,41 @@ import org.eclipse.jifa.gclog.util.GCLogUtil;
 import org.eclipse.jifa.gclog.model.GCModel;
 import com.google.common.collect.Sets;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 import static org.eclipse.jifa.gclog.model.GCEvent.*;
+import static org.eclipse.jifa.gclog.parser.ParseRule.ParseRuleContext.UPTIME;
 
 /*
  * Currently, we only consider -Xlog:gc*=info. We will continue support for cases in the future.
  */
 public abstract class AbstractJDK11GCLogParser extends AbstractGCLogParser {
+    private static List<ParseRule> withoutGCIDRules;
+    private static List<ParseRule> withGCIDRules;
+
+    public static List<ParseRule> getSharedWithoutGCIDRules() {
+        return withoutGCIDRules;
+    }
+
+    public static List<ParseRule> getSharedWithGCIDRules() {
+        return withGCIDRules;
+    }
+
+    static {
+        initializeParseRules();
+    }
+
+    private static void initializeParseRules() {
+        withoutGCIDRules = new ArrayList<>();
+        withoutGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Total time for which application",
+                (parser, context, prefix, s) -> parser.parseSafepointStop(context.get(UPTIME), s)));
+
+        withGCIDRules = new ArrayList<>();
+        // subclass will add more rules
+    }
 
     @Override
     protected final void doParseLine(String line) {

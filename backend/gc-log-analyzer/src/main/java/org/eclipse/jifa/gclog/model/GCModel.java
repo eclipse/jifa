@@ -47,6 +47,8 @@ public abstract class GCModel {
     private List<GCEvent> allEvents = new ArrayList<>(); // store all event, order by their appearance in log
     private List<GCEvent> gcEvents = new ArrayList<>(); // store parent events only, order by start tune
     private List<GCEvent> gcCollectionEvents = new ArrayList<>(); // store events that contain collection info
+
+    private List<Safepoint> safepoints;
     // time from beginning of program
     private double startTime = UNKNOWN_DOUBLE;
     private double endTime = UNKNOWN_DOUBLE;
@@ -189,6 +191,17 @@ public abstract class GCModel {
                 return result;
             }
         }
+    }
+
+    public List<Safepoint> getSafepoints() {
+        return safepoints;
+    }
+
+    public void addSafepoint(Safepoint safepoint) {
+        if (safepoints == null) {
+            safepoints = new ArrayList<>();
+        }
+        safepoints.add(safepoint);
     }
 
     private TimeRange makeValidTimeRange(TimeRange range) {

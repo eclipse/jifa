@@ -42,7 +42,8 @@ public class TestParser {
                         "[0.017s][info][gc     ] Using G1\n" +
                         "[0.017s][info][gc,heap,coops] Heap address: 0x00000007fc000000, size: 64 MB, Compressed Oops mode: Zero based, Oop shift amount: 3\n" +
                         "[0.050s][info   ][gc           ] Periodic GC enabled with interval 100 ms" +
-                        "\n" +
+                        "[1.000s][info][safepoint     ] Application time: 0.0816788 seconds\n" +
+                        "[1.000s][info][safepoint     ] Entering safepoint region: G1CollectForAllocation\n" +
                         "[1.000s][info][gc,start     ] GC(0) Pause Young (Normal) (Metadata GC Threshold)\n" +
                         "[1.000s][info][gc,task      ] GC(0) Using 8 workers of 8 for evacuation\n" +
                         "[1.010s][info][gc           ] GC(0) To-space exhausted\n" +
@@ -57,7 +58,8 @@ public class TestParser {
                         "[1.010s][info][gc,metaspace ] GC(0) Metaspace: 20679K->20679K(45056K)\n" +
                         "[1.010s][info][gc           ] GC(0) Pause Young (Concurrent Start) (Metadata GC Threshold) 19M->4M(64M) 10.709ms\n" +
                         "[1.010s][info][gc,cpu       ] GC(0) User=0.02s Sys=0.01s Real=0.01s\n" +
-                        "\n" +
+                        "[1.010s][info][safepoint     ] Leaving safepoint region\n" +
+                        "[1.010s][info][safepoint     ] Total time for which application threads were stopped: 0.0101229 seconds, Stopping threads took: 0.0000077 seconds\n" +
                         "[3.000s][info][gc           ] GC(1) Concurrent Cycle\n" +
                         "[3.000s][info][gc,marking   ] GC(1) Concurrent Clear Claimed Marks\n" +
                         "[3.000s][info][gc,marking   ] GC(1) Concurrent Clear Claimed Marks 0.057ms\n" +
@@ -82,7 +84,6 @@ public class TestParser {
                         "[3.010s][info][gc,marking    ] GC(1) Concurrent Cleanup for Next Mark\n" +
                         "[3.012s][info][gc,marking    ] GC(1) Concurrent Cleanup for Next Mark 2.860ms\n" +
                         "[3.012s][info][gc            ] GC(1) Concurrent Cycle 14.256ms\n" +
-                        "\n" +
                         "[7.055s][info   ][gc,task       ] GC(2) Using 8 workers of 8 for full compaction\n" +
                         "[7.055s][info   ][gc,start      ] GC(2) Pause Full (G1 Evacuation Pause)\n" +
                         "[7.056s][info   ][gc,phases,start] GC(2) Phase 1: Mark live objects\n" +
@@ -120,6 +121,13 @@ public class TestParser {
         Assert.assertEquals(model.getConcurrentThread(), 2);
 
         // assert events correct
+        Assert.assertEquals(model.getSafepoints().size(), 1);
+
+        Safepoint safepoint = model.getSafepoints().get(0);
+        Assert.assertEquals(safepoint.getStartTime(), 1010 - 10.1229, DELTA);
+        Assert.assertEquals(safepoint.getDuration(), 10.1229, DELTA);
+        Assert.assertEquals(safepoint.getTimeToEnter(), 0.0077, DELTA);
+
         List<GCEvent> event = model.getGcEvents();
         GCEvent youngGC = event.get(0);
         Assert.assertEquals(youngGC.getGcid(), 0);
@@ -398,7 +406,14 @@ public class TestParser {
         model.calculateDerivedInfo(new DefaultProgressListener());
         Assert.assertNotNull(model);
 
-        Assert.assertEquals(model.getGcEvents().size(), 11);
+        Assert.assertEquals(model.getGcEvents().size(), 10);
+        Assert.assertEquals(model.getSafepoints().size(), 1);
+
+        Safepoint safepoint = model.getSafepoints().get(0);
+        Assert.assertEquals(safepoint.getStartTime(), 675110 - 0.1215, DELTA);
+        Assert.assertEquals(safepoint.getDuration(), 0.1215, DELTA);
+        Assert.assertEquals(safepoint.getTimeToEnter(), 0.0271, DELTA);
+
         GCEvent fullgc = model.getGcEvents().get(0);
         Assert.assertEquals(fullgc.getStartTime(), 610956, DELTA);
         Assert.assertEquals(fullgc.getDuration(), 1027.7002, DELTA);
@@ -420,13 +435,13 @@ public class TestParser {
         Assert.assertEquals(fullgc.getCpuTime().getSys(), 50, DELTA);
         Assert.assertEquals(fullgc.getCpuTime().getReal(), 1030, DELTA);
 
-        fullgc = model.getGcEvents().get(9);
+        fullgc = model.getGcEvents().get(8);
         Assert.assertEquals(fullgc.getEventType(), GCEventType.FULL_GC);
         Assert.assertEquals(fullgc.getCollectionResult().getSummary().getPreUsed(), 3956586L * 1024);
         Assert.assertEquals(fullgc.getCollectionResult().getSummary().getPostUsed(), 1051300 * 1024);
         Assert.assertEquals(fullgc.getCollectionResult().getSummary().getTotal(), 4019584L * 1024);
 
-        GCEvent youngGC = model.getGcEvents().get(10);
+        GCEvent youngGC = model.getGcEvents().get(9);
         Assert.assertEquals(youngGC.getStartTime(), 813396, DELTA);
         Assert.assertEquals(youngGC.getDuration(), 10.5137, DELTA);
         Assert.assertEquals(youngGC.getEventType(), GCEventType.YOUNG_GC);
@@ -457,7 +472,7 @@ public class TestParser {
         Assert.assertEquals(youngGC.getCpuTime().getSys(), 10, DELTA);
         Assert.assertEquals(youngGC.getCpuTime().getReal(), 10, DELTA);
 
-        GCEvent cms = model.getGcEvents().get(3);
+        GCEvent cms = model.getGcEvents().get(2);
         Assert.assertEquals(cms.getEventType(), GCEventType.CMS_CONCURRENT_MARK_SWEPT);
         Assert.assertEquals(cms.getStartTime(), 675164, DELTA);
         Assert.assertEquals(cms.getPhases().size(), 12, DELTA);

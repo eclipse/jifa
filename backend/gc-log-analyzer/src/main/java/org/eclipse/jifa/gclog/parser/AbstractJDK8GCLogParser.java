@@ -288,18 +288,7 @@ public abstract class AbstractJDK8GCLogParser extends AbstractGCLogParser {
         if (!s.startsWith("Total time for which application")) {
             return;
         }
-        int begin = s.indexOf("stopped: ") + "stopped: ".length();
-        int end = s.indexOf(" seconds, ");
-        double duration = Double.parseDouble(s.substring(begin, end));
-        begin = s.lastIndexOf("took: ") + "took: ".length();
-        end = s.lastIndexOf(" seconds");
-        double timeToEnter = Double.parseDouble(s.substring(begin, end));
-        Safepoint safepoint = new Safepoint();
-        // safepoint is printed at the end of it
-        safepoint.setStartTime(event.getStartTime() - duration);
-        safepoint.setDuration(duration);
-        safepoint.setTimeToEnter(timeToEnter);
-        getModel().putEvent(safepoint);
+        parseSafepointStop(event.getStartTime(), s);
     }
 
     // "123 refs"

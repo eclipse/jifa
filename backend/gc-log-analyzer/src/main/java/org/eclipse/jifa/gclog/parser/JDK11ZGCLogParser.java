@@ -152,11 +152,11 @@ public class JDK11ZGCLogParser extends AbstractJDK11GCLogParser {
     }
 
     private static void initializeParseRules() {
-        withoutGCIDRules = new ArrayList<>();
+        withoutGCIDRules = new ArrayList<>(AbstractJDK11GCLogParser.getSharedWithoutGCIDRules());
         withoutGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Allocation Stall", JDK11ZGCLogParser::parseAllocationStall));
         withoutGCIDRules.add(JDK11ZGCLogParser::parseZGCStatisticLine);
 
-        withGCIDRules = new ArrayList<>();
+        withGCIDRules = new ArrayList<>(AbstractJDK11GCLogParser.getSharedWithGCIDRules());
         withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Pause Mark Start", JDK11ZGCLogParser::parsePhase));
         withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Concurrent Mark", JDK11ZGCLogParser::parsePhase));
         withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Pause Mark End", JDK11ZGCLogParser::parsePhase));
