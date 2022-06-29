@@ -44,8 +44,12 @@ import static org.eclipse.jifa.gclog.vo.HeapGeneration.*;
 public abstract class GCModel {
     protected static final Logger LOGGER = LoggerFactory.getLogger(GCModel.class);
 
-    private List<GCEvent> allEvents = new ArrayList<>(); // store all event, order by their appearance in log
-    private List<GCEvent> gcEvents = new ArrayList<>(); // store parent events only, order by start tune
+    // These 3 event lists below are used to support events like young/mixed/old/full. Other events. like
+    // safepoint, allocation stall will be save in other lists. gcEvents and allEvents may be used in parsing.
+    // When calculating derived info, gcEvents may be transformed, and allEvents and gcCollectionEvents will be
+    // rebuilt.
+    private List<GCEvent> gcEvents = new ArrayList<>(); // store parent events only
+    private List<GCEvent> allEvents = new ArrayList<>(); // store all events, order by their appearance in log
     private List<GCEvent> gcCollectionEvents = new ArrayList<>(); // store events that contain collection info
 
     private List<Safepoint> safepoints;
@@ -126,6 +130,10 @@ public abstract class GCModel {
 
     protected boolean isPauseless() {
         return false;
+    }
+
+    public List<GCEvent> getAllEvents() {
+        return allEvents;
     }
 
     public void setEndTime(double endTime) {
@@ -319,6 +327,8 @@ public abstract class GCModel {
         if (!isGCCollectorSupported(collectorType)) {
             throw new UnsupportedOperationException("Collector not supported.");
         }
+
+        allEvents = null;
         // must be done before other steps
         filterInvalidEvents();
         autoDecideStartEndTime();
@@ -326,6 +336,8 @@ public abstract class GCModel {
 
         // let subclass do something
         doBeforeCalculatingDerivedInfo();
+
+        rebuildEventLists();
 
         // calculate derived data for events themselves
         calculateTimestamps();
@@ -346,6 +358,17 @@ public abstract class GCModel {
     }
 
     protected void doBeforeCalculatingDerivedInfo() {
+    }
+
+    private void rebuildEventLists() {
+        allEvents = new ArrayList<>();
+        for (GCEvent event : gcEvents) {
+            allEvents.add(event);
+            if (event.hasPhases()) {
+                allEvents.addAll(event.getPhases());
+            }
+        }
+        allEvents.sort(Comparator.comparingDouble(GCEvent::getStartTime));
     }
 
     private void decideAndFixEventInfo() {

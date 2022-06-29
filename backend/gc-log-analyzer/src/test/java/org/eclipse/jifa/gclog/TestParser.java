@@ -1066,4 +1066,49 @@ public class TestParser {
         Assert.assertEquals(fullGC.getLastPhaseOfType(GCEventType.SERIAL_MOVE_OBJECTS).getDuration(), 17.974, DELTA);
     }
 
+    @Test
+    public void TestIncompleteGCLog() throws Exception{
+        String log =
+                "[0.510s][info][gc,heap      ] GC(0) CMS: 0K->24072K(174784K)\n" +
+                "[0.510s][info][gc,metaspace ] GC(0) Metaspace: 6531K->6530K(1056768K)\n" +
+                "[0.510s][info][gc           ] GC(0) Pause Young (Allocation Failure) 68M->32M(247M) 31.208ms\n" +
+                "[0.510s][info][gc,cpu       ] GC(0) User=0.06s Sys=0.03s Real=0.03s\n" +
+                "[3.231s][info][gc,start     ] GC(1) Pause Initial Mark\n" +
+                "[3.235s][info][gc           ] GC(1) Pause Initial Mark 147M->147M(247M) 3.236ms\n" +
+                "[3.235s][info][gc,cpu       ] GC(1) User=0.01s Sys=0.02s Real=0.03s\n" +
+                "[3.235s][info][gc           ] GC(1) Concurrent Mark\n" +
+                "[3.235s][info][gc,task      ] GC(1) Using 2 workers of 2 for marking\n" +
+                "[3.257s][info][gc           ] GC(1) Concurrent Mark 22.229ms\n" +
+                "[3.257s][info][gc,cpu       ] GC(1) User=0.07s Sys=0.00s Real=0.03s\n" +
+                "[3.257s][info][gc           ] GC(1) Concurrent Preclean\n" +
+                "[3.257s][info][gc           ] GC(1) Concurrent Preclean 0.264ms\n" +
+                "[3.257s][info][gc,cpu       ] GC(1) User=0.00s Sys=0.00s Real=0.00s\n" +
+                "[3.257s][info][gc,start     ] GC(1) Pause Remark\n" +
+                "[3.259s][info][gc           ] GC(1) Pause Remark 149M->149M(247M) 1.991ms\n" +
+                "[3.259s][info][gc,cpu       ] GC(1) User=0.02s Sys=0.03s Real=0.01s\n" +
+                "[3.259s][info][gc           ] GC(1) Concurrent Sweep\n" +
+                "[3.279s][info][gc           ] GC(1) Concurrent Sweep 19.826ms\n" +
+                "[3.279s][info][gc,cpu       ] GC(1) User=0.03s Sys=0.00s Real=0.02s\n" +
+                "[3.279s][info][gc           ] GC(1) Concurrent Reset\n" +
+                "[3.280s][info][gc           ] GC(1) Concurrent Reset 0.386ms\n" +
+                "[3.280s][info][gc,cpu       ] GC(1) User=0.00s Sys=0.00s Real=0.00s\n" +
+                "[3.280s][info][gc,heap      ] GC(1) Old: 142662K->92308K(174784K)\n" +
+                "[8.970s][info][gc,start     ] GC(2) Pause Full (Allocation Failure)\n" +
+                "[8.970s][info][gc,phases,start] GC(2) Phase 1: Mark live objects\n" +
+                "[9.026s][info][gc,phases      ] GC(2) Phase 1: Mark live objects 55.761ms\n" +
+                "[9.026s][info][gc,phases,start] GC(2) Phase 2: Compute new object addresses\n" +
+                "[9.051s][info][gc,phases      ] GC(2) Phase 2: Compute new object addresses 24.761ms\n" +
+                "[9.051s][info][gc,phases,start] GC(2) Phase 3: Adjust pointers\n";
+
+        JDK11GenerationalGCLogParser parser = (JDK11GenerationalGCLogParser)
+                (new GCLogParserFactory().getParser(stringToBufferedReader(log)));
+
+        CMSGCModel model = (CMSGCModel) parser.parse(stringToBufferedReader(log));
+        model.calculateDerivedInfo(new DefaultProgressListener());
+        Assert.assertNotNull(model);
+
+        Assert.assertEquals(model.getGcEvents().size(), 2);
+        Assert.assertEquals(model.getAllEvents().size(), 8);
+
+    }
 }
