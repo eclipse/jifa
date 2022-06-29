@@ -39,9 +39,9 @@
 
       <div v-if="analysisState === 'SUCCESS'">
         <button
-            style="right: 5%;top: 50%; position: fixed"
+            style="right: 5%;top: 50%; position: fixed; z-index: 100"
             @click="showDetail">
-          显示GC详情
+          {{$t('jifa.gclog.showGCDetail')}}
         </button>
         <el-drawer
             title="GC详情"
@@ -71,6 +71,7 @@
         <el-main style="padding: 10px 5px 5px;">
 <!--           todo: adjust style-->
           <GCObjectStats :file="file" :metadata="metadata" :timeRange="analysisConfig.timeRange"/>
+          <GCMemoryStats :file="file" :metadata="metadata" :timeRange="analysisConfig.timeRange"/>
           <!--    for debug -->
           analysisconfig: <div>{{this.analysisConfig}}</div>
           metadata: <div>{{this.metadata}}</div>
@@ -89,6 +90,7 @@
   import GCDetail from "@/components/gclog/GCDetail";
   import GCLogTimePicker from "@/components/gclog/GCLogTimePicker";
   import GCObjectStats from "@/components/gclog/GCObjectStats";
+  import GCMemoryStats from "@/components/gclog/GCMemoryStats";
 
   export default {
     props: ['file'],
@@ -118,6 +120,7 @@
     components: {
       GCDetail,
       GCObjectStats,
+      GCMemoryStats,
       ViewMenu,
       GCLogTimePicker,
     },

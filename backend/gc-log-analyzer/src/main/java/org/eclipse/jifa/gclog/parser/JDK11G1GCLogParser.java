@@ -161,7 +161,7 @@ public class JDK11G1GCLogParser extends JDK11G1OrGenerationalGCLogParser {
 
     private static void parseHeapRegionSize(AbstractGCLogParser parser, ParseRuleContext context, String prefix, String value) {
         G1GCModel model = (G1GCModel) parser.getModel();
-        model.setHeapRegionSize(GCLogUtil.toKB(value));
+        model.setHeapRegionSize(GCLogUtil.toByte(value));
         model.setRegionSizeExact(true);
     }
 

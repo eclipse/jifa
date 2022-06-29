@@ -35,6 +35,8 @@ public class TestGCModel {
         model = new G1GCModel();
         model.setHeapRegionSize(1024 * 1024);
         model.setCollectorType(GCCollectorType.G1);
+        model.setLogStyle(GCLogStyle.PRE_UNIFIED);
+        model.setHeapRegionSize(1024 * 1024);
         model.setStartTime(1.0 * 1000);
         model.setParallelThread(8);
         model.setVmOptions(new VmOptions("-Xmx2g -Xms2g"));

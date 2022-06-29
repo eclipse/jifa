@@ -140,16 +140,38 @@ exports.default = {
       descOfPermissiveStrictness: '报告警告信息，尝试修复错误并继续分析',
     },
 
-    gclog:{
+    gclog: {
+      showGCDetail: '显示GC详情',
       analysisConfig: '分析配置',
       logTimeRange:"分析时间段",
       noDatestamp: '日志中没有展示GC发生的现实时间，只能根据相对于日志开始的时间进行搜索。强烈建议打开显示GC发生现实时间的选项。',
 
       objectStats: '对象统计',
-      objectCreationSpeed:"对象创建速度",
-      objectPromotionSpeed:"对象晋升速度",
-      objectPromotionAvg:"平均对象晋升大小",
-      objectPromotionMax:"最大单次对象晋升大小",
+      objectCreationSpeed: "对象创建速度",
+      objectPromotionSpeed: "对象晋升速度",
+      objectPromotionAvg: "平均对象晋升大小",
+      objectPromotionMax: "最大单次对象晋升大小",
+
+      memoryStats: {
+        memoryStats: "内存统计",
+        memoryArea: "内存区域",
+        capacityAvg: "平均容量",
+        usedMax: "最大使用量",
+        usedAvgAfterFullGC: "Full GC后平均使用率",
+        usedAvgAfterOldGC: "Old GC后平均使用率",
+        metaspaceCapacity: "注意原始GC日志中打印的类似 'Metaspace: 1792694K->291615K(698368K)' 的信息表示元空间reserve的空间是698368K。 而非真正的容量",
+        leakIfHigh: "用于估算这个区域大概有多少常驻的对象，如果这个值非常接近容量的话，说明应用在该区域存在内存泄露的可能性",
+        heapRss: "在评估java进程整体内存占用RSS的时候，堆所占的大小比较接近堆历史上最高使用量，而非当前的使用量",
+      },
+
+      generation: {
+        young: "年轻代",
+        old: "老年代",
+        humongous: "大对象",
+        humongousHint: "G1的大对象指的是大小超过HeapRegionSize一半的对象",
+        heap: "整堆",
+        metaspace: "元空间",
+      },
 
       minute:'分钟',
       hour:'小时',

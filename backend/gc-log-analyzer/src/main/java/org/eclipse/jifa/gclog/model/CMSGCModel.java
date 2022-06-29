@@ -13,12 +13,18 @@
 
 package org.eclipse.jifa.gclog.model;
 
+import com.google.common.util.concurrent.AtomicDouble;
+import org.eclipse.jifa.gclog.util.LongData;
 import org.eclipse.jifa.gclog.vo.GCCollectorType;
+import org.eclipse.jifa.gclog.vo.TimeRange;
 
 import java.util.Arrays;
 import java.util.List;
 
+import static org.eclipse.jifa.gclog.model.GCEvent.UNKNOWN_LONG;
 import static org.eclipse.jifa.gclog.model.GCEventType.*;
+import static org.eclipse.jifa.gclog.vo.HeapGeneration.METASPACE;
+import static org.eclipse.jifa.gclog.vo.HeapGeneration.OLD;
 
 public class CMSGCModel extends GenerationalGCModel {
 
@@ -67,5 +73,36 @@ public class CMSGCModel extends GenerationalGCModel {
     @Override
     protected List<String> getMetadataEventTypes() {
         return METADATA_EVENT_TYPES;
+    }
+
+    @Override
+    protected void calculateUsedAvgAfterOldGC(TimeRange range, LongData[][] data) {
+        // We first try to read it from "Concurrent Sweep" event, then read it from the
+        // first young or full gc after cms cycle
+        AtomicDouble lastCMSEndTime = new AtomicDouble(Double.MAX_VALUE);
+        iterateEventsWithinTimeRange(getGcEvents(), range, event -> {
+            if (event.getEventType() == CMS_CONCURRENT_MARK_SWEPT) {
+                if (event.getLastPhaseOfType(CMS_CONCURRENT_FAILURE) != null ||
+                        event.getLastPhaseOfType(CMS_CONCURRENT_INTERRUPTED) != null) {
+                    return;
+                }
+                GCEvent swept = event.getLastPhaseOfType(CMS_CONCURRENT_SWEEP);
+                if (swept != null && swept.getCollectionAgg() != null) {
+                    long usedAfterGC = swept.getCollectionAgg().get(OLD).getPostUsed();
+                    if (usedAfterGC != UNKNOWN_LONG) {
+                        data[1][3].add(usedAfterGC);
+                        return;
+                    }
+                }
+                lastCMSEndTime.set(event.getEndTime());
+            } else if ((event.getEventType() == YOUNG_GC || event.getEventType() == FULL_GC)
+                    && event.getStartTime() > lastCMSEndTime.get()) {
+                if (event.getCollectionAgg() != null) {
+                    data[1][3].add(event.getCollectionAgg().get(OLD).getPreUsed());
+                    data[4][3].add(event.getCollectionAgg().get(METASPACE).getPreUsed());
+                }
+                lastCMSEndTime.set(Double.MAX_VALUE);
+            }
+        });
     }
 }

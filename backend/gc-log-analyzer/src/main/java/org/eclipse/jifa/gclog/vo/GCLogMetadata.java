@@ -23,14 +23,14 @@ import static org.eclipse.jifa.gclog.model.GCEvent.UNKNOWN_DOUBLE;
 
 
 /**
- * This class provides some necessary information to the parser and frontend.
+ * This class provides some necessary information to the frontend.
  */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class GCLogMetadata {
-    private GCCollectorType collector = GCCollectorType.UNKNOWN;
-    private GCLogStyle logStyle = GCLogStyle.UNKNOWN;
+    private String collector;
+    private String logStyle;
     private double startTime = UNKNOWN_DOUBLE;
     private double endTime = UNKNOWN_DOUBLE;
     private double timestamp = UNKNOWN_DOUBLE;

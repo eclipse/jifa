@@ -200,7 +200,7 @@ public class JDK11ZGCLogParser extends AbstractJDK11GCLogParser {
             return;
         }
         GCCollectionResultItem item = new GCCollectionResultItem(METASPACE, UNKNOWN_INT,
-                GCLogUtil.toKB(parts[0]), GCLogUtil.toKB(parts[2]));
+                GCLogUtil.toByte(parts[0]), GCLogUtil.toByte(parts[2]));
         event.getOrCreateCollectionResult().addItem(item);
     }
 
@@ -225,19 +225,19 @@ public class JDK11ZGCLogParser extends AbstractJDK11GCLogParser {
         switch (prefix) {
             case "Capacity":
                 GCCollectionResultItem item = new GCCollectionResultItem(TOTAL);
-                item.setTotal(GCLogUtil.toKB(parts[6]));
+                item.setTotal(GCLogUtil.toByte(parts[6]));
                 event.getOrCreateCollectionResult().setSummary(item);
                 break;
             case "Used":
                 item = event.getCollectionResult().getSummary();
-                item.setPreUsed(GCLogUtil.toKB(parts[0]));
-                item.setPostUsed(GCLogUtil.toKB(parts[6]));
+                item.setPreUsed(GCLogUtil.toByte(parts[0]));
+                item.setPostUsed(GCLogUtil.toByte(parts[6]));
                 break;
             case "Reclaimed":
-                event.setReclamation(GCLogUtil.toKB(parts[4]));
+                event.setReclamation(GCLogUtil.toByte(parts[4]));
                 break;
             case "Allocated":
-                event.setAllocation(GCLogUtil.toKB(parts[5]));
+                event.setAllocation(GCLogUtil.toByte(parts[5]));
                 break;
         }
     }

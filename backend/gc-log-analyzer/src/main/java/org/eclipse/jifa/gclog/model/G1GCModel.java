@@ -13,16 +13,17 @@
 
 package org.eclipse.jifa.gclog.model;
 
-import org.eclipse.jifa.gclog.vo.GCCollectionResultItem;
-import org.eclipse.jifa.gclog.vo.GCCollectorType;
-import org.eclipse.jifa.gclog.vo.GCLogStyle;
-import org.eclipse.jifa.gclog.vo.HeapGeneration;
+import com.google.common.util.concurrent.AtomicDouble;
+import org.eclipse.jifa.gclog.util.LongData;
+import org.eclipse.jifa.gclog.vo.*;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.eclipse.jifa.gclog.model.GCEvent.*;
 import static org.eclipse.jifa.gclog.model.GCEventType.*;
+import static org.eclipse.jifa.gclog.vo.HeapGeneration.*;
 
 public class G1GCModel extends GCModel {
     private long heapRegionSize = UNKNOWN_INT;   // in kb
@@ -136,5 +137,41 @@ public class G1GCModel extends GCModel {
             inferHeapRegionSize();
             adjustMemoryInfo();
         }
+    }
+
+    @Override
+    protected void calculateUsedAvgAfterOldGC(TimeRange range, LongData[][] data) {
+        AtomicReference<GCEvent> lastMixedGC = new AtomicReference<>();
+        AtomicDouble lastRemarkEndTime = new AtomicDouble(Double.MAX_VALUE);
+        iterateEventsWithinTimeRange(getGcEvents(), range, event -> {
+            GCEventType type = event.getEventType();
+            // read old from the last mixed gc of old gc cycle
+            if (type == G1_YOUNG_MIXED_GC) {
+                lastMixedGC.set(event);
+            } else if (type == YOUNG_GC || type == G1_CONCURRENT_CYCLE || type == FULL_GC) {
+                GCEvent mixedGC = lastMixedGC.get();
+                if (mixedGC != null) {
+                    if (mixedGC.getCollectionAgg() != null) {
+                        data[1][3].add(mixedGC.getCollectionAgg().get(OLD).getPostUsed());
+                    }
+                    lastMixedGC.set(null);
+                }
+            }
+            // read humongous and metaspace from the gc after remark
+            if (event.getEventType() == G1_CONCURRENT_CYCLE) {
+                if (event.getLastPhaseOfType(G1_CONCURRENT_MARK_ABORT) != null) {
+                    return;
+                }
+                GCEvent remark = event.getLastPhaseOfType(REMARK);
+                lastRemarkEndTime.set(remark.getEndTime());
+            } else if ((event.getEventType() == YOUNG_GC || event.getEventType() == FULL_GC || event.getEventType() == G1_YOUNG_MIXED_GC)
+                    && event.getStartTime() > lastRemarkEndTime.get()) {
+                if (event.getCollectionAgg() != null) {
+                    data[2][3].add(event.getCollectionAgg().get(HUMONGOUS).getPreUsed());
+                    data[4][3].add(event.getCollectionAgg().get(METASPACE).getPreUsed());
+                }
+                lastRemarkEndTime.set(Double.MAX_VALUE);
+            }
+        });
     }
 }

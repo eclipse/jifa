@@ -25,6 +25,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.eclipse.jifa.common.request.PagingRequest;
 import org.eclipse.jifa.common.vo.PageView;
+import org.eclipse.jifa.gclog.vo.MemoryStatistics.MemoryStatisticsItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -197,6 +198,51 @@ public abstract class GCModel {
         double start = Math.max(range.getStart(), getStartTime());
         double end = Math.min(range.getEnd(), getEndTime());
         return new TimeRange(start, end);
+    }
+
+    public MemoryStatistics getMemoryStatistics(TimeRange range) {
+        range = makeValidTimeRange(range);
+
+        // 1st dimension is generation, see definition of MemoryStatistics
+        // 2nd dimension is capacityAvg, usedMax, usedAvgAfterFullGC,usedAvgAfterOldGC see definition of MemoryStatisticsItem
+        // usedAvgAfterOldGC is more complicated, will deal with it afterwards
+        LongData[][] data = new LongData[5][4];
+        HeapGeneration[] generations = {YOUNG, OLD, HUMONGOUS, TOTAL, METASPACE};
+        for (int i = 0; i < 5; i++) {
+            for (int j = 0; j < 4; j++) {
+                data[i][j] = new LongData();
+            }
+        }
+        iterateEventsWithinTimeRange(gcCollectionEvents, range, event -> {
+            for (int genIndex = 0; genIndex < generations.length; genIndex++) {
+                HeapGeneration generation = generations[genIndex];
+                GCCollectionResultItem memory = event.getCollectionAgg().get(generation);
+                data[genIndex][0].add(memory.getTotal());
+                data[genIndex][1].add(Math.max(memory.getPreUsed(), memory.getPostUsed()));
+                if (event.isFullGC() && generation != YOUNG) {
+                    data[genIndex][2].add(memory.getPostUsed());
+                }
+            }
+        });
+        calculateUsedAvgAfterOldGC(range, data);
+
+        // generate result
+        MemoryStatistics statistics = new MemoryStatistics();
+        statistics.setYoung(new MemoryStatisticsItem((long) data[0][0].average(), data[0][1].getMax(), UNKNOWN_LONG, UNKNOWN_LONG));
+        statistics.setOld(new MemoryStatisticsItem((long) data[1][0].average(), data[1][1].getMax(), (long) data[1][2].average(), (long) data[1][3].average()));
+        statistics.setHumongous(new MemoryStatisticsItem((long) data[2][0].average(), data[2][1].getMax(), (long) data[2][2].average(), (long) data[2][3].average()));
+        statistics.setHeap(new MemoryStatisticsItem((long) data[3][0].average(), data[3][1].getMax(), (long) data[3][2].average(), (long) data[3][3].average()));
+        statistics.setMetaspace(new MemoryStatisticsItem(UNKNOWN_LONG, data[4][1].getMax(), (long) data[4][2].average(), (long) data[4][3].average()));
+        // Metaspace capacity printed in gclog is reserve space rather than commit size, so we
+        // try to read it from vm option
+        if (vmOptions != null) {
+            statistics.getMetaspace().setCapacityAvg(vmOptions.getMetaspaceSize());
+        }
+        return statistics;
+    }
+
+    protected void calculateUsedAvgAfterOldGC(TimeRange range, LongData[][] data) {
+        // for overriding
     }
 
     public ObjectStatistics getObjectStatistics(TimeRange range) {
@@ -664,6 +710,12 @@ public abstract class GCModel {
         if (collectionResult.getItems() != null) {
             for (GCCollectionResultItem item : collectionResult.getItems()) {
                 HeapGeneration generation = item.getGeneration();
+                // hack: Survivor capacity of g1 is not printed in jdk8. Make it equal to pre used so that
+                // we can calculate young and old capacity
+                if (generation == HeapGeneration.SURVIVOR && item.getTotal() == UNKNOWN_INT) {
+                    item.setTotal(item.getPreUsed());
+                }
+
                 if (generation == EDEN || generation == SURVIVOR) {
                     generation = YOUNG;
                 }
@@ -957,8 +1009,8 @@ public abstract class GCModel {
         }
         metadata = new GCLogMetadata();
         metadata.setCauses(new ArrayList<>(causes));
-        metadata.setCollector(getCollectorType());
-        metadata.setLogStyle(logStyle);
+        metadata.setCollector(getCollectorType().toString());
+        metadata.setLogStyle(getLogStyle().toString());
         metadata.setPauseless(isPauseless());
         metadata.setGenerational(isGenerational());
         metadata.setTimestamp(getReferenceTimestamp());

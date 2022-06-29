@@ -20,7 +20,7 @@ public enum HeapGeneration {
     OLD,
     METASPACE, // also represents perm
     HUMONGOUS,
-    TOTAL; //young + old
+    TOTAL; //young + old + humongous
 
     public static HeapGeneration getHeapGeneration(String name) {
         if (name == null) {

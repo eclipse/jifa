@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import static org.eclipse.jifa.gclog.model.GCEvent.UNKNOWN_INT;
 import static org.eclipse.jifa.gclog.model.GCModel.KB2MB;
 
 public class VmOptions {
@@ -64,7 +65,7 @@ public class VmOptions {
 
         if (content.startsWith("mn") || content.startsWith("ms") || content.startsWith("mx") || content.startsWith("ss")) {
             // add 'X' for convention
-            options.put("X" + content.substring(0, 2), GCLogUtil.toKB(content.substring(2)) * (long) KB2MB);
+            options.put("X" + content.substring(0, 2), GCLogUtil.toByte(content.substring(2)) * (long) KB2MB);
         } else {
             options.put(content, true);
         }
@@ -98,7 +99,7 @@ public class VmOptions {
         if (NUMBER_PATTERN.matcher(s).matches()) {
             return Long.parseLong(s);
         } else if (SIZE_PATTERN.matcher(s).matches()) {
-            return GCLogUtil.toKB(s) * (long) KB2MB;
+            return GCLogUtil.toByte(s);
         } else {
             return s;
         }
@@ -106,6 +107,16 @@ public class VmOptions {
 
     public String getOriginalOptionString() {
         return originalOptionString;
+    }
+
+    public long getMetaspaceSize() {
+        Long metaspaceSize = getOptionValue("MetaspaceSize");
+        Long maxMetaspaceSize = getOptionValue("MaxMetaspaceSize");
+        if (metaspaceSize != null && metaspaceSize.equals(maxMetaspaceSize)) {
+            return metaspaceSize;
+        } else  {
+            return UNKNOWN_INT;
+        }
     }
 
     @Override

@@ -34,7 +34,7 @@ public class GCLogUtil {
      * e.g. "10m" -> 10485760, "111 KB" -> 113664
      * do not check format, do not consider b(bit)
      */
-    public static long toKB(String sizeString, long divideIfNoUnit) {
+    public static long toByte(String sizeString, long divideIfNoUnit) {
         sizeString = sizeString.toLowerCase();
         int mid;
         for (mid = 0; mid < sizeString.length(); mid++) {
@@ -66,8 +66,8 @@ public class GCLogUtil {
         }
     }
 
-    public static long toKB(String sizeString) {
-        return toKB(sizeString, BYTE_UNIT_GAP);
+    public static long toByte(String sizeString) {
+        return toByte(sizeString, BYTE_UNIT_GAP);
     }
 
     /**
@@ -166,9 +166,9 @@ public class GCLogUtil {
     public static long[] parseMemorySizeFromTo(String s, long divideIfNoUnit) {
         long[] result = new long[3];
         String[] parts = parseFromToString(s);
-        result[0] = parts[0] == null ? UNKNOWN_INT : toKB(parts[0], divideIfNoUnit);
-        result[1] = parts[2] == null ? UNKNOWN_INT : toKB(parts[2], divideIfNoUnit);
-        result[2] = parts[3] == null ? UNKNOWN_INT : toKB(parts[3], divideIfNoUnit);
+        result[0] = parts[0] == null ? UNKNOWN_INT : toByte(parts[0], divideIfNoUnit);
+        result[1] = parts[2] == null ? UNKNOWN_INT : toByte(parts[2], divideIfNoUnit);
+        result[2] = parts[3] == null ? UNKNOWN_INT : toByte(parts[3], divideIfNoUnit);
         return result;
     }
 

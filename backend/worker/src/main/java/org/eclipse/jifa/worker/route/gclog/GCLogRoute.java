@@ -19,6 +19,7 @@ import org.eclipse.jifa.common.request.PagingRequest;
 import org.eclipse.jifa.common.vo.PageView;
 import org.eclipse.jifa.gclog.model.TimeLineChartView;
 import org.eclipse.jifa.gclog.vo.GCLogMetadata;
+import org.eclipse.jifa.gclog.vo.MemoryStatistics;
 import org.eclipse.jifa.gclog.vo.ObjectStatistics;
 import org.eclipse.jifa.gclog.vo.TimeRange;
 import org.eclipse.jifa.worker.route.ParamKey;
@@ -38,6 +39,14 @@ public class GCLogRoute extends org.eclipse.jifa.worker.route.gclog.GCLogBaseRou
                      @ParamKey("end")double end) {
         final GCModel model = Analyzer.getOrOpenGCLogModel(file);
         promise.complete(model.getObjectStatistics(new TimeRange(start, end)));
+    }
+
+    @RouteMeta(path = "/memoryStatistics")
+    void memoryStats(Promise<MemoryStatistics> promise, @ParamKey("file") String file,
+                     @ParamKey("start")double start,
+                     @ParamKey("end")double end) {
+        final GCModel model = Analyzer.getOrOpenGCLogModel(file);
+        promise.complete(model.getMemoryStatistics(new TimeRange(start, end)));
     }
 
     @RouteMeta(path = "/gcDetails")
