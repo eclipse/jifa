@@ -15,11 +15,14 @@ package org.eclipse.jifa.gclog;
 
 import org.eclipse.jifa.common.listener.DefaultProgressListener;
 import org.eclipse.jifa.gclog.model.*;
+import org.eclipse.jifa.gclog.parser.GCLogParserFactory;
+import org.eclipse.jifa.gclog.parser.JDK8G1GCLogParser;
 import org.eclipse.jifa.gclog.vo.*;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.eclipse.jifa.gclog.TestUtil.stringToBufferedReader;
 import static org.eclipse.jifa.gclog.model.GCEvent.*;
 import static org.eclipse.jifa.gclog.model.GCEventType.*;
 import static org.eclipse.jifa.gclog.vo.HeapGeneration.*;
@@ -225,5 +228,49 @@ public class TestGCModel {
             }
         }
         return false;
+    }
+
+    @Test
+    public void testUseCPUTimeAsPause() throws Exception{
+        String log = "2022-05-23T11:29:31.538+0800: 224076.254: [GC pause (G1 Evacuation Pause) (young), 0.6017393 secs]\n" +
+                "   [Parallel Time: 21.6 ms, GC Workers: 13]\n" +
+                "      [GC Worker Start (ms): Min: 224076603.9, Avg: 224076604.1, Max: 224076604.3, Diff: 0.4]\n" +
+                "      [Ext Root Scanning (ms): Min: 1.7, Avg: 2.2, Max: 3.5, Diff: 1.8, Sum: 29.2]\n" +
+                "      [Update RS (ms): Min: 2.6, Avg: 3.9, Max: 4.2, Diff: 1.6, Sum: 50.7]\n" +
+                "         [Processed Buffers: Min: 21, Avg: 36.2, Max: 50, Diff: 29, Sum: 470]\n" +
+                "      [Scan RS (ms): Min: 0.1, Avg: 0.3, Max: 0.3, Diff: 0.3, Sum: 3.3]\n" +
+                "      [Code Root Scanning (ms): Min: 0.0, Avg: 0.0, Max: 0.0, Diff: 0.0, Sum: 0.1]\n" +
+                "      [Object Copy (ms): Min: 14.0, Avg: 14.3, Max: 14.4, Diff: 0.4, Sum: 186.2]\n" +
+                "      [Termination (ms): Min: 0.0, Avg: 0.0, Max: 0.0, Diff: 0.0, Sum: 0.1]\n" +
+                "         [Termination Attempts: Min: 2, Avg: 5.5, Max: 11, Diff: 9, Sum: 72]\n" +
+                "      [GC Worker Other (ms): Min: 0.1, Avg: 0.3, Max: 0.5, Diff: 0.4, Sum: 3.6]\n" +
+                "      [GC Worker Total (ms): Min: 20.7, Avg: 21.0, Max: 21.3, Diff: 0.7, Sum: 273.2]\n" +
+                "      [GC Worker End (ms): Min: 224076625.0, Avg: 224076625.2, Max: 224076625.4, Diff: 0.4]\n" +
+                "   [Code Root Fixup: 0.1 ms]\n" +
+                "   [Code Root Purge: 0.0 ms]\n" +
+                "   [Clear CT: 1.1 ms]\n" +
+                "   [Other: 578.9 ms]\n" +
+                "      [Choose CSet: 0.0 ms]\n" +
+                "      [Ref Proc: 2.6 ms]\n" +
+                "      [Ref Enq: 0.0 ms]\n" +
+                "      [Redirty Cards: 0.6 ms]\n" +
+                "      [Humongous Register: 0.1 ms]\n" +
+                "      [Humongous Reclaim: 0.1 ms]\n" +
+                "      [Free CSet: 2.1 ms]\n" +
+                "   [Eden: 2924.0M(2924.0M)->0.0B(2924.0M) Survivors: 148.0M->148.0M Heap: 3924.7M(5120.0M)->1006.9M(5120.0M)]\n" +
+                "Heap after GC invocations=1602 (full 0):\n" +
+                " garbage-first heap   total 5242880K, used 1031020K [0x0000000680000000, 0x0000000680205000, 0x00000007c0000000)\n" +
+                "  region size 2048K, 74 young (151552K), 74 survivors (151552K)\n" +
+                " Metaspace       used 120752K, capacity 128436K, committed 129536K, reserved 1161216K\n" +
+                "  class space    used 14475K, capacity 16875K, committed 17152K, reserved 1048576K\n" +
+                "}\n" +
+                " [Times: user=0.29 sys=0.00, real=0.71 secs] ";
+        JDK8G1GCLogParser parser = (JDK8G1GCLogParser)
+                (new GCLogParserFactory().getParser(stringToBufferedReader(log)));
+
+        G1GCModel model = (G1GCModel) parser.parse(stringToBufferedReader(log));
+        model.calculateDerivedInfo(new DefaultProgressListener());
+        Assert.assertNotNull(model);
+        Assert.assertEquals(model.getGcEvents().get(0).getPause(), 710, DELTA);
     }
 }

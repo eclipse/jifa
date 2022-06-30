@@ -340,7 +340,7 @@ public abstract class GCModel {
         rebuildEventLists();
 
         // calculate derived data for events themselves
-        calculateTimestamps();
+        calculateEventTimestamps();
         calculateEventsInterval();
         calculateEventsMemoryInfo();
 
@@ -394,7 +394,7 @@ public abstract class GCModel {
     }
 
 
-    private void calculateTimestamps() {
+    private void calculateEventTimestamps() {
         double referenceTimestamp = getReferenceTimestamp();
         if (referenceTimestamp == UNKNOWN_DOUBLE) {
             return;

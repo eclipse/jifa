@@ -237,11 +237,25 @@ public class GCEvent extends TimedEvent {
         return startTimestamp;
     }
 
+    private static final double GCTRACETIME_TRACECPUTIME_CLOSE_THRESHOLD = 10.0;
+
     public double getPause() {
         if (pause == UNKNOWN_DOUBLE) {
             switch (eventType.getPause()) {
                 case PAUSE:
-                    pause = getDuration();
+                    // In most cases, duration is more accurate than cputime because of rounding error.
+                    // In very rare cases, cputime may be significantly larger than duration. In these cases
+                    // cputime is more accurate value.
+                    if (cpuTime != null) {
+                        if (getDuration() != UNKNOWN_DOUBLE &&
+                                Math.abs(cpuTime.getReal() - getDuration()) > GCTRACETIME_TRACECPUTIME_CLOSE_THRESHOLD) {
+                            pause = getCpuTime().getReal();
+                        } else {
+                            pause = getDuration();
+                        }
+                    } else {
+                        pause = getDuration();
+                    }
                     break;
                 case CONCURRENT:
                     pause = 0;
@@ -368,7 +382,7 @@ public class GCEvent extends TimedEvent {
             boolean first = true;
             sb.append(" [");
             if (getPromotion() != UNKNOWN_INT) {
-                sb.append("promotion ").append(getPromotion() / (long)KB2MB).append(" K");
+                sb.append("promotion ").append(getPromotion() / (long) KB2MB).append(" K");
                 first = false;
             }
             if (getInterval() != UNKNOWN_INT) {
