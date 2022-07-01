@@ -22,6 +22,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Map;
+
 import static org.eclipse.jifa.gclog.TestUtil.stringToBufferedReader;
 import static org.eclipse.jifa.gclog.model.GCEvent.*;
 import static org.eclipse.jifa.gclog.model.GCEventType.*;
@@ -135,7 +137,7 @@ public class TestGCModel {
         safepoint.setStartTime(31.9 * 1000);
         safepoint.setTimeToEnter(0.6 * 1000);
         safepoint.setDuration(0.3 * 1000);
-        model.putEvent(safepoint);
+        model.addSafepoint(safepoint);
     }
 
     @Test
@@ -154,10 +156,10 @@ public class TestGCModel {
         Assert.assertEquals(model.getGcEvents().get(4).getPause(), 0.3 * 1000, DELTA);
         Assert.assertEquals(model.getGcEvents().get(0).getCollectionAgg().get(TOTAL),
                 new GCCollectionResultItem(TOTAL, 40 * 1024 * 1024, 32 * 1024 * 1024, 300 * 1024 * 1024));
-        Assert.assertEquals(model.getGcEvents().get(6).getCollectionAgg().get(OLD),
+        Assert.assertEquals(model.getGcEvents().get(5).getCollectionAgg().get(OLD),
                 new GCCollectionResultItem(OLD, 10 * 1024 * 1024, 12 * 1024 * 1024, 100 * 1024 * 1024));
         Assert.assertEquals(model.getGcEvents().get(0).getStartTimestamp(), 2.0 * 1000, DELTA);
-        Assert.assertEquals(model.getGcEvents().get(6).getEndTimestamp(), 33.3 * 1000, DELTA);
+        Assert.assertEquals(model.getGcEvents().get(5).getEndTimestamp(), 33.3 * 1000, DELTA);
         Assert.assertEquals(model.getGcEvents().get(4).getInterval(), 6.8 * 1000, DELTA);
 
         // object statistics
@@ -167,6 +169,17 @@ public class TestGCModel {
         Assert.assertEquals(objectStatistics.getObjectPromotionAvg(), 2 * 1024 * 1024 );
         Assert.assertEquals(objectStatistics.getObjectPromotionMax(), 2 * 1024 * 1024);
 
+        // pause statistics
+        PauseStatistics pauseStatistics = model.getPauseStatistics(new TimeRange(10000, 30000));
+        Assert.assertEquals(pauseStatistics.getThroughput(), 1 - (1000 + 100 + 200 + 200 + 400) / 20000.0, DELTA);
+        Assert.assertEquals(pauseStatistics.getPauseAvg(), (1000 + 100 + 200 + 200 + 400) / 5.0, DELTA);
+        Assert.assertEquals(pauseStatistics.getPauseMax(), 1000.0, DELTA);
+
+        // pause Distribution
+        Map<String, int[]> pauseDistribution = model.getPauseDistribution(new TimeRange(10000, 30000), new int[]{0, 300});
+        Assert.assertArrayEquals(pauseDistribution.get(FULL_GC.getName()), new int[]{0, 1});
+        Assert.assertArrayEquals(pauseDistribution.get(REMARK.getName()), new int[]{2, 0});
+        Assert.assertArrayEquals(pauseDistribution.get(G1_PAUSE_CLEANUP.getName()), new int[]{1, 1});
 
         // graph data
         TimeLineChartView count = model.getGraphView("count", 300000, 0);
@@ -214,8 +227,6 @@ public class TestGCModel {
                 "(0)1970-01-01 08:00:02.000 1.000: [Young GC (G1 Evacuation Pause) (To-space Exhausted), 0.500s] [Young: 20M->10M(200M)] [Old: 10M->12M(100M)] [Humongous: 10M->10M] [Total: 40M->32M(300M)] [Metaspace: 15M->15M(20M)] [promotion 2048 K]");
         Assert.assertEquals(model.getGcEvents().get(4).toString(),
                 "(4)1970-01-01 08:00:25.000 24.000: [Concurrent Cycle, 0.600s] [interval 6.800s] [Remark 0.100s] [Pause Cleanup 0.200s]");
-        Assert.assertEquals(model.getGcEvents().get(5).toString(),
-                "1970-01-01 08:00:32.900 31.900: Total time for which application threads were stopped: 300.000 seconds, Stopping threads took: 600.000 seconds");
     }
 
     boolean hasDiagnose(String name) {

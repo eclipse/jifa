@@ -16,6 +16,9 @@ package org.eclipse.jifa.gclog.model;
 import org.eclipse.jifa.gclog.vo.GCEventLevel;
 import org.eclipse.jifa.gclog.vo.GCPause;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import static org.eclipse.jifa.gclog.vo.GCPause.*;
 
 /*

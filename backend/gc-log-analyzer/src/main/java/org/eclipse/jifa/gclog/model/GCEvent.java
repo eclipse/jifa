@@ -20,6 +20,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import static org.eclipse.jifa.gclog.model.GCModel.*;
 import static org.eclipse.jifa.gclog.vo.GCEventLevel.*;
@@ -412,5 +413,26 @@ public class GCEvent extends TimedEvent {
 
     public GCEventLevel getEventLevel() {
         return eventType.getLevel();
+    }
+
+    public void pauseEventOrPhasesDo(Consumer<GCEvent> consumer) {
+        if (getEventLevel() != EVENT) {
+            return;
+        }
+        switch (getEventType().getPause()) {
+            case PAUSE:
+                consumer.accept(this);
+                break;
+            case PARTIAL:
+                if (phases != null) {
+                    for (GCEvent phase : phases) {
+                        if (phase.getEventType().getPause() == GCPause.PAUSE) {
+                            consumer.accept(phase);
+                        }
+                    }
+                }
+                break;
+
+        }
     }
 }

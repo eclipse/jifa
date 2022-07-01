@@ -221,6 +221,44 @@ public abstract class GCModel {
         return new TimeRange(start, end);
     }
 
+    public PauseStatistics getPauseStatistics(TimeRange range) {
+        range = makeValidTimeRange(range);
+        DoubleData pause = new DoubleData();
+        iterateEventsWithinTimeRange(gcEvents, range, e -> {
+            e.pauseEventOrPhasesDo(event -> pause.add(event.getPause()));
+        });
+        return new PauseStatistics(pause.getN() == 0 ? UNKNOWN_DOUBLE : 1 - pause.getSum() / range.length(),
+                pause.average(), pause.getMax());
+    }
+
+    public Map<String, int[]> getPauseDistribution(TimeRange range, int[] partitions) {
+        range = makeValidTimeRange(range);
+
+        Map<String, int[]> distribution = new HashMap<>();
+        iterateEventsWithinTimeRange(gcEvents, range, e -> {
+            e.pauseEventOrPhasesDo(event -> {
+                if (event.getPause() >= 0) {
+                    String eventType = event.getEventType().getName();
+                    int pause = (int) event.getPause();
+                    int index = Arrays.binarySearch(partitions, pause);
+                    if (index < 0) {
+                        index = -index - 2;
+                    }
+                    if (index < 0) {
+                        return;
+                    }
+                    int[] nums = distribution.getOrDefault(eventType, null);
+                    if (nums == null) {
+                        nums = new int[partitions.length];
+                        distribution.put(eventType, nums);
+                    }
+                    nums[index]++;
+                }
+            });
+        });
+        return distribution;
+    }
+
     public MemoryStatistics getMemoryStatistics(TimeRange range) {
         range = makeValidTimeRange(range);
 

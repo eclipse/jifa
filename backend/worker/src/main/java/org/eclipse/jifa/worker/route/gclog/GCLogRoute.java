@@ -18,13 +18,12 @@ import io.vertx.core.Promise;
 import org.eclipse.jifa.common.request.PagingRequest;
 import org.eclipse.jifa.common.vo.PageView;
 import org.eclipse.jifa.gclog.model.TimeLineChartView;
-import org.eclipse.jifa.gclog.vo.GCLogMetadata;
-import org.eclipse.jifa.gclog.vo.MemoryStatistics;
-import org.eclipse.jifa.gclog.vo.ObjectStatistics;
-import org.eclipse.jifa.gclog.vo.TimeRange;
+import org.eclipse.jifa.gclog.vo.*;
 import org.eclipse.jifa.worker.route.ParamKey;
 import org.eclipse.jifa.worker.route.RouteMeta;
 import org.eclipse.jifa.worker.support.Analyzer;
+
+import java.util.Map;
 
 public class GCLogRoute extends org.eclipse.jifa.worker.route.gclog.GCLogBaseRoute {
     @RouteMeta(path = "/metadata")
@@ -35,18 +34,35 @@ public class GCLogRoute extends org.eclipse.jifa.worker.route.gclog.GCLogBaseRou
 
     @RouteMeta(path = "/objectStatistics")
     void objectStats(Promise<ObjectStatistics> promise, @ParamKey("file") String file,
-                     @ParamKey("start")double start,
-                     @ParamKey("end")double end) {
+                     @ParamKey("start") double start,
+                     @ParamKey("end") double end) {
         final GCModel model = Analyzer.getOrOpenGCLogModel(file);
         promise.complete(model.getObjectStatistics(new TimeRange(start, end)));
     }
 
     @RouteMeta(path = "/memoryStatistics")
     void memoryStats(Promise<MemoryStatistics> promise, @ParamKey("file") String file,
-                     @ParamKey("start")double start,
-                     @ParamKey("end")double end) {
+                     @ParamKey("start") double start,
+                     @ParamKey("end") double end) {
         final GCModel model = Analyzer.getOrOpenGCLogModel(file);
         promise.complete(model.getMemoryStatistics(new TimeRange(start, end)));
+    }
+
+    @RouteMeta(path = "/pauseDistribution")
+    void pauseStats(Promise<Map<String, int[]>> promise, @ParamKey("file") String file,
+                    @ParamKey("start") double start,
+                    @ParamKey("end") double end,
+                    @ParamKey("partitions") int[] partitions) {
+        final GCModel model = Analyzer.getOrOpenGCLogModel(file);
+        promise.complete(model.getPauseDistribution(new TimeRange(start, end), partitions));
+    }
+
+    @RouteMeta(path = "/pauseStatistics")
+    void pauseStats(Promise<PauseStatistics> promise, @ParamKey("file") String file,
+                    @ParamKey("start") double start,
+                    @ParamKey("end") double end) {
+        final GCModel model = Analyzer.getOrOpenGCLogModel(file);
+        promise.complete(model.getPauseStatistics(new TimeRange(start, end)));
     }
 
     @RouteMeta(path = "/gcDetails")

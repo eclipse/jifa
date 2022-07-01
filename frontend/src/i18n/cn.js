@@ -152,6 +152,17 @@ exports.default = {
       objectPromotionAvg: "平均对象晋升大小",
       objectPromotionMax: "最大单次对象晋升大小",
 
+      pauseInfo: {
+        pauseInfo: "暂停信息",
+        pauseDistribution: "暂停统计",
+        throughput: "GC吞吐",
+        throughputHint:"GC吞吐是程序实际执行的时间/总运行时间，吞吐率越高意味着GC开销越小",
+        pauseAvg: "平均暂停时间",
+        pauseMax: "最大暂停时间",
+        pauseTime: "暂停时间",
+        pauseCount: "暂停次数"
+      },
+
       memoryStats: {
         memoryStats: "内存统计",
         memoryArea: "内存区域",

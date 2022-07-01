@@ -72,6 +72,7 @@
 <!--           todo: adjust style-->
           <GCObjectStats :file="file" :metadata="metadata" :timeRange="analysisConfig.timeRange"/>
           <GCMemoryStats :file="file" :metadata="metadata" :timeRange="analysisConfig.timeRange"/>
+          <GCPause :file="file" :metadata="metadata" :timeRange="analysisConfig.timeRange" :longPauseThreshold="analysisConfig.longPauseThreshold"/>
           <!--    for debug -->
           analysisconfig: <div>{{this.analysisConfig}}</div>
           metadata: <div>{{this.metadata}}</div>
@@ -91,6 +92,7 @@
   import GCLogTimePicker from "@/components/gclog/GCLogTimePicker";
   import GCObjectStats from "@/components/gclog/GCObjectStats";
   import GCMemoryStats from "@/components/gclog/GCMemoryStats";
+  import GCPause from "@/components/gclog/GCPause";
 
   export default {
     props: ['file'],
@@ -121,6 +123,7 @@
       GCDetail,
       GCObjectStats,
       GCMemoryStats,
+      GCPause,
       ViewMenu,
       GCLogTimePicker,
     },
@@ -174,7 +177,8 @@
         this.configModel = {
           timeRange: {
             start: this.metadata.startTime,
-            end: this.metadata.endTime
+            end: this.metadata.endTime,
+            longPauseThreshold : this.metadata.pauseless ? 50 : 500
           }
         }
         this.analysisConfig = {...this.configModel}
