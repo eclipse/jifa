@@ -688,7 +688,7 @@ public abstract class GCModel {
             }
             // promotion
             if (event.getPromotion() == UNKNOWN_INT &&
-                    event.hasPromotion() && event.getEventType() != G1_YOUNG_MIXED_GC) {
+                    event.hasPromotion() && event.getEventType() != G1_MIXED_GC) {
                 // notice: g1 young mixed gc should have promotion, but we have no way to know it exactly
                 long youngReduction = young.getMemoryReduction();
                 long totalReduction = total.getMemoryReduction();
@@ -892,7 +892,7 @@ public abstract class GCModel {
         Map<GCEventType, Double> lastEndTime = new HashMap<>();
         for (GCEvent event : gcEvents) {
             GCEventType eventType = event.getEventType();
-            // don't distinguish young GC
+            // regard mixed gc as young gc
             if (event.isYoungGC()) {
                 eventType = YOUNG_GC;
             }

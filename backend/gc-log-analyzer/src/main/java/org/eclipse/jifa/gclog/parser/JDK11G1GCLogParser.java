@@ -30,9 +30,9 @@ import static org.eclipse.jifa.gclog.parser.ParseRule.ParseRuleContext.GCID;
 import static org.eclipse.jifa.gclog.parser.ParseRule.ParseRuleContext.UPTIME;
 
 public class JDK11G1GCLogParser extends JDK11G1OrGenerationalGCLogParser {
-    private final static GCEventType[] YOUNG_MIXED = {YOUNG_GC, G1_YOUNG_MIXED_GC};
+    private final static GCEventType[] YOUNG_MIXED = {YOUNG_GC, G1_MIXED_GC};
     private final static GCEventType[] CONCURRENT_CYCLE_CPU_TIME_EVENTS = {
-            YOUNG_GC, G1_YOUNG_MIXED_GC, FULL_GC, G1_PAUSE_CLEANUP, G1_REMARK};
+            YOUNG_GC, G1_MIXED_GC, FULL_GC, G1_PAUSE_CLEANUP, G1_REMARK};
 
     /*
      * [0.001s][warning][gc] -XX:+PrintGCDetails is deprecated. Will use -Xlog:gc* instead.
@@ -179,7 +179,7 @@ public class JDK11G1GCLogParser extends JDK11G1OrGenerationalGCLogParser {
 
     @Override
     protected GCEvent getCPUTimeEventOrPhase(GCEvent event) {
-        if (event.getEventType() == YOUNG_GC || event.getEventType() == FULL_GC || event.getEventType() == G1_YOUNG_MIXED_GC) {
+        if (event.getEventType() == YOUNG_GC || event.getEventType() == FULL_GC || event.getEventType() == G1_MIXED_GC) {
             return event;
         } else if (event.getEventType() == G1_CONCURRENT_CYCLE) {
             return getModel().getLastEventOfType(CONCURRENT_CYCLE_CPU_TIME_EVENTS);

@@ -624,7 +624,7 @@ public class TestParser {
         GCEvent mixedGC = model.getGcEvents().get(3);
         Assert.assertEquals(mixedGC.getStartTime(), 79619, DELTA);
         Assert.assertEquals(mixedGC.getDuration(), 26.4971, DELTA);
-        Assert.assertEquals(mixedGC.getEventType(), GCEventType.G1_YOUNG_MIXED_GC);
+        Assert.assertEquals(mixedGC.getEventType(), GCEventType.G1_MIXED_GC);
         Assert.assertEquals(mixedGC.getCause(), "G1 Evacuation Pause");
         Assert.assertTrue(mixedGC.hasSpecialSituation(TO_SPACE_EXHAUSTED));
         Assert.assertEquals(mixedGC.getCollectionResult().getSummary().getTotal(), (long) (19.8 * 1024 * 1024 * 1024));

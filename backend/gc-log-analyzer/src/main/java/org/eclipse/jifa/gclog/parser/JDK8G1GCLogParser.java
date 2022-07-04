@@ -29,10 +29,10 @@ import static org.eclipse.jifa.gclog.parser.ParseRule.*;
 import static org.eclipse.jifa.gclog.parser.ParseRule.ParseRuleContext.*;
 
 public class JDK8G1GCLogParser extends AbstractJDK8GCLogParser {
-    private final static GCEventType[] REF_GC_TYPES = {YOUNG_GC, FULL_GC, G1_YOUNG_MIXED_GC, G1_REMARK};
-    private final static GCEventType[] YOUNG_MIXED = {YOUNG_GC, G1_YOUNG_MIXED_GC};
-    private final static GCEventType[] YOUNG_MIXED_FULL = {YOUNG_GC, G1_YOUNG_MIXED_GC, FULL_GC};
-    private final static GCEventType[] CPU_TIME_TYPES = {YOUNG_GC, FULL_GC, G1_YOUNG_MIXED_GC, G1_REMARK, G1_PAUSE_CLEANUP};
+    private final static GCEventType[] REF_GC_TYPES = {YOUNG_GC, FULL_GC, G1_MIXED_GC, G1_REMARK};
+    private final static GCEventType[] YOUNG_MIXED = {YOUNG_GC, G1_MIXED_GC};
+    private final static GCEventType[] YOUNG_MIXED_FULL = {YOUNG_GC, G1_MIXED_GC, FULL_GC};
+    private final static GCEventType[] CPU_TIME_TYPES = {YOUNG_GC, FULL_GC, G1_MIXED_GC, G1_REMARK, G1_PAUSE_CLEANUP};
 
     /*
      * 2021-05-19T22:52:16.311+0800: 3.960: [GC pause (G1 Evacuation Pause) (young)2021-05-19T22:52:16.351+0800: 4.000: [SoftReference, 0 refs, 0.0000435 secs]2021-05-19T22:52:16.352+0800: 4.000: [WeakReference, 374 refs, 0.0002082 secs]2021-05-19T22:52:16.352+0800: 4.001: [FinalReference, 5466 refs, 0.0141707 secs]2021-05-19T22:52:16.366+0800: 4.015: [PhantomReference, 0 refs, 0 refs, 0.0000253 secs]2021-05-19T22:52:16.366+0800: 4.015: [JNI Weak Reference, 0.0000057 secs], 0.0563085 secs]
@@ -239,7 +239,7 @@ public class JDK8G1GCLogParser extends AbstractJDK8GCLogParser {
             String cause = causes[i];
             // to space exhausted is not considered here because it is not printed together with other brackets
             if (cause.equals("mixed")) {
-                eventType = G1_YOUNG_MIXED_GC;
+                eventType = G1_MIXED_GC;
             } else if (cause.equals("young")) {
                 eventType = YOUNG_GC;
             } else if (cause.equals("initial-mark")) {

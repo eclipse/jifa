@@ -15,14 +15,11 @@ package org.eclipse.jifa.gclog.model;
 
 import org.eclipse.jifa.gclog.vo.GCCollectorType;
 import org.eclipse.jifa.gclog.vo.GCEventLevel;
-import org.eclipse.jifa.gclog.vo.GCLogStyle;
 import org.eclipse.jifa.gclog.vo.GCPause;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.eclipse.jifa.gclog.vo.GCLogStyle.*;
-import static org.eclipse.jifa.gclog.vo.GCCollectorType.*;
 import static org.eclipse.jifa.gclog.vo.GCPause.*;
 
 /*
@@ -52,7 +49,7 @@ public class GCEventType {
 
     // external event types
     public static final GCEventType YOUNG_GC = new GCEventType("Young GC", PAUSE, GENERATIONAL_GCS);
-    public static final GCEventType G1_YOUNG_MIXED_GC = new GCEventType("Young GC(Mixed)", PAUSE, G1);
+    public static final GCEventType G1_MIXED_GC = new GCEventType("Mixed GC", PAUSE, G1);
     public static final GCEventType FULL_GC = new GCEventType("Full GC", PAUSE, GENERATIONAL_GCS);
     public static final GCEventType G1_CONCURRENT_CYCLE = new GCEventType("Concurrent Cycle", GCPause.PARTIAL, G1);
     public static final GCEventType CMS_CONCURRENT_MARK_SWEPT = new GCEventType("CMS", GCPause.PARTIAL, CMS);
@@ -60,7 +57,7 @@ public class GCEventType {
 
     // shared parent
     private static final GCEventType[] PARENT_CONCURRENT_MARK_CYCLE = {G1_CONCURRENT_CYCLE, CMS_CONCURRENT_MARK_SWEPT, ZGC_GARBAGE_COLLECTION};
-    private static final GCEventType[] PARENT_YOUNG_OLD_FULL_GC = {YOUNG_GC, FULL_GC, G1_YOUNG_MIXED_GC, ZGC_GARBAGE_COLLECTION};
+    private static final GCEventType[] PARENT_YOUNG_OLD_FULL_GC = {YOUNG_GC, FULL_GC, G1_MIXED_GC, ZGC_GARBAGE_COLLECTION};
 
     // internal phase types
     // shared by serial and cms
@@ -152,7 +149,7 @@ public class GCEventType {
     public static final GCEventType SAFEPOINT = new GCEventType("Safepoint", PAUSE, ALL_GCS);
 
     public boolean hasObjectPromotion() {
-        return this == YOUNG_GC || this == G1_YOUNG_MIXED_GC;
+        return this == YOUNG_GC || this == G1_MIXED_GC;
     }
 
     public GCPause getPause() {
@@ -206,7 +203,7 @@ public class GCEventType {
     }
 
     public boolean isYoungGC() {
-        return this == GCEventType.YOUNG_GC || this == GCEventType.G1_YOUNG_MIXED_GC;
+        return this == GCEventType.YOUNG_GC || this == GCEventType.G1_MIXED_GC;
     }
 
     public boolean isOldGC() {

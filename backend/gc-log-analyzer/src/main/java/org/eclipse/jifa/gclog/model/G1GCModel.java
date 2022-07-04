@@ -62,7 +62,7 @@ public class G1GCModel extends GCModel {
 
     private final static List<String> METADATA_EVENT_TYPES = Arrays.asList(
             YOUNG_GC.getName(),
-            G1_YOUNG_MIXED_GC.getName(),
+            G1_MIXED_GC.getName(),
             G1_CONCURRENT_CYCLE.getName(),
             FULL_GC.getName()
     );
@@ -75,7 +75,7 @@ public class G1GCModel extends GCModel {
 
     private final static List<String> PAUSE_EVENT_NAMES = Arrays.asList(
             YOUNG_GC.getName(),
-            G1_YOUNG_MIXED_GC.getName(),
+            G1_MIXED_GC.getName(),
             FULL_GC.getName(),
             G1_REMARK.getName(),
             G1_PAUSE_CLEANUP.getName()
@@ -88,7 +88,7 @@ public class G1GCModel extends GCModel {
 
     private boolean collectionResultUsingRegion(GCEvent event) {
         GCEventType type = event.getEventType();
-        return (type == YOUNG_GC || type == FULL_GC || type == G1_YOUNG_MIXED_GC) &&
+        return (type == YOUNG_GC || type == FULL_GC || type == G1_MIXED_GC) &&
                 event.getCollectionResult() != null && event.getCollectionResult().getItems() != null;
     }
 
@@ -145,7 +145,7 @@ public class G1GCModel extends GCModel {
         iterateEventsWithinTimeRange(getGcEvents(), range, event -> {
             GCEventType type = event.getEventType();
             // read old from the last mixed gc of old gc cycle
-            if (type == G1_YOUNG_MIXED_GC) {
+            if (type == G1_MIXED_GC) {
                 lastMixedGC.set(event);
             } else if (type == YOUNG_GC || type == G1_CONCURRENT_CYCLE || type == FULL_GC) {
                 GCEvent mixedGC = lastMixedGC.get();
@@ -163,7 +163,7 @@ public class G1GCModel extends GCModel {
                 }
                 GCEvent remark = event.getLastPhaseOfType(G1_REMARK);
                 lastRemarkEndTime.set(remark.getEndTime());
-            } else if ((event.getEventType() == YOUNG_GC || event.getEventType() == FULL_GC || event.getEventType() == G1_YOUNG_MIXED_GC)
+            } else if ((event.getEventType() == YOUNG_GC || event.getEventType() == FULL_GC || event.getEventType() == G1_MIXED_GC)
                     && event.getStartTime() > lastRemarkEndTime.get()) {
                 if (event.getCollectionAgg() != null) {
                     data[2][3].add(event.getCollectionAgg().get(HUMONGOUS).getPreUsed());

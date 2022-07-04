@@ -119,7 +119,7 @@ public abstract class JDK11G1OrGenerationalGCLogParser extends AbstractJDK11GCLo
                     specialSituation = GCSpecialSituation.PREPARE_MIXED;
                     break;
                 case "Mixed":
-                    eventType = G1_YOUNG_MIXED_GC;
+                    eventType = G1_MIXED_GC;
                     break;
             }
             causeIndex++;

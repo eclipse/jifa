@@ -195,7 +195,7 @@ public class GCDiagnoser {
         }
         List<GCEvent> gcEvents = model.getGcEvents();
         for (int i = 0; i < gcEvents.size() - 1; i++) {
-            if (gcEvents.get(i).getEventType() == G1_YOUNG_MIXED_GC &&
+            if (gcEvents.get(i).getEventType() == G1_MIXED_GC &&
                     gcEvents.get(i + 1).hasSpecialSituation(GCSpecialSituation.INITIAL_MARK)) {
                 addDiagnose(new GCModel.ProblemAndSuggestion(
                         new I18nStringView("jifa.gclog.diagnosis.problems.g1FrequentConcurrentCycle"),
