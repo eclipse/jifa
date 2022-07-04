@@ -228,7 +228,7 @@ public abstract class JDK11G1OrGenerationalGCLogParser extends AbstractJDK11GCLo
         GCEvent event;
         // cms does not have a line to indicate its beginning, hard code here
         if (parser.getMetadata().getCollector() == GCCollectorType.CMS &&
-                phaseType == INITIAL_MARK && !end) {
+                phaseType == CMS_INITIAL_MARK && !end) {
             event = new GCEvent();
             event.setEventType(CMS_CONCURRENT_MARK_SWEPT);
             event.setStartTime(context.get(UPTIME));
@@ -247,6 +247,10 @@ public abstract class JDK11G1OrGenerationalGCLogParser extends AbstractJDK11GCLo
             phase.setEventType(phaseType);
             phase.setGcid(context.get(GCID));
             phase.setStartTime(context.get(UPTIME));
+            if (phaseType == G1_CONCURRENT_MARK_ABORT || phaseType == G1_CONCURRENT_MARK_RESET_FOR_OVERFLOW ||
+                    phaseType == CMS_CONCURRENT_INTERRUPTED || phaseType == CMS_CONCURRENT_FAILURE) {
+                phase.setDuration(0);
+            }
             model.addPhase(event, phase);
         }
         parseCollectionAndDuration(phase, context, value);

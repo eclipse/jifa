@@ -25,8 +25,8 @@ import java.util.List;
 import static org.eclipse.jifa.gclog.model.GCEventType.*;
 
 public class JDK11GenerationalGCLogParser extends JDK11G1OrGenerationalGCLogParser {
-    private final static GCEventType[] CMS_CPU_TIME_EVENTS = {INITIAL_MARK, CONCURRENT_MARK,
-            CMS_CONCURRENT_PRECLEAN, REMARK, CMS_CONCURRENT_SWEEP, CMS_CONCURRENT_RESET};
+    private final static GCEventType[] CMS_CPU_TIME_EVENTS = {CMS_INITIAL_MARK, CMS_CONCURRENT_MARK,
+            CMS_CONCURRENT_PRECLEAN, CMS_REMARK, CMS_CONCURRENT_SWEEP, CMS_CONCURRENT_RESET};
 
     /*
      * cms
@@ -187,13 +187,13 @@ public class JDK11GenerationalGCLogParser extends JDK11G1OrGenerationalGCLogPars
             case "Phase 4: Move objects":
                 return SERIAL_MOVE_OBJECTS;
             case "Pause Initial Mark":
-                return INITIAL_MARK;
+                return CMS_INITIAL_MARK;
             case "Concurrent Mark":
-                return CONCURRENT_MARK;
+                return CMS_CONCURRENT_MARK;
             case "Concurrent Preclean":
                 return CMS_CONCURRENT_PRECLEAN;
             case "Pause Remark":
-                return REMARK;
+                return CMS_REMARK;
             case "Concurrent Sweep":
                 return CMS_CONCURRENT_SWEEP;
             case "Concurrent Reset":

@@ -70,7 +70,6 @@ public abstract class GCModel {
     private GCCollectorType collectorType;
     private GCLogStyle logStyle;
     private GCLogMetadata metadata;
-    private List<GCPhaseInfo> gcPhaseInfos;
     private List<String> gcEventsDetailCache;
 
     private List<ProblemAndSuggestion> problemAndSuggestion = new ArrayList<>();
@@ -351,10 +350,6 @@ public abstract class GCModel {
         parent.addPhase(phase);
     }
 
-    public List<GCPhaseInfo> getGcPhaseInfo() {
-        return gcPhaseInfos;
-    }
-
     private static final List<GCCollectorType> SUPPORTED_COLLECTORS = List.of(G1, CMS, SERIAL, PARALLEL, UNKNOWN, ZGC);
 
     private boolean isGCCollectorSupported(GCCollectorType collectorType) {
@@ -384,7 +379,6 @@ public abstract class GCModel {
 
         // data in events should not change after this line
         // calculate specific data prepared for route api, order of these calls doesn't matter
-        calculatePhaseInfo();
         calculateGCEventDetails();
 
         calculateGcModelMetadata();
@@ -920,41 +914,6 @@ public abstract class GCModel {
 
     protected abstract List<GCEventType> getSupportedPhaseEventTypes();
 
-    private void calculatePhaseInfo() {
-        //DoubleData[] is array with length 3 that records duration, interval and pause
-        List<GCEventType> phaseInfoPhases = getSupportedPhaseEventTypes();
-        Map<GCEventType, DoubleData[]> gcPhaseTimeMap = new HashMap<>();
-        for (GCEvent event : gcEvents) {
-            putDurationIntervalPause(gcPhaseTimeMap, event);
-            //phases
-            if (!event.hasPhases()) {
-                continue;
-            }
-            for (GCEvent phase : event.getPhases()) {
-                if (phaseInfoPhases.contains(phase.getEventType()))
-                    putDurationIntervalPause(gcPhaseTimeMap, phase);
-            }
-        }
-
-        gcPhaseInfos = new ArrayList<>();
-        for (GCEventType phase : phaseInfoPhases) {
-            if (gcPhaseTimeMap.containsKey(phase)) {
-                DoubleData[] doubleDatas = gcPhaseTimeMap.get(phase);
-                DoubleData durations = doubleDatas[0];
-                DoubleData intervals = doubleDatas[1];
-                DoubleData pauses = doubleDatas[2];
-                gcPhaseInfos.add(new GCPhaseInfo(phase.getName(),
-                        durations.getN(),
-                        durations.average(),
-                        durations.getMax(),
-                        durations.getSum(),
-                        intervals.getN() == 0 ? UNKNOWN_DOUBLE : intervals.average(),
-                        phase.getPause() == GCPause.PAUSE
-                ));
-            }
-        }
-    }
-
     public String toDebugString() {
         StringBuilder sb = new StringBuilder();
         for (GCEvent event : gcEvents) {
@@ -1101,19 +1060,6 @@ public abstract class GCModel {
 
     public int getConcurrentThread() {
         return concurrentThread;
-    }
-
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class GCPhaseInfo {
-        private String name;
-        private int count;
-        private double avgTime;
-        private double maxTime;
-        private double totalTime;
-        private double avgInterval;
-        private boolean stw;
     }
 
     @Data

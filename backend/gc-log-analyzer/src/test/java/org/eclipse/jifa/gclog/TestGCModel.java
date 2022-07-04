@@ -93,7 +93,7 @@ public class TestGCModel {
         events[3].setEventType(G1_CONCURRENT_CYCLE);
         events[3].setStartTime(16.0 * 1000);
         events[3].setDuration(1.2 * 1000);
-        GCEventType[] concurrentCyclePhases = {REMARK, G1_PAUSE_CLEANUP, G1_CONCURRENT_CLEAR_CLAIMED_MARKS};
+        GCEventType[] concurrentCyclePhases = {G1_REMARK, G1_PAUSE_CLEANUP, G1_CONCURRENT_CLEAR_CLAIMED_MARKS};
         double[] begins = {12.0, 12.2, 12.6};
         for (int i = 0; i < concurrentCyclePhases.length; i++) {
             GCEvent phase = new GCEvent(4);
@@ -108,7 +108,7 @@ public class TestGCModel {
         events[4].setEventType(G1_CONCURRENT_CYCLE);
         events[4].setStartTime(24 * 1000);
         events[4].setDuration(0.6 * 1000);
-        concurrentCyclePhases = new GCEventType[]{REMARK, G1_PAUSE_CLEANUP, G1_CONCURRENT_CLEAR_CLAIMED_MARKS};
+        concurrentCyclePhases = new GCEventType[]{G1_REMARK, G1_PAUSE_CLEANUP, G1_CONCURRENT_CLEAR_CLAIMED_MARKS};
         begins = new double[]{24.0, 24.1, 24.3};
         for (int i = 0; i < concurrentCyclePhases.length; i++) {
             GCEvent phase = new GCEvent(5);
@@ -178,7 +178,7 @@ public class TestGCModel {
         // pause Distribution
         Map<String, int[]> pauseDistribution = model.getPauseDistribution(new TimeRange(10000, 30000), new int[]{0, 300});
         Assert.assertArrayEquals(pauseDistribution.get(FULL_GC.getName()), new int[]{0, 1});
-        Assert.assertArrayEquals(pauseDistribution.get(REMARK.getName()), new int[]{2, 0});
+        Assert.assertArrayEquals(pauseDistribution.get(G1_REMARK.getName()), new int[]{2, 0});
         Assert.assertArrayEquals(pauseDistribution.get(G1_PAUSE_CLEANUP.getName()), new int[]{1, 1});
 
         // graph data
@@ -208,16 +208,6 @@ public class TestGCModel {
         Assert.assertEquals(metaspace.getDataByTimes().get(0).getData().get(1500L), 15 * 1024, DELTA);
         Assert.assertEquals(metaspace.getDataByTimes().get(1).getData().get(1500L), 20 * 1024, DELTA);
 
-        // phase info
-        Assert.assertEquals(model.getGcPhaseInfo().get(0).getName(), "Young GC");
-        Assert.assertEquals(model.getGcPhaseInfo().get(0).getCount(), 2);
-        Assert.assertEquals(model.getGcPhaseInfo().get(0).getMaxTime(), 0.5 * 1000, DELTA);
-        Assert.assertEquals(model.getGcPhaseInfo().get(0).getTotalTime(), (0.3 + 0.5) * 1000, DELTA);
-        Assert.assertEquals(model.getGcPhaseInfo().get(0).getAvgTime(), (0.3 + 0.5) / 2 * 1000, DELTA);
-        Assert.assertEquals(model.getGcPhaseInfo().get(1).getName(), "Full GC");
-        Assert.assertEquals(model.getGcPhaseInfo().get(3).getName(), "Remark");
-        Assert.assertEquals(model.getGcPhaseInfo().get(3).getAvgTime(), (0.2 + 0.1) / 2 * 1000, DELTA);
-
         // diagnose
         Assert.assertTrue(hasDiagnose("jifa.gclog.diagnosis.problems.metaspaceFullGC"));
         Assert.assertTrue(hasDiagnose("jifa.gclog.diagnosis.problems.fullGC"));
@@ -226,7 +216,7 @@ public class TestGCModel {
         Assert.assertEquals(model.getGcEvents().get(0).toString(),
                 "(0)1970-01-01 08:00:02.000 1.000: [Young GC (G1 Evacuation Pause) (To-space Exhausted), 0.500s] [Young: 20M->10M(200M)] [Old: 10M->12M(100M)] [Humongous: 10M->10M] [Total: 40M->32M(300M)] [Metaspace: 15M->15M(20M)] [promotion 2048 K]");
         Assert.assertEquals(model.getGcEvents().get(4).toString(),
-                "(4)1970-01-01 08:00:25.000 24.000: [Concurrent Cycle, 0.600s] [interval 6.800s] [Remark 0.100s] [Pause Cleanup 0.200s]");
+                "(4)1970-01-01 08:00:25.000 24.000: [Concurrent Cycle, 0.600s] [interval 6.800s] [Pause Remark 0.100s] [Pause Cleanup 0.200s]");
     }
 
     boolean hasDiagnose(String name) {

@@ -44,11 +44,10 @@ public class G1GCModel extends GCModel {
     private final static List<GCEventType> SUPPORTED_PHASE_EVENT_TYPES = Arrays.asList(
             YOUNG_GC,
             FULL_GC,
-            INITIAL_MARK,
             G1_CONCURRENT_CYCLE,
             G1_CONCURRENT_SCAN_ROOT_REGIONS,
-            CONCURRENT_MARK,
-            REMARK,
+            CMS_CONCURRENT_MARK,
+            CMS_REMARK,
             G1_PAUSE_CLEANUP
     );
 
@@ -78,7 +77,7 @@ public class G1GCModel extends GCModel {
             YOUNG_GC.getName(),
             G1_YOUNG_MIXED_GC.getName(),
             FULL_GC.getName(),
-            REMARK.getName(),
+            G1_REMARK.getName(),
             G1_PAUSE_CLEANUP.getName()
     );
 
@@ -162,7 +161,7 @@ public class G1GCModel extends GCModel {
                 if (event.getLastPhaseOfType(G1_CONCURRENT_MARK_ABORT) != null) {
                     return;
                 }
-                GCEvent remark = event.getLastPhaseOfType(REMARK);
+                GCEvent remark = event.getLastPhaseOfType(G1_REMARK);
                 lastRemarkEndTime.set(remark.getEndTime());
             } else if ((event.getEventType() == YOUNG_GC || event.getEventType() == FULL_GC || event.getEventType() == G1_YOUNG_MIXED_GC)
                     && event.getStartTime() > lastRemarkEndTime.get()) {
