@@ -67,7 +67,7 @@ export default {
           {
             metric: this.$t('jifa.gclog.pauseInfo.throughput'),
             value: resp.data.throughput < 0 ? "N/A" : (resp.data.throughput * 100).toFixed(2) + "%",
-            hint: this.$t('jifa.gclog.pauseInfo.throughputHint'),
+            hint: 'jifa.gclog.pauseInfo.throughputHint',
             bad: resp.data.throughput >= 0 && resp.data.throughput <= 90
           },
           {
