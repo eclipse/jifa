@@ -1001,14 +1001,12 @@ public abstract class GCModel {
     }
 
     private void calculateGcModelMetadata() {
-        Set<String> causes = new HashSet<>();
-        for (GCEvent gcEvent : getGcEvents()) {
-            if (gcEvent.getCause() != null) {
-                causes.add(gcEvent.getCause());
-            }
-        }
         metadata = new GCLogMetadata();
-        metadata.setCauses(new ArrayList<>(causes));
+        metadata.setCauses(gcEvents.stream()
+                .map(GCEvent::getCause)
+                .filter(Objects::nonNull)
+                .distinct()
+                .collect(Collectors.toList()));
         metadata.setCollector(getCollectorType().toString());
         metadata.setLogStyle(getLogStyle().toString());
         metadata.setPauseless(isPauseless());
