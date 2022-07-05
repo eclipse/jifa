@@ -18,7 +18,6 @@ import org.eclipse.jifa.gclog.util.LongData;
 import org.eclipse.jifa.gclog.vo.GCCollectorType;
 import org.eclipse.jifa.gclog.vo.TimeRange;
 
-import java.util.Arrays;
 import java.util.List;
 
 import static org.eclipse.jifa.gclog.model.GCEvent.UNKNOWN_LONG;
@@ -27,51 +26,43 @@ import static org.eclipse.jifa.gclog.vo.HeapGeneration.METASPACE;
 import static org.eclipse.jifa.gclog.vo.HeapGeneration.OLD;
 
 public class CMSGCModel extends GenerationalGCModel {
-
-    private final static List<GCEventType> SUPPORTED_PHASE_EVENT_TYPES = Arrays.asList(
-            YOUNG_GC,
-            FULL_GC,
-            CMS_CONCURRENT_MARK_SWEPT,
-            CMS_INITIAL_MARK,
-            CMS_CONCURRENT_MARK,
-            CMS_CONCURRENT_PRECLEAN,
-            CMS_CONCURRENT_ABORTABLE_PRECLEAN,
-            CMS_REMARK,
-            CMS_CONCURRENT_SWEEP,
-            CMS_CONCURRENT_RESET,
-            CMS_CONCURRENT_INTERRUPTED
-    );
-
-    @Override
-    protected List<GCEventType> getSupportedPhaseEventTypes() {
-        return SUPPORTED_PHASE_EVENT_TYPES;
-    }
-
-    private final static List<String> PAUSE_EVENT_NAMES = Arrays.asList(
-            YOUNG_GC.getName(),
-            FULL_GC.getName(),
-            CMS_INITIAL_MARK.getName(),
-            CMS_REMARK.getName()
-    );
-
-    @Override
-    protected List<String> getPauseEventNames() {
-        return PAUSE_EVENT_NAMES;
-    }
+    private static GCCollectorType collector = GCCollectorType.CMS;
 
     public CMSGCModel() {
-        super(GCCollectorType.CMS);
+        super(collector);
     }
 
-    private final static List<String> METADATA_EVENT_TYPES = Arrays.asList(
-            YOUNG_GC.getName(),
-            FULL_GC.getName(),
-            CMS_CONCURRENT_MARK_SWEPT.getName()
-    );
+    private static List<GCEventType> allEventTypes = GCModel.calcAllEventTypes(collector);
+    private static List<GCEventType> pauseEventTypes = GCModel.calcPauseEventTypes(collector);
+    private static List<GCEventType> mainPauseEventTypes = GCModel.calcMainPauseEventTypes(collector);
+    private static List<GCEventType> parentEventTypes = GCModel.calcParentEventTypes(collector);
+    private static List<GCEventType> importantEventTypes = List.of(YOUNG_GC, FULL_GC, CMS_CONCURRENT_MARK_SWEPT,
+            CMS_INITIAL_MARK, CMS_INITIAL_MARK, CMS_CONCURRENT_ABORTABLE_PRECLEAN, CMS_FINAL_REMARK, CMS_CONCURRENT_SWEEP);
+
 
     @Override
-    protected List<String> getMetadataEventTypes() {
-        return METADATA_EVENT_TYPES;
+    protected List<GCEventType> getAllEventTypes() {
+        return allEventTypes;
+    }
+
+    @Override
+    protected List<GCEventType> getPauseEventTypes() {
+        return pauseEventTypes;
+    }
+
+    @Override
+    protected List<GCEventType> getMainPauseEventTypes() {
+        return mainPauseEventTypes;
+    }
+
+    @Override
+    protected List<GCEventType> getImportantEventTypes() {
+        return importantEventTypes;
+    }
+
+    @Override
+    protected List<GCEventType> getParentEventTypes() {
+        return parentEventTypes;
     }
 
     @Override

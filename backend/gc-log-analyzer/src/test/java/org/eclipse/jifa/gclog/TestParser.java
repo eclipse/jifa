@@ -483,8 +483,8 @@ public class TestParser {
         Assert.assertEquals(cms.getLastPhaseOfType(GCEventType.CMS_INITIAL_MARK).getStartTime(), 675164, DELTA);
         Assert.assertEquals(cms.getLastPhaseOfType(GCEventType.CMS_CONCURRENT_MARK).getDuration(), 34415, DELTA);
         Assert.assertEquals(cms.getLastPhaseOfType(GCEventType.CMS_CONCURRENT_MARK).getCpuTime().getUser(), 154390, DELTA);
-        Assert.assertEquals(cms.getLastPhaseOfType(GCEventType.CMS_REMARK).getCpuTime().getUser(), 770, DELTA);
-        Assert.assertEquals(cms.getLastPhaseOfType(GCEventType.CMS_REMARK).getDuration(), 431.5, DELTA);
+        Assert.assertEquals(cms.getLastPhaseOfType(GCEventType.CMS_FINAL_REMARK).getCpuTime().getUser(), 770, DELTA);
+        Assert.assertEquals(cms.getLastPhaseOfType(GCEventType.CMS_FINAL_REMARK).getDuration(), 431.5, DELTA);
         Assert.assertEquals(cms.getLastPhaseOfType(GCEventType.CMS_CONCURRENT_RESET).getDuration(), 237, DELTA);
     }
 
@@ -875,15 +875,15 @@ public class TestParser {
             Assert.assertTrue(phase.getStartTime() != UNKNOWN_DOUBLE);
             Assert.assertTrue(phase.getDuration() != UNKNOWN_DOUBLE);
             Assert.assertNotNull(phase.getCpuTime());
-            if (phase.getEventType() == GCEventType.CMS_INITIAL_MARK || phase.getEventType() == GCEventType.CMS_REMARK) {
+            if (phase.getEventType() == GCEventType.CMS_INITIAL_MARK || phase.getEventType() == GCEventType.CMS_FINAL_REMARK) {
                 Assert.assertNotNull(phase.getCollectionResult().getSummary());
             }
         }
         Assert.assertEquals(cms.getLastPhaseOfType(GCEventType.CMS_INITIAL_MARK).getStartTime(), 3231, DELTA);
         Assert.assertEquals(cms.getLastPhaseOfType(GCEventType.CMS_CONCURRENT_MARK).getDuration(), 22.229, DELTA);
         Assert.assertEquals(cms.getLastPhaseOfType(GCEventType.CMS_CONCURRENT_MARK).getCpuTime().getUser(), 70, DELTA);
-        Assert.assertEquals(cms.getLastPhaseOfType(GCEventType.CMS_REMARK).getCpuTime().getUser(), 20, DELTA);
-        Assert.assertEquals(cms.getLastPhaseOfType(GCEventType.CMS_REMARK).getDuration(), 1.991, DELTA);
+        Assert.assertEquals(cms.getLastPhaseOfType(GCEventType.CMS_FINAL_REMARK).getCpuTime().getUser(), 20, DELTA);
+        Assert.assertEquals(cms.getLastPhaseOfType(GCEventType.CMS_FINAL_REMARK).getDuration(), 1.991, DELTA);
         Assert.assertEquals(cms.getLastPhaseOfType(GCEventType.CMS_CONCURRENT_RESET).getDuration(), 0.386, DELTA);
         Assert.assertEquals(cms.getLastPhaseOfType(GCEventType.CMS_CONCURRENT_SWEEP).getCollectionResult().getFirstItemOfGeneRation(OLD), new GCCollectionResultItem(OLD, 142662 * 1024, 92308 * 1024, 174784 * 1024));
 

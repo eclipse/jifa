@@ -22,6 +22,8 @@ import java.util.*;
 
 import static org.eclipse.jifa.gclog.model.GCEvent.UNKNOWN_INT;
 import static org.eclipse.jifa.gclog.model.GCEventType.*;
+import static org.eclipse.jifa.gclog.vo.GCPause.CONCURRENT;
+import static org.eclipse.jifa.gclog.vo.GCPause.PAUSE;
 
 public class ZGCModel extends GCModel {
 
@@ -31,43 +33,45 @@ public class ZGCModel extends GCModel {
     private List<GCEvent> allocationStalls = new ArrayList<>();
     private int recommendMaxHeapSize = UNKNOWN_INT;
 
-    private final static List<GCEventType> SUPPORTED_PHASE_EVENT_TYPES = Arrays.asList(
-            ZGC_GARBAGE_COLLECTION,
-            ZGC_PAUSE_MARK_START,
-            ZGC_PAUSE_MARK_END,
-            ZGC_PAUSE_RELOCATE_START,
-            ZGC_CONCURRENT_MARK,
-            ZGC_CONCURRENT_NONREF,
-            ZGC_CONCURRENT_RESET_RELOC_SET,
-            ZGC_CONCURRENT_DETATCHED_PAGES,
-            ZGC_CONCURRENT_SELECT_RELOC_SET,
-            ZGC_CONCURRENT_PREPARE_RELOC_SET,
-            ZGC_CONCURRENT_RELOCATE
-    );
 
-    @Override
-    protected List<GCEventType> getSupportedPhaseEventTypes() {
-        return SUPPORTED_PHASE_EVENT_TYPES;
-    }
-
-    private final static List<String> PAUSE_EVENT_NAMES = Arrays.asList(
-            ZGC_PAUSE_MARK_START.getName(),
-            ZGC_PAUSE_MARK_END.getName(),
-            ZGC_PAUSE_RELOCATE_START.getName()
-    );
-
-    @Override
-    protected List<String> getPauseEventNames() {
-        return PAUSE_EVENT_NAMES;
-    }
+    private static GCCollectorType collector = GCCollectorType.ZGC;
 
     public ZGCModel() {
-        super(GCCollectorType.ZGC);
+        super(collector);
     }
 
-    private final static List<String> METADATA_EVENT_TYPES = Arrays.asList(
-            ZGC_GARBAGE_COLLECTION.getName()
-    );
+    private static List<GCEventType> allEventTypes = GCModel.calcAllEventTypes(collector);
+    private static List<GCEventType> pauseEventTypes = GCModel.calcPauseEventTypes(collector);
+    private static List<GCEventType> mainPauseEventTypes = GCModel.calcMainPauseEventTypes(collector);
+    private static List<GCEventType> parentEventTypes = GCModel.calcParentEventTypes(collector);
+    private static List<GCEventType> importantEventTypes = List.of(ZGC_GARBAGE_COLLECTION, ZGC_PAUSE_MARK_START,
+            ZGC_PAUSE_MARK_END, ZGC_PAUSE_RELOCATE_START, ZGC_CONCURRENT_MARK, ZGC_CONCURRENT_NONREF,
+            ZGC_CONCURRENT_SELECT_RELOC_SET, ZGC_CONCURRENT_PREPARE_RELOC_SET, ZGC_CONCURRENT_RELOCATE);
+
+    @Override
+    protected List<GCEventType> getAllEventTypes() {
+        return allEventTypes;
+    }
+
+    @Override
+    protected List<GCEventType> getPauseEventTypes() {
+        return pauseEventTypes;
+    }
+
+    @Override
+    protected List<GCEventType> getMainPauseEventTypes() {
+        return mainPauseEventTypes;
+    }
+
+    @Override
+    protected List<GCEventType> getImportantEventTypes() {
+        return importantEventTypes;
+    }
+
+    @Override
+    protected List<GCEventType> getParentEventTypes() {
+        return parentEventTypes;
+    }
 
     public List<GCEvent> getAllocationStalls() {
         return allocationStalls;
@@ -77,10 +81,6 @@ public class ZGCModel extends GCModel {
         this.allocationStalls.add(allocationStall);
     }
 
-    @Override
-    protected List<String> getMetadataEventTypes() {
-        return METADATA_EVENT_TYPES;
-    }
 
     public List<ZStatistics> getStatistics() {
         return statistics;

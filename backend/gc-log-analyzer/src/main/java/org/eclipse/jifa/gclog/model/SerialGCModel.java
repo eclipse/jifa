@@ -22,41 +22,40 @@ import static org.eclipse.jifa.gclog.model.GCEventType.*;
 
 public class SerialGCModel extends GenerationalGCModel {
 
+    private static GCCollectorType collector = GCCollectorType.SERIAL;
+
     public SerialGCModel() {
-        super(GCCollectorType.SERIAL);
+        super(collector);
     }
 
-    private final static List<String> PAUSE_EVENT_NAMES = Arrays.asList(
-            YOUNG_GC.getName(),
-            FULL_GC.getName()
-    );
+    private static List<GCEventType> allEventTypes = GCModel.calcAllEventTypes(collector);
+    private static List<GCEventType> pauseEventTypes = GCModel.calcPauseEventTypes(collector);
+    private static List<GCEventType> mainPauseEventTypes = GCModel.calcMainPauseEventTypes(collector);
+    private static List<GCEventType> parentEventTypes = GCModel.calcParentEventTypes(collector);
+    private static List<GCEventType> importantEventTypes = List.of(YOUNG_GC, FULL_GC);
 
     @Override
-    protected List<String> getPauseEventNames() {
-        return PAUSE_EVENT_NAMES;
+    protected List<GCEventType> getAllEventTypes() {
+        return allEventTypes;
     }
 
-    private final static List<GCEventType> SUPPORTED_PHASE_EVENT_TYPES = Arrays.asList(
-            YOUNG_GC,
-            FULL_GC,
-            SERIAL_MARK_LIFE_OBJECTS,
-            SERIAL_COMPUTE_NEW_OBJECT_ADDRESSES,
-            SERIAL_ADJUST_POINTERS,
-            SERIAL_MOVE_OBJECTS
-    );
-
     @Override
-    protected List<GCEventType> getSupportedPhaseEventTypes() {
-        return SUPPORTED_PHASE_EVENT_TYPES;
+    protected List<GCEventType> getPauseEventTypes() {
+        return pauseEventTypes;
     }
 
-    private final static List<String> METADATA_EVENT_TYPES = Arrays.asList(
-            YOUNG_GC.getName(),
-            FULL_GC.getName()
-    );
+    @Override
+    protected List<GCEventType> getMainPauseEventTypes() {
+        return mainPauseEventTypes;
+    }
 
     @Override
-    protected List<String> getMetadataEventTypes() {
-        return METADATA_EVENT_TYPES;
+    protected List<GCEventType> getImportantEventTypes() {
+        return importantEventTypes;
+    }
+
+    @Override
+    protected List<GCEventType> getParentEventTypes() {
+        return parentEventTypes;
     }
 }

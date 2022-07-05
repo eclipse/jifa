@@ -34,7 +34,7 @@ import static org.eclipse.jifa.gclog.vo.HeapGeneration.*;
 public class JDK8GenerationalGCLogParser extends AbstractJDK8GCLogParser {
     private final static GCEventType[] YOUNG_FULL_GC = {YOUNG_GC, FULL_GC};
     private final static GCEventType[] REFERENCE_GC_TYPES = {YOUNG_GC, FULL_GC, WEAK_REFS_PROCESSING};
-    private final static GCEventType[] CPU_TIME_TYPES = {YOUNG_GC, FULL_GC, CMS_INITIAL_MARK, CMS_CONCURRENT_MARK, CMS_CONCURRENT_PRECLEAN, CMS_CONCURRENT_ABORTABLE_PRECLEAN, CMS_REMARK, CMS_CONCURRENT_SWEEP, CMS_CONCURRENT_RESET};
+    private final static GCEventType[] CPU_TIME_TYPES = {YOUNG_GC, FULL_GC, CMS_INITIAL_MARK, CMS_CONCURRENT_MARK, CMS_CONCURRENT_PRECLEAN, CMS_CONCURRENT_ABORTABLE_PRECLEAN, CMS_FINAL_REMARK, CMS_CONCURRENT_SWEEP, CMS_CONCURRENT_RESET};
     private final static GCEventType[] CMS_FULL = {CMS_CONCURRENT_MARK_SWEPT, FULL_GC};
 
     /*
@@ -235,7 +235,7 @@ public class JDK8GenerationalGCLogParser extends AbstractJDK8GCLogParser {
             case "CMS-concurrent-abortable-preclean":
                 return CMS_CONCURRENT_ABORTABLE_PRECLEAN;
             case "CMS Final Remark":
-                return CMS_REMARK;
+                return CMS_FINAL_REMARK;
             case "Rescan":
                 return CMS_RESCAN;
             case "weak refs processing":

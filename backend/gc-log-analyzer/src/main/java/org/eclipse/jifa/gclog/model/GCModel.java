@@ -32,6 +32,8 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.eclipse.jifa.gclog.model.GCEvent.*;
 import static org.eclipse.jifa.gclog.model.GCEventType.*;
@@ -806,7 +808,7 @@ public abstract class GCModel {
             }
             chartEvents.add(new TimeLineChartEvent(event.getEventType().getName(), event.getEndTime(), 1));
         }
-        List<String> labels = getMetadataEventTypes();
+        List<String> labels = getParentEventTypes().stream().map(GCEventType::getName).collect(Collectors.toList());
         return new TimeLineChartView.TimeLineChartViewBuilder()
                 .setStartTime(startTime)
                 .setEndTime(endTime)
@@ -818,7 +820,7 @@ public abstract class GCModel {
 
     public TimeLineChartView calculateGCOverviewPause(double startTime, double endTime) {
         List<TimeLineChartEvent> chartEvents = new ArrayList<>();
-        List<String> labels = getPauseEventNames();
+        List<String> labels = getMainPauseEventTypes().stream().map(GCEventType::getName).collect(Collectors.toList());
         for (GCEvent event : gcEvents) {
             if (event.getEventType() == SAFEPOINT || event.getEndTime() < startTime) {
                 continue;
@@ -831,7 +833,7 @@ public abstract class GCModel {
             }
             if (event.getEventType().getPause() == GCPause.PARTIAL && event.getPhases() != null) {
                 for (GCEvent phase : event.getPhases()) {
-                    if (labels.contains(phase.getEventType().getName())) {
+                    if (getMainPauseEventTypes().contains(phase.getEventType())) {
                         chartEvents.add(new TimeLineChartEvent(phase.getEventType().getName(), phase.getEndTime(), phase.getPause()));
                     }
                 }
@@ -845,7 +847,39 @@ public abstract class GCModel {
                 .createByPreservingData();
     }
 
-    protected abstract List<String> getPauseEventNames();
+    protected static List<GCEventType> calcAllEventTypes(GCCollectorType collector) {
+        return GCEventType.getAllEventTypes().stream()
+                .filter(e -> e.getGcs().contains(collector))
+                .collect(Collectors.toList());
+    }
+
+    protected static List<GCEventType> calcPauseEventTypes(GCCollectorType collector) {
+        return GCEventType.getAllEventTypes().stream()
+                .filter(e -> e.getGcs().contains(collector) && e.getPause() == GCPause.PAUSE)
+                .collect(Collectors.toList());
+    }
+
+    protected static List<GCEventType> calcMainPauseEventTypes(GCCollectorType collector) {
+        return GCEventType.getAllEventTypes().stream()
+                .filter(e -> e.getGcs().contains(collector) && e.isMainPauseEventType())
+                .collect(Collectors.toList());
+    }
+
+    protected static List<GCEventType> calcParentEventTypes(GCCollectorType collector) {
+        return Stream.of(YOUNG_GC, G1_MIXED_GC, CMS_CONCURRENT_MARK_SWEPT, G1_CONCURRENT_CYCLE, FULL_GC, ZGC_GARBAGE_COLLECTION)
+                .filter(e -> e.getGcs().contains(collector))
+                .collect(Collectors.toList());
+    }
+
+    protected abstract List<GCEventType> getAllEventTypes();
+
+    protected abstract List<GCEventType> getPauseEventTypes();
+
+    protected abstract List<GCEventType> getMainPauseEventTypes();
+
+    protected abstract List<GCEventType> getParentEventTypes();
+
+    protected abstract List<GCEventType> getImportantEventTypes();
 
     public GCEvent getLastEventWithCondition(Predicate<GCEvent> condition) {
         for (int i = allEvents.size() - 1; i >= 0; i--) {
@@ -912,8 +946,6 @@ public abstract class GCModel {
         }
     }
 
-    protected abstract List<GCEventType> getSupportedPhaseEventTypes();
-
     public String toDebugString() {
         StringBuilder sb = new StringBuilder();
         for (GCEvent event : gcEvents) {
@@ -964,8 +996,6 @@ public abstract class GCModel {
         return new PageView<>(pagingRequest, filtered.size(), result);
     }
 
-    abstract protected List<String> getMetadataEventTypes();
-
     public GCLogMetadata getGcModelMetadata() {
         return metadata;
     }
@@ -986,7 +1016,12 @@ public abstract class GCModel {
         metadata.setTimestamp(getReferenceTimestamp());
         metadata.setStartTime(getStartTime());
         metadata.setEndTime(getEndTime());
-        metadata.setEventTypes(getMetadataEventTypes());
+        metadata.setParentEventTypes(getParentEventTypes().stream().map(GCEventType::getName).collect(Collectors.toList()));
+        metadata.setImportantEventTypes(getImportantEventTypes().stream().map(GCEventType::getName).collect(Collectors.toList()));
+        metadata.setPauseEventTypes(getPauseEventTypes().stream().map(GCEventType::getName).collect(Collectors.toList()));
+        metadata.setAllEventTypes(getAllEventTypes().stream().map(GCEventType::getName).collect(Collectors.toList()));
+        metadata.setMainPauseEventTypes(getMainPauseEventTypes().stream().map(GCEventType::getName).collect(Collectors.toList()));
+
     }
 
     public TimeLineChartView getGraphView(String type, double timeSpan, double timePoint) {

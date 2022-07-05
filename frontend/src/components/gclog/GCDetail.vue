@@ -178,7 +178,7 @@ import {gclogService} from "@/util";
       },
       fetchMetadata() {
         axios.get(gclogService(this.file, 'metadata')).then(resp => {
-          this.gcEventTypeOptions = resp.data.eventTypes;
+          this.gcEventTypeOptions = resp.data.parentEventTypes;
           this.gcCauseOptions = resp.data.causes;
           this.referenceTimestamp = resp.data.timestamp;
           this.startTime = resp.data.startTime

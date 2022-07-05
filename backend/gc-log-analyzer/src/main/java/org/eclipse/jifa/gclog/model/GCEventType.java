@@ -18,8 +18,10 @@ import org.eclipse.jifa.gclog.vo.GCEventLevel;
 import org.eclipse.jifa.gclog.vo.GCPause;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import static org.eclipse.jifa.gclog.vo.GCEventLevel.*;
 import static org.eclipse.jifa.gclog.vo.GCPause.*;
 
 /*
@@ -32,7 +34,7 @@ public class GCEventType {
     private GCPause pause;
     private GCEventType[] phaseParentEventType;
     private GCEventLevel level;
-    private GCCollectorType[] gcs; // which gcs do this event type may occur?
+    private List<GCCollectorType> gcs; // which gcs do this event type may occur?
 
     public static final GCEventType UNDEFINED = new GCEventType("Undefined", GCPause.PARTIAL, new GCCollectorType[]{});
 
@@ -57,7 +59,8 @@ public class GCEventType {
 
     // shared parent
     private static final GCEventType[] PARENT_CONCURRENT_MARK_CYCLE = {G1_CONCURRENT_CYCLE, CMS_CONCURRENT_MARK_SWEPT, ZGC_GARBAGE_COLLECTION};
-    private static final GCEventType[] PARENT_YOUNG_OLD_FULL_GC = {YOUNG_GC, FULL_GC, G1_MIXED_GC, ZGC_GARBAGE_COLLECTION};
+    private static final GCEventType[] PARENT_YOUNG_OLD_FULL_GC = {YOUNG_GC, FULL_GC, G1_MIXED_GC};
+    private static final GCEventType[] PARENT_ZGC = {ZGC_GARBAGE_COLLECTION};
 
     // internal phase types
     // shared by serial and cms
@@ -85,16 +88,16 @@ public class GCEventType {
     public static final GCEventType G1_CONCURRENT_MARK_FROM_ROOTS = new GCEventType("Concurrent Mark From Roots", GCPause.CONCURRENT, PARENT_CONCURRENT_MARK_CYCLE, G1);
 
     public static final GCEventType G1_CONCURRENT_PRECLEAN = new GCEventType("Concurrent Preclean", GCPause.CONCURRENT, PARENT_CONCURRENT_MARK_CYCLE, G1);
+    public static final GCEventType G1_CONCURRENT_MARK = new GCEventType("Concurrent Mark", GCPause.CONCURRENT, PARENT_CONCURRENT_MARK_CYCLE, G1);
+    public static final GCEventType G1_CONCURRENT_MARK_RESET_FOR_OVERFLOW = new GCEventType("Concurrent Mark Reset For Overflow", CONCURRENT, PARENT_CONCURRENT_MARK_CYCLE, G1);
+    public static final GCEventType G1_REMARK = new GCEventType("Pause Remark", PAUSE, PARENT_CONCURRENT_MARK_CYCLE, G1);
     public static final GCEventType G1_CONCURRENT_REBUILD_REMEMBERED_SETS = new GCEventType("Concurrent Rebuild Remembered Sets", GCPause.CONCURRENT, PARENT_CONCURRENT_MARK_CYCLE, G1);
     public static final GCEventType G1_PAUSE_CLEANUP = new GCEventType("Pause Cleanup", PAUSE, PARENT_CONCURRENT_MARK_CYCLE, G1);
     public static final GCEventType G1_CONCURRENT_CLEANUP_FOR_NEXT_MARK = new GCEventType("Concurrent Cleanup", GCPause.CONCURRENT, PARENT_CONCURRENT_MARK_CYCLE, G1);
     public static final GCEventType G1_FINALIZE_MARKING = new GCEventType("Finalize Marking", PAUSE, PARENT_CONCURRENT_MARK_CYCLE, GCEventLevel.SUBPHASE, G1);
     public static final GCEventType G1_UNLOADING = new GCEventType("Unloading", PAUSE, PARENT_CONCURRENT_MARK_CYCLE, GCEventLevel.SUBPHASE, G1);
     public static final GCEventType G1_GC_REFPROC = new GCEventType("Reference Processing", PAUSE, PARENT_CONCURRENT_MARK_CYCLE, GCEventLevel.SUBPHASE, G1);
-    public static final GCEventType G1_CONCURRENT_MARK_ABORT = new GCEventType("Concurrent Mark Abort", CONCURRENT, PARENT_CONCURRENT_MARK_CYCLE,G1);
-    public static final GCEventType G1_CONCURRENT_MARK_RESET_FOR_OVERFLOW = new GCEventType("Concurrent Mark Reset For Overflow", CONCURRENT, PARENT_CONCURRENT_MARK_CYCLE, G1);
-    public static final GCEventType G1_REMARK = new GCEventType("Pause Remark", PAUSE, PARENT_CONCURRENT_MARK_CYCLE, G1);
-    public static final GCEventType G1_CONCURRENT_MARK = new GCEventType("Concurrent Mark", GCPause.CONCURRENT, PARENT_CONCURRENT_MARK_CYCLE, G1);
+    public static final GCEventType G1_CONCURRENT_MARK_ABORT = new GCEventType("Concurrent Mark Abort", CONCURRENT, PARENT_CONCURRENT_MARK_CYCLE, G1);
 
     public static final GCEventType G1_MARK_LIVE_OBJECTS = new GCEventType("Mark Live Objects", PAUSE, PARENT_YOUNG_OLD_FULL_GC, G1);
     public static final GCEventType G1_PREPARE_FOR_COMPACTION = new GCEventType("Prepare for Compaction", PAUSE, PARENT_YOUNG_OLD_FULL_GC, G1);
@@ -118,8 +121,11 @@ public class GCEventType {
     public static final GCEventType G1_FREE_CSET = new GCEventType("Free CSet", PAUSE, PARENT_YOUNG_OLD_FULL_GC, G1);
 
     // CMS
+    public static final GCEventType CMS_INITIAL_MARK = new GCEventType("Initial Mark", PAUSE, PARENT_CONCURRENT_MARK_CYCLE, CMS);
     public static final GCEventType CMS_CONCURRENT_PRECLEAN = new GCEventType("Concurrent Preclean", GCPause.CONCURRENT, PARENT_CONCURRENT_MARK_CYCLE, CMS);
     public static final GCEventType CMS_CONCURRENT_ABORTABLE_PRECLEAN = new GCEventType("Concurrent Abortable preclean", GCPause.CONCURRENT, PARENT_CONCURRENT_MARK_CYCLE, CMS);
+    public static final GCEventType CMS_CONCURRENT_MARK = new GCEventType("Concurrent Mark", GCPause.CONCURRENT, PARENT_CONCURRENT_MARK_CYCLE, CMS);
+    public static final GCEventType CMS_FINAL_REMARK = new GCEventType("Final Remark", PAUSE, PARENT_CONCURRENT_MARK_CYCLE, CMS);
     public static final GCEventType CMS_CONCURRENT_SWEEP = new GCEventType("Concurrent Sweep", GCPause.CONCURRENT, PARENT_CONCURRENT_MARK_CYCLE, CMS);
     public static final GCEventType CMS_CONCURRENT_RESET = new GCEventType("Concurrent Reset", GCPause.CONCURRENT, PARENT_CONCURRENT_MARK_CYCLE, CMS);
     public static final GCEventType CMS_CONCURRENT_INTERRUPTED = new GCEventType("Concurrent Mode Interrupted", CONCURRENT, PARENT_CONCURRENT_MARK_CYCLE, CMS);
@@ -128,22 +134,19 @@ public class GCEventType {
     public static final GCEventType CMS_CLASS_UNLOADING = new GCEventType("Class unloading", PAUSE, PARENT_CONCURRENT_MARK_CYCLE, GCEventLevel.SUBPHASE, CMS);
     public static final GCEventType CMS_SCRUB_SYMBOL_TABLE = new GCEventType("Scrub Symbol Table", PAUSE, PARENT_CONCURRENT_MARK_CYCLE, GCEventLevel.SUBPHASE, CMS);
     public static final GCEventType CMS_SCRUB_STRING_TABLE = new GCEventType("Scrub String Table", PAUSE, PARENT_CONCURRENT_MARK_CYCLE, GCEventLevel.SUBPHASE, CMS);
-    public static final GCEventType CMS_REMARK = new GCEventType("Pause Remark", PAUSE, PARENT_CONCURRENT_MARK_CYCLE, CMS);
-    public static final GCEventType CMS_INITIAL_MARK = new GCEventType("Initial Mark", PAUSE, PARENT_CONCURRENT_MARK_CYCLE, CMS);
-    public static final GCEventType CMS_CONCURRENT_MARK = new GCEventType("Concurrent Mark", GCPause.CONCURRENT, PARENT_CONCURRENT_MARK_CYCLE, CMS);
 
     // ZGC
-    public static final GCEventType ZGC_PAUSE_MARK_START = new GCEventType("Pause Mark Start", PAUSE, PARENT_YOUNG_OLD_FULL_GC,ZGC);
-    public static final GCEventType ZGC_PAUSE_MARK_END = new GCEventType("Pause Mark End", PAUSE, PARENT_YOUNG_OLD_FULL_GC,ZGC);
-    public static final GCEventType ZGC_PAUSE_RELOCATE_START = new GCEventType("Pause Relocate Start", PAUSE, PARENT_YOUNG_OLD_FULL_GC,ZGC);
-    public static final GCEventType ZGC_CONCURRENT_MARK = new GCEventType("Concurrent Mark", CONCURRENT, PARENT_YOUNG_OLD_FULL_GC,ZGC);
-    public static final GCEventType ZGC_CONCURRENT_NONREF = new GCEventType("Concurrent Process Non-Strong References", CONCURRENT, PARENT_YOUNG_OLD_FULL_GC,ZGC);
-    public static final GCEventType ZGC_CONCURRENT_RESET_RELOC_SET = new GCEventType("Concurrent Reset Relocation Set", CONCURRENT, PARENT_YOUNG_OLD_FULL_GC,ZGC);
-    public static final GCEventType ZGC_CONCURRENT_DETATCHED_PAGES = new GCEventType("Concurrent Destroy Detached Pages", CONCURRENT, PARENT_YOUNG_OLD_FULL_GC,ZGC);
-    public static final GCEventType ZGC_CONCURRENT_SELECT_RELOC_SET = new GCEventType("Concurrent Select Relocation Set", CONCURRENT, PARENT_YOUNG_OLD_FULL_GC,ZGC);
-    public static final GCEventType ZGC_CONCURRENT_PREPARE_RELOC_SET = new GCEventType("Concurrent Prepare Relocation Set", CONCURRENT, PARENT_YOUNG_OLD_FULL_GC,ZGC);
-    public static final GCEventType ZGC_CONCURRENT_RELOCATE = new GCEventType("Concurrent Relocate", CONCURRENT, PARENT_YOUNG_OLD_FULL_GC,ZGC);
-    public static final GCEventType ZGC_ALLOCATION_STALL = new GCEventType("Allocation Stall", PAUSE,ZGC);
+    public static final GCEventType ZGC_PAUSE_MARK_START = new GCEventType("Pause Mark Start", PAUSE, PARENT_ZGC, ZGC);
+    public static final GCEventType ZGC_PAUSE_MARK_END = new GCEventType("Pause Mark End", PAUSE, PARENT_ZGC, ZGC);
+    public static final GCEventType ZGC_PAUSE_RELOCATE_START = new GCEventType("Pause Relocate Start", PAUSE, PARENT_ZGC, ZGC);
+    public static final GCEventType ZGC_CONCURRENT_MARK = new GCEventType("Concurrent Mark", CONCURRENT, PARENT_ZGC, ZGC);
+    public static final GCEventType ZGC_CONCURRENT_NONREF = new GCEventType("Concurrent Process Non-Strong References", CONCURRENT, PARENT_ZGC, ZGC);
+    public static final GCEventType ZGC_CONCURRENT_RESET_RELOC_SET = new GCEventType("Concurrent Reset Relocation Set", CONCURRENT, PARENT_ZGC, ZGC);
+    public static final GCEventType ZGC_CONCURRENT_DETATCHED_PAGES = new GCEventType("Concurrent Destroy Detached Pages", CONCURRENT, PARENT_ZGC, ZGC);
+    public static final GCEventType ZGC_CONCURRENT_SELECT_RELOC_SET = new GCEventType("Concurrent Select Relocation Set", CONCURRENT, PARENT_ZGC, ZGC);
+    public static final GCEventType ZGC_CONCURRENT_PREPARE_RELOC_SET = new GCEventType("Concurrent Prepare Relocation Set", CONCURRENT, PARENT_ZGC, ZGC);
+    public static final GCEventType ZGC_CONCURRENT_RELOCATE = new GCEventType("Concurrent Relocate", CONCURRENT, PARENT_ZGC, ZGC);
+    public static final GCEventType ZGC_ALLOCATION_STALL = new GCEventType("Allocation Stall", PAUSE, ZGC);
 
     // other
     public static final GCEventType SAFEPOINT = new GCEventType("Safepoint", PAUSE, ALL_GCS);
@@ -166,13 +169,13 @@ public class GCEventType {
 
     // construction from outside not allowed, all instances are created in advance
     private GCEventType(String name, GCPause pause, GCCollectorType[] gcs) {
-        this(name, pause, null, GCEventLevel.EVENT, gcs);
+        this(name, pause, null, EVENT, gcs);
     }
 
     private GCEventType(String name, GCPause pause, GCEventType[] phaseParentEventType,
                         GCCollectorType[] gcs) {
         this(name, pause, phaseParentEventType,
-                phaseParentEventType == null ? GCEventLevel.EVENT : GCEventLevel.PHASE, gcs);
+                phaseParentEventType == null ? EVENT : GCEventLevel.PHASE, gcs);
     }
 
     public GCEventType(String name, GCPause pause, GCEventType[] phaseParentEventType,
@@ -181,7 +184,7 @@ public class GCEventType {
         this.pause = pause;
         this.phaseParentEventType = phaseParentEventType;
         this.level = level;
-        this.gcs = gcs;
+        this.gcs = Arrays.asList(gcs);
         allEventTypes.add(this);
     }
 
@@ -194,12 +197,22 @@ public class GCEventType {
         return level;
     }
 
-    public GCCollectorType[] getGcs() {
+    public List<GCCollectorType> getGcs() {
         return gcs;
     }
 
     public static List<GCEventType> getAllEventTypes() {
         return allEventTypes;
+    }
+
+    public boolean isMainPauseEventType() {
+        if (getPause() != PAUSE) {
+            return false;
+        }
+        if (level == EVENT) {
+            return true;
+        }
+        return level == PHASE && (phaseParentEventType == PARENT_ZGC || phaseParentEventType == PARENT_CONCURRENT_MARK_CYCLE);
     }
 
     public boolean isYoungGC() {

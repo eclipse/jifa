@@ -28,6 +28,7 @@ import static org.eclipse.jifa.gclog.vo.HeapGeneration.*;
 public class G1GCModel extends GCModel {
     private long heapRegionSize = UNKNOWN_INT;   // in kb
     private boolean regionSizeExact = false;
+    private static GCCollectorType collector = GCCollectorType.G1;
 
     public void setRegionSizeExact(boolean regionSizeExact) {
         this.regionSizeExact = regionSizeExact;
@@ -41,50 +42,43 @@ public class G1GCModel extends GCModel {
         return heapRegionSize;
     }
 
-    private final static List<GCEventType> SUPPORTED_PHASE_EVENT_TYPES = Arrays.asList(
-            YOUNG_GC,
-            FULL_GC,
-            G1_CONCURRENT_CYCLE,
-            G1_CONCURRENT_SCAN_ROOT_REGIONS,
-            CMS_CONCURRENT_MARK,
-            CMS_REMARK,
-            G1_PAUSE_CLEANUP
-    );
-
-    @Override
-    protected List<GCEventType> getSupportedPhaseEventTypes() {
-        return SUPPORTED_PHASE_EVENT_TYPES;
-    }
 
     public G1GCModel() {
-        super(GCCollectorType.G1);
+        super(collector);
     }
 
-    private final static List<String> METADATA_EVENT_TYPES = Arrays.asList(
-            YOUNG_GC.getName(),
-            G1_MIXED_GC.getName(),
-            G1_CONCURRENT_CYCLE.getName(),
-            FULL_GC.getName()
-    );
+    private static List<GCEventType> allEventTypes = GCModel.calcAllEventTypes(collector);
+    private static List<GCEventType> pauseEventTypes = GCModel.calcPauseEventTypes(collector);
+    private static List<GCEventType> mainPauseEventTypes = GCModel.calcMainPauseEventTypes(collector);
+    private static List<GCEventType> parentEventTypes = GCModel.calcParentEventTypes(collector);
+    private static List<GCEventType> importantEventTypes = List.of(YOUNG_GC, G1_MIXED_GC, FULL_GC, G1_CONCURRENT_CYCLE,
+            G1_CONCURRENT_MARK, G1_REMARK, G1_CONCURRENT_REBUILD_REMEMBERED_SETS, G1_PAUSE_CLEANUP);
 
     @Override
-    protected List<String> getMetadataEventTypes() {
-        return METADATA_EVENT_TYPES;
-
+    protected List<GCEventType> getAllEventTypes() {
+        return allEventTypes;
     }
-
-    private final static List<String> PAUSE_EVENT_NAMES = Arrays.asList(
-            YOUNG_GC.getName(),
-            G1_MIXED_GC.getName(),
-            FULL_GC.getName(),
-            G1_REMARK.getName(),
-            G1_PAUSE_CLEANUP.getName()
-    );
 
     @Override
-    protected List<String> getPauseEventNames() {
-        return PAUSE_EVENT_NAMES;
+    protected List<GCEventType> getPauseEventTypes() {
+        return pauseEventTypes;
     }
+
+    @Override
+    protected List<GCEventType> getMainPauseEventTypes() {
+        return mainPauseEventTypes;
+    }
+
+    @Override
+    protected List<GCEventType> getImportantEventTypes() {
+        return importantEventTypes;
+    }
+
+    @Override
+    protected List<GCEventType> getParentEventTypes() {
+        return parentEventTypes;
+    }
+
 
     private boolean collectionResultUsingRegion(GCEvent event) {
         GCEventType type = event.getEventType();
