@@ -68,17 +68,17 @@ export default {
             metric: this.$t('jifa.gclog.pauseInfo.throughput'),
             value: resp.data.throughput < 0 ? "N/A" : (resp.data.throughput * 100).toFixed(2) + "%",
             hint: 'jifa.gclog.pauseInfo.throughputHint',
-            bad: resp.data.throughput >= 0 && resp.data.throughput <= 90
+            bad: resp.data.throughput >= 0 && resp.data.throughput <= 0.9
           },
           {
             metric: this.$t('jifa.gclog.pauseInfo.pauseAvg'),
             value: formatTimePeriod(resp.data.pauseAvg),
-            bad: resp.data.pauseMax >= 0 && resp.data.pauseAvg <= this.longPauseThreshold / 2
+            bad: resp.data.pauseAvg >= this.longPauseThreshold
           },
           {
             metric: this.$t('jifa.gclog.pauseInfo.pauseMax'),
             value: formatTimePeriod(resp.data.pauseMax),
-            bad: resp.data.pauseMax >= 0 && resp.data.pauseMax <= this.longPauseThreshold * 2
+            bad: resp.data.pauseMax >= this.longPauseThreshold * 2
           },
         ]
         this.loadingStats = false;
@@ -106,7 +106,6 @@ export default {
                 }
               }
             }
-        partitions = partitions.slice(0, highPartitions)
 
         if (!chart) {
           chart = echarts.init(canvas)
@@ -115,7 +114,7 @@ export default {
         }
         const yAxisData = partitions.map((value, index) =>
             index === partitions.length - 1 ? `>${value}ms` : `${value} ~ ${partitions[index + 1]}ms`
-        )
+        ).slice(0, highPartitions + 1)
         const series = Object.keys(resp.data).map(key => {
           return {
             name: key,
