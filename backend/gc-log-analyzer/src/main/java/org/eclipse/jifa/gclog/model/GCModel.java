@@ -26,6 +26,7 @@ import lombok.ToString;
 import org.eclipse.jifa.common.request.PagingRequest;
 import org.eclipse.jifa.common.vo.PageView;
 import org.eclipse.jifa.gclog.vo.MemoryStatistics.MemoryStatisticsItem;
+import org.eclipse.jifa.gclog.vo.PhaseStatistics.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -220,6 +221,63 @@ public abstract class GCModel {
         double start = Math.max(range.getStart(), getStartTime());
         double end = Math.min(range.getEnd(), getEndTime());
         return new TimeRange(start, end);
+    }
+
+    private void putPhaseStatisticData(GCEvent event, String name, Map<String, DoubleData[]> map) {
+        DoubleData[] data = map.getOrDefault(name, null);
+        if (data == null) {
+            data = new DoubleData[2];
+            data[0] = new DoubleData();
+            data[1] = new DoubleData();
+            map.put(name, data);
+        }
+        data[0].add(event.getInterval());
+        data[1].add(event.getDuration());
+    }
+
+    private PhaseStatisticItem makePhaseStatisticItem(String name, DoubleData[] data) {
+        return new PhaseStatisticItem(name, data[1].getN(), data[0].average(), data[0].getMin()
+                , data[1].average(), data[1].getMax(), data[1].getSum());
+    }
+
+    public PhaseStatistics getPhaseStatistics(TimeRange range) {
+        range = makeValidTimeRange(range);
+        List<GCEventType> parents = getParentEventTypes();
+        // DoubleData[] is an array of interval and duration
+        Map<String, DoubleData[]> parentData = new HashMap<>();
+        List<Map<String, DoubleData[]>> phaseData = new ArrayList<>();
+        List<Map<String, DoubleData[]>> causeData = new ArrayList<>();
+        for (int i = 0; i < parents.size(); i++) {
+            phaseData.add(new HashMap<>());
+            causeData.add(new HashMap<>());
+        }
+        iterateEventsWithinTimeRange(gcEvents, range, event -> {
+            int index = parents.indexOf(event.getEventType());
+            if (index < 0) {
+                return;
+            }
+            putPhaseStatisticData(event, event.getEventType().getName(), parentData);
+            if (event.getCause() != null) {
+                putPhaseStatisticData(event, event.getCause(), causeData.get(index));
+            }
+            if (event.getPhases() != null) {
+                for (GCEvent phase : event.getPhases()) {
+                    putPhaseStatisticData(phase, phase.getEventType().getName(), phaseData.get(index));
+                }
+            }
+        });
+        List<ParentStatisticsInfo> result = new ArrayList<>();
+        for (int i = 0; i < parents.size(); i++) {
+            String name = parents.get(i).getName();
+            if (parentData.containsKey(name)) {
+                result.add(new ParentStatisticsInfo(
+                        makePhaseStatisticItem(parents.get(i).getName(), parentData.get(name)),
+                        phaseData.get(i).entrySet().stream().map(entry -> makePhaseStatisticItem(entry.getKey(), entry.getValue())).collect(Collectors.toList()),
+                        causeData.get(i).entrySet().stream().map(entry -> makePhaseStatisticItem(entry.getKey(), entry.getValue())).collect(Collectors.toList())
+                ));
+            }
+        }
+        return new PhaseStatistics(result);
     }
 
     public PauseStatistics getPauseStatistics(TimeRange range) {
@@ -924,7 +982,7 @@ public abstract class GCModel {
 
     private void calculateEventsInterval() {
         Map<GCEventType, Double> lastEndTime = new HashMap<>();
-        for (GCEvent event : gcEvents) {
+        for (GCEvent event : allEvents) {
             GCEventType eventType = event.getEventType();
             // regard mixed gc as young gc
             if (event.isYoungGC()) {
@@ -934,15 +992,6 @@ public abstract class GCModel {
                 event.setInterval(Math.max(0, event.getStartTime() - lastEndTime.get(eventType)));
             }
             lastEndTime.put(eventType, event.getEndTime());
-            if (event.hasPhases()) {
-                for (GCEvent phase : event.getPhases()) {
-                    GCEventType phaseType = phase.getEventType();
-                    if (lastEndTime.containsKey(phaseType)) {
-                        phase.setInterval(phase.getStartTime() - lastEndTime.get(phaseType));
-                    }
-                    lastEndTime.put(phaseType, phase.getStartTime());
-                }
-            }
         }
     }
 
@@ -957,22 +1006,6 @@ public abstract class GCModel {
             }
         }
         return sb.toString();
-    }
-
-    private void putDurationIntervalPause(Map<GCEventType, DoubleData[]> map, GCEvent event) {
-        if (!map.containsKey(event.getEventType())) {
-            map.put(event.getEventType(), new DoubleData[]{new DoubleData(), new DoubleData(), new DoubleData()});
-        }
-        DoubleData[] doubleDatas = map.get(event.getEventType());
-        if (event.getDuration() != UNKNOWN_DOUBLE) {
-            doubleDatas[0].add(event.getDuration());
-        }
-        if (event.getInterval() != UNKNOWN_DOUBLE) {
-            doubleDatas[1].add(event.getInterval());
-        }
-        if (event.getPause() != UNKNOWN_DOUBLE) {
-            doubleDatas[2].add(event.getPause());
-        }
     }
 
     public List<String> getGCDetails() {

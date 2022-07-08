@@ -15,7 +15,7 @@
   <span>
     <el-tooltip v-if="info"
                 effect="dark"
-                :content="$t(info)"
+                :content="getContent(info)"
                 placement="top-start">
       <i class="el-icon-warning-outline"></i>
     </el-tooltip>
@@ -30,6 +30,9 @@ export default {
     }
   },
   methods: {
+    getContent(info) {
+      return info.startsWith("jifa.") ? this.$t(info) : info;
+    }
   },
   mounted() {},
   name: "Hint"

@@ -22,6 +22,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.List;
 import java.util.Map;
 
 import static org.eclipse.jifa.gclog.TestUtil.stringToBufferedReader;
@@ -94,7 +95,7 @@ public class TestGCModel {
         events[3].setStartTime(16.0 * 1000);
         events[3].setDuration(1.2 * 1000);
         GCEventType[] concurrentCyclePhases = {G1_REMARK, G1_PAUSE_CLEANUP, G1_CONCURRENT_CLEAR_CLAIMED_MARKS};
-        double[] begins = {12.0, 12.2, 12.6};
+        double[] begins = {16.0, 16.2, 16.6};
         for (int i = 0; i < concurrentCyclePhases.length; i++) {
             GCEvent phase = new GCEvent(4);
             model.addPhase(events[3], phase);
@@ -141,7 +142,7 @@ public class TestGCModel {
     }
 
     @Test
-    public void testCalculateDerivedInfo() {
+    public void testModelMisc() {
         model.calculateDerivedInfo(new DefaultProgressListener());
 
         // derived model info
@@ -181,6 +182,19 @@ public class TestGCModel {
         Assert.assertArrayEquals(pauseDistribution.get(G1_REMARK.getName()), new int[]{2, 0});
         Assert.assertArrayEquals(pauseDistribution.get(G1_PAUSE_CLEANUP.getName()), new int[]{1, 1});
 
+        // phase statistics
+        List<PhaseStatistics.ParentStatisticsInfo> parents = model.getPhaseStatistics(new TimeRange(0, 999999999)).getParents();
+        Assert.assertEquals(parents.size(), 3);
+        Assert.assertEquals(parents.get(0).getCauses().size(), 1);
+        Assert.assertEquals(parents.get(2).getCauses().size(), 2);
+        Assert.assertEquals(parents.get(0).getCauses().get(0), new PhaseStatistics.PhaseStatisticItem(
+                "G1 Evacuation Pause", 2, 30500, 30500, 400, 500, 800));
+        Assert.assertEquals(parents.get(1).getSelf(), new PhaseStatistics.PhaseStatisticItem(
+                G1_CONCURRENT_CYCLE.getName(), 2, 6800, 6800, 900, 1200, 1800));
+        Assert.assertEquals(parents.get(1).getPhases().size(), 3);
+        Assert.assertEquals(parents.get(1).getPhases().get(1), new PhaseStatistics.PhaseStatisticItem(
+                G1_REMARK.getName(), 2, 7800, 7800, 150, 200, 300));
+
         // graph data
         TimeLineChartView count = model.getGraphView("count", 300000, 0);
         Assert.assertEquals(count.getDataByTimes().get(0).getData().get(1000L), 1, DELTA);
@@ -188,7 +202,7 @@ public class TestGCModel {
 
         TimeLineChartView pause = model.getGraphView("pause", 300000, 0);
         Assert.assertEquals(pause.getDataByTimes().get(0).getData().get(1500L), 500, DELTA);
-        Assert.assertEquals(pause.getDataByTimes().get(3).getData().get(12200L), 200, DELTA);
+        Assert.assertEquals(pause.getDataByTimes().get(3).getData().get(16200L), 200, DELTA);
 
         TimeLineChartView alloRec = model.getGraphView("alloRec", 10800000, 0);
         Assert.assertEquals(alloRec.getDataByTimes().get(0).getData().get(0L), (40 + 40 + 18 + 22 + 6) / 60.0, DELTA);

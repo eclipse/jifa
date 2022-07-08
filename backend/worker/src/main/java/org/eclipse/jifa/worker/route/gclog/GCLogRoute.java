@@ -65,6 +65,14 @@ public class GCLogRoute extends org.eclipse.jifa.worker.route.gclog.GCLogBaseRou
         promise.complete(model.getPauseStatistics(new TimeRange(start, end)));
     }
 
+    @RouteMeta(path = "/phaseStatistics")
+    void phaseStats(Promise<PhaseStatistics> promise, @ParamKey("file") String file,
+                    @ParamKey("start") double start,
+                    @ParamKey("end") double end) {
+        final GCModel model = Analyzer.getOrOpenGCLogModel(file);
+        promise.complete(model.getPhaseStatistics(new TimeRange(start, end)));
+    }
+
     @RouteMeta(path = "/gcDetails")
     void detail(Promise<PageView<String>> promise, @ParamKey("file") String file,
                 @ParamKey(value = "eventType", mandatory = false) String eventType,

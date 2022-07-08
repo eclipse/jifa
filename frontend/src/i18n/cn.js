@@ -141,6 +141,7 @@ exports.default = {
     },
 
     gclog: {
+      stwTooltip:"程序在这个阶段会暂停(stop the world)",
       showGCDetail: '显示GC详情',
       analysisConfig: '分析配置',
       logTimeRange:"分析时间段",
@@ -173,6 +174,21 @@ exports.default = {
         metaspaceCapacity: "注意原始GC日志中打印的类似 'Metaspace: 1792694K->291615K(698368K)' 的信息表示元空间reserve的空间是698368K。 而非真正的容量",
         leakIfHigh: "用于估算这个区域大概有多少常驻的对象，如果这个值非常接近容量的话，说明应用在该区域存在内存泄露的可能性",
         heapRss: "在评估java进程整体内存占用RSS的时候，堆所占的大小比较接近堆历史上最高使用量，而非当前的使用量",
+      },
+
+      phaseStats: {
+        phaseStats: "GC阶段和原因",
+        importantMode: "只显示重要的阶段",
+        pauseMode: "只显示暂停的阶段",
+        structuredMode: "按层次显示阶段",
+        causeMode: "按GC原因显示",
+        name: "名称",
+        count: "发生次数",
+        intervalAvg: "平均间隔",
+        intervalMin: "最小间隔",
+        durationAvg: "平均时长",
+        durationMax: "最大时长",
+        durationTotal: "总时长",
       },
 
       generation: {
@@ -218,7 +234,6 @@ exports.default = {
       metaspaceMax:"Metaspace最大值",
       totalHeap:"堆内存已使用",
       heapMax:"堆内存最大值",
-      stwTooltip:"程序在这个阶段会暂停(stop the world)",
 
       gcOverview:{
         diagnosis:"问题诊断",
@@ -255,7 +270,7 @@ exports.default = {
         heapInspection:'当你使用工具(如jmap)执行堆检查操作时会触发',
         heapDump:'执行Heap Dump前会触发一次Full GC',
         allocationFail:'对象分配空间不足时触发，这是最常见的GC触发原因',
-        metaspace:'Metaspace空间不足时触发Full GC',
+        metaspace:'Metaspace空间不足时触发',
         ergonomics:'是为了调整堆的大小，从而达到某种暂停时间或吞吐量目标',
         g1Evacuation:'对象分配空间不足时触发，这是最常见的GC触发原因',
         humongous:'G1大对象分配失败时触发Full GC。大对象指的是超过大小Heap Region Size的对象',

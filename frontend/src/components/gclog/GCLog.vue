@@ -73,6 +73,7 @@
           <GCObjectStats :file="file" :metadata="metadata" :timeRange="analysisConfig.timeRange"/>
           <GCMemoryStats :file="file" :metadata="metadata" :timeRange="analysisConfig.timeRange"/>
           <GCPause :file="file" :metadata="metadata" :timeRange="analysisConfig.timeRange" :longPauseThreshold="analysisConfig.longPauseThreshold"/>
+          <GCPhaseStats :file="file" :metadata="metadata" :analysisConfig="analysisConfig"/>
           <!--    for debug -->
           analysisconfig: <div>{{this.analysisConfig}}</div>
           metadata: <div>{{this.metadata}}</div>
@@ -93,6 +94,7 @@
   import GCObjectStats from "@/components/gclog/GCObjectStats";
   import GCMemoryStats from "@/components/gclog/GCMemoryStats";
   import GCPause from "@/components/gclog/GCPause";
+  import GCPhaseStats from "@/components/gclog/GCPhaseStats";
 
   export default {
     props: ['file'],
@@ -123,6 +125,7 @@
       GCDetail,
       GCObjectStats,
       GCMemoryStats,
+      GCPhaseStats,
       GCPause,
       ViewMenu,
       GCLogTimePicker,
@@ -178,8 +181,12 @@
           timeRange: {
             start: this.metadata.startTime,
             end: this.metadata.endTime,
-            longPauseThreshold : this.metadata.pauseless ? 50 : 500
-          }
+          },
+          longPauseThreshold : this.metadata.pauseless ? 30 : 400,
+          longConcurrentThreshold : 30000,
+          youngGCFrequentIntervalThreshold: 1000,
+          oldGCFrequentIntervalThreshold: 15000,
+          fullGCFrequentIntervalThreshold: this.metadata.generational ? 60000 : 1000,
         }
         this.analysisConfig = {...this.configModel}
       },

@@ -156,7 +156,9 @@ public class G1GCModel extends GCModel {
                     return;
                 }
                 GCEvent remark = event.getLastPhaseOfType(G1_REMARK);
-                lastRemarkEndTime.set(remark.getEndTime());
+                if (remark != null) {
+                    lastRemarkEndTime.set(remark.getEndTime());
+                }
             } else if ((event.getEventType() == YOUNG_GC || event.getEventType() == FULL_GC || event.getEventType() == G1_MIXED_GC)
                     && event.getStartTime() > lastRemarkEndTime.get()) {
                 if (event.getCollectionAgg() != null) {
