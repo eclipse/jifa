@@ -96,25 +96,26 @@ export default {
       axios.get(gclogService(this.file, 'pauseDistribution'), requestConfig).then(resp => {
         const canvas = this.$refs.canvas
         let chart = echarts.getInstanceByDom(canvas);
-
-        let highPartitions;
-        out:
-            for (highPartitions = partitions.length - 1; highPartitions >= 0; highPartitions--) {
-              for (let key of Object.keys(resp.data)) {
-                if (resp.data[key][highPartitions] !== 0) {
-                  break out
-                }
-              }
-            }
-
         if (!chart) {
           chart = echarts.init(canvas)
         } else {
           chart.clear();
         }
-        const yAxisData = partitions.map((value, index) =>
-            index === partitions.length - 1 ? `>${value}ms` : `${value} ~ ${partitions[index + 1]}ms`
-        ).slice(0, highPartitions + 1)
+
+        const subArrayIndex = []
+        out:
+            for (let i = 0; i < partitions.length; i++) {
+              for (let key of Object.keys(resp.data)) {
+                if (resp.data[key][i] !== 0) {
+                  subArrayIndex.push(i);
+                  continue out
+                }
+              }
+            }
+
+        const yAxisData = this.subArray(partitions.map((value, index) =>
+            index === partitions.length - 1 ? `>${value}ms` : `${value} ~ ${partitions[index + 1]}ms`), subArrayIndex)
+
         const series = Object.keys(resp.data).map(key => {
           return {
             name: key,
@@ -126,7 +127,7 @@ export default {
             emphasis: {
               focus: 'series'
             },
-            data: resp.data[key].map(v => v === 0 ? undefined : v)
+            data: this.subArray(resp.data[key], subArrayIndex).map(v => v === 0 ? undefined : v)
           }
         });
         const option = {
@@ -163,6 +164,11 @@ export default {
       this.loadStats()
       this.loadDistribution()
     },
+    subArray(array, subArrayIndex) {
+      const result = []
+      subArrayIndex.forEach(i => result.push(array[i]))
+      return result;
+    }
   },
   watch: {
     timeRange() {
