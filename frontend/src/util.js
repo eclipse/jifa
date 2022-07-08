@@ -102,35 +102,36 @@ export function formatTime (number, format) {
   return format;
 }
 
-// e.g 100,000 (ms) -> '1min 40s'
+// e.g 100,000 (ms) -> '1.67min'
 export function formatTimePeriod(time) {
   // negative means not available
   if (time < 0 || typeof time === "undefined") {
     return "N/A"
   }
-  if (time < 100) {
-    const digit = time < 0.001 ? 0 : time < 10 ? 3 : 1;
-    return `${time.toFixed(digit)}ms`
+  if (time < 0.001) {
+    return "0"
   }
-  const ms = Math.floor(time % 1000);
-  const second = Math.floor(time % 60000 / 1000);
-  const minute = Math.floor(time % 3600000 / 60000);
-  const hour = Math.floor(time / 3600000);
-  const unit = ['h', 'min', 's', 'ms'];
-  let parts = [];
-  [hour, minute, second, ms].forEach((value, index) => {
-    if (value !== 0 && (index !== 3 || time < 60000)) {
-      parts.push(value + unit[index])
+  if (time < 1) {
+    return `${time.toFixed(3)}ms`
+  }
+  const units = ["ms", "s", "min", "h"]
+  const gap = [1000, 60, 60]
+  let i;
+  for (i = 0; i < 3; i++) {
+    if (time > gap[i]) {
+      time /= gap[i]
+    } else {
+      break
     }
-  })
-  return parts.join(' ');
+  }
+  return (time >= 1000 ? Math.round(time) : time.toPrecision(3)) + " " + units[i];
 }
 
 export function toSizeSpeedString(bytesPerMs) {
   if (bytesPerMs < 0) {
     return "N/A"
   }
-  return toSizeString(bytesPerMs * 1000)+"/s"
+  return toSizeString(bytesPerMs * 1000) + "/s"
 }
 
 function formatNumber (n) {
