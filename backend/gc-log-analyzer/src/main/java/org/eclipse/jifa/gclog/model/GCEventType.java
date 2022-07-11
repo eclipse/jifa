@@ -95,7 +95,7 @@ public class GCEventType {
     public static final GCEventType G1_PAUSE_CLEANUP = new GCEventType("Pause Cleanup", PAUSE, PARENT_CONCURRENT_MARK_CYCLE, G1);
     public static final GCEventType G1_CONCURRENT_CLEANUP_FOR_NEXT_MARK = new GCEventType("Concurrent Cleanup", GCPause.CONCURRENT, PARENT_CONCURRENT_MARK_CYCLE, G1);
     public static final GCEventType G1_FINALIZE_MARKING = new GCEventType("Finalize Marking", PAUSE, PARENT_CONCURRENT_MARK_CYCLE, GCEventLevel.SUBPHASE, G1);
-    public static final GCEventType G1_UNLOADING = new GCEventType("Unloading", PAUSE, PARENT_CONCURRENT_MARK_CYCLE, GCEventLevel.SUBPHASE, G1);
+    public static final GCEventType G1_UNLOADING = new GCEventType("Class Unloading", PAUSE, PARENT_CONCURRENT_MARK_CYCLE, GCEventLevel.SUBPHASE, G1);
     public static final GCEventType G1_GC_REFPROC = new GCEventType("Reference Processing", PAUSE, PARENT_CONCURRENT_MARK_CYCLE, GCEventLevel.SUBPHASE, G1);
     public static final GCEventType G1_CONCURRENT_MARK_ABORT = new GCEventType("Concurrent Mark Abort", CONCURRENT, PARENT_CONCURRENT_MARK_CYCLE, G1);
 
@@ -105,20 +105,20 @@ public class GCEventType {
     public static final GCEventType G1_COMPACT_HEAP = new GCEventType("Compact Heap", PAUSE, PARENT_YOUNG_OLD_FULL_GC, G1);
 
     public static final GCEventType G1_EXT_ROOT_SCANNING = new GCEventType("Ext Root Scanning", PAUSE, PARENT_YOUNG_OLD_FULL_GC, G1);
-    public static final GCEventType G1_UPDATE_RS = new GCEventType("Update RS", PAUSE, PARENT_YOUNG_OLD_FULL_GC, G1);
-    public static final GCEventType G1_SCAN_RS = new GCEventType("Scan RS", PAUSE, PARENT_YOUNG_OLD_FULL_GC, G1);
+    public static final GCEventType G1_UPDATE_RS = new GCEventType("Update Remember Set", PAUSE, PARENT_YOUNG_OLD_FULL_GC, G1);
+    public static final GCEventType G1_SCAN_RS = new GCEventType("Scan Remember Set", PAUSE, PARENT_YOUNG_OLD_FULL_GC, G1);
     public static final GCEventType G1_CODE_ROOT_SCANNING = new GCEventType("Code Root Scanning", PAUSE, PARENT_YOUNG_OLD_FULL_GC, G1);
     public static final GCEventType G1_OBJECT_COPY = new GCEventType("Object Copy", PAUSE, PARENT_YOUNG_OLD_FULL_GC, G1);
     public static final GCEventType G1_TERMINATION = new GCEventType("Termination", PAUSE, PARENT_YOUNG_OLD_FULL_GC, G1);
     public static final GCEventType G1_CODE_ROOT_FIXUP = new GCEventType("Code Root Fixup", PAUSE, PARENT_YOUNG_OLD_FULL_GC, G1);
     public static final GCEventType G1_CODE_ROOT_PURGE = new GCEventType("Code Root Purge", PAUSE, PARENT_YOUNG_OLD_FULL_GC, G1);
-    public static final GCEventType G1_CLEAR_CT = new GCEventType("Clear CT", PAUSE, PARENT_YOUNG_OLD_FULL_GC, G1);
-    public static final GCEventType G1_CHOOSE_CSET = new GCEventType("Choose CSet", PAUSE, PARENT_YOUNG_OLD_FULL_GC, G1);
+    public static final GCEventType G1_CLEAR_CT = new GCEventType("Clear Card Table", PAUSE, PARENT_YOUNG_OLD_FULL_GC, G1);
+    public static final GCEventType G1_CHOOSE_CSET = new GCEventType("Choose Collection Set", PAUSE, PARENT_YOUNG_OLD_FULL_GC, G1);
     public static final GCEventType G1_REF_ENQ = new GCEventType("Ref Enq", PAUSE, PARENT_YOUNG_OLD_FULL_GC, G1);
     public static final GCEventType G1_REDIRTY_CARDS = new GCEventType("Redirty Cards", PAUSE, PARENT_YOUNG_OLD_FULL_GC, G1);
     public static final GCEventType G1_HUMONGOUS_REGISTER = new GCEventType("Humongous Register", PAUSE, PARENT_YOUNG_OLD_FULL_GC, G1);
     public static final GCEventType G1_HUMONGOUS_RECLAIM = new GCEventType("Humongous Reclaim", PAUSE, PARENT_YOUNG_OLD_FULL_GC, G1);
-    public static final GCEventType G1_FREE_CSET = new GCEventType("Free CSet", PAUSE, PARENT_YOUNG_OLD_FULL_GC, G1);
+    public static final GCEventType G1_FREE_CSET = new GCEventType("Free Collection Set", PAUSE, PARENT_YOUNG_OLD_FULL_GC, G1);
 
     // CMS
     public static final GCEventType CMS_INITIAL_MARK = new GCEventType("Initial Mark", PAUSE, PARENT_CONCURRENT_MARK_CYCLE, CMS);

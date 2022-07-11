@@ -71,6 +71,10 @@ public class GCLogParserFactory {
                 if (line == null) {
                     break;
                 }
+                // Don't read this line in case users are using wrong arguments
+                if (line.startsWith("CommandLine flags: ")) {
+                    continue;
+                }
                 for (ParserMetadataRule rule : rules) {
                     if (!line.contains(rule.getText())) {
                         continue;

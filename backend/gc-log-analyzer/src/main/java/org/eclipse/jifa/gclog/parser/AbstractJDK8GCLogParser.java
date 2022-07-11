@@ -238,8 +238,9 @@ public abstract class AbstractJDK8GCLogParser extends AbstractGCLogParser {
                     // let subclass parse it
                     title = token.getValue();
                 } else if (token.getType() == TOKEN_SAFEPOINT) {
-                    doBeforeParsingGCTraceTime(event);
-                    doParseSafePoint(event, token.getValue());
+                    if (doBeforeParsingGCTraceTime(event)) {
+                        doParseSafePoint(event, token.getValue());
+                    }
                     return;
                 } else if (token.getType() == TOKEN_MEMORY_CHANGE) {
                     long[] memories = GCLogUtil.parseMemorySizeFromTo(token.getValue(), (int) KB2MB);
@@ -262,11 +263,13 @@ public abstract class AbstractJDK8GCLogParser extends AbstractGCLogParser {
             // jni weak does not print reference count
 
             if (referenceGC != null || "JNI Weak Reference".equals(title)) {
-                doBeforeParsingGCTraceTime(event);
-                doParseReferenceGC(event, title, referenceGC);
+                if (doBeforeParsingGCTraceTime(event)) {
+                    doParseReferenceGC(event, title, referenceGC);
+                }
             } else if (title != null) {
-                doBeforeParsingGCTraceTime(event);
-                doParseGCTraceTime(event, title);
+                if (doBeforeParsingGCTraceTime(event)) {
+                    doParseGCTraceTime(event, title);
+                }
             }
         } catch (Exception e) {
             LOGGER.debug(e.getMessage());
@@ -342,7 +345,9 @@ public abstract class AbstractJDK8GCLogParser extends AbstractGCLogParser {
         }
     }
 
-    private void doBeforeParsingGCTraceTime(GCEvent event) {
+    private double lastUptime = UNKNOWN_DOUBLE;
+
+    private boolean doBeforeParsingGCTraceTime(GCEvent event) {
         double timestamp = event.getStartTimestamp();
         double uptime = event.getStartTime();
         GCModel model = getModel();
@@ -351,13 +356,27 @@ public abstract class AbstractJDK8GCLogParser extends AbstractGCLogParser {
             model.setReferenceTimestamp(startTimestamp);
         }
         if (event.getStartTime() == UNKNOWN_DOUBLE) {
-            uptime = timestamp - model.getReferenceTimestamp();
+            if (timestamp != UNKNOWN_DOUBLE && model.getReferenceTimestamp() != UNKNOWN_DOUBLE) {
+                uptime = timestamp - model.getReferenceTimestamp();
+            } else {
+                // HACK: There may be rare concurrency issue in printing uptime and datestamp when two threads
+                // are printing simultaneously and this may lead to problem in parsing. Copy the uptime from
+                // the last known uptime.
+                uptime = lastUptime;
+            }
             event.setStartTime(uptime);
+        }
+        if (event.getStartTime() == UNKNOWN_DOUBLE) {
+            // we have no way to know uptime
+            return false;
+        } else {
+            lastUptime = event.getStartTime();
         }
         if (model.getStartTime() == UNKNOWN_DOUBLE) {
             model.setStartTime(uptime);
         }
         model.setEndTime(Math.max(uptime, model.getEndTime()));
+        return true;
     }
 
     private void pushSentenceToAssemble(List<GCLogToken> sentence) {
@@ -493,12 +512,14 @@ public abstract class AbstractJDK8GCLogParser extends AbstractGCLogParser {
         } else if ((title = GCLogUtil.stringSubEqualsAny(line, index, TRACETIME_GC_START_TITLES)) != null) {
             // gc cause is a part of title
             int end = index + title.length();
+            boolean endWithEmbeddedSentence = false;
             while (true) {
                 if (!GCLogUtil.stringSubEquals(line, end, " (")) {
                     break;
                 }
                 // maybe the () is an embedded sentence
                 if (GCLogUtil.stringSubEqualsAny(line, end, EMBEDDED_SENTENCE_WITH_BRACKET) != null) {
+                    endWithEmbeddedSentence = true;
                     break;
                 }
                 int rightBracket = GCLogUtil.nextBalancedRightBracket(line, end + 2);
@@ -507,7 +528,7 @@ public abstract class AbstractJDK8GCLogParser extends AbstractGCLogParser {
                 }
                 end = rightBracket + 1;
             }
-            if (end < line.length() && line.charAt(end) == ' ') {
+            if (!endWithEmbeddedSentence && end < line.length() && line.charAt(end) == ' ') {
                 end++;
             }
             return new GCLogToken(line.substring(index, end), end);

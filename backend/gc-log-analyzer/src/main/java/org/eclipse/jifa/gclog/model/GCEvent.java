@@ -426,7 +426,7 @@ public class GCEvent extends TimedEvent {
             case PARTIAL:
                 if (phases != null) {
                     for (GCEvent phase : phases) {
-                        if (phase.getEventType().getPause() == GCPause.PAUSE) {
+                        if (phase.getEventType().getPause() == GCPause.PAUSE && phase.getEventType().getLevel() == PHASE) {
                             consumer.accept(phase);
                         }
                     }

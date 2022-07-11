@@ -163,7 +163,7 @@ exports.default = {
       totalTime: 'Total Time',
       avgInterval:'Avg Interval',
       timePercent: 'Cumulative Time',
-      noRealTime: 'Real time of gc is not displayed in the log. Searching has to be based on the uptime. Strongly recommend turn on the vm option to display real time.',
+      noDatestamp: 'Real time of gc is not displayed in the log. Searching has to be based on the uptime. Strongly recommend turn on the vm option to display real time.',
 
       youngGC: 'Young GC',
       fullGC: 'Full GC',
