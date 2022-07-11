@@ -18,7 +18,9 @@ import io.vertx.core.Promise;
 import org.eclipse.jifa.common.request.PagingRequest;
 import org.eclipse.jifa.common.vo.PageView;
 import org.eclipse.jifa.gclog.model.TimeLineChartView;
+import org.eclipse.jifa.gclog.model.VmOptions;
 import org.eclipse.jifa.gclog.vo.*;
+import org.eclipse.jifa.worker.route.HttpMethod;
 import org.eclipse.jifa.worker.route.ParamKey;
 import org.eclipse.jifa.worker.route.RouteMeta;
 import org.eclipse.jifa.worker.support.Analyzer;
@@ -94,5 +96,21 @@ public class GCLogRoute extends org.eclipse.jifa.worker.route.gclog.GCLogBaseRou
                @ParamKey("timePoint") double timePoint) {
         final GCModel model = Analyzer.getOrOpenGCLogModel(file);
         promise.complete(model.getGraphView(type, timeSpan, timePoint));
+    }
+
+    @RouteMeta(path = "/vmOptions", method = HttpMethod.GET)
+    void getVMOptions(Promise<String> promise,
+                      @ParamKey("file") String file) {
+        final GCModel model = Analyzer.getOrOpenGCLogModel(file);
+        VmOptions options = model.getVmOptions();
+        promise.complete(options == null ? "" : options.getOriginalOptionString());
+    }
+
+    @RouteMeta(path = "/vmOptions", method = HttpMethod.POST)
+    void setVMOptions(Promise<Void> promise,
+                      @ParamKey("file") String file, @ParamKey("options") String options) {
+        final GCModel model = Analyzer.getOrOpenGCLogModel(file);
+        model.setVmOptions(new VmOptions(options));
+        promise.complete();
     }
 }

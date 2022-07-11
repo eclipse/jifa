@@ -200,6 +200,11 @@ exports.default = {
         metaspace: "元空间",
       },
 
+      vmOptions: {
+        vmOptions: "JVM参数",
+        unknown: "没有在GC日志中出现"
+      },
+
       minute:'分钟',
       hour:'小时',
       day:'天',

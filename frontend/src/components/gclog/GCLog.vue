@@ -74,6 +74,7 @@
           <GCMemoryStats :file="file" :metadata="metadata" :timeRange="analysisConfig.timeRange"/>
           <GCPause :file="file" :metadata="metadata" :timeRange="analysisConfig.timeRange" :longPauseThreshold="analysisConfig.longPauseThreshold"/>
           <GCPhaseStats :file="file" :metadata="metadata" :analysisConfig="analysisConfig"/>
+          <VmOptions :file="file" :metadata="metadata"/>
           <!--    for debug -->
           analysisconfig: <div>{{this.analysisConfig}}</div>
           metadata: <div>{{this.metadata}}</div>
@@ -95,6 +96,7 @@
   import GCMemoryStats from "@/components/gclog/GCMemoryStats";
   import GCPause from "@/components/gclog/GCPause";
   import GCPhaseStats from "@/components/gclog/GCPhaseStats";
+  import VmOptions from "@/components/gclog/VmOptions";
 
   export default {
     props: ['file'],
@@ -127,6 +129,7 @@
       GCMemoryStats,
       GCPhaseStats,
       GCPause,
+      VmOptions,
       ViewMenu,
       GCLogTimePicker,
     },
