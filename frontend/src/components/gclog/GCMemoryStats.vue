@@ -21,14 +21,14 @@
               v-loading="loading">
       <el-table-column props="generation" :label="$t('jifa.gclog.memoryStats.memoryArea')">
         <template slot-scope="scope">
-          <span>{{$t(`jifa.gclog.generation.${scope.row.generation}`)}}</span>
+          <span>{{ $t(`jifa.gclog.generation.${scope.row.generation}`) }}</span>
           <Hint :info="getGenerationHint(scope.row.generation)"/>
         </template>
       </el-table-column>
       <el-table-column v-for="metric in metrics" :key="metric" props="metric"
                        :label="$t(`jifa.gclog.memoryStats.${metric}`)">
         <template slot-scope="scope">
-          <span>{{ scope.row[metric] }}</span>
+          <span :class="scope.row[metric].bad ? 'bad-metric' : ''">{{ scope.row[metric].value }}</span>
           <Hint :info="getValueHint(scope.row.generation, metric)"/>
         </template>
       </el-table-column>
@@ -42,7 +42,7 @@ import axios from "axios";
 import Hint from "@/components/gclog/Hint";
 
 export default {
-  props: ["file", "metadata", "timeRange"],
+  props: ["file", "metadata", "analysisConfig"],
   data() {
     return {
       loading: true,
@@ -56,7 +56,7 @@ export default {
   methods: {
     loadData() {
       this.loading = true
-      const requestConfig = {params: {...this.timeRange}}
+      const requestConfig = {params: {...this.analysisConfig.timeRange}}
       axios.get(gclogService(this.file, 'memoryStatistics'), requestConfig).then(resp => {
         let generations = []
         if (this.metadata.generational) {
@@ -77,7 +77,10 @@ export default {
         generations.forEach(generation => {
           let item = {}
           metrics.forEach(metric => {
-            item[metric] = toSizeString(resp.data[generation][metric])
+            item[metric] = {
+              value: toSizeString(resp.data[generation][metric]),
+              bad: this.badValue(resp.data[generation], metric, generation)
+            }
           })
           item.generation = generation
           data.push(item)
@@ -99,11 +102,23 @@ export default {
     },
     getGenerationHint(generation) {
       if (generation === 'humongous') {
-        return'jifa.gclog.generation.humongousHint'
+        return 'jifa.gclog.generation.humongousHint'
       }
       return ''
+    },
+    badValue(row, metric, generation) {
+      if (metric !== 'usedAvgAfterFullGC' && metric !== 'usedAvgAfterOldGC') {
+        return false;
+      }
+      if (row[metric] < 0 || generation < 0) {
+        return false;
+      }
+      const percentage = row[metric] / row.capacityAvg * 100
+      return (generation === "old" && percentage >= this.analysisConfig.highOldUsageThreshold) ||
+          (generation === "heap" && percentage >= this.analysisConfig.highHeapUsageThreshold) ||
+          (generation === "metaspace" && percentage >= this.analysisConfig.highMetaspaceUsageThreshold)
     }
-   },
+  },
   watch: {
     timeRange() {
       this.loadData();

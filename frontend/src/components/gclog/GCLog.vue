@@ -71,7 +71,7 @@
         <el-main style="padding: 10px 5px 5px;">
 <!--           todo: adjust style-->
           <GCObjectStats :file="file" :metadata="metadata" :timeRange="analysisConfig.timeRange"/>
-          <GCMemoryStats :file="file" :metadata="metadata" :timeRange="analysisConfig.timeRange"/>
+          <GCMemoryStats :file="file" :metadata="metadata" :analysisConfig="analysisConfig"/>
           <GCPause :file="file" :metadata="metadata" :timeRange="analysisConfig.timeRange" :longPauseThreshold="analysisConfig.longPauseThreshold"/>
           <GCPhaseStats :file="file" :metadata="metadata" :analysisConfig="analysisConfig"/>
           <VmOptions :file="file" :metadata="metadata"/>
@@ -190,6 +190,9 @@
           youngGCFrequentIntervalThreshold: 1000,
           oldGCFrequentIntervalThreshold: 15000,
           fullGCFrequentIntervalThreshold: this.metadata.generational ? 60000 : 1000,
+          highOldUsageThreshold: 80,
+          highHeapUsageThreshold: 60,
+          highMetaspaceUsageThreshold: 80,
         }
         this.analysisConfig = {...this.configModel}
       },

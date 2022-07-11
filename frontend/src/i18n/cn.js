@@ -172,7 +172,7 @@ exports.default = {
         usedAvgAfterFullGC: "Full GC后平均使用率",
         usedAvgAfterOldGC: "Old GC后平均使用率",
         metaspaceCapacity: "注意原始GC日志中打印的类似 'Metaspace: 1792694K->291615K(698368K)' 的信息表示元空间reserve的空间是698368K。 而非真正的容量",
-        leakIfHigh: "用于估算这个区域大概有多少常驻的对象，如果这个值非常接近容量的话，说明应用在该区域存在内存泄露的可能性",
+        leakIfHigh: "用于估算这个区域大概有多少常驻的对象，如果这个值较高，说明应用在该区域存在内存泄露的可能性",
         heapRss: "在评估java进程整体内存占用RSS的时候，堆所占的大小比较接近堆历史上最高使用量，而非当前的使用量",
       },
 
