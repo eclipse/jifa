@@ -13,24 +13,26 @@
 
 <template>
   <div>
-    <el-card>
+    <el-card :body-style="{padding:'10px'}">
       <div slot="header">
         <span>{{ $t('jifa.gclog.pauseInfo.pauseInfo') }}</span>
       </div>
-      <el-table :data="['dummy data']"
-                :loading="loadStats"
-                :show-header="true"
-      >
-        <el-table-column v-for="stat in stats" :key="stat.metric">
-          <template slot="header">
-            <span>{{ stat.metric }}</span>
-            <Hint :info="stat.hint"/>
-          </template>
-          <template>
-            <span :class="stat.bad ? 'bad-metric' : ''">{{ stat.value }}</span>
-          </template>
-        </el-table-column>
-      </el-table>
+      <div style="width: 80%; margin: 0 auto">
+        <el-table :data="['dummy data']"
+                  :loading="loadStats"
+                  :show-header="true"
+        >
+          <el-table-column v-for="stat in stats" :key="stat.metric">
+            <template slot="header">
+              <span>{{ stat.metric }}</span>
+              <Hint :info="stat.hint"/>
+            </template>
+            <template>
+              <span :class="stat.bad ? 'bad-metric' : ''">{{ stat.value }}</span>
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
       <div :loading="loadingDistribution" style="height: 400px">
         <div ref="canvas" style="height: 400px"/>
       </div>
@@ -114,7 +116,7 @@ export default {
             }
 
         const yAxisData = this.subArray(partitions.map((value, index) =>
-            index === partitions.length - 1 ? `>${value}ms` : `${value} ~ ${partitions[index + 1]}ms`), subArrayIndex)
+            this.formatYAxis(partitions[index], partitions[index + 1])), subArrayIndex)
 
         const series = Object.keys(resp.data).map(key => {
           return {
@@ -168,6 +170,15 @@ export default {
       const result = []
       subArrayIndex.forEach(i => result.push(array[i]))
       return result;
+    },
+    formatYAxis(low, high) {
+      if (typeof high === 'undefined') {
+        return low >= 1000 ? `>${(low / 1000).toFixed(0)} s` : `>${low} ms`
+      } else if (low >= 1000) {
+        return `${(low / 1000).toFixed(0)} ~ ${(high / 1000).toFixed(0)}s`
+      } else {
+        return `${low} ~ ${high} ms`
+      }
     }
   },
   watch: {

@@ -79,13 +79,13 @@
           </el-form>
         </el-dialog>
 
-        <el-main style="padding: 10px 5px 5px;">
-<!--           todo: adjust style-->
-          <GCObjectStats :file="file" :metadata="metadata" :timeRange="analysisConfig.timeRange"/>
-          <GCMemoryStats :file="file" :metadata="metadata" :analysisConfig="analysisConfig"/>
+        <el-main style="padding: 10px 5px 5px; width: 1000px; margin: 0 auto">
           <GCPause :file="file" :metadata="metadata" :timeRange="analysisConfig.timeRange" :longPauseThreshold="analysisConfig.longPauseThreshold"/>
+          <GCMemoryStats :file="file" :metadata="metadata" :analysisConfig="analysisConfig"/>
           <GCPhaseStats :file="file" :metadata="metadata" :analysisConfig="analysisConfig"/>
           <VmOptions :file="file" :metadata="metadata"/>
+          <GCObjectStats :file="file" :metadata="metadata" :timeRange="analysisConfig.timeRange"/>
+
           <!--    for debug -->
           analysisconfig: <div>{{this.analysisConfig}}</div>
           metadata: <div>{{this.metadata}}</div>
@@ -242,7 +242,7 @@
   }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .el-drawer.rtl {
   overflow: scroll
 }

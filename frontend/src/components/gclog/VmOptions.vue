@@ -17,7 +17,7 @@
       <span>{{ $t('jifa.gclog.vmOptions.vmOptions') }}</span>
     </div>
     <div v-if="!options">{{ $t('jifa.gclog.vmOptions.unknown') }}</div>
-    <div v-else style="padding: 10px">
+    <div v-else class="options-parent" >
       <span class="vmOption" v-for="option in options">{{ option }}</span>
     </div>
   </el-card>
@@ -53,13 +53,15 @@ export default {
 
 <style scoped>
 .vmOption {
+  display: inline-block;
+  font-size: 14px;
+  height: 18px;
+  margin-right: 8px;
+}
+
+.options-parent {
   padding: 5px;
-  font-weight: bold;
-  font-size: 10px;
-  border-radius: 1px;
-  display: inline;
-  margin-right: 10px;
-  word-wrap: break-word;
-  word-break: break-all;
+  display: flex;
+  flex-wrap: wrap;
 }
 </style>

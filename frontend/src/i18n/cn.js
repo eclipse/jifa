@@ -159,7 +159,7 @@ exports.default = {
 
       pauseInfo: {
         pauseInfo: "暂停信息",
-        pauseDistribution: "暂停统计",
+        pauseDistribution: "暂停时间分布",
         throughput: "GC吞吐",
         throughputHint:"GC吞吐是程序实际执行的时间/总运行时间，吞吐率越高意味着GC开销越小",
         pauseAvg: "平均暂停时间",
