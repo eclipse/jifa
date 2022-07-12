@@ -18,6 +18,7 @@
         v-model="timeRange"
         type="datetimerange"
         @change="emitValue"
+        :clearable="false"
         :picker-options="pickerOptions"
     >
     </el-date-picker>
@@ -74,15 +75,22 @@ export default {
           end: typeof this.high === "undefined" ? this.max : this.high * 1000
         }
       } else {
-        value = {
-          start: this.timeRange[0] === null ? this.min : this.timeRange[0].getTime() - this.metadata.timestamp,
-          end: this.timeRange[1] === null ? this.min : this.timeRange[1].getTime() - this.metadata.timestamp,
+        if (value == null) {
+          value = {
+            start: this.min,
+            end: this.max,
+          }
+        } else {
+          value = {
+            start: this.timeRange[0] === null ? this.min : this.timeRange[0].getTime() - this.metadata.timestamp,
+            end: this.timeRange[1] === null ? this.max : this.timeRange[1].getTime() - this.metadata.timestamp,
+          }
         }
       }
       value = {
         start: Math.max(this.metadata.startTime, value.start),
         end: Math.min(this.metadata.endTime, value.end),
-    }
+      }
       this.$emit('input', value)
     },
     setComponentData() {

@@ -56,12 +56,23 @@
             :visible.sync="configVisible"
             :close-on-click-modal=false
             append-to-body>
-          <el-form ref="configForm" :model="configModel" :rules="configRules" label-width="150px" size="medium" label-position="right"
+          <el-form ref="configForm" :model="configModel" :rules="configRules" label-width="200px" size="medium" label-position="right"
                    style="margin-top: 10px" status-icon :show-message=false>
             <el-form-item :label="$t('jifa.gclog.logTimeRange')" prop="timeRange">
               <GCLogTimePicker v-model="configModel.timeRange" :metadata="metadata"/>
             </el-form-item>
-
+            <el-form-item :label="$t('jifa.gclog.longPauseThreshold')" prop="longPauseThreshold">
+              <el-input-number v-model="configModel.longPauseThreshold"  :min="0" :controls="false"  style="width: 30%"/>
+            </el-form-item>
+            <el-form-item v-if="metadata.generational" :label="$t('jifa.gclog.youngGCFrequentIntervalThreshold')" prop="youngGCFrequentIntervalThreshold">
+              <el-input-number v-model="configModel.youngGCFrequentIntervalThreshold"  :min="0" :controls="false"  style="width: 30%"/>
+            </el-form-item>
+            <el-form-item v-if="metadata.generational" :label="$t('jifa.gclog.oldGCFrequentIntervalThreshold')" prop="oldGCFrequentIntervalThreshold">
+              <el-input-number v-model="configModel.oldGCFrequentIntervalThreshold"  :min="0" :controls="false"  style="width: 30%"/>
+            </el-form-item>
+            <el-form-item :label="$t('jifa.gclog.fullGCFrequentIntervalThreshold')" prop="fullGCFrequentIntervalThreshold">
+              <el-input-number v-model="configModel.fullGCFrequentIntervalThreshold"  :min="0" :controls="false"  style="width: 30%"/>
+            </el-form-item>
             <el-form-item>
               <el-button type="primary" @click="configChangeConfirm">{{$t('jifa.confirm')}}</el-button>
             </el-form-item>
@@ -112,6 +123,18 @@
         configVisible: false,
         configRules: {
           timeRange: [], // Do not validate it. The component will guarantee it is always valid.
+          longPauseThreshold: [
+            {required: true, trigger: 'blur'}
+          ],
+          youngGCFrequentIntervalThreshold: [
+            {required: true, trigger: 'blur'}
+          ],
+          oldGCFrequentIntervalThreshold: [
+            {required: true, trigger: 'blur'}
+          ],
+          fullGCFrequentIntervalThreshold: [
+            {required: true, trigger: 'blur'}
+          ],
         },
         configModel: {
           timeRange: 0,

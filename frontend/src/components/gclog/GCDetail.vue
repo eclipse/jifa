@@ -64,7 +64,7 @@
             </el-date-picker>
 
             <span class="gc-detail-number-parent" v-if="referenceTimestamp < 0">
-              <el-tooltip v-if="referenceTimestamp < 0" effect="dark" :content="this.$t('jifa.gclog.noRealTime')" placement="top-start">
+              <el-tooltip v-if="referenceTimestamp < 0" effect="dark" :content="this.$t('jifa.gclog.noDatestamp')" placement="top-start">
                 <i class="el-icon-warning"></i>
               </el-tooltip>
 
