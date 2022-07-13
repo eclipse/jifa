@@ -58,7 +58,7 @@ export default {
             return false;
           }
           const uptime = time.getTime() - this.metadata.timestamp;
-          return !(this.metadata.startTime - this.oneDayMilli < uptime && uptime < this.metadata.endTime);
+          return !(this.metadata.startTime - this.oneDayMilli < uptime && uptime < this.metadata.endTime + this.oneDayMilli);
         }
       },
     }
@@ -71,19 +71,19 @@ export default {
       let value;
       if (this.useUptime()) {
         value = {
-          start: typeof this.low === "undefined" ? this.min : this.low * 1000,
-          end: typeof this.high === "undefined" ? this.max : this.high * 1000
+          start: typeof this.low === "undefined" ? this.metadata.startTime : this.low * 1000,
+          end: typeof this.high === "undefined" ? this.metadata.endTime : this.high * 1000
         }
       } else {
-        if (value == null) {
+        if (this.timeRange == null) {
           value = {
-            start: this.min,
-            end: this.max,
+            start: this.metadata.startTime,
+            end: this.metadata.endTime,
           }
         } else {
           value = {
-            start: this.timeRange[0] === null ? this.min : this.timeRange[0].getTime() - this.metadata.timestamp,
-            end: this.timeRange[1] === null ? this.max : this.timeRange[1].getTime() - this.metadata.timestamp,
+            start: this.timeRange[0] === null ? this.startTime : this.timeRange[0].getTime() - this.metadata.timestamp,
+            end: this.timeRange[1] === null ? this.endTime : this.timeRange[1].getTime() - this.metadata.timestamp,
           }
         }
       }
