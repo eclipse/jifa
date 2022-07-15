@@ -24,25 +24,23 @@
     </el-date-picker>
 
     <span v-if="useUptime()">
-      <el-tooltip effect="dark" :content="this.$t('jifa.gclog.noDatestamp')"
-                  placement="top-start">
-        <i class="el-icon-warning"></i>
-      </el-tooltip>
-
-      <el-input-number :controls="false" v-model="low" style="width: 200px"
+      <el-input-number :controls="false" v-model="low" style="width: 100px"
                        :min="this.min" :max="Math.min(this.max, this.high)"
                        @change="emitValue"/>
       <span style="margin-left: 10px; margin-right: 10px">~</span>
-      <el-input-number :controls="false" v-model="high" style="width: 200px"
+      <el-input-number :controls="false" v-model="high" style="width: 100px"
                        :min="Math.max(this.min, this.low)" :max="this.max"
                        @change="emitValue"/>
-      <span style="margin-left: 10px">s</span>
+      <span style="margin-left: 10px;margin-right: 10px">s</span>
+      <Hint :info="$t('jifa.gclog.noDatestamp')"/>
     </span>
   </div>
 </template>
 
 <script>
+import Hint from "@/components/gclog/Hint";
 export default {
+  components: {Hint},
   props: ["metadata", "value"],
   data() {
     return {

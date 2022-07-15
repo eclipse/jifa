@@ -57,22 +57,49 @@
             :visible.sync="analysisConfigVisible"
             :close-on-click-modal=false
             append-to-body>
-          <el-form ref="configForm" :model="analysisConfigModel" :rules="analysisConfigRules" label-width="200px" size="medium" label-position="right"
+          <el-form ref="configForm" :model="analysisConfigModel" :rules="analysisConfigRules"
+                   label-width="200px" size="medium" label-position="right"
                    style="margin-top: 10px" status-icon :show-message=false>
-            <el-form-item :label="$t('jifa.gclog.analysisTimeRange')" prop="timeRange">
+            <el-form-item prop="timeRange">
+              <template slot="label">
+                {{ $t('jifa.gclog.analysisTimeRange') }}
+                <Hint :info="'jifa.gclog.analysisTimeRangeChooseHint'"/>
+              </template>
               <GCLogTimePicker v-model="analysisConfigModel.timeRange" :metadata="metadata"/>
             </el-form-item>
-            <el-form-item :label="$t('jifa.gclog.longPauseThreshold')" prop="longPauseThreshold">
-              <el-input-number v-model="analysisConfigModel.longPauseThreshold" :min="0" :controls="false" style="width: 30%"/>
+            <el-form-item prop="longPauseThreshold">
+              <template slot="label">
+                {{ $t('jifa.gclog.longPauseThreshold') }}
+                <Hint :info="'jifa.gclog.longPauseThresholdHint'"/>
+              </template>
+              <el-input-number v-model="analysisConfigModel.longPauseThreshold"
+                               :min="0" :controls="false" style="width: 30%"/>
             </el-form-item>
-            <el-form-item v-if="metadata.generational" :label="$t('jifa.gclog.youngGCFrequentIntervalThreshold')" prop="youngGCFrequentIntervalThreshold">
-              <el-input-number v-model="analysisConfigModel.youngGCFrequentIntervalThreshold" :min="0" :controls="false" style="width: 30%"/>
+            <el-form-item v-if="metadata.generational" prop="youngGCFrequentIntervalThreshold">
+              <template slot="label">
+                {{ $t('jifa.gclog.youngGCFrequentIntervalThreshold') }}
+                <Hint :info="'jifa.gclog.youngGCFrequentIntervalThresholdHint'"/>
+              </template>
+              <el-input-number v-model="analysisConfigModel.youngGCFrequentIntervalThreshold"
+                               :min="0" :controls="false" style="width: 30%"/>
             </el-form-item>
-            <el-form-item v-if="metadata.generational" :label="$t('jifa.gclog.oldGCFrequentIntervalThreshold')" prop="oldGCFrequentIntervalThreshold">
-              <el-input-number v-model="analysisConfigModel.oldGCFrequentIntervalThreshold" :min="0" :controls="false" style="width: 30%"/>
+            <el-form-item v-if="metadata.collector === 'G1 GC' || metadata.collector === 'CMS GC'"
+                          prop="oldGCFrequentIntervalThreshold">
+              <template slot="label">
+                {{ $t('jifa.gclog.oldGCFrequentIntervalThreshold') }}
+                <Hint :info="'jifa.gclog.oldGCFrequentIntervalThresholdHint'"/>
+              </template>
+              <el-input-number v-model="analysisConfigModel.oldGCFrequentIntervalThreshold"
+                               :min="0" :controls="false" style="width: 30%"/>
             </el-form-item>
-            <el-form-item :label="$t('jifa.gclog.fullGCFrequentIntervalThreshold')" prop="fullGCFrequentIntervalThreshold">
-              <el-input-number v-model="analysisConfigModel.fullGCFrequentIntervalThreshold" :min="0" :controls="false" style="width: 30%"/>
+            <el-form-item prop="fullGCFrequentIntervalThreshold">
+              <template slot="label">
+                {{ $t('jifa.gclog.fullGCFrequentIntervalThreshold') }}
+                <Hint :info="['jifa.gclog.fullGCFrequentIntervalThresholdHint',
+                              !metadata.generational ? $t('jifa.gclog.fullGCForNongenerational', {gc:metadata.collector}) : '']"/>
+              </template>
+              <el-input-number v-model="analysisConfigModel.fullGCFrequentIntervalThreshold"
+                               :min="0" :controls="false" style="width: 30%"/>
             </el-form-item>
             <el-form-item>
               <el-button type="primary" @click="configChangeConfirm">{{$t('jifa.confirm')}}</el-button>
@@ -89,7 +116,7 @@
           <el-form ref="compareForm" :model="compareConfigModel" label-width="200px" size="medium"
                    label-position="right"
                    style="margin-top: 10px" status-icon :show-message=false :rules="compareRule">
-            <el-form-item v-for="i in 2" :label="$t('jifa.gclog.gclogFile') + i" :prop="'file'+i" :key="i">
+            <el-form-item v-for="i in 2" :label="$t('jifa.gclog.gclogFile') + '' + i" :prop="'file'+(i-1)" :key="i">
               <el-input type="textarea" v-model="compareConfigModel['file' + (i-1)]" autosize resize="none"
                         style="width: 400px" :placeholder="$t('jifa.gclog.gclogFilePlaceholder')"/>
             </el-form-item>
@@ -100,11 +127,12 @@
         </el-dialog>
 
         <el-main style="padding: 10px 5px 5px; width: 1000px; margin: 0 auto">
-          <GCPause :file="file" :metadata="metadata" :timeRange="analysisConfig.timeRange" :longPauseThreshold="analysisConfig.longPauseThreshold"/>
-          <GCMemoryStats :file="file" :metadata="metadata" :analysisConfig="analysisConfig"/>
-          <GCPhaseStats :file="file" :metadata="metadata" :analysisConfig="analysisConfig"/>
-          <VmOptions :file="file" :metadata="metadata"/>
-          <GCObjectStats :file="file" :metadata="metadata" :timeRange="analysisConfig.timeRange"/>
+          <GCPause :file="file" :metadata="metadata" :timeRange="analysisConfig.timeRange"
+                   :longPauseThreshold="analysisConfig.longPauseThreshold" class="main-block"/>
+          <GCMemoryStats :file="file" :metadata="metadata" :analysisConfig="analysisConfig" class="main-block"/>
+          <GCPhaseStats :file="file" :metadata="metadata" :analysisConfig="analysisConfig" class="main-block"/>
+          <GCObjectStats :file="file" :metadata="metadata" :timeRange="analysisConfig.timeRange" class="main-block"/>
+          <VmOptions :file="file" :metadata="metadata" class="main-block"/>
 
           <!--    for debug -->
           analysisconfig: <div>{{this.analysisConfig}}</div>
@@ -129,6 +157,7 @@
   import GCPause from "@/components/gclog/GCPause";
   import GCPhaseStats from "@/components/gclog/GCPhaseStats";
   import VmOptions from "@/components/gclog/VmOptions";
+  import Hint from "@/components/gclog/Hint";
 
   export default {
     props: ['file', 'start', 'end'],
@@ -182,6 +211,7 @@
     },
 
     components: {
+      Hint,
       GCDetail,
       GCObjectStats,
       GCMemoryStats,
@@ -344,5 +374,9 @@
 <style>
 .bad-metric {
   color: #E74C3C;
+}
+
+.main-block {
+  margin-bottom: 40px;
 }
 </style>

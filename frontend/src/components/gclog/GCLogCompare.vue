@@ -35,7 +35,7 @@
         </b-card>
       </div>
 
-      <el-main style="padding: 10px 5px 5px; width: 1200px; margin: 0 auto">
+      <div v-if="analysisState === 'SUCCESS'" style="padding: 10px 5px 5px; width: 1200px; margin: 0 auto" >
         <el-table :data="tableData"
                   :show-header="true"
                   row-key="metric"
@@ -61,7 +61,7 @@
             </template>
           </el-table-column>
         </el-table>
-      </el-main>
+      </div>
 
       <!--      for debug-->
       <div>

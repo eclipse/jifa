@@ -140,9 +140,9 @@ export default {
             }
           },
           legend: {
-            orient: 'vertical',
-            left: 'right',
-            top: 'middle'
+            orient: 'horizontal',
+            left: 'center',
+            top: '28px'
           },
           xAxis: {
             type: 'value',

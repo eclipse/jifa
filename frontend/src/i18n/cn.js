@@ -151,14 +151,20 @@ exports.default = {
       logTimeRange:"日志覆盖的时间段",
       currentAnalysisTimeRange:"当前分析的时间段",
       analysisTimeRange:"分析的时间段",
+      analysisTimeRangeChooseHint:"选择一个你关心的时间段，分析这个时间段内的GC情况",
       analysisTimeRangeLength:"分析时间段长度",
       metric: "指标",
       metricCompare: "指标对比",
       noDatestamp: '日志中没有展示GC发生的现实时间，只能根据相对于日志开始的时间进行搜索。强烈建议打开显示GC发生现实时间的选项。',
       longPauseThreshold: '长暂停时间阈值(ms)',
+      longPauseThresholdHint: '超过这个时长的暂停会被视为长暂停',
       youngGCFrequentIntervalThreshold: 'Young GC 间隔阈值(ms)',
+      youngGCFrequentIntervalThresholdHint: '如果两次Young GC之间的间隔少于这个时间则认为Young GC发生的较为频繁',
       oldGCFrequentIntervalThreshold: 'Old GC 间隔阈值(ms)',
+      oldGCFrequentIntervalThresholdHint: '如果两次Old GC之间的间隔少于这个时间则认为Old GC发生的较为频繁',
       fullGCFrequentIntervalThreshold: 'Full GC 间隔阈值(ms)',
+      fullGCFrequentIntervalThresholdHint: '如果两次Full GC之间的间隔少于这个时间则认为Full GC发生的较为频繁',
+      fullGCForNongenerational: '由于{gc}是不分代的GC算法，所有的GC都被视为Full GC',
 
       basicInfo: '基本信息',
       collector:"收集器",
@@ -180,7 +186,7 @@ exports.default = {
       },
 
       memoryStats: {
-        memoryStats: "内存统计",
+        memoryStats: "堆和元空间统计",
         memoryArea: "内存区域",
         capacityAvg: "平均容量",
         usedMax: "最大使用量",
@@ -217,7 +223,7 @@ exports.default = {
 
       vmOptions: {
         vmOptions: "JVM参数",
-        unknown: "没有在GC日志中出现"
+        unknown: "在GC日志中没有出现"
       },
 
       minute:'分钟',

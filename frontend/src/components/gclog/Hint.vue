@@ -15,9 +15,13 @@
   <span>
     <el-tooltip v-if="info"
                 effect="dark"
-                :content="getContent(info)"
                 placement="top-start">
-      <i class="el-icon-warning-outline"></i>
+      <div slot="content" style="max-width: 600px">
+        <div v-for="line of getContent()" :key="line">
+          {{ line }}
+        </div>
+      </div>
+      <i class="el-icon-warning"></i>
     </el-tooltip>
   </span>
 </template>
@@ -26,15 +30,17 @@
 export default {
   props: ["info"],
   data() {
-    return {
-    }
+    return {}
   },
   methods: {
-    getContent(info) {
-      return info.startsWith("jifa.") ? this.$t(info) : info;
+    getContent() {
+      return (typeof this.info === "string" ? [this.info] : this.info)
+          .filter(s => s)
+          .map(s => s.startsWith("jifa.") ? this.$t(s) : s);
     }
   },
-  mounted() {},
+  mounted() {
+  },
   name: "Hint"
 }
 </script>
