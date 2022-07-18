@@ -351,9 +351,11 @@ public abstract class GCModel {
         statistics.setHumongous(new MemoryStatisticsItem((long) data[2][0].average(), data[2][1].getMax(), (long) data[2][2].average(), (long) data[2][3].average()));
         statistics.setHeap(new MemoryStatisticsItem((long) data[3][0].average(), data[3][1].getMax(), (long) data[3][2].average(), (long) data[3][3].average()));
         statistics.setMetaspace(new MemoryStatisticsItem(UNKNOWN_LONG, data[4][1].getMax(), (long) data[4][2].average(), (long) data[4][3].average()));
-        // Metaspace capacity printed in gclog is reserve space rather than commit size, so we
+        // Metaspace capacity printed in gclog may be reserve space rather than commit size, so we
         // try to read it from vm option
-        if (vmOptions != null) {
+        if (isMetaspaceCapacityReliable()) {
+            statistics.getMetaspace().setCapacityAvg((long)data[4][0].average());
+        }else if (vmOptions != null) {
             statistics.getMetaspace().setCapacityAvg(vmOptions.getMetaspaceSize());
         }
         return statistics;
@@ -1044,6 +1046,7 @@ public abstract class GCModel {
         metadata.setLogStyle(getLogStyle().toString());
         metadata.setPauseless(isPauseless());
         metadata.setGenerational(isGenerational());
+        metadata.setMetaspaceCapacityReliable(isMetaspaceCapacityReliable());
         metadata.setTimestamp(getReferenceTimestamp());
         metadata.setStartTime(getStartTime());
         metadata.setEndTime(getEndTime());
@@ -1052,7 +1055,10 @@ public abstract class GCModel {
         metadata.setPauseEventTypes(getPauseEventTypes().stream().map(GCEventType::getName).collect(Collectors.toList()));
         metadata.setAllEventTypes(getAllEventTypes().stream().map(GCEventType::getName).collect(Collectors.toList()));
         metadata.setMainPauseEventTypes(getMainPauseEventTypes().stream().map(GCEventType::getName).collect(Collectors.toList()));
+    }
 
+    protected boolean isMetaspaceCapacityReliable() {
+        return collectorType == ZGC;
     }
 
     public TimeLineChartView getGraphView(String type, double timeSpan, double timePoint) {

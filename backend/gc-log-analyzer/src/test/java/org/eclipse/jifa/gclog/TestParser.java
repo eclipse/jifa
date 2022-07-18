@@ -232,7 +232,7 @@ public class TestParser {
                         "[7.356s] GC(374) Mark: 8 stripe(s), 2 proactive flush(es), 1 terminate flush(es), 0 completion(s), 0 continuation(s)\n" +
                         "[7.356s] GC(374) Relocation: Successful, 359M relocated\n" +
                         "[7.356s] GC(374) NMethods: 21844 registered, 609 unregistered\n" +
-                        "[7.356s] GC(374) Metaspace: 125M used, 128M capacity, 128M committed, 130M reserved\n" +
+                        "[7.356s] GC(374) Metaspace: 125M used, 127M capacity, 128M committed, 130M reserved\n" +
                         "[7.356s] GC(374) Soft: 18634 encountered, 0 discovered, 0 enqueued\n" +
                         "[7.356s] GC(374) Weak: 56186 encountered, 18454 discovered, 3112 enqueued\n" +
                         "[7.356s] GC(374) Final: 64 encountered, 16 discovered, 7 enqueued\n" +

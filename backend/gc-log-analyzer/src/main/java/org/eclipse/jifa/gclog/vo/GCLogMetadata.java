@@ -36,6 +36,7 @@ public class GCLogMetadata {
     private double timestamp = UNKNOWN_DOUBLE;
     private boolean generational = true;
     private boolean pauseless = false;
+    private boolean metaspaceCapacityReliable = false;
     private List<String> parentEventTypes;
     private List<String> importantEventTypes;
     private List<String> pauseEventTypes;

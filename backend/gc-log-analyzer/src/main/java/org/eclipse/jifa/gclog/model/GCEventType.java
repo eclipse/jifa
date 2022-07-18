@@ -137,14 +137,14 @@ public class GCEventType {
 
     // ZGC
     public static final GCEventType ZGC_PAUSE_MARK_START = new GCEventType("Pause Mark Start", PAUSE, PARENT_ZGC, ZGC);
-    public static final GCEventType ZGC_PAUSE_MARK_END = new GCEventType("Pause Mark End", PAUSE, PARENT_ZGC, ZGC);
-    public static final GCEventType ZGC_PAUSE_RELOCATE_START = new GCEventType("Pause Relocate Start", PAUSE, PARENT_ZGC, ZGC);
     public static final GCEventType ZGC_CONCURRENT_MARK = new GCEventType("Concurrent Mark", CONCURRENT, PARENT_ZGC, ZGC);
+    public static final GCEventType ZGC_PAUSE_MARK_END = new GCEventType("Pause Mark End", PAUSE, PARENT_ZGC, ZGC);
     public static final GCEventType ZGC_CONCURRENT_NONREF = new GCEventType("Concurrent Process Non-Strong References", CONCURRENT, PARENT_ZGC, ZGC);
     public static final GCEventType ZGC_CONCURRENT_RESET_RELOC_SET = new GCEventType("Concurrent Reset Relocation Set", CONCURRENT, PARENT_ZGC, ZGC);
     public static final GCEventType ZGC_CONCURRENT_DETATCHED_PAGES = new GCEventType("Concurrent Destroy Detached Pages", CONCURRENT, PARENT_ZGC, ZGC);
     public static final GCEventType ZGC_CONCURRENT_SELECT_RELOC_SET = new GCEventType("Concurrent Select Relocation Set", CONCURRENT, PARENT_ZGC, ZGC);
     public static final GCEventType ZGC_CONCURRENT_PREPARE_RELOC_SET = new GCEventType("Concurrent Prepare Relocation Set", CONCURRENT, PARENT_ZGC, ZGC);
+    public static final GCEventType ZGC_PAUSE_RELOCATE_START = new GCEventType("Pause Relocate Start", PAUSE, PARENT_ZGC, ZGC);
     public static final GCEventType ZGC_CONCURRENT_RELOCATE = new GCEventType("Concurrent Relocate", CONCURRENT, PARENT_ZGC, ZGC);
     public static final GCEventType ZGC_ALLOCATION_STALL = new GCEventType("Allocation Stall", PAUSE, ZGC);
 

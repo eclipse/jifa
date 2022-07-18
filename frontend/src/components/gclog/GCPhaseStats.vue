@@ -118,11 +118,20 @@ export default {
           })
         }
         if (parentNeeded && parentData.children) {
-          parentData.children.sort((d1, d2) => (d2.count.value - d1.count.value))
+          if (this.displayMode === 'structuredMode') {
+            this.sortEventItems(parentData.children)
+          } else {
+            parentData.children.sort((d1, d2) => (d2.count.value - d1.count.value))
+          }
         }
       })
-      data.sort((d1, d2) => (d2.count.value - d1.count.value))
+      this.sortEventItems(data)
       this.displayData = data;
+    },
+    sortEventItems(items) {
+      const order = {}
+      this.metadata.allEventTypes.forEach((event, index) => order[event] = index)
+      items.sort((i1, i2) =>(order[i1.name.value] - order[i2.name.value]))
     },
     formatDataItem(isPhase, originalData, originalParent) {
       return {

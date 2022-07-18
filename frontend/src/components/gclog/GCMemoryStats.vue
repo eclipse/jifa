@@ -40,6 +40,7 @@
 import {toSizeString, gclogService} from '@/util'
 import axios from "axios";
 import Hint from "@/components/gclog/Hint";
+import {hasOldGC} from "@/components/gclog/GCLogUtil";
 
 export default {
   props: ["file", "metadata", "analysisConfig"],
@@ -60,7 +61,10 @@ export default {
       axios.get(gclogService(this.file, 'memoryStatistics'), requestConfig).then(resp => {
         let generations = []
         if (this.metadata.generational) {
-          generations.push("young", "old")
+          generations.push("young")
+        }
+        if (hasOldGC(this.metadata.collector)) {
+          generations.push("old")
         }
         if (this.metadata.collector === "G1 GC" && this.metadata.logStyle === "unified") {
           generations.push("humongous")
@@ -68,7 +72,7 @@ export default {
         generations.push("heap", "metaspace")
 
         let metrics = ["capacityAvg", "usedMax", "usedAvgAfterFullGC"]
-        if (this.metadata.collector === "G1 GC" || this.metadata.collector === "CMS GC") {
+        if (hasOldGC(this.metadata.collector)) {
           metrics.push("usedAvgAfterOldGC");
         }
         this.metrics = metrics
@@ -90,7 +94,7 @@ export default {
       })
     },
     getValueHint(generation, metric) {
-      if (generation === 'metaspace' && metric === 'capacityAvg') {
+      if (generation === 'metaspace' && metric === 'capacityAvg' && !this.metadata.metaspaceCapacityReliable) {
         return 'jifa.gclog.memoryStats.metaspaceCapacity'
       } else if ((generation === 'old' || generation === 'metaspace')
           && (metric === 'usedAvgAfterFullGC' || metric === 'usedAvgAfterOldGC')) {

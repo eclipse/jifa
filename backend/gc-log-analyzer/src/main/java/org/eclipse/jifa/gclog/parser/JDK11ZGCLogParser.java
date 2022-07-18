@@ -200,7 +200,7 @@ public class JDK11ZGCLogParser extends AbstractJDK11GCLogParser {
             return;
         }
         GCCollectionResultItem item = new GCCollectionResultItem(METASPACE, UNKNOWN_INT,
-                GCLogUtil.toByte(parts[0]), GCLogUtil.toByte(parts[2]));
+                GCLogUtil.toByte(parts[0]), GCLogUtil.toByte(parts[4]));
         event.getOrCreateCollectionResult().addItem(item);
     }
 
