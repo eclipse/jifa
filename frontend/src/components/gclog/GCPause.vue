@@ -192,9 +192,3 @@ export default {
   name: "GCPause"
 }
 </script>
-
-<style>
-.bad-metric {
-  color: #E74C3C;
-}
-</style>

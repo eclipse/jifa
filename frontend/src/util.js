@@ -19,7 +19,8 @@ export function toSizeString(bytes) {
       suffix = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'],
       i = Math.floor(Math.log(bytes) / Math.log(k))
 
-  return (bytes / Math.pow(k, i)).toPrecision(3) + ' ' + suffix[i]
+  const num = bytes / Math.pow(k, i)
+  return (num >= 1000 ? num.toFixed(0) : num.toPrecision(3)) + ' ' + suffix[i]
 }
 
 export function toCountString(counts) {

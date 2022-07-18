@@ -18,6 +18,7 @@
                    :file="file"
                    :analysisState="analysisState"
                    @gcLogAnalysisConfig="showAnalysisConfig"
+                   @gclogCompareConfig="showCompareConfig"
                    :type="type"/>
     </el-header>
 
@@ -53,28 +54,47 @@
         <el-dialog
             :title="$t('jifa.gclog.analysisConfig')"
             width="700px"
-            :visible.sync="configVisible"
+            :visible.sync="analysisConfigVisible"
             :close-on-click-modal=false
             append-to-body>
-          <el-form ref="configForm" :model="configModel" :rules="configRules" label-width="200px" size="medium" label-position="right"
+          <el-form ref="configForm" :model="analysisConfigModel" :rules="analysisConfigRules" label-width="200px" size="medium" label-position="right"
                    style="margin-top: 10px" status-icon :show-message=false>
-            <el-form-item :label="$t('jifa.gclog.logTimeRange')" prop="timeRange">
-              <GCLogTimePicker v-model="configModel.timeRange" :metadata="metadata"/>
+            <el-form-item :label="$t('jifa.gclog.analysisTimeRange')" prop="timeRange">
+              <GCLogTimePicker v-model="analysisConfigModel.timeRange" :metadata="metadata"/>
             </el-form-item>
             <el-form-item :label="$t('jifa.gclog.longPauseThreshold')" prop="longPauseThreshold">
-              <el-input-number v-model="configModel.longPauseThreshold"  :min="0" :controls="false"  style="width: 30%"/>
+              <el-input-number v-model="analysisConfigModel.longPauseThreshold" :min="0" :controls="false" style="width: 30%"/>
             </el-form-item>
             <el-form-item v-if="metadata.generational" :label="$t('jifa.gclog.youngGCFrequentIntervalThreshold')" prop="youngGCFrequentIntervalThreshold">
-              <el-input-number v-model="configModel.youngGCFrequentIntervalThreshold"  :min="0" :controls="false"  style="width: 30%"/>
+              <el-input-number v-model="analysisConfigModel.youngGCFrequentIntervalThreshold" :min="0" :controls="false" style="width: 30%"/>
             </el-form-item>
             <el-form-item v-if="metadata.generational" :label="$t('jifa.gclog.oldGCFrequentIntervalThreshold')" prop="oldGCFrequentIntervalThreshold">
-              <el-input-number v-model="configModel.oldGCFrequentIntervalThreshold"  :min="0" :controls="false"  style="width: 30%"/>
+              <el-input-number v-model="analysisConfigModel.oldGCFrequentIntervalThreshold" :min="0" :controls="false" style="width: 30%"/>
             </el-form-item>
             <el-form-item :label="$t('jifa.gclog.fullGCFrequentIntervalThreshold')" prop="fullGCFrequentIntervalThreshold">
-              <el-input-number v-model="configModel.fullGCFrequentIntervalThreshold"  :min="0" :controls="false"  style="width: 30%"/>
+              <el-input-number v-model="analysisConfigModel.fullGCFrequentIntervalThreshold" :min="0" :controls="false" style="width: 30%"/>
             </el-form-item>
             <el-form-item>
               <el-button type="primary" @click="configChangeConfirm">{{$t('jifa.confirm')}}</el-button>
+            </el-form-item>
+          </el-form>
+        </el-dialog>
+
+        <el-dialog
+            :title="$t('jifa.gclog.gclogCompare')"
+            width="700px"
+            :visible.sync="compareConfigVisible"
+            :close-on-click-modal=false
+            append-to-body>
+          <el-form ref="compareForm" :model="compareConfigModel" label-width="200px" size="medium"
+                   label-position="right"
+                   style="margin-top: 10px" status-icon :show-message=false :rules="compareRule">
+            <el-form-item v-for="i in 2" :label="$t('jifa.gclog.gclogFile') + i" :prop="'file'+i" :key="i">
+              <el-input type="textarea" v-model="compareConfigModel['file' + (i-1)]" autosize resize="none"
+                        style="width: 400px" :placeholder="$t('jifa.gclog.gclogFilePlaceholder')"/>
+            </el-form-item>
+            <el-form-item>
+              <el-button type="primary" @click="doCompare()">{{ $t('jifa.confirm') }}</el-button>
             </el-form-item>
           </el-form>
         </el-dialog>
@@ -88,6 +108,7 @@
 
           <!--    for debug -->
           analysisconfig: <div>{{this.analysisConfig}}</div>
+          compareConfig: <div>{{this.compareConfigModel}}</div>
           metadata: <div>{{this.metadata}}</div>
           <!--    for debug    -->
         </el-main>
@@ -110,7 +131,7 @@
   import VmOptions from "@/components/gclog/VmOptions";
 
   export default {
-    props: ['file'],
+    props: ['file', 'start', 'end'],
     data() {
       return {
         type: 'GC_LOG',
@@ -120,8 +141,8 @@
         progress: 0,
         pollingInternal: 500,
 
-        configVisible: false,
-        configRules: {
+        analysisConfigVisible: false,
+        analysisConfigRules: {
           timeRange: [], // Do not validate it. The component will guarantee it is always valid.
           longPauseThreshold: [
             {required: true, trigger: 'blur'}
@@ -136,10 +157,24 @@
             {required: true, trigger: 'blur'}
           ],
         },
-        configModel: {
+        analysisConfigModel: {
           timeRange: 0,
         },
         analysisConfig: null,
+
+        compareConfigVisible: false,
+        compareConfigModel: {
+          file0: null,
+          file1: null,
+        },
+        compareRule: {
+          file0: [
+            {required: true, trigger: 'blur'}
+          ],
+          file1: [
+            {required: true, trigger: 'blur'}
+          ],
+        },
 
         metadata: null,
         detailVisible: false,
@@ -203,10 +238,10 @@
         })
       },
       initializePage() {
-        this.configModel = {
+        this.analysisConfigModel = {
           timeRange: {
-            start: this.metadata.startTime,
-            end: this.metadata.endTime,
+            start: typeof this.start !== 'undefined' ? Math.max(this.metadata.startTime, parseInt(this.start)) : this.metadata.startTime,
+            end: typeof this.end !== 'undefined' ? Math.min(this.metadata.endTime, parseInt(this.end)) : this.metadata.endTime,
           },
           longPauseThreshold : this.metadata.pauseless ? 30 : 400,
           longConcurrentThreshold : 30000,
@@ -217,7 +252,8 @@
           highHeapUsageThreshold: 60,
           highMetaspaceUsageThreshold: 80,
         }
-        this.analysisConfig = {...this.configModel}
+        this.analysisConfig = {...this.analysisConfigModel}
+        this.updateUrl()
       },
       analyzeGCLog(params) {
         axios.post(gclogService(this.file, 'analyze'), new URLSearchParams(params)).then(() => {
@@ -225,15 +261,72 @@
           this.pollProgressOfAnalysis();
         })
       },
+      updateUrl() {
+        this.$router.push({
+          query: {
+            file: this.file,
+            start: this.analysisConfig.timeRange.start,
+            end: this.analysisConfig.timeRange.end
+          }
+        })
+      },
       configChangeConfirm() {
-        this.configVisible = false;
-        this.analysisConfig = {...this.configModel}
+        this.$refs['configForm'].validate((valid) => {
+          if (valid) {
+            this.analysisConfigVisible = false;
+            this.analysisConfig = {...this.analysisConfigModel}
+            this.updateUrl()
+          }
+        })
       },
       showDetail() {
         this.detailVisible = true;
       },
+      showCompareConfig() {
+        this.compareConfigModel = {
+          file0: window.location.href,
+          file1: null,
+        }
+        this.compareConfigVisible = true
+      },
       showAnalysisConfig() {
-        this.configVisible = true;
+        this.analysisConfigVisible = true;
+      },
+      getUrlParams(url) {
+        let params = {}
+        const question = url.indexOf('?')
+        if (question >= 0) {
+          let str = url.substr(question + 1);
+          str.split("&").forEach(paramString => {
+            const items = paramString.split("=");
+            params[decodeURIComponent(items[0])] = decodeURIComponent(items[1]);
+          })
+        }
+        return params;
+      },
+      doCompare() {
+        this.$refs['compareForm'].validate((valid) => {
+          if (valid) {
+            const query = {}
+            for (let i = 0; i <= 1; i++) {
+              const file = this.compareConfigModel["file" + i]
+              if (file.indexOf('/gcLog?') >= 0 && file.indexOf('file=') >= 0) {
+                const params = this.getUrlParams(file);
+                query["file" + i] = params.file
+                query["start" + i] = params.start
+                query["end" + i] = params.end
+              } else {
+                query["file" + i] = file
+              }
+            }
+            const url = this.$router.resolve({
+              name: 'gcLogCompare',
+              query: query
+            })
+            window.open(url.href)
+            this.compareConfigVisible = false
+          }
+        })
       }
     },
     mounted() {
@@ -245,5 +338,11 @@
 <style lang="scss" scoped>
 .el-drawer.rtl {
   overflow: scroll
+}
+</style>
+
+<style>
+.bad-metric {
+  color: #E74C3C;
 }
 </style>

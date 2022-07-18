@@ -18,7 +18,7 @@
     </div>
     <div v-if="!options">{{ $t('jifa.gclog.vmOptions.unknown') }}</div>
     <div v-else class="options-parent" >
-      <span class="vmOption" v-for="option in options">{{ option }}</span>
+      <span class="vmOption" v-for="option in options" :key="option">{{ option }}</span>
     </div>
   </el-card>
 </template>
