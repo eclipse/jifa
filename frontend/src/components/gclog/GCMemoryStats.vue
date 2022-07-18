@@ -25,8 +25,11 @@
           <Hint :info="getGenerationHint(scope.row.generation)"/>
         </template>
       </el-table-column>
-      <el-table-column v-for="metric in metrics" :key="metric" props="metric"
-                       :label="$t(`jifa.gclog.memoryStats.${metric}`)">
+      <el-table-column v-for="metric in metrics" :key="metric" props="metric">
+        <template slot="header" slot-scope="scope">
+          {{ $t(`jifa.gclog.memoryStats.${metric}`) }}
+          <Hint :info="getMetricHint(metric)"/>
+        </template>
         <template slot-scope="scope">
           <span :class="scope.row[metric].bad ? 'bad-metric' : ''">{{ scope.row[metric].value }}</span>
           <Hint :info="getValueHint(scope.row.generation, metric)"/>
@@ -78,12 +81,13 @@ export default {
         this.metrics = metrics
 
         let data = []
+        const heapCapacity = resp.data.heap.capacityAvg
         generations.forEach(generation => {
           let item = {}
           metrics.forEach(metric => {
             item[metric] = {
               value: toSizeString(resp.data[generation][metric]),
-              bad: this.badValue(resp.data[generation], metric, generation)
+              bad: this.badValue(resp.data[generation], metric, generation, heapCapacity)
             }
           })
           item.generation = generation
@@ -96,11 +100,6 @@ export default {
     getValueHint(generation, metric) {
       if (generation === 'metaspace' && metric === 'capacityAvg' && !this.metadata.metaspaceCapacityReliable) {
         return 'jifa.gclog.memoryStats.metaspaceCapacity'
-      } else if ((generation === 'old' || generation === 'metaspace')
-          && (metric === 'usedAvgAfterFullGC' || metric === 'usedAvgAfterOldGC')) {
-        return 'jifa.gclog.memoryStats.leakIfHigh'
-      } else if (generation === 'heap' && metric === 'usedMax') {
-        return 'jifa.gclog.memoryStats.heapRss'
       }
       return ''
     },
@@ -110,17 +109,32 @@ export default {
       }
       return ''
     },
-    badValue(row, metric, generation) {
-      if (metric !== 'usedAvgAfterFullGC' && metric !== 'usedAvgAfterOldGC') {
-        return false;
+    badValue(row, metric, generation, heapCapacity) {
+      if (metric === 'usedAvgAfterFullGC' || metric === 'usedAvgAfterOldGC') {
+        // check leak
+        if (row[metric] < 0 || row.capacityAvg < 0) {
+          return false;
+        }
+        const percentage = row[metric] / row.capacityAvg * 100
+        return (generation === "old" && percentage >= this.analysisConfig.highOldUsageThreshold) ||
+            (generation === "humongous" && percentage >= this.analysisConfig.highHumongousUsageThreshold) ||
+            (generation === "heap" && percentage >= this.analysisConfig.highHeapUsageThreshold) ||
+            (generation === "metaspace" && percentage >= this.analysisConfig.highMetaspaceUsageThreshold)
+      } else if (metric === 'capacityAvg' && (generation === 'young' || generation === 'old')) {
+        // check small generation
+        if (row[metric] < 0 || heapCapacity < 0) {
+          return false;
+        }
+        const percentage = row[metric] / heapCapacity * 100
+        return percentage < this.analysisConfig.smallGenerationThreshold
       }
-      if (row[metric] < 0 || generation < 0) {
-        return false;
+    },
+    getMetricHint(metric) {
+      const hint = [this.$t(`jifa.gclog.memoryStats.${metric}Hint`)]
+      if (this.metadata.collector === 'G1 GC' && metric === 'capacityAvg') {
+        hint.push(this.$t('jifa.gclog.memoryStats.g1DynamicCapacity'))
       }
-      const percentage = row[metric] / row.capacityAvg * 100
-      return (generation === "old" && percentage >= this.analysisConfig.highOldUsageThreshold) ||
-          (generation === "heap" && percentage >= this.analysisConfig.highHeapUsageThreshold) ||
-          (generation === "metaspace" && percentage >= this.analysisConfig.highMetaspaceUsageThreshold)
+      return hint
     }
   },
   watch: {

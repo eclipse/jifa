@@ -279,8 +279,10 @@
           oldGCFrequentIntervalThreshold: 15000,
           fullGCFrequentIntervalThreshold: this.metadata.generational ? 60000 : 1000,
           highOldUsageThreshold: 80,
+          highHumongousUsageThreshold: 50,
           highHeapUsageThreshold: 60,
           highMetaspaceUsageThreshold: 80,
+          smallGenerationThreshold: 10,
         }
         this.analysisConfig = {...this.analysisConfigModel}
         this.updateUrl()

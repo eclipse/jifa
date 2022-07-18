@@ -189,12 +189,15 @@ exports.default = {
         memoryStats: "堆和元空间统计",
         memoryArea: "内存区域",
         capacityAvg: "平均容量",
+        capacityAvgHint: "容量表示这个区域能最大容纳多少对象。平均容量有可能会比最大使用量更小，原因在于容量可以是动态变化的，比如当-Xmx!=-Xms时堆和年轻代老年代的容量会动态变化",
+        g1DynamicCapacity: "此外，G1如果没有设-Xmn(通常也不推荐设Xmn)的话年轻代和老年代大小也是动态的",
         usedMax: "最大使用量",
+        usedMaxHint: "可以用来评估java进程整体内存占用的RSS，其中堆所占的大小比较接近堆历史上最高使用量",
         usedAvgAfterFullGC: "Full GC后平均使用率",
+        usedAvgAfterFullGCHint: "用于估算这个区域大概有多少常驻的对象，如果这个值较高，说明应用在该区域存在内存泄露的可能性",
         usedAvgAfterOldGC: "Old GC后平均使用率",
+        usedAvgAfterOldGCHint: "用于估算这个区域大概有多少常驻的对象，如果这个值较高，说明应用在该区域存在内存泄露的可能性",
         metaspaceCapacity: "注意原始GC日志中打印的类似 'Metaspace: 1792694K->291615K(698368K)' 的信息表示元空间reserve的空间是698368K,而非真正的容量",
-        leakIfHigh: "用于估算这个区域大概有多少常驻的对象，如果这个值较高，说明应用在该区域存在内存泄露的可能性",
-        heapRss: "在评估java进程整体内存占用RSS的时候，堆所占的大小比较接近堆历史上最高使用量，而非当前的使用量",
       },
 
       phaseStats: {
