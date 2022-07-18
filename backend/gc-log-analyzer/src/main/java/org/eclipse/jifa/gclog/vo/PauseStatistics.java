@@ -23,5 +23,6 @@ import lombok.NoArgsConstructor;
 public class PauseStatistics {
     double throughput;
     double pauseAvg;
+    double pauseMedian;
     double pauseMax;
 }

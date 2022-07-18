@@ -282,12 +282,12 @@ public abstract class GCModel {
 
     public PauseStatistics getPauseStatistics(TimeRange range) {
         range = makeValidTimeRange(range);
-        DoubleData pause = new DoubleData();
+        DoubleData pause = new DoubleData(true);
         iterateEventsWithinTimeRange(gcEvents, range, e -> {
             e.pauseEventOrPhasesDo(event -> pause.add(event.getPause()));
         });
         return new PauseStatistics(pause.getN() == 0 ? UNKNOWN_DOUBLE : 1 - pause.getSum() / range.length(),
-                pause.average(), pause.getMax());
+                pause.average(),pause.getMedian(), pause.getMax());
     }
 
     public Map<String, int[]> getPauseDistribution(TimeRange range, int[] partitions) {

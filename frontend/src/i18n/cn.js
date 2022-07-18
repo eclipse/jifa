@@ -181,6 +181,7 @@ exports.default = {
         throughputHint:"GC吞吐是程序实际执行的时间/总运行时间，吞吐率越高意味着GC开销越小",
         pauseAvg: "平均暂停时间",
         pauseMax: "最大暂停时间",
+        pauseMedian: "暂停时间中位数",
         pauseTime: "暂停时间",
         pauseCount: "暂停次数"
       },

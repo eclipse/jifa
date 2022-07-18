@@ -17,7 +17,7 @@
       <div slot="header">
         <span>{{ $t('jifa.gclog.pauseInfo.pauseInfo') }}</span>
       </div>
-      <div style="width: 80%; margin: 0 auto">
+      <div>
         <el-table :data="['dummy data']"
                   :loading="loadStats"
                   :show-header="true"
@@ -76,6 +76,11 @@ export default {
             metric: this.$t('jifa.gclog.pauseInfo.pauseAvg'),
             value: formatTimePeriod(resp.data.pauseAvg),
             bad: resp.data.pauseAvg >= this.longPauseThreshold
+          },
+          {
+            metric: this.$t('jifa.gclog.pauseInfo.pauseMedian'),
+            value: formatTimePeriod(resp.data.pauseMedian),
+            bad: resp.data.pauseMedian >= this.longPauseThreshold
           },
           {
             metric: this.$t('jifa.gclog.pauseInfo.pauseMax'),
