@@ -17,7 +17,15 @@
       <span>{{ $t('jifa.gclog.vmOptions.vmOptions') }}</span>
     </div>
     <div v-if="optionsAvailable" class="options-parent">
-      <span class="vmOption" v-for="option in options" :key="option">{{ option }}</span>
+      <div>
+        <span class="vmOption" >{{ $t('jifa.gclog.vmOptions.gcRelatedOptions') + ':'}}</span>
+        <span class="vmOption" v-for="option in options.gcRelated" :key="option.text">{{ option.text }}</span>
+      </div>
+      <el-divider/>
+      <div>
+        <span class="vmOption" >{{ $t('jifa.gclog.vmOptions.otherOptions') + ':'}}</span>
+        <span class="vmOption" v-for="option in options.other" :key="option.text">{{ option.text }}</span>
+      </div>
     </div>
     <div v-else>{{ $t('jifa.gclog.vmOptions.unknown') }}</div>
 
@@ -41,9 +49,9 @@ export default {
     loadOptions() {
       this.loading = true
       axios.get(gclogService(this.file, 'vmOptions')).then(resp => {
-        this.optionsAvailable = (resp.data !== '')
+        this.optionsAvailable = (resp.data !== undefined)
         if (this.optionsAvailable) {
-          this.options = resp.data.split(/ +/)
+          this.options = resp.data
         }
         this.loading = false;
       })

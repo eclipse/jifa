@@ -99,11 +99,11 @@ public class GCLogRoute extends org.eclipse.jifa.worker.route.gclog.GCLogBaseRou
     }
 
     @RouteMeta(path = "/vmOptions", method = HttpMethod.GET)
-    void getVMOptions(Promise<String> promise,
+    void getVMOptions(Promise<VmOptions.VmOptionResult> promise,
                       @ParamKey("file") String file) {
         final GCModel model = Analyzer.getOrOpenGCLogModel(file);
         VmOptions options = model.getVmOptions();
-        promise.complete(options == null ? "" : options.getOriginalOptionString());
+        promise.complete(options == null ? null : options.getVmOptionResult());
     }
 
     @RouteMeta(path = "/vmOptions", method = HttpMethod.POST)

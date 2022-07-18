@@ -227,7 +227,9 @@ exports.default = {
 
       vmOptions: {
         vmOptions: "JVM参数",
-        unknown: "在GC日志中没有出现"
+        unknown: "在GC日志中没有出现",
+        gcRelatedOptions: "GC相关参数",
+        otherOptions: "其它参数",
       },
 
       minute:'分钟',
