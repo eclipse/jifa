@@ -18,17 +18,17 @@
         <span>{{ $t('jifa.gclog.pauseInfo.pauseInfo') }}</span>
       </div>
       <div>
-        <el-table :data="['dummy data']"
+        <el-table :data="tableData"
                   :loading="loadStats"
                   :show-header="true"
         >
-          <el-table-column v-for="stat in stats" :key="stat.metric">
+          <el-table-column v-for="column in columns" :key="column">
             <template slot="header">
-              <span>{{ stat.metric }}</span>
-              <Hint :info="stat.hint"/>
+              <span>{{ $t('jifa.gclog.pauseInfo.' + column) }}</span>
+              <Hint :info="getColumnHint(column)"></Hint>
             </template>
-            <template>
-              <span :class="stat.bad ? 'bad-metric' : ''">{{ stat.value }}</span>
+            <template slot-scope="scope">
+              <span :class="scope.row[column].bad ? 'bad-metric' : ''">{{ scope.row[column].value }}</span>
             </template>
           </el-table-column>
         </el-table>
@@ -36,7 +36,6 @@
       <div :loading="loadingDistribution" style="height: 400px">
         <div ref="canvas" style="height: 400px"/>
       </div>
-
     </el-card>
   </div>
 </template>
@@ -48,12 +47,13 @@ import * as echarts from 'echarts';
 import Hint from "@/components/gclog/Hint";
 
 export default {
-  props: ["file", "metadata", "timeRange", 'longPauseThreshold'],
+  props: ["file", "metadata", "analysisConfig"],
   data() {
     return {
       loadingStats: true,
       loadingDistribution: true,
-      stats: null,
+      columns: ['throughput', 'pauseAvg', 'pauseMedian' ,'pauseMax'],
+      tableData: [],
       distribution: null,
     }
   },
@@ -63,40 +63,41 @@ export default {
   methods: {
     loadStats() {
       this.loadingStats = true
-      const requestConfig = {params: {...this.timeRange}}
+      const requestConfig = {params: {...this.analysisConfig.timeRange}}
       axios.get(gclogService(this.file, 'pauseStatistics'), requestConfig).then(resp => {
-        this.stats = [
-          {
-            metric: this.$t('jifa.gclog.pauseInfo.throughput'),
+        this.tableData = [{
+          throughput: {
             value: resp.data.throughput < 0 ? "N/A" : (resp.data.throughput * 100).toFixed(2) + "%",
-            hint: 'jifa.gclog.pauseInfo.throughputHint',
-            bad: resp.data.throughput >= 0 && resp.data.throughput <= 0.9
+            bad: resp.data.throughput >= 0 && resp.data.throughput <= this.analysisConfig.badThroughputThreshold / 100
           },
-          {
-            metric: this.$t('jifa.gclog.pauseInfo.pauseAvg'),
+          pauseAvg: {
             value: formatTimePeriod(resp.data.pauseAvg),
-            bad: resp.data.pauseAvg >= this.longPauseThreshold
+            bad: resp.data.pauseAvg >= this.analysisConfig.longPauseThreshold
           },
-          {
-            metric: this.$t('jifa.gclog.pauseInfo.pauseMedian'),
+          pauseMedian: {
             value: formatTimePeriod(resp.data.pauseMedian),
-            bad: resp.data.pauseMedian >= this.longPauseThreshold
+            bad: resp.data.pauseMedian >= this.analysisConfig.longPauseThreshold
           },
-          {
-            metric: this.$t('jifa.gclog.pauseInfo.pauseMax'),
+          pauseMax: {
             value: formatTimePeriod(resp.data.pauseMax),
-            bad: resp.data.pauseMax >= this.longPauseThreshold * 2
+            bad: resp.data.pauseMax >= this.analysisConfig.longPauseThreshold * 2
           },
-        ]
+        }]
         this.loadingStats = false;
       })
+    },
+    getColumnHint(column) {
+      if (column === 'throughput') {
+        return 'jifa.gclog.pauseInfo.' + column + 'Hint'
+      }
+      return ''
     },
     loadDistribution() {
       this.loadingDistribution = true
       let partitions = this.getPartitions();
       const requestConfig = {
         params: {
-          ...this.timeRange,
+          ...this.analysisConfig.timeRange,
           partitions: JSON.stringify(this.getPartitions())
         }
       }
@@ -187,7 +188,7 @@ export default {
     }
   },
   watch: {
-    timeRange() {
+    analysisConfig() {
       this.loadData();
     }
   },

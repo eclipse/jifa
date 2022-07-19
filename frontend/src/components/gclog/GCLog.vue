@@ -127,8 +127,7 @@
         </el-dialog>
 
         <el-main style="padding: 10px 5px 5px; width: 1000px; margin: 0 auto">
-          <GCPause :file="file" :metadata="metadata" :timeRange="analysisConfig.timeRange"
-                   :longPauseThreshold="analysisConfig.longPauseThreshold" class="main-block"/>
+          <GCPause :file="file" :metadata="metadata" :analysisConfig="analysisConfig" class="main-block"/>
           <GCMemoryStats :file="file" :metadata="metadata" :analysisConfig="analysisConfig" class="main-block"
                          @saveSharedInfo="setSharedInfo"/>
           <GCPhaseStats :file="file" :metadata="metadata" :analysisConfig="analysisConfig" class="main-block"/>
@@ -287,6 +286,7 @@
           highMetaspaceUsageThreshold: 80,
           smallGenerationThreshold: 10,
           highPromotionThreshold: 3,
+          badThroughputThreshold: 90,
         }
         this.analysisConfig = {...this.analysisConfigModel}
         this.updateUrl()
