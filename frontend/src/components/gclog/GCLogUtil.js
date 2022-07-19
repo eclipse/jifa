@@ -130,8 +130,8 @@ export function isPause(phase, metadata) {
   return metadata.pauseEventTypes.indexOf(phase) >= 0
 }
 
-export function hasOldGC(gc) {
-  return gc === 'CMS GC' || gc === 'G1 GC'
+export function hasOldGC(metadata) {
+  return metadata.collector === 'CMS GC' || metadata.collector === 'G1 GC'
 }
 
 export function badIntervalThreshold(phase, config) {

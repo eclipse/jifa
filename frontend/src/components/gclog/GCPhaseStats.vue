@@ -14,7 +14,7 @@
 <template>
   <el-card>
     <div slot="header">
-      <span>{{ $t('jifa.gclog.phaseStats.phaseStats') }}</span>
+      <span>{{ $t('jifa.gclog.phaseStats.phaseStatsAndCause') }}</span>
       <span style="margin-left: 30px">
         <el-select
             v-model="displayMode"

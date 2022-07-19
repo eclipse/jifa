@@ -41,7 +41,7 @@
 </template>
 
 <script>
-import {formatTimePeriod, gclogService} from '@/util'
+import {formatPercentage, formatTimePeriod, gclogService} from '@/util'
 import axios from "axios";
 import * as echarts from 'echarts';
 import Hint from "@/components/gclog/Hint";
@@ -67,7 +67,7 @@ export default {
       axios.get(gclogService(this.file, 'pauseStatistics'), requestConfig).then(resp => {
         this.tableData = [{
           throughput: {
-            value: resp.data.throughput < 0 ? "N/A" : (resp.data.throughput * 100).toFixed(2) + "%",
+            value: formatPercentage(resp.data.throughput),
             bad: resp.data.throughput >= 0 && resp.data.throughput <= this.analysisConfig.badThroughputThreshold / 100
           },
           pauseAvg: {

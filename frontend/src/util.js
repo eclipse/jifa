@@ -135,6 +135,14 @@ export function toSizeSpeedString(bytesPerMs) {
   return toSizeString(bytesPerMs * 1000) + "/s"
 }
 
+// e.g 0.1234 -> '12.34%'
+export function formatPercentage(percent) {
+  if (percent < 0) {
+    return "N/A"
+  }
+  return (percent * 100).toFixed(2) + '%'
+}
+
 function formatNumber (n) {
   n = n.toString()
   return n[1] ? n : '0' + n;

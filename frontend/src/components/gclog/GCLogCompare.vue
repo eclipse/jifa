@@ -42,7 +42,7 @@
                   :tree-props="{children: 'children', hasChildren: 'hasChildren'}"
                   default-expand-all
                   :loading="loading || pendingRequest>=0">
-          <el-table-column prop="metric" :label="$t('jifa.gclog.metric')">
+          <el-table-column prop="metric" :label="$t('jifa.gclog.metric')" width="250">
             <template slot-scope="scope">
               <span>{{ scope.row.metric }}</span>
               <Hint :info="scope.row.metricHint"/>
@@ -55,37 +55,22 @@
               </a>
             </template>
           </el-table-column>
-          <el-table-column prop="compare" :label="$t('jifa.gclog.metricCompare')">
+          <el-table-column prop="compare" :label="$t('jifa.gclog.metricCompare')" width="150">
             <template slot-scope="scope">
               <span :class="scope.row.compareClass">{{ scope.row.compare }}</span>
             </template>
           </el-table-column>
         </el-table>
       </div>
-
-      <!--      for debug-->
-      <div>
-        analysisConfig:
-        <div>{{ this.analysisConfig }}</div>
-        originalData:
-        <div>{{ this.originalData }}</div>
-        tableData:
-        <div>{{ this.tableData }}</div>
-        displayConfig:
-        <div>{{ this.displayConfig }}</div>
-        metadata:
-        <div>{{ this.metadata }}</div>
-      </div>
-      <!--      for debug-->
     </el-main>
   </el-container>
 </template>
 
 <script>
 import axios from 'axios'
-import {formatTimePeriod, gclogService, service, toSizeSpeedString, toSizeString} from '../../util'
+import {formatPercentage, formatTimePeriod, gclogService, service, toSizeSpeedString, toSizeString} from '../../util'
 import ViewMenu from "../menu/ViewMenu";
-import {formatTimeRange} from "@/components/gclog/GCLogUtil";
+import {formatTimeRange, hasOldGC, isFullGC, isOldGC, isYoungGC} from "@/components/gclog/GCLogUtil";
 import Hint from "@/components/gclog/Hint";
 
 export default {
@@ -142,6 +127,269 @@ export default {
             }],
         },
         {
+          key: 'pauseStatistics',
+          name: 'pauseInfo.pauseInfo',
+          children: [
+            {
+              key: 'throughput',
+              name: 'pauseInfo.throughput',
+              format: formatPercentage,
+              compare: "the more the better",
+            },
+            {
+              key: 'pauseAvg',
+              name: 'pauseInfo.pauseAvg',
+              format: formatTimePeriod,
+              compare: "the less the better",
+            },
+            {
+              key: 'pauseMedian',
+              name: 'pauseInfo.pauseMedian',
+              format: formatTimePeriod,
+              compare: "the less the better",
+            },
+            {
+              key: 'pauseMax',
+              name: 'pauseInfo.pauseMax',
+              format: formatTimePeriod,
+              compare: "the less the better",
+            },
+          ],
+        },
+        {
+          key: 'memoryStatistics',
+          name: 'memoryStats.memoryStats',
+          children: [
+            {
+              key: 'youngCapacityAvg',
+              name: 'memoryStats.youngCapacityAvg',
+              format: toSizeString,
+              compare: "just compare",
+              needed: this.isGenerational
+            },
+            {
+              key: 'youngUsedMax',
+              name: 'memoryStats.youngUsedMax',
+              format: toSizeString,
+              compare: "just compare",
+              needed: this.isGenerational
+            },
+            {
+              key: 'oldCapacityAvg',
+              name: 'memoryStats.oldCapacityAvg',
+              format: toSizeString,
+              compare: "just compare",
+              needed: this.isGenerational
+            },
+            {
+              key: 'oldUsedMax',
+              name: 'memoryStats.oldUsedMax',
+              format: toSizeString,
+              compare: "the less the better",
+              needed: this.isGenerational
+            },
+            {
+              key: 'oldUsedAvgAfterFullGC',
+              name: 'memoryStats.oldUsedAvgAfterFullGC',
+              format: toSizeString,
+              compare: "the less the better",
+              needed: this.isGenerational
+            },
+            {
+              key: 'oldUsedAvgAfterOldGC',
+              name: 'memoryStats.oldUsedAvgAfterOldGC',
+              format: toSizeString,
+              compare: "the less the better",
+              needed: hasOldGC
+            },
+            {
+              key: 'humongousUsedMax',
+              name: 'memoryStats.humongousUsedMax',
+              format: toSizeString,
+              compare: "the less the better",
+              needed: this.isG1
+            },
+            {
+              key: 'humongousUsedAvgAfterFullGC',
+              name: 'memoryStats.humongousUsedAvgAfterFullGC',
+              format: toSizeString,
+              compare: "the less the better",
+              needed: this.isG1
+            },
+            {
+              key: 'humongousUsedAvgAfterOldGC',
+              name: 'memoryStats.humongousUsedAvgAfterOldGC',
+              format: toSizeString,
+              compare: "the less the better",
+              needed: this.isG1
+            },
+            {
+              key: 'heapCapacityAvg',
+              name: 'memoryStats.heapCapacityAvg',
+              format: toSizeString,
+              compare: "just compare",
+            },
+            {
+              key: 'heapUsedMax',
+              name: 'memoryStats.heapUsedMax',
+              format: toSizeString,
+              compare: "the less the better",
+            },
+            {
+              key: 'heapUsedAvgAfterFullGC',
+              name: 'memoryStats.heapUsedAvgAfterFullGC',
+              format: toSizeString,
+              compare: "the less the better",
+            },
+            {
+              key: 'heapUsedAvgAfterOldGC',
+              name: 'memoryStats.heapUsedAvgAfterOldGC',
+              format: toSizeString,
+              compare: "the less the better",
+              needed: hasOldGC
+            },
+            {
+              key: 'metaspaceCapacityAvg',
+              name: 'memoryStats.metaspaceCapacityAvg',
+              format: toSizeString,
+              compare: "just compare",
+            },
+            {
+              key: 'metaspaceUsedMax',
+              name: 'memoryStats.metaspaceUsedMax',
+              format: toSizeString,
+              compare: "the less the better",
+            },
+            {
+              key: 'metaspaceUsedAvgAfterFullGC',
+              name: 'memoryStats.metaspaceUsedAvgAfterFullGC',
+              format: toSizeString,
+              compare: "the less the better",
+            },
+            {
+              key: 'metaspaceUsedAvgAfterOldGC',
+              name: 'memoryStats.metaspaceUsedAvgAfterOldGC',
+              format: toSizeString,
+              compare: "the less the better",
+              needed: hasOldGC
+            },
+          ],
+        },
+        {
+          key: 'phaseStatistics',
+          name: 'phaseStats.phaseStats',
+          children: [
+            {
+              key: 'youngGCCount',
+              name: 'phaseStats.youngGCCount',
+              format: this.formatCount,
+              compare: "the less the better",
+              needed: this.isGenerational,
+            },
+            {
+              key: 'youngGCIntervalAvg',
+              name: 'phaseStats.youngGCIntervalAvg',
+              format: formatTimePeriod,
+              compare: "the more the better",
+              needed: this.isGenerational,
+            },
+            {
+              key: 'youngGCDurationAvg',
+              name: 'phaseStats.youngGCDurationAvg',
+              format: formatTimePeriod,
+              compare: "the less the better",
+              needed: this.isGenerational,
+            },
+            {
+              key: 'youngGCDurationMax',
+              name: 'phaseStats.youngGCDurationMax',
+              format: formatTimePeriod,
+              compare: "the less the better",
+              needed: this.isGenerational,
+            },
+            {
+              key: 'mixedGCCount',
+              name: 'phaseStats.mixedGCCount',
+              format: this.formatCount,
+              compare: "the less the better",
+              needed: this.isG1,
+            },
+            {
+              key: 'mixedGCIntervalAvg',
+              name: 'phaseStats.mixedGCIntervalAvg',
+              format: formatTimePeriod,
+              compare: "the more the better",
+              needed: this.isG1,
+            },
+            {
+              key: 'mixedGCDurationAvg',
+              name: 'phaseStats.mixedGCDurationAvg',
+              format: formatTimePeriod,
+              compare: "the less the better",
+              needed: this.isG1,
+            },
+            {
+              key: 'mixedGCDurationMax',
+              name: 'phaseStats.mixedGCDurationMax',
+              format: formatTimePeriod,
+              compare: "the less the better",
+              needed: this.isG1,
+            },
+            {
+              key: 'oldGCCount',
+              name: 'phaseStats.oldGCCount',
+              format: this.formatCount,
+              compare: "the less the better",
+              needed: hasOldGC,
+            },
+            {
+              key: 'oldGCIntervalAvg',
+              name: 'phaseStats.oldGCIntervalAvg',
+              format: formatTimePeriod,
+              compare: "the more the better",
+              needed: hasOldGC,
+            },
+            {
+              key: 'oldGCDurationAvg',
+              name: 'phaseStats.oldGCDurationAvg',
+              format: formatTimePeriod,
+              compare: "the less the better",
+              needed: hasOldGC,
+            },
+            {
+              key: 'oldGCDurationMax',
+              name: 'phaseStats.oldGCDurationMax',
+              format: formatTimePeriod,
+              compare: "the less the better",
+              needed: hasOldGC,
+            },
+            {
+              key: 'fullGCCount',
+              name: 'phaseStats.fullGCCount',
+              format: this.formatCount,
+              compare: "the less the better",
+            },
+            {
+              key: 'fullGCIntervalAvg',
+              name: 'phaseStats.fullGCIntervalAvg',
+              format: formatTimePeriod,
+              compare: "the more the better",
+            },
+            {
+              key: 'fullGCDurationAvg',
+              name: 'phaseStats.fullGCDurationAvg',
+              format: formatTimePeriod,
+              compare: "the less the better",
+            },
+            {
+              key: 'fullGCDurationMax',
+              name: 'phaseStats.fullGCDurationMax',
+              format: formatTimePeriod,
+              compare: "the less the better",
+            },
+          ],
+        },
+        {
           key: 'objectStatistics',
           name: 'objectStats',
           children: [
@@ -156,19 +404,41 @@ export default {
               name: 'objectPromotionSpeed',
               format: toSizeSpeedString,
               compare: "the less the better",
+              needed: this.isGenerational
             },
             {
               key: 'objectPromotionAvg',
               name: 'objectPromotionAvg',
               format: toSizeString,
               compare: "the less the better",
+              needed: this.isGenerational
             },
             {
               key: 'objectPromotionMax',
               name: 'objectPromotionMax',
               format: toSizeString,
               compare: "the less the better",
-            }],
+              needed: this.isGenerational
+            },
+          ],
+        },
+        {
+          key: 'vmOptions',
+          name: 'vmOptions.vmOptions',
+          children: [
+            {
+              key: 'gcRelated',
+              name: 'vmOptions.gcRelatedOptions',
+              format: this.formatString,
+              compare: "don't compare",
+            },
+            {
+              key: 'other',
+              name: 'vmOptions.otherOptions',
+              format: this.formatString,
+              compare: "don't compare",
+            },
+          ]
         }
       ]
     }
@@ -277,7 +547,73 @@ export default {
       for (let i = 0; i < this.fileCount; i++) {
         const file = this['file' + i]
         this.loadObjectStatistics(i, file)
+        this.loadVmOptions(i, file)
+        this.loadMemory(i, file)
+        this.loadPause(i, file)
+        this.loadPhase(i, file)
       }
+    },
+    loadVmOptions(i, file) {
+      this.doBeforeLoadData()
+      const requestConfig = {params: {...this.analysisConfig[i].timeRange}}
+      axios.get(gclogService(file, 'vmOptions'), requestConfig).then(resp => {
+        if ((resp.data === undefined)) {
+          this.originalData[i].vmOptions = {}
+          return
+        }
+        this.originalData[i].vmOptions = {
+          gcRelated: resp.data.gcRelated.map(option => option.text).join(' '),
+          other: resp.data.other.map(option => option.text).join(' '),
+        }
+      }).finally(this.doAfterLoadData)
+    },
+    loadMemory(i, file) {
+      this.doBeforeLoadData()
+      const requestConfig = {params: {...this.analysisConfig[i].timeRange}}
+      axios.get(gclogService(file, 'memoryStatistics'), requestConfig).then(resp => {
+        const memoryStatistics = {}
+        console.log(resp.data)
+        Object.keys(resp.data).forEach(generation => {
+          const generationData = resp.data[generation]
+          Object.keys(generationData).forEach(metric => {
+            const key = generation + this.uppercaseFirstLetter(metric)
+            memoryStatistics[key] = generationData[metric]
+          })
+        })
+        this.originalData[i].memoryStatistics = memoryStatistics
+      }).finally(this.doAfterLoadData)
+    },
+    loadPause(i, file) {
+      this.doBeforeLoadData()
+      const requestConfig = {params: {...this.analysisConfig[i].timeRange}}
+      axios.get(gclogService(file, 'pauseStatistics'), requestConfig).then(resp => {
+        this.originalData[i].pauseStatistics = resp.data
+      }).finally(this.doAfterLoadData)
+    },
+    loadPhase(i, file) {
+      this.doBeforeLoadData()
+      const requestConfig = {params: {...this.analysisConfig[i].timeRange}}
+      axios.get(gclogService(file, 'phaseStatistics'), requestConfig).then(resp => {
+        const phaseStatistics = {}
+        const metrics = ['count', 'intervalAvg', 'durationAvg', 'durationMax']
+        resp.data.parents.map(e => e.self).forEach(event => {
+          let prefix = undefined;
+          if (event.name === 'Mixed GC') {
+            prefix = "mixedGC"
+          } else if (isYoungGC(event.name)) {
+            prefix = "youngGC"
+          } else if (isOldGC(event.name)) {
+            prefix = "oldGC"
+          } else if (isFullGC(event.name)) {
+            prefix = "fullGC"
+          }
+          metrics.forEach(metric => {
+            const key = prefix + this.uppercaseFirstLetter(metric)
+            phaseStatistics[key] = event[metric]
+          })
+        })
+        this.originalData[i].phaseStatistics = phaseStatistics
+      }).finally(this.doAfterLoadData)
     },
     loadObjectStatistics(i, file) {
       this.doBeforeLoadData()
@@ -290,10 +626,6 @@ export default {
       this.pendingRequest++;
     },
     doAfterLoadData() {
-      // todo: remove this line that makes debug info refresh
-      this.originalData = [...this.originalData]
-      // debug info end
-
       this.pendingRequest--;
       if (this.pendingRequest <= 0) {
         this.calculateTableData()
@@ -318,10 +650,13 @@ export default {
               needed[i] &&
               originalValue[i] !== undefined &&
               (typeof originalValue[i] !== "number" || originalValue[i] >= 0)) // check number additionally for comparing
+          if (!valueAvailable[0] && !valueAvailable[1]) {
+            return;
+          }
           let compare = '', compareClass = ''
           if (valueAvailable[0] && valueAvailable[1] && metricConfig.compare !== "don't compare") {
             const diff = originalValue[0] - originalValue[1]
-            compare = (diff > 0 ? '+' : '') + (diff / originalValue[1] * 100).toFixed(2) + '%'
+            compare = (diff > 0 ? '+' : '-') + formatPercentage(Math.abs(diff / originalValue[1]))
             if (metricConfig.compare !== "just compare" && diff !== 0) {
               if ((diff > 0 && metricConfig.compare === 'the more the better') ||
                   (diff < 0 && metricConfig.compare === 'the less the better')) {
@@ -341,11 +676,19 @@ export default {
           }
           metricGroupObj.children.push(metricObj)
         })
-        data.push(metricGroupObj)
+        if (metricGroupObj.children.length > 0) {
+          data.push(metricGroupObj)
+        }
       })
 
       this.tableData = data
       this.loading = false;
+    },
+    isGenerational(metadata) {
+      return metadata.generational
+    },
+    isG1(metadata) {
+      return metadata.collector === 'G1 GC'
     },
     updateUrl() {
       this.$router.push({
@@ -361,6 +704,12 @@ export default {
     },
     formatString(str) {
       return !str ? "N/A" : str;
+    },
+    formatCount(n) {
+      return n <= 0 ? "N/A" : n + '';
+    },
+    uppercaseFirstLetter(str) {
+      return str.slice(0, 1).toUpperCase() + str.slice(1)
     },
     clickTitle(i) {
       const url = this.$router.resolve({
@@ -388,6 +737,6 @@ export default {
 }
 
 .good-metric-compare {
-  color: #7cfc00;
+  color: #9ad969;
 }
 </style>
