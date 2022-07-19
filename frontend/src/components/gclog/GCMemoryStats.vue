@@ -81,8 +81,10 @@ export default {
         this.metrics = metrics
 
         let data = []
+        const sharedInfo = {}
         const heapCapacity = resp.data.heap.capacityAvg
         generations.forEach(generation => {
+          sharedInfo[generation+"CapacityAvg"] = resp.data[generation].capacityAvg
           let item = {}
           metrics.forEach(metric => {
             item[metric] = {
@@ -93,6 +95,7 @@ export default {
           item.generation = generation
           data.push(item)
         })
+        this.$emit('saveSharedInfo', sharedInfo)
         this.data = data;
         this.loading = false;
       })
@@ -138,7 +141,7 @@ export default {
     }
   },
   watch: {
-    timeRange() {
+    analysisConfig() {
       this.loadData();
     }
   },

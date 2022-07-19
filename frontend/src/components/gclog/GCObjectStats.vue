@@ -16,14 +16,21 @@
     <div slot="header">
       <span>{{ $t('jifa.gclog.objectStats') }}</span>
     </div>
-    <el-table :data="data"
-              :show-header="true"
-              v-loading="loading">
-      <el-table-column prop="objectCreationSpeed" :label="$t('jifa.gclog.objectCreationSpeed')"/>
-      <el-table-column prop="objectPromotionSpeed" :label="$t('jifa.gclog.objectPromotionSpeed')"/>
-      <el-table-column prop="objectPromotionAvg" :label="$t('jifa.gclog.objectPromotionAvg')"/>
-      <el-table-column prop="objectPromotionMax" :label="$t('jifa.gclog.objectPromotionMax')"/>
-    </el-table>
+    <div>
+      <el-table :data="tableData"
+                :loading="loading"
+                :show-header="true"
+      >
+        <el-table-column v-for="column in columns" :key="column">
+          <template slot="header">
+            <span>{{ $t('jifa.gclog.' + column) }}</span>
+          </template>
+          <template slot-scope="scope">
+            <span :class="scope.row[column].bad ? 'bad-metric' : ''">{{ scope.row[column].value }}</span>
+          </template>
+        </el-table-column>
+      </el-table>
+    </div>
   </el-card>
 </template>
 
@@ -32,31 +39,62 @@ import {toSizeString, toSizeSpeedString, gclogService} from '@/util'
 import axios from "axios";
 
 export default {
-  props: ["file", "metadata", "timeRange"],
+  props: ["file", "metadata", "analysisConfig", "sharedInfo"],
   data() {
     return {
       loading: true,
-      data: null,
+      originalData: null,
+      tableData: [],
+      columns: ['objectCreationSpeed', 'objectPromotionSpeed', 'objectPromotionAvg', 'objectPromotionMax']
     }
   },
   methods: {
     loadData() {
       this.loading = true
-      const requestConfig = {params: {...this.timeRange}}
+      const requestConfig = {params: {...this.analysisConfig.timeRange}}
       axios.get(gclogService(this.file, 'objectStatistics'), requestConfig).then(resp => {
-        this.data = [{
-          objectCreationSpeed: toSizeSpeedString(resp.data.objectCreationSpeed),
-          objectPromotionSpeed: toSizeSpeedString(resp.data.objectPromotionSpeed),
-          objectPromotionAvg: toSizeString(resp.data.objectPromotionAvg),
-          objectPromotionMax: toSizeString(resp.data.objectPromotionMax),
-        }]
+        this.originalData = resp.data
+        this.calTableData()
         this.loading = false;
       })
-    }
+    },
+    calTableData() {
+      if (this.originalData === null) {
+        return
+      }
+      const youngCapacity = this.sharedInfo.youngCapacityAvg;
+      const oldCapacity = this.sharedInfo.oldCapacityAvg;
+      const heapCapacity = this.sharedInfo.heapCapacityAvg;
+      const highPromotionThresholdPercent = this.analysisConfig.highPromotionThreshold / 100;
+      this.tableData = [
+        {
+          objectCreationSpeed: {
+            value: toSizeSpeedString(this.originalData.objectCreationSpeed),
+            bad: this.metadata.generational ?
+                (youngCapacity >= 0 && youngCapacity / this.originalData.objectCreationSpeed < this.analysisConfig.youngGCFrequentIntervalThreshold) :
+                (heapCapacity >= 0 && heapCapacity / this.originalData.objectCreationSpeed < this.analysisConfig.fullGCFrequentIntervalThreshold)
+          },
+          objectPromotionSpeed: {
+            value: toSizeSpeedString(this.originalData.objectPromotionSpeed),
+            bad: oldCapacity > 0 && this.originalData.objectPromotionSpeed > oldCapacity * highPromotionThresholdPercent / this.analysisConfig.youngGCFrequentIntervalThreshold
+          },
+          objectPromotionAvg: {
+            value: toSizeString(this.originalData.objectPromotionAvg),
+            bad: oldCapacity > 0 && this.originalData.objectPromotionAvg > oldCapacity * highPromotionThresholdPercent
+          },
+          objectPromotionMax: {
+            value: toSizeString(this.originalData.objectPromotionMax),
+            bad: oldCapacity > 0 && this.originalData.objectPromotionMax > oldCapacity * highPromotionThresholdPercent * 2
+          },
+        }]
+    },
   },
   watch: {
-    timeRange() {
+    analysisConfig() {
       this.loadData();
+    },
+    sharedInfo() {
+      this.calTableData()
     }
   },
   mounted() {

@@ -171,7 +171,7 @@ export default {
       if (!isPhase) {
         const cause = originalData.name;
         if ((originalParent.count >= 10 && originalData.count / originalParent.count >= 0.3) &&
-            (cause === 'G1 Humongous Allocation')) {
+            (cause === 'G1 Humongous Allocation' || cause === 'GCLocker Initiated GC' )) {
           return true
         }
       }

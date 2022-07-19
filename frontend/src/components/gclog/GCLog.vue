@@ -129,9 +129,11 @@
         <el-main style="padding: 10px 5px 5px; width: 1000px; margin: 0 auto">
           <GCPause :file="file" :metadata="metadata" :timeRange="analysisConfig.timeRange"
                    :longPauseThreshold="analysisConfig.longPauseThreshold" class="main-block"/>
-          <GCMemoryStats :file="file" :metadata="metadata" :analysisConfig="analysisConfig" class="main-block"/>
+          <GCMemoryStats :file="file" :metadata="metadata" :analysisConfig="analysisConfig" class="main-block"
+                         @saveSharedInfo="setSharedInfo"/>
           <GCPhaseStats :file="file" :metadata="metadata" :analysisConfig="analysisConfig" class="main-block"/>
-          <GCObjectStats :file="file" :metadata="metadata" :timeRange="analysisConfig.timeRange" class="main-block"/>
+          <GCObjectStats :file="file" :metadata="metadata" :analysisConfig="analysisConfig" class="main-block"
+                         :shared-info="gcSharedInfo"/>
           <VmOptions :file="file" :metadata="metadata" class="main-block"/>
 
           <!--    for debug -->
@@ -206,6 +208,7 @@
         },
 
         metadata: null,
+        gcSharedInfo: {},
         detailVisible: false,
       }
     },
@@ -277,12 +280,13 @@
           longConcurrentThreshold : 30000,
           youngGCFrequentIntervalThreshold: 1000,
           oldGCFrequentIntervalThreshold: 15000,
-          fullGCFrequentIntervalThreshold: this.metadata.generational ? 60000 : 1000,
+          fullGCFrequentIntervalThreshold: this.metadata.generational ? 60000 : 2000,
           highOldUsageThreshold: 80,
           highHumongousUsageThreshold: 50,
           highHeapUsageThreshold: 60,
           highMetaspaceUsageThreshold: 80,
           smallGenerationThreshold: 10,
+          highPromotionThreshold: 3,
         }
         this.analysisConfig = {...this.analysisConfigModel}
         this.updateUrl()
@@ -306,6 +310,7 @@
         this.$refs['configForm'].validate((valid) => {
           if (valid) {
             this.analysisConfigVisible = false;
+            this.gcSharedInfo = {}
             this.analysisConfig = {...this.analysisConfigModel}
             this.updateUrl()
           }
@@ -335,6 +340,9 @@
           })
         }
         return params;
+      },
+      setSharedInfo(info) {
+        this.gcSharedInfo = {...this.gcSharedInfo, ...info}
       },
       doCompare() {
         this.$refs['compareForm'].validate((valid) => {
