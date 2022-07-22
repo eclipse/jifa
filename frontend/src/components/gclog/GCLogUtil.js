@@ -108,7 +108,8 @@ export function badCause(phase, cause) {
     return true
   }
   if (phase === "Full GC" && ["Allocation Failure", "Metadata GC Threshold", "Ergonomics", "Last ditch collection",
-    "Promotion failed", "Metadata GC Clear Soft References", "System.gc()"].indexOf(cause) >= 0) {
+    "Promotion failed", "Metadata GC Clear Soft References", "System.gc()", "G1 Humongous Allocation",
+    "GCLocker Initiated GC"].indexOf(cause) >= 0) {
     return true;
   }
   return false
