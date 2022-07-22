@@ -207,6 +207,25 @@
         </el-form>
       </el-tab-pane>
 
+      <el-tab-pane label="Raw Text" name="rawText" v-if="rawTextUploadSupported()">
+        <el-form ref="rawTextForm" :model="rawText" :rules="rawTextRules" label-width="150px" size="medium" label-position="right"
+                 style="margin-top: 10px" status-icon :show-message=false>
+          <el-form-item label="File Name" prop="originalName">
+            <el-input v-model="rawText.originalName" placeholder="File Name" style="width: 80%" clearable></el-input>
+          </el-form-item>
+
+          <el-form-item label="Content" prop="content">
+            <el-input v-model="rawText.content" placeholder="Content" style="width: 80% " clearable
+                      type="textarea" resize="none" rows="10"
+            ></el-input>
+          </el-form-item>
+
+          <el-form-item>
+            <el-button type="primary" @click="rawTextConfirm" :loading="inTransferring">{{$t('jifa.confirm')}}</el-button>
+          </el-form-item>
+        </el-form>
+      </el-tab-pane>
+
     </el-tabs>
 
     
@@ -308,6 +327,22 @@
             {required: true, trigger: 'blur'}
           ],
         },
+        rawTextFileDefaultName: {
+          GC_LOG: "gc.log",
+          THREAD_DUMP: "jstack.log"
+        },
+        rawText: {
+          originalName: '',
+          content: ''
+        },
+        rawTextRules: {
+          originalName: [
+            {required: true, trigger: 'blur'}
+          ],
+          content: [
+            {required: true, trigger: 'blur'}
+          ],
+        },
 
         publicKeyViewVisible: false,
         publicKey: '',
@@ -327,8 +362,19 @@
         inTransferring: false,
       }
     },
+    watch: {
+      fileType: function (newValue, oldValue) {
+        this.rawText.originalName = this.rawTextFileDefaultName[newValue]
+      }
+    },
+    mounted() {
+      this.rawText.originalName = this.rawTextFileDefaultName[this.fileType]
+    },
     methods: {
       service,
+      rawTextUploadSupported() {
+        return this.rawTextFileDefaultName[this.fileType] !== undefined
+      },
       changeAuthType(authType) {
         this.$refs['scpForm'].clearValidate()
         this.scpRules.password[0].required = authType === 'password'
@@ -406,6 +452,26 @@
             formData.append('bucketName', this.s3.bucketName)
             formData.append('objectName', this.s3.objectName)
             this.doTransfer('/file/transferByS3', formData)
+          }
+        })
+      },
+      rawTextConfirm() {
+        this.$refs['rawTextForm'].validate((valid) => {
+          if (valid) {
+            let formData = new FormData()
+            const blob = new Blob([this.rawText.content])
+            const file = new File([blob], this.rawText.originalName)
+            formData.append('file', file)
+            formData.append('type', this.fileType)
+            const config = {
+              headers: {
+                'content-type': 'multipart/form-data'
+              },
+            }
+            this.inTransferring = true
+            axios.post(service('/file/upload'), formData, config).then(resp => {
+              this.onSuccess(resp.data)
+            })
           }
         })
       },
