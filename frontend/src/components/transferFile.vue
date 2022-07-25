@@ -234,7 +234,7 @@
 
 <script>
   import axios from 'axios'
-  import {service, toSizeString} from '../util'
+  import {service, toReadableSizeWithUnit} from '../util'
 
   export default {
     props: ['fileType', 'transferViewVisible'],
@@ -517,10 +517,10 @@
           this.totalSize = progress.totalSize
           this.lastTransferredSize = this.transferredSize
           this.transferredSize = progress.transferredSize
-          this.currentProgress = toSizeString((this.transferredSize - this.lastTransferredSize) / (this.pollingInternal / 1000))
+          this.currentProgress = toReadableSizeWithUnit((this.transferredSize - this.lastTransferredSize) / (this.pollingInternal / 1000))
               + '/s '
-              + "[" + toSizeString(this.transferredSize)
-              + ", " + (this.totalSize > 0 ? toSizeString(this.totalSize) : " ? ") + "]"
+              + "[" + toReadableSizeWithUnit(this.transferredSize)
+              + ", " + (this.totalSize > 0 ? toReadableSizeWithUnit(this.totalSize) : " ? ") + "]"
           if (progress.percent <= 1) {
             this.transferProgress = parseFloat((progress.percent * 100).toPrecision(3))
           } else {

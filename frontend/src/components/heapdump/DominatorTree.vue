@@ -106,7 +106,7 @@
           <span v-if="scope.row.isSummaryItem">
             <img :src="ICONS.misc.sumIcon" v-if="records.length >= totalSize"/>
             <img :src="ICONS.misc.sumPlusIcon" @dblclick="fetchNextPageData" style="cursor: pointer" v-else/>
-            {{ records.length }} <strong> / </strong> {{totalSize}}
+            {{ toReadableCount(records.length) }} <strong> / </strong> {{ toReadableCount(totalSize) }}
           </span>
 
           <span v-if="scope.row.isChildrenSummary">
@@ -115,7 +115,7 @@
                  @dblclick="fetchChildren(scope.row.parentRowKey, scope.row.objectId, scope.row.nextPage, scope.row.idPathInResultTree, scope.row.resolve)"
                  style="cursor: pointer"
                  v-else/>
-            {{ scope.row.currentSize }} <strong> / </strong> {{ scope.row.totalSize }}
+            {{ toReadableCount(scope.row.currentSize) }} <strong> / </strong> {{ toReadableCount(scope.row.totalSize) }}
           </span>
         </template>
       </el-table-column>
@@ -127,13 +127,13 @@
 
       <el-table-column v-if="grouping!=='NONE'" label="Objects" prop="Objects" sortable="custom">
         <template slot-scope="scope">
-          {{ grouping !== "NONE" ? scope.row.objects : ''}}
+          {{ grouping !== "NONE" ? toReadableCount(scope.row.objects) : ''}}
         </template>
       </el-table-column>
 
-      <el-table-column label="Shallow Heap" prop="shallowHeap" sortable="custom">
+      <el-table-column label="Shallow Heap" prop="shallowHeap" sortable="custom" :formatter="toReadableSizeWithUnitFormatter">
       </el-table-column>
-      <el-table-column label="Retained Heap" prop="retainedHeap" sortable="custom">
+      <el-table-column label="Retained Heap" prop="retainedHeap" sortable="custom" :formatter="toReadableSizeWithUnitFormatter">
       </el-table-column>
       <el-table-column label="Percentage" prop="percent" sortable="custom">
       </el-table-column>
@@ -144,7 +144,7 @@
 <script>
   import axios from 'axios'
   import {getIcon, ICONS} from "./IconHealper";
-  import {heapDumpService} from "../../util";
+  import {heapDumpService, toReadableCount, toReadableSizeWithUnitFormatter} from "../../util";
 
   let rowKey = 1
 
@@ -179,6 +179,8 @@
       }
     },
     methods: {
+      toReadableCount,
+      toReadableSizeWithUnitFormatter,
       spanMethod(row) {
         let index = row.columnIndex
         if (index === 0) {

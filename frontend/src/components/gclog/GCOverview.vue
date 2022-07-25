@@ -83,7 +83,7 @@
 
 <script>
   import axios from "axios";
-  import {formatTimePeriod, gclogService, toSizeSpeedString, toSizeString} from "@/util";
+  import {formatTimePeriod, gclogService, toSizeSpeedString, toReadableSizeWithUnit} from "@/util";
 
   export default {
     props: ['file'],
@@ -152,7 +152,7 @@
         return v == null || v < 0 ? "N/A" : (100 * v).toFixed(2) + "%";
       },
       formatKB(v) {
-        return v < 0 ? "N/A" : toSizeString(v * 1024);
+        return v < 0 ? "N/A" : toReadableSizeWithUnit(v * 1024);
       },
       formatKBPS(v) {
         return v < 0 ? "N/A" : toSizeSpeedString(v * 1024);

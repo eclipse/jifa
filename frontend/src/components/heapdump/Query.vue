@@ -110,19 +110,19 @@
                    @dblclick="fetchOutbounds(scope.row.parentRowKey, scope.row.objectId, scope.row.nextPage, scope.row.resolve)"
                    style="cursor: pointer"
                    v-else/>
-              {{ scope.row.currentSize }} <strong> / </strong> {{ scope.row.totalSize }}
+              {{ toReadableCount(scope.row.currentSize) }} <strong> / </strong> {{ toReadableCount(scope.row.totalSize) }}
             </span>
 
             <span v-if="scope.row.isSummaryItem">
               <img :src="ICONS.misc.sumIcon" v-if="treeResult.length >= totalSize"/>
               <img :src="ICONS.misc.sumPlusIcon" @dblclick="fetchResult(scope.row.query)" style="cursor: pointer" v-else/>
-              {{ treeResult.length }} <strong> / </strong> {{totalSize}}
+              {{ toReadableCount(treeResult.length) }} <strong> / </strong> {{ toReadableCount(totalSize) }}
             </span>
           </template>
         </el-table-column>
-        <el-table-column label="Shallow Heap" prop="shallowHeap" sortable="custom">
+        <el-table-column label="Shallow Heap" prop="shallowHeap" sortable="custom" :formatter="toReadableSizeWithUnitFormatter">
         </el-table-column>
-        <el-table-column label="Retained Heap" prop="retainedHeap" sortable="custom">
+        <el-table-column label="Retained Heap" prop="retainedHeap" sortable="custom" :formatter="toReadableSizeWithUnitFormatter">
         </el-table-column>
       </el-table>
 
@@ -149,7 +149,7 @@
             <span v-if="scope.row.isSummaryItem && index === 0">
             <img :src="ICONS.misc.sumIcon" v-if="tableResult.length >= totalSize"/>
             <img :src="ICONS.misc.sumPlusIcon" @dblclick="fetchResult(scope.row.query)" style="cursor: pointer" v-else/>
-            {{ tableResult.length }} <strong> / </strong> {{totalSize}}
+            {{ toReadableCount(tableResult.length) }} <strong> / </strong> {{ toReadableCount(totalSize) }}
           </span>
           </template>
         </el-table-column>
@@ -169,7 +169,7 @@
 <script>
   import axios from 'axios'
   import {getOutboundIcon, ICONS} from "./IconHealper";
-  import {heapDumpService} from "../../util";
+  import {heapDumpService, toReadableCount, toReadableSizeWithUnit, toReadableSizeWithUnitFormatter} from "../../util";
 
   let rowKey = 1
 
@@ -219,6 +219,9 @@
       }
     },
     methods: {
+      toReadableCount,
+      toReadableSizeWithUnit,
+      toReadableSizeWithUnitFormatter,
       adjustDataByResultType(type) {
         this.isTreeResult = type === TREE
         this.isTableResult = type === TABLE
