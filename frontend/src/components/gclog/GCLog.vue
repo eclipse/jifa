@@ -13,7 +13,7 @@
 <!--suppress HtmlUnknownTag -->
 <template>
   <el-container>
-    <el-header>
+    <el-header id="navTop">
         <view-menu subject="analysisResult"
                    :file="file"
                    :analysisState="analysisState"
@@ -39,11 +39,20 @@
       </div>
 
       <div v-if="analysisState === 'SUCCESS'">
-        <button
-            style="right: 5%;top: 50%; position: fixed; z-index: 100"
-            @click="showDetail">
-          {{$t('jifa.gclog.showGCDetail')}}
-        </button>
+        <div style="right: calc(50% - 680px);top: 10%; position: fixed; z-index: 100; width: 160px; font-size: 14px">
+          <el-card :header="$t('jifa.gclog.navigation')">
+            <div class="nav-item"><a href="#navTop">{{ $t('jifa.gclog.navToTop') }}</a></div>
+            <el-divider/>
+            <div class="nav-item"><a href="#pause">{{ $t('jifa.gclog.vmOptions.vmOptions') }}</a></div>
+            <div class="nav-item"><a href="#memoryStats">{{ $t('jifa.gclog.memoryStats.memoryStats') }}</a></div>
+            <div class="nav-item"><a href="#phaseStats">{{ $t('jifa.gclog.phaseStats.phaseStatsAndCause') }}</a></div>
+            <div class="nav-item"><a href="#objectStats">{{ $t('jifa.gclog.objectStats') }}</a></div>
+            <div class="nav-item"><a href="#option">{{ $t('jifa.gclog.vmOptions.vmOptions') }}</a></div>
+            <el-divider/>
+            <div class="nav-item"><a href="javascript:void(0);" @click="showDetail">{{ $t('jifa.gclog.gcDetail') }}</a></div>
+          </el-card>
+        </div>
+
         <el-drawer
             title="GC详情"
             size="90%"
@@ -127,13 +136,31 @@
         </el-dialog>
 
         <el-main style="padding: 10px 5px 5px; width: 1000px; margin: 0 auto">
-          <GCPause :file="file" :metadata="metadata" :analysisConfig="analysisConfig" class="main-block"/>
-          <GCMemoryStats :file="file" :metadata="metadata" :analysisConfig="analysisConfig" class="main-block"
+          <GCPause :file="file"
+                   :metadata="metadata"
+                   :analysisConfig="analysisConfig"
+                   id="pause"
+                   class="main-block"/>
+          <GCMemoryStats :file="file"
+                         :metadata="metadata"
+                         :analysisConfig="analysisConfig"
+                         class="main-block"
+                         id="memoryStats"
                          @saveSharedInfo="setSharedInfo"/>
-          <GCPhaseStats :file="file" :metadata="metadata" :analysisConfig="analysisConfig" class="main-block"/>
-          <GCObjectStats :file="file" :metadata="metadata" :analysisConfig="analysisConfig" class="main-block"
+          <GCPhaseStats :file="file"
+                        :metadata="metadata"
+                        :analysisConfig="analysisConfig"
+                        id="phaseStats"
+                        class="main-block"/>
+          <GCObjectStats :file="file" :metadata="metadata"
+                         :analysisConfig="analysisConfig"
+                         class="main-block"
+                         id="objectStats"
                          :shared-info="gcSharedInfo"/>
-          <VmOptions :file="file" :metadata="metadata" class="main-block"/>
+          <VmOptions :file="file"
+                     :metadata="metadata"
+                     id="option"
+                     class="main-block"/>
 
           <!--    for debug -->
           analysisconfig: <div>{{this.analysisConfig}}</div>
@@ -385,8 +412,14 @@
 .bad-metric {
   color: #E74C3C;
 }
+</style>
 
+<style scoped>
 .main-block {
   margin-bottom: 40px;
+}
+
+.nav-item {
+  margin-bottom: 10px;
 }
 </style>

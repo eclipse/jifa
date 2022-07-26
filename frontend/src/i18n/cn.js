@@ -143,6 +143,8 @@ exports.default = {
     gclog: {
       fileNotExist: '文件不存在',
       gclogFile: "GC日志文件",
+      navigation: '导航',
+      navToTop: '回到最上方',
       gclogFilePlaceholder: "填写文件分析页面的URL，如果要选择分析的时间段请在文件分析页面里先配置好",
       stwTooltip: "程序在这个阶段会暂停(stop the world)",
       showGCDetail: '显示GC详情',

@@ -124,7 +124,7 @@ export default {
         const yAxisData = this.subArray(partitions.map((value, index) =>
             this.formatYAxis(partitions[index], partitions[index + 1])), subArrayIndex)
 
-        const series = Object.keys(resp.data).map(key => {
+        const series = this.metadata.pauseEventTypes.filter(e => resp.data.hasOwnProperty(e)).map(key => {
           return {
             name: key,
             type: 'bar',

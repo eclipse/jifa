@@ -49,7 +49,7 @@ export default {
     loadOptions() {
       this.loading = true
       axios.get(gclogService(this.file, 'vmOptions')).then(resp => {
-        this.optionsAvailable = (resp.data !== undefined)
+        this.optionsAvailable = !!resp.data
         if (this.optionsAvailable) {
           this.options = resp.data
         }
