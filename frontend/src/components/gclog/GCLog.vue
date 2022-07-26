@@ -375,7 +375,7 @@
   }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
 .el-drawer.rtl {
   overflow: scroll
 }

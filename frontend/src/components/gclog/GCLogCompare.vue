@@ -49,7 +49,7 @@
             </template>
           </el-table-column>
           <el-table-column v-for="i in fileCount" :key="i" :prop="'value' + (i-1)">
-            <template slot="header" slot-scope="scope">
+            <template slot="header">
               <a href="javascript:void(0);" @click="()=> {clickTitle(i - 1)}">
                 <span>{{ files[i - 1] }}</span>
               </a>
@@ -572,7 +572,6 @@ export default {
       const requestConfig = {params: {...this.analysisConfig[i].timeRange}}
       axios.get(gclogService(file, 'memoryStatistics'), requestConfig).then(resp => {
         const memoryStatistics = {}
-        console.log(resp.data)
         Object.keys(resp.data).forEach(generation => {
           const generationData = resp.data[generation]
           Object.keys(generationData).forEach(metric => {

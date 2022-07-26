@@ -26,7 +26,7 @@
         </template>
       </el-table-column>
       <el-table-column v-for="metric in metrics" :key="metric" props="metric">
-        <template slot="header" slot-scope="scope">
+        <template slot="header">
           {{ $t(`jifa.gclog.memoryStats.${metric}`) }}
           <Hint :info="getMetricHint(metric)"/>
         </template>
