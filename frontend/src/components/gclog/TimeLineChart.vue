@@ -22,7 +22,7 @@
 /* eslint-disable */
 import axios from "axios";
 import i18n from "@/i18n/i18n-setup";
-import echarts from 'echarts';
+import * as echarts from 'echarts';
 import {gclogService} from "@/util"
 
 export default {
