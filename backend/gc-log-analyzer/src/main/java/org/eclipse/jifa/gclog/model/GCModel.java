@@ -14,8 +14,6 @@
 package org.eclipse.jifa.gclog.model;
 
 import org.eclipse.jifa.common.listener.ProgressListener;
-import org.eclipse.jifa.common.util.ErrorUtil;
-import org.eclipse.jifa.gclog.model.TimeLineChartView.TimeLineChartEvent;
 import org.eclipse.jifa.gclog.util.DoubleData;
 import org.eclipse.jifa.gclog.util.LongData;
 import org.eclipse.jifa.gclog.vo.*;
@@ -398,6 +396,71 @@ public abstract class GCModel {
         setEndTime(endTime);
     }
 
+    public Map<String, List<Object[]>> getTimeGraphData(String[] dataTypes) {
+        Map<String, List<Object[]>> result = new LinkedHashMap<>();
+        for (String dataType : dataTypes) {
+            if (dataType.endsWith("Used") || dataType.endsWith("Capacity")) {
+                result.put(dataType, getTimeGraphMemoryData(dataType));
+            } else if (dataType.equals("promotion")) {
+                result.put(dataType, getTimeGraphPromotionData());
+            } else if (dataType.equals("reclamation")) {
+                result.put(dataType, getTimeGraphReclamationData());
+            } else {
+                result.put(dataType, getTimeGraphDurationData(dataType));
+            }
+        }
+        return result;
+    }
+
+    private List<Object[]> getTimeGraphMemoryData(String dataType) {
+        boolean used = dataType.endsWith("Used");
+        String generationString = dataType.substring(0, dataType.length() - (used ? "Used" : "Capacity").length());
+        HeapGeneration generation = HeapGeneration.getHeapGeneration(generationString);
+        List<Object[]> result = new ArrayList<>();
+        for (GCEvent event : this.gcCollectionEvents) {
+            GCCollectionResultItem memory = event.getCollectionAgg().getOrDefault(generation, null);
+            if (memory == null) {
+                continue;
+            }
+            if (used) {
+                if (memory.getPreUsed() != UNKNOWN_LONG) {
+                    result.add(new Object[]{(long)event.getEndTime(), memory.getPreUsed()});
+                }
+                if (memory.getPostUsed() != UNKNOWN_LONG) {
+                    result.add(new Object[]{(long)event.getEndTime(), memory.getPostUsed()});
+                }
+            } else {
+                if (memory.getTotal() != UNKNOWN_LONG) {
+                    result.add(new Object[]{(long)event.getEndTime(), memory.getTotal()});
+                }
+            }
+        }
+        result.sort(Comparator.comparingLong(d -> (long) d[0]));
+        return result;
+    }
+
+    private List<Object[]> getTimeGraphPromotionData() {
+        return allEvents.stream()
+                .filter(event -> event.getPromotion() >= 0)
+                .map(event -> new Object[]{(long)event.getStartTime(), event.getPromotion()})
+                .collect(Collectors.toList());
+    }
+
+    private List<Object[]> getTimeGraphReclamationData() {
+        return gcCollectionEvents.stream()
+                .filter(event -> event.getReclamation() != UNKNOWN_LONG)
+                .map(event -> new Object[]{(long)event.getStartTime(), event.getReclamation()})
+                .collect(Collectors.toList());
+    }
+
+    private List<Object[]> getTimeGraphDurationData(String phaseName) {
+        return allEvents.stream()
+                .filter(event -> event.getEventType().getName().equals(phaseName)
+                        && event.getDuration() != UNKNOWN_DOUBLE)
+                .map(event -> new Object[]{(long)event.getStartTime(), event.getDuration()})
+                .collect(Collectors.toList());
+    }
+
     public int getRecommendMaxHeapSize() {
         throw new UnsupportedOperationException();
     }
@@ -517,213 +580,6 @@ public abstract class GCModel {
         } catch (Exception e) {
             LOGGER.info(e.getMessage());
         }
-    }
-
-    private static final String I18N_PROMOTION = "jifa.gclog.promotion";
-    private static final List<String> PROMOTION_I18N_LIST = Arrays.asList(I18N_PROMOTION);
-
-    private TimeLineChartView calculateGCMemoryPromotion(double startTime, double endTime, double bucketInterval) {
-        List<TimeLineChartEvent> events = new ArrayList<>();
-        for (GCEvent gcEvent : gcCollectionEvents) {
-            if (gcEvent.getEndTime() < startTime) {
-                continue;
-            }
-            if (gcEvent.getEndTime() > endTime) {
-                break;
-            }
-
-            long promotion = gcEvent.getPromotion();
-            if (promotion != UNKNOWN_INT) {
-                events.add(new TimeLineChartEvent(I18N_PROMOTION, gcEvent.getEndTime(), promotion / KB2MB));
-            }
-        }
-        return new TimeLineChartView.TimeLineChartViewBuilder()
-                .setStartTime(startTime)
-                .setEndTime(endTime)
-                .setEvents(events)
-                .setLabels(PROMOTION_I18N_LIST)
-                .setBucketInterval(bucketInterval)
-                .setAverageByTime(true)
-                .createByAggregation();
-    }
-
-    private static final String I18N_ALLOCATION = "jifa.gclog.allocation";
-    private static final String I18N_RECLAMATION = "jifa.gclog.reclamation";
-    private static final List<String> ALLO_REC_I18N_LIST = Arrays.asList(I18N_ALLOCATION, I18N_RECLAMATION);
-
-    private TimeLineChartView calculateGCMemoryAlloRec(double startTime, double endTime, double bucketInterval) {
-        List<TimeLineChartEvent> events = new ArrayList<>();
-        // we will use zgc's own statistics to get allocation rate
-        boolean useZGCStatistics = collectorType == ZGC && !((ZGCModel) this).getStatistics().isEmpty();
-        for (GCEvent gcEvent : gcCollectionEvents) {
-            if (gcEvent.getEndTime() < startTime) {
-                continue;
-            }
-            if (gcEvent.getEndTime() > endTime) {
-                break;
-            }
-            if (!useZGCStatistics) {
-                long allocation = gcEvent.getAllocation();
-                if (allocation != UNKNOWN_INT) {
-                    events.add(new TimeLineChartEvent(I18N_ALLOCATION, gcEvent.getEndTime(), allocation / KB2MB / KB2MB));
-                }
-            }
-            long reclamation = gcEvent.getReclamation();
-            if (reclamation != UNKNOWN_INT) {
-                events.add(new TimeLineChartEvent(I18N_RECLAMATION, gcEvent.getEndTime(), reclamation / KB2MB / KB2MB));
-            }
-        }
-        if (collectorType == ZGC) {
-            for (ZGCModel.ZStatistics statistic : ((ZGCModel) this).getStatistics()) {
-                if (statistic.getStartTime() < startTime) {
-                    continue;
-                }
-                if (statistic.getStartTime() > endTime) {
-                    break;
-                }
-                events.add(new TimeLineChartEvent(I18N_ALLOCATION, statistic.getStartTime(),
-                        statistic.get("Memory: Allocation Rate MB/s").getAvg10s() * 10));
-            }
-        }
-        return new TimeLineChartView.TimeLineChartViewBuilder()
-                .setStartTime(startTime)
-                .setEndTime(endTime)
-                .setEvents(events)
-                .setLabels(ALLO_REC_I18N_LIST)
-                .setBucketInterval(bucketInterval)
-                .setAverageByTime(true)
-                .createByAggregation();
-    }
-
-    private static final String I18N_YOUNG = "jifa.gclog.youngRegion";
-    private static final String I18N_OLD = "jifa.gclog.oldRegion";
-    private static final String I18N_HUMONGOUS = "jifa.gclog.humongousRegion";
-    private static final String I18N_HEAP_TOTAL = "jifa.gclog.totalHeap";
-    private static final String I18N_HEAP_MAX = "jifa.gclog.heapMax";
-    private static final List<String> HEAP_I18N_LIST_G1 = Arrays.asList(I18N_YOUNG, I18N_OLD, I18N_HUMONGOUS, I18N_HEAP_TOTAL, I18N_HEAP_MAX);
-    private static final List<String> HEAP_I18N_LIST_OTHER = Arrays.asList(I18N_YOUNG, I18N_OLD, I18N_HEAP_TOTAL, I18N_HEAP_MAX);
-
-    private TimeLineChartView calculateGCMemoryHeap(double startTime, double endTime) {
-        List<TimeLineChartEvent> events = new ArrayList<>();
-        for (GCEvent gcEvent : gcCollectionEvents) {
-            if (gcEvent.getEndTime() < startTime) {
-                continue;
-            }
-            if (gcEvent.getEndTime() > endTime) {
-                break;
-            }
-
-            Map<HeapGeneration, GCCollectionResultItem> collection = gcEvent.getCollectionAgg();
-            if (collection == null) {
-                continue;
-            }
-            GCCollectionResultItem young = collection.get(YOUNG);
-            GCCollectionResultItem old = collection.get(OLD);
-            GCCollectionResultItem humongous = collection.get(HUMONGOUS);
-            GCCollectionResultItem total = collection.get(TOTAL);
-            if (young.getPreUsed() != UNKNOWN_INT) {
-                events.add(new TimeLineChartEvent(I18N_YOUNG, gcEvent.getStartTime(),
-                        (double) young.getPreUsed() / KB2MB));
-                events.add(new TimeLineChartEvent(I18N_YOUNG, gcEvent.getEndTime(),
-                        (double) young.getPostUsed() / KB2MB));
-            }
-            if (old.getPreUsed() != UNKNOWN_INT) {
-                events.add(new TimeLineChartEvent(I18N_OLD, gcEvent.getStartTime(),
-                        (double) old.getPreUsed() / KB2MB));
-                events.add(new TimeLineChartEvent(I18N_OLD, gcEvent.getEndTime(),
-                        (double) old.getPostUsed() / KB2MB));
-            }
-            if (humongous.getPreUsed() != UNKNOWN_INT) {
-                events.add(new TimeLineChartEvent(I18N_HUMONGOUS, gcEvent.getStartTime(),
-                        (double) humongous.getPreUsed() / KB2MB));
-                events.add(new TimeLineChartEvent(I18N_HUMONGOUS, gcEvent.getEndTime(),
-                        (double) humongous.getPostUsed() / KB2MB));
-            }
-            if (total.getPreUsed() != UNKNOWN_INT) {
-                events.add(new TimeLineChartEvent(I18N_HEAP_TOTAL, gcEvent.getStartTime(),
-                        (double) total.getPreUsed() / KB2MB));
-                events.add(new TimeLineChartEvent(I18N_HEAP_TOTAL, gcEvent.getEndTime(),
-                        (double) total.getPostUsed() / KB2MB));
-            }
-            if (total.getTotal() != UNKNOWN_INT) {
-                events.add(new TimeLineChartEvent(I18N_HEAP_MAX, gcEvent.getStartTime(),
-                        (double) total.getTotal() / KB2MB));
-                events.add(new TimeLineChartEvent(I18N_HEAP_MAX, gcEvent.getEndTime(),
-                        (double) total.getTotal() / KB2MB));
-            }
-        }
-        List<String> labels = collectorType == G1 ? HEAP_I18N_LIST_G1 : HEAP_I18N_LIST_OTHER;
-        return new TimeLineChartView.TimeLineChartViewBuilder()
-                .setStartTime(startTime)
-                .setEndTime(endTime)
-                .setEvents(events)
-                .setLabels(labels)
-                .createByPreservingData();
-    }
-
-    private static final String I18N_DURATION_PERCENTAGE = "jifa.gclog.gcOverview.gcDurationPercentage";
-    private static final List<String> GCCYCLE_I18N_LIST = Arrays.asList(I18N_DURATION_PERCENTAGE);
-
-    private TimeLineChartView calculateGCCycle(double startTime, double endTime) {
-        // now this is only used in ZGC, may be used by other gcs in the future
-        List<TimeLineChartEvent> events = new ArrayList<>();
-        for (GCEvent gcEvent : gcCollectionEvents) {
-            if (gcEvent.getEndTime() < startTime) {
-                continue;
-            }
-            if (gcEvent.getEndTime() > endTime) {
-                break;
-            }
-            if (gcEvent.getDuration() != UNKNOWN_DOUBLE && gcEvent.getInterval() != UNKNOWN_DOUBLE) {
-                events.add(new TimeLineChartEvent(I18N_DURATION_PERCENTAGE, gcEvent.getEndTime(),
-                        gcEvent.getDuration() / (gcEvent.getDuration() + gcEvent.getInterval()) * 100));
-            }
-        }
-        return new TimeLineChartView.TimeLineChartViewBuilder()
-                .setStartTime(startTime)
-                .setEndTime(endTime)
-                .setEvents(events)
-                .setLabels(GCCYCLE_I18N_LIST)
-                .createByPreservingData();
-    }
-
-    private static final String I18N_METASPACE = "jifa.gclog.metaspaceRegion";
-    private static final String I18N_METASPACE_MAX = "jifa.gclog.metaspaceMax";
-    private static final List<String> METASPACE_I18N_LIST = Arrays.asList(I18N_METASPACE, I18N_METASPACE_MAX);
-
-    private TimeLineChartView calculateGCMemoryMetaspace(double startTime, double endTime) {
-        List<TimeLineChartEvent> events = new ArrayList<>();
-        for (GCEvent gcEvent : gcCollectionEvents) {
-            if (gcEvent.getEndTime() < startTime) {
-                continue;
-            }
-            if (gcEvent.getEndTime() > endTime) {
-                break;
-            }
-
-            Map<HeapGeneration, GCCollectionResultItem> collection = gcEvent.getCollectionAgg();
-            GCCollectionResultItem metaspace = collection.get(METASPACE);
-            if (metaspace.getPreUsed() != UNKNOWN_INT) {
-                events.add(new TimeLineChartEvent(I18N_METASPACE, gcEvent.getStartTime(),
-                        (double) metaspace.getPreUsed() / KB2MB));
-            }
-            if (metaspace.getPostUsed() != UNKNOWN_INT) {
-                events.add(new TimeLineChartEvent(I18N_METASPACE, gcEvent.getEndTime(),
-                        (double) metaspace.getPostUsed() / KB2MB));
-            }
-            if (metaspace.getTotal() != UNKNOWN_INT) {
-                events.add(new TimeLineChartEvent(I18N_METASPACE_MAX, gcEvent.getStartTime(),
-                        (double) metaspace.getTotal() / KB2MB));
-                events.add(new TimeLineChartEvent(I18N_METASPACE_MAX, gcEvent.getEndTime(),
-                        (double) metaspace.getTotal() / KB2MB));
-            }
-        }
-        return new TimeLineChartView.TimeLineChartViewBuilder()
-                .setStartTime(startTime)
-                .setEndTime(endTime)
-                .setEvents(events)
-                .setLabels(METASPACE_I18N_LIST)
-                .createByPreservingData();
     }
 
     /**
@@ -855,56 +711,6 @@ public abstract class GCModel {
         if (gcEvents.get(gcEvents.size() - 1).getEndTime() == UNKNOWN_DOUBLE) {
             gcEvents.remove(gcEvents.size() - 1);
         }
-    }
-
-    private TimeLineChartView calculateGCOverviewCount(double startTime, double endTime, double bucketInterval) {
-        List<TimeLineChartEvent> chartEvents = new ArrayList<>();
-        for (GCEvent event : gcEvents) {
-            if (event.getEventType() == SAFEPOINT || event.getEndTime() < startTime) {
-                continue;
-            }
-            if (event.getEndTime() > endTime) {
-                break;
-            }
-            chartEvents.add(new TimeLineChartEvent(event.getEventType().getName(), event.getEndTime(), 1));
-        }
-        List<String> labels = getParentEventTypes().stream().map(GCEventType::getName).collect(Collectors.toList());
-        return new TimeLineChartView.TimeLineChartViewBuilder()
-                .setStartTime(startTime)
-                .setEndTime(endTime)
-                .setEvents(chartEvents)
-                .setLabels(labels)
-                .setBucketInterval(bucketInterval)
-                .createByAggregation();
-    }
-
-    public TimeLineChartView calculateGCOverviewPause(double startTime, double endTime) {
-        List<TimeLineChartEvent> chartEvents = new ArrayList<>();
-        List<String> labels = getMainPauseEventTypes().stream().map(GCEventType::getName).collect(Collectors.toList());
-        for (GCEvent event : gcEvents) {
-            if (event.getEventType() == SAFEPOINT || event.getEndTime() < startTime) {
-                continue;
-            }
-            if (event.getEndTime() > endTime) {
-                break;
-            }
-            if (event.getEventType().getPause() == GCPause.PAUSE) {
-                chartEvents.add(new TimeLineChartEvent(event.getEventType().getName(), event.getEndTime(), event.getPause()));
-            }
-            if (event.getEventType().getPause() == GCPause.PARTIAL && event.getPhases() != null) {
-                for (GCEvent phase : event.getPhases()) {
-                    if (getMainPauseEventTypes().contains(phase.getEventType())) {
-                        chartEvents.add(new TimeLineChartEvent(phase.getEventType().getName(), phase.getEndTime(), phase.getPause()));
-                    }
-                }
-            }
-        }
-        return new TimeLineChartView.TimeLineChartViewBuilder()
-                .setStartTime(startTime)
-                .setEndTime(endTime)
-                .setEvents(chartEvents)
-                .setLabels(labels)
-                .createByPreservingData();
     }
 
     protected static List<GCEventType> calcAllEventTypes(GCCollectorType collector) {
@@ -1059,63 +865,6 @@ public abstract class GCModel {
 
     protected boolean isMetaspaceCapacityReliable() {
         return collectorType == ZGC;
-    }
-
-    public TimeLineChartView getGraphView(String type, double timeSpan, double timePoint) {
-        double[] chartStartEndTime = decideGraphStartEndTime(timePoint, timeSpan);
-        chartStartEndTime[0] = Math.floor(chartStartEndTime[0] / MS2S) * MS2S;
-        chartStartEndTime[1] = Math.ceil(chartStartEndTime[1] / MS2S) * MS2S;
-        double bucketInterval = getBucketInterval(timeSpan);
-        switch (type) {
-            case "count":
-                return calculateGCOverviewCount(chartStartEndTime[0], chartStartEndTime[1], bucketInterval);
-            case "pause":
-                return calculateGCOverviewPause(chartStartEndTime[0], chartStartEndTime[1]);
-            case "heap":
-                return calculateGCMemoryHeap(chartStartEndTime[0], chartStartEndTime[1]);
-            case "metaspace":
-                return calculateGCMemoryMetaspace(chartStartEndTime[0], chartStartEndTime[1]);
-            case "alloRec":
-                return calculateGCMemoryAlloRec(chartStartEndTime[0], chartStartEndTime[1], bucketInterval);
-            case "promotion":
-                return calculateGCMemoryPromotion(chartStartEndTime[0], chartStartEndTime[1], bucketInterval);
-            case "gccycle":
-                return calculateGCCycle(chartStartEndTime[0], chartStartEndTime[1]);
-            default:
-                ErrorUtil.shouldNotReachHere();
-        }
-        return null;
-    }
-
-    private double getBucketInterval(double span) {
-        // hard code here
-        switch ((int) span) {
-            case 300000:
-                return MS2S;
-            case 3600000:
-                return 30 * MS2S;
-            case 10800000:
-                return 60 * MS2S;
-            case 43200000:
-                return 120 * MS2S;
-            case 259200000:
-                return 600 * MS2S;
-            default:
-                ErrorUtil.shouldNotReachHere();
-        }
-        return 0;
-    }
-
-    private double[] decideGraphStartEndTime(double timePoint, double timeSpan) {
-        double start = timePoint - timeSpan / 2;
-        double end = timePoint + timeSpan / 2;
-        if (start < getStartTime()) {
-            return new double[]{getStartTime(), getStartTime() + Math.min(getDuration(), timeSpan)};
-        }
-        if (end > getEndTime()) {
-            return new double[]{getEndTime() - Math.min(getDuration(), timeSpan), getEndTime()};
-        }
-        return new double[]{start, end};
     }
 
     public void setParallelThread(int parallelThread) {

@@ -17,7 +17,6 @@ import org.eclipse.jifa.gclog.model.GCModel;
 import io.vertx.core.Promise;
 import org.eclipse.jifa.common.request.PagingRequest;
 import org.eclipse.jifa.common.vo.PageView;
-import org.eclipse.jifa.gclog.model.TimeLineChartView;
 import org.eclipse.jifa.gclog.model.VmOptions;
 import org.eclipse.jifa.gclog.vo.*;
 import org.eclipse.jifa.worker.route.HttpMethod;
@@ -25,6 +24,7 @@ import org.eclipse.jifa.worker.route.ParamKey;
 import org.eclipse.jifa.worker.route.RouteMeta;
 import org.eclipse.jifa.worker.support.Analyzer;
 
+import java.util.List;
 import java.util.Map;
 
 public class GCLogRoute extends org.eclipse.jifa.worker.route.gclog.GCLogBaseRoute {
@@ -88,16 +88,6 @@ public class GCLogRoute extends org.eclipse.jifa.worker.route.gclog.GCLogBaseRou
         promise.complete(model.getGCDetails(pagingRequest, filter));
     }
 
-    @RouteMeta(path = "/graph")
-    void count(Promise<TimeLineChartView> promise,
-               @ParamKey("file") String file,
-               @ParamKey("type") String type,
-               @ParamKey("timeSpan") double timeSpan,
-               @ParamKey("timePoint") double timePoint) {
-        final GCModel model = Analyzer.getOrOpenGCLogModel(file);
-        promise.complete(model.getGraphView(type, timeSpan, timePoint));
-    }
-
     @RouteMeta(path = "/vmOptions", method = HttpMethod.GET)
     void getVMOptions(Promise<VmOptions.VmOptionResult> promise,
                       @ParamKey("file") String file) {
@@ -105,6 +95,15 @@ public class GCLogRoute extends org.eclipse.jifa.worker.route.gclog.GCLogBaseRou
         VmOptions options = model.getVmOptions();
         promise.complete(options == null ? null : options.getVmOptionResult());
     }
+
+    @RouteMeta(path = "/timeGraphData", method = HttpMethod.GET)
+    void getTimeGraphData(Promise<Map<String, List<Object[]>>> promise,
+                          @ParamKey("file") String file,
+                          @ParamKey("dataTypes") String[] dateTypes) {
+        final GCModel model = Analyzer.getOrOpenGCLogModel(file);
+        promise.complete(model.getTimeGraphData(dateTypes));
+    }
+
 
     @RouteMeta(path = "/vmOptions", method = HttpMethod.POST)
     void setVMOptions(Promise<Void> promise,

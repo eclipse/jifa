@@ -47,6 +47,7 @@ class RouterAnnotationProcessor {
         converter.put(Boolean.class, Boolean::parseBoolean);
         converter.put(boolean.class, Boolean::parseBoolean);
         converter.put(int[].class, s -> new Gson().fromJson(s, int[].class));
+        converter.put(String[].class, s -> new Gson().fromJson(s, String[].class));
     }
 
     static boolean processParamKey(List<Object> arguments, RoutingContext context, Method method, Parameter param) {

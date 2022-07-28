@@ -268,6 +268,10 @@ exports.default = {
         otherOptions: "其它参数",
       },
 
+      timeGraph: {
+        timeGraph: '时间图'
+      },
+
       minute:'分钟',
       hour:'小时',
       day:'天',

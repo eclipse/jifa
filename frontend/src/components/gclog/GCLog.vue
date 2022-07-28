@@ -48,6 +48,7 @@
             <div class="nav-item"><a href="#phaseStats">{{ $t('jifa.gclog.phaseStats.phaseStatsAndCause') }}</a></div>
             <div class="nav-item"><a href="#objectStats">{{ $t('jifa.gclog.objectStats') }}</a></div>
             <div class="nav-item"><a href="#option">{{ $t('jifa.gclog.vmOptions.vmOptions') }}</a></div>
+            <div class="nav-item"><a href="#timeGraph">{{ $t('jifa.gclog.timeGraph.timeGraph') }}</a></div>
             <el-divider/>
             <div class="nav-item"><a href="javascript:void(0);" @click="showDetail">{{ $t('jifa.gclog.gcDetail') }}</a></div>
           </el-card>
@@ -152,7 +153,8 @@
                         :analysisConfig="analysisConfig"
                         id="phaseStats"
                         class="main-block"/>
-          <GCObjectStats :file="file" :metadata="metadata"
+          <GCObjectStats :file="file"
+                         :metadata="metadata"
                          :analysisConfig="analysisConfig"
                          class="main-block"
                          id="objectStats"
@@ -160,6 +162,11 @@
           <VmOptions :file="file"
                      :metadata="metadata"
                      id="option"
+                     class="main-block"/>
+          <GCTimeGraph :file="file"
+                     :metadata="metadata"
+                     :analysisConfig="analysisConfig"
+                     id="timeGraph"
                      class="main-block"/>
 
           <!--    for debug -->
@@ -186,6 +193,7 @@
   import GCPhaseStats from "@/components/gclog/GCPhaseStats";
   import VmOptions from "@/components/gclog/VmOptions";
   import Hint from "@/components/gclog/Hint";
+  import GCTimeGraph from "@/components/gclog/GCTimeGraph";
 
   export default {
     props: ['file', 'start', 'end'],
@@ -240,6 +248,7 @@
     },
 
     components: {
+      GCTimeGraph,
       Hint,
       GCDetail,
       GCObjectStats,
@@ -325,13 +334,18 @@
         })
       },
       updateUrl() {
-        this.$router.push({
-          query: {
-            file: this.file,
-            start: this.analysisConfig.timeRange.start,
-            end: this.analysisConfig.timeRange.end
-          }
-        })
+        const params = this.getUrlParams(window.location.href);
+        if (this.analysisConfig.timeRange.start != params.start ||
+            this.analysisConfig.timeRange.end != params.end) {
+          this.$router.push({
+            query: {
+              file: this.file,
+              start: this.analysisConfig.timeRange.start,
+              end: this.analysisConfig.timeRange.end
+            }
+          })
+        }
+
       },
       configChangeConfirm() {
         this.$refs['configForm'].validate((valid) => {

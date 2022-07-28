@@ -54,14 +54,6 @@ const colors = [
   "#A8A8A8",
 ]
 
-export function setColorForDoughnutChart(chartData) {
-  if (chartData.hasOwnProperty('datasets') && Array.isArray(chartData.datasets) && chartData.datasets.length > 0) {
-    const datasets0 = chartData.datasets[0];
-    datasets0.backgroundColor = datasets0.data.map((datsItem, index) => getIthColor(index))
-  }
-  return chartData;
-}
-
 export function getIthColor(i) {
   return colors[i % colors.length]
 }

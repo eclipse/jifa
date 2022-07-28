@@ -65,8 +65,6 @@ export default {
         let generations = []
         if (this.metadata.generational) {
           generations.push("young")
-        }
-        if (hasOldGC(this.metadata)) {
           generations.push("old")
         }
         if (this.metadata.collector === "G1 GC" && this.metadata.logStyle === "unified") {

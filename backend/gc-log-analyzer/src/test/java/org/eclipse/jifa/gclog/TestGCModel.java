@@ -196,33 +196,6 @@ public class TestGCModel {
         Assert.assertEquals(parents.get(1).getPhases().get(1), new PhaseStatistics.PhaseStatisticItem(
                 G1_REMARK.getName(), 2, 7800, 7800, 150, 200, 300));
 
-        // graph data
-        TimeLineChartView count = model.getGraphView("count", 300000, 0);
-        Assert.assertEquals(count.getDataByTimes().get(0).getData().get(1000L), 1, DELTA);
-        Assert.assertEquals(count.getDataByTimes().get(3).getData().get(3000L), 1, DELTA);
-
-        TimeLineChartView pause = model.getGraphView("pause", 300000, 0);
-        Assert.assertEquals(pause.getDataByTimes().get(0).getData().get(1500L), 500, DELTA);
-        Assert.assertEquals(pause.getDataByTimes().get(3).getData().get(16200L), 200, DELTA);
-
-        TimeLineChartView alloRec = model.getGraphView("alloRec", 10800000, 0);
-        Assert.assertEquals(alloRec.getDataByTimes().get(0).getData().get(0L), (40 + 40 + 18 + 22 + 6) / 60.0, DELTA);
-        Assert.assertEquals(alloRec.getDataByTimes().get(1).getData().get(0L), (8 + 10 + 32 + 10) / 60.0, DELTA);
-
-        TimeLineChartView promotion = model.getGraphView("promotion", 10800000, 0);
-        Assert.assertEquals(promotion.getDataByTimes().get(0).getData().get(0L), (2 + 2) * 1024 / 60.0, DELTA);
-
-        TimeLineChartView heap = model.getGraphView("heap", 10800000, 0);
-        Assert.assertEquals(heap.getDataByTimes().get(0).getData().get(1000L), 20 * 1024, DELTA);
-        Assert.assertEquals(heap.getDataByTimes().get(0).getData().get(1500L), 10 * 1024, DELTA);
-        Assert.assertEquals(heap.getDataByTimes().get(1).getData().get(1000L), 10 * 1024, DELTA);
-        Assert.assertEquals(heap.getDataByTimes().get(1).getData().get(1500L), 12 * 1024, DELTA);
-
-        TimeLineChartView metaspace = model.getGraphView("metaspace", 10800000, 0);
-        Assert.assertEquals(metaspace.getDataByTimes().get(0).getData().get(1000L), 15 * 1024, DELTA);
-        Assert.assertEquals(metaspace.getDataByTimes().get(0).getData().get(1500L), 15 * 1024, DELTA);
-        Assert.assertEquals(metaspace.getDataByTimes().get(1).getData().get(1500L), 20 * 1024, DELTA);
-
         // diagnose
         Assert.assertTrue(hasDiagnose("jifa.gclog.diagnosis.problems.metaspaceFullGC"));
         Assert.assertTrue(hasDiagnose("jifa.gclog.diagnosis.problems.fullGC"));
