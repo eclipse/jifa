@@ -285,7 +285,7 @@ public abstract class GCModel {
             e.pauseEventOrPhasesDo(event -> pause.add(event.getPause()));
         });
         return new PauseStatistics(pause.getN() == 0 ? UNKNOWN_DOUBLE : 1 - pause.getSum() / range.length(),
-                pause.average(),pause.getMedian(), pause.getMax());
+                pause.average(), pause.getMedian(), pause.getMax());
     }
 
     public Map<String, int[]> getPauseDistribution(TimeRange range, int[] partitions) {
@@ -352,8 +352,8 @@ public abstract class GCModel {
         // Metaspace capacity printed in gclog may be reserve space rather than commit size, so we
         // try to read it from vm option
         if (isMetaspaceCapacityReliable()) {
-            statistics.getMetaspace().setCapacityAvg((long)data[4][0].average());
-        }else if (vmOptions != null) {
+            statistics.getMetaspace().setCapacityAvg((long) data[4][0].average());
+        } else if (vmOptions != null) {
             statistics.getMetaspace().setCapacityAvg(vmOptions.getMetaspaceSize());
         }
         return statistics;
@@ -424,14 +424,14 @@ public abstract class GCModel {
             }
             if (used) {
                 if (memory.getPreUsed() != UNKNOWN_LONG) {
-                    result.add(new Object[]{(long)event.getStartTime(), memory.getPreUsed()});
+                    result.add(new Object[]{(long) event.getStartTime(), memory.getPreUsed()});
                 }
                 if (memory.getPostUsed() != UNKNOWN_LONG) {
-                    result.add(new Object[]{(long)event.getEndTime(), memory.getPostUsed()});
+                    result.add(new Object[]{(long) event.getEndTime(), memory.getPostUsed()});
                 }
             } else {
                 if (memory.getTotal() != UNKNOWN_LONG) {
-                    result.add(new Object[]{(long)event.getEndTime(), memory.getTotal()});
+                    result.add(new Object[]{(long) event.getEndTime(), memory.getTotal()});
                 }
             }
         }
@@ -442,14 +442,14 @@ public abstract class GCModel {
     private List<Object[]> getTimeGraphPromotionData() {
         return allEvents.stream()
                 .filter(event -> event.getPromotion() >= 0)
-                .map(event -> new Object[]{(long)event.getStartTime(), event.getPromotion()})
+                .map(event -> new Object[]{(long) event.getStartTime(), event.getPromotion()})
                 .collect(Collectors.toList());
     }
 
     private List<Object[]> getTimeGraphReclamationData() {
         return gcCollectionEvents.stream()
                 .filter(event -> event.getReclamation() != UNKNOWN_LONG)
-                .map(event -> new Object[]{(long)event.getStartTime(), event.getReclamation()})
+                .map(event -> new Object[]{(long) event.getStartTime(), event.getReclamation()})
                 .collect(Collectors.toList());
     }
 
@@ -457,7 +457,7 @@ public abstract class GCModel {
         return allEvents.stream()
                 .filter(event -> event.getEventType().getName().equals(phaseName)
                         && event.getDuration() != UNKNOWN_DOUBLE)
-                .map(event -> new Object[]{(long)event.getStartTime(), event.getDuration()})
+                .map(event -> new Object[]{(long) event.getStartTime(), event.getDuration()})
                 .collect(Collectors.toList());
     }
 
@@ -861,6 +861,8 @@ public abstract class GCModel {
         metadata.setPauseEventTypes(getPauseEventTypes().stream().map(GCEventType::getName).collect(Collectors.toList()));
         metadata.setAllEventTypes(getAllEventTypes().stream().map(GCEventType::getName).collect(Collectors.toList()));
         metadata.setMainPauseEventTypes(getMainPauseEventTypes().stream().map(GCEventType::getName).collect(Collectors.toList()));
+        metadata.setParallelGCThreads(getParallelThread());
+        metadata.setConcurrentGCGCThreads(getConcurrentThread());
     }
 
     protected boolean isMetaspaceCapacityReliable() {
@@ -876,10 +878,16 @@ public abstract class GCModel {
     }
 
     public int getParallelThread() {
+        if (parallelThread == UNKNOWN_INT && vmOptions != null) {
+            return vmOptions.<Long>getOptionValue("ParallelGCThreads", UNKNOWN_LONG).intValue();
+        }
         return parallelThread;
     }
 
     public int getConcurrentThread() {
+        if (concurrentThread == UNKNOWN_INT && vmOptions != null) {
+            return vmOptions.<Long>getOptionValue("ConcGCThreads", UNKNOWN_LONG).intValue();
+        }
         return concurrentThread;
     }
 

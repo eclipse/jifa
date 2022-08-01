@@ -155,6 +155,14 @@ export function badDurationThreshold(phase, config, metadata) {
   }
 }
 
+export function hasConcurrentGCThreads(metadata) {
+  return ['CMS GC', 'G1 GC', 'ZGC'].indexOf(metadata.collector) >= 0
+}
+
+export function hasParallelGCThreads(metadata) {
+  return metadata.collector !== 'Serial GC'
+}
+
 export function formatTimeRange(start, end, timestamp) {
   if (timestamp > 0) {
     return formatTime(start + timestamp, 'Y-M-D h:m:s') + ' ~ '
@@ -162,4 +170,17 @@ export function formatTimeRange(start, end, timestamp) {
   } else {
     return `${Math.floor(start / 1000)} ~ ${Math.ceil(end / 1000)} s`
   }
+}
+
+export function getUrlParams(url) {
+  let params = {}
+  const question = url.indexOf('?')
+  if (question >= 0) {
+    let str = url.substr(question + 1);
+    str.split("&").forEach(paramString => {
+      const items = paramString.split("=");
+      params[decodeURIComponent(items[0])] = decodeURIComponent(items[1]);
+    })
+  }
+  return params;
 }

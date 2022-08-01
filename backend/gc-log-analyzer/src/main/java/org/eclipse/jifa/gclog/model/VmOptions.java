@@ -138,6 +138,15 @@ public class VmOptions {
         }
     }
 
+    @SuppressWarnings("unchecked")
+    public <T> T getOptionValue(String key, T defaultValue) {
+        if (options.containsKey(key)) {
+            return (T) options.get(key).getValue();
+        } else {
+            return defaultValue;
+        }
+    }
+
     public boolean containOption(String key) {
         return options.containsKey(key);
     }

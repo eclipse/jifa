@@ -43,6 +43,7 @@
           <el-card :header="$t('jifa.gclog.navigation')">
             <div class="nav-item"><a href="#navTop">{{ $t('jifa.gclog.navToTop') }}</a></div>
             <el-divider/>
+            <div class="nav-item"><a href="#overview">{{ $t('jifa.gclog.basicInfo') }}</a></div>
             <div class="nav-item"><a href="#pause">{{ $t('jifa.gclog.vmOptions.vmOptions') }}</a></div>
             <div class="nav-item"><a href="#memoryStats">{{ $t('jifa.gclog.memoryStats.memoryStats') }}</a></div>
             <div class="nav-item"><a href="#phaseStats">{{ $t('jifa.gclog.phaseStats.phaseStatsAndCause') }}</a></div>
@@ -137,6 +138,12 @@
         </el-dialog>
 
         <el-main style="padding: 10px 5px 5px; width: 1000px; margin: 0 auto">
+          <GCOverview :file="file"
+                      :metadata="metadata"
+                      :analysisConfig="analysisConfig"
+                      @showAnalysisConfig="showAnalysisConfig"
+                      id="overview"
+                      class="main-block"/>
           <GCPause :file="file"
                    :metadata="metadata"
                    :analysisConfig="analysisConfig"
@@ -186,6 +193,7 @@
   import axios from 'axios'
   import {gclogService} from '../../util'
   import ViewMenu from "../menu/ViewMenu";
+  import GCOverview from "@/components/gclog/GCOverview";
   import GCDetail from "@/components/gclog/GCDetail";
   import GCLogTimePicker from "@/components/gclog/GCLogTimePicker";
   import GCObjectStats from "@/components/gclog/GCObjectStats";
@@ -195,6 +203,7 @@
   import VmOptions from "@/components/gclog/VmOptions";
   import Hint from "@/components/gclog/Hint";
   import GCTimeGraph from "@/components/gclog/GCTimeGraph";
+  import {getUrlParams} from "@/components/gclog/GCLogUtil";
 
   export default {
     props: ['file', 'start', 'end'],
@@ -249,6 +258,7 @@
     },
 
     components: {
+      GCOverview,
       GCTimeGraph,
       Hint,
       GCDetail,
@@ -307,9 +317,6 @@
         })
       },
       initializePage() {
-        console.log(this.file)
-        console.log(this.start)
-        console.log(this.end)
         this.analysisConfigModel = {
           timeRange: {
             start: typeof this.start !== 'undefined' ? Math.max(this.metadata.startTime, parseInt(this.start)) : this.metadata.startTime,
@@ -338,7 +345,7 @@
         })
       },
       updateUrl() {
-        const params = this.getUrlParams(window.location.href);
+        const params = getUrlParams(window.location.href);
         if (this.analysisConfig.timeRange.start != params.start ||
             this.analysisConfig.timeRange.end != params.end) {
           this.$router.push({
@@ -374,18 +381,6 @@
       showAnalysisConfig() {
         this.analysisConfigVisible = true;
       },
-      getUrlParams(url) {
-        let params = {}
-        const question = url.indexOf('?')
-        if (question >= 0) {
-          let str = url.substr(question + 1);
-          str.split("&").forEach(paramString => {
-            const items = paramString.split("=");
-            params[decodeURIComponent(items[0])] = decodeURIComponent(items[1]);
-          })
-        }
-        return params;
-      },
       setSharedInfo(info) {
         this.gcSharedInfo = {...this.gcSharedInfo, ...info}
       },
@@ -401,7 +396,7 @@
             for (let i = 0; i <= 1; i++) {
               const file = this.compareConfigModel["file" + i]
               if (file.indexOf('/gcLog?') >= 0 && file.indexOf('file=') >= 0) {
-                const params = this.getUrlParams(file);
+                const params = getUrlParams(file);
                 query["file" + i] = params.file
                 query["start" + i] = params.start
                 query["end" + i] = params.end

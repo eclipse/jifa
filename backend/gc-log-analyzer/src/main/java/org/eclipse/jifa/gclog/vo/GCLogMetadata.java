@@ -20,6 +20,7 @@ import lombok.NoArgsConstructor;
 import java.util.List;
 
 import static org.eclipse.jifa.gclog.model.GCEvent.UNKNOWN_DOUBLE;
+import static org.eclipse.jifa.gclog.model.GCEvent.UNKNOWN_INT;
 
 
 /**
@@ -37,6 +38,8 @@ public class GCLogMetadata {
     private boolean generational = true;
     private boolean pauseless = false;
     private boolean metaspaceCapacityReliable = false;
+    private int parallelGCThreads = UNKNOWN_INT;
+    private int concurrentGCGCThreads = UNKNOWN_INT;
     private List<String> parentEventTypes;
     private List<String> importantEventTypes;
     private List<String> pauseEventTypes;

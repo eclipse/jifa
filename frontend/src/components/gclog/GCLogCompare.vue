@@ -35,7 +35,7 @@
         </b-card>
       </div>
 
-      <div v-if="analysisState === 'SUCCESS'" style="padding: 10px 5px 5px; width: 1200px; margin: 0 auto" >
+      <div v-if="analysisState === 'SUCCESS'" style="padding: 10px 5px 5px; width: 1200px; margin: 0 auto">
         <el-table :data="tableData"
                   :show-header="true"
                   row-key="metric"
@@ -70,7 +70,14 @@
 import axios from 'axios'
 import {formatPercentage, formatTimePeriod, gclogService, service, toSizeSpeedString, toSizeString} from '../../util'
 import ViewMenu from "../menu/ViewMenu";
-import {formatTimeRange, hasOldGC, isFullGC, isOldGC, isYoungGC} from "@/components/gclog/GCLogUtil";
+import {
+  formatTimeRange, getUrlParams, hasConcurrentGCThreads,
+  hasOldGC,
+  hasParallelGCThreads,
+  isFullGC,
+  isOldGC,
+  isYoungGC
+} from "@/components/gclog/GCLogUtil";
 import Hint from "@/components/gclog/Hint";
 
 export default {
@@ -124,6 +131,19 @@ export default {
               name: 'collector',
               format: this.formatString,
               compare: "don't compare",
+            },
+            {
+              key: 'parallelGCThreads',
+              name: 'parallelGCThreads',
+              format: this.formatCount,
+              compare: "just compare",
+              needed: hasParallelGCThreads
+            }, {
+              key: 'concurrentGCThreads',
+              name: 'concurrentGCThreads',
+              format: this.formatCount,
+              compare: "just compare",
+              needed: hasConcurrentGCThreads
             }],
         },
         {
@@ -531,6 +551,8 @@ export default {
           this.analysisConfig[i].timeRange.end, metadata.timestamp)
       this.originalData[i].basicInfo.analysisTimeRangeLength = this['end' + i] - this['start' + i]
       this.originalData[i].basicInfo.collector = metadata.collector
+      this.originalData[i].basicInfo.parallelGCThreads = metadata.parallelGCThreads
+      this.originalData[i].basicInfo.concurrentGCThreads = metadata.concurrentGCThreads
     },
     loadDisplayName(i, file) {
       this.doBeforeLoadData()
@@ -690,16 +712,22 @@ export default {
       return metadata.collector === 'G1 GC'
     },
     updateUrl() {
-      this.$router.push({
-        query: {
-          file0: this.files[0],
-          start0: this.analysisConfig[0].timeRange.start,
-          end0: this.analysisConfig[0].timeRange.end,
-          file1: this.files[1],
-          start1: this.analysisConfig[1].timeRange.start,
-          end1: this.analysisConfig[1].timeRange.end,
-        }
-      })
+      const params = getUrlParams(window.location.href);
+      if (this.analysisConfig[0].timeRange.start != params.start0 ||
+          this.analysisConfig[0].timeRange.end != params.end0 ||
+          this.analysisConfig[1].timeRange.start != params.start1 ||
+          this.analysisConfig[1].timeRange.end != params.end1) {
+        this.$router.push({
+          query: {
+            file0: this.files[0],
+            start0: this.analysisConfig[0].timeRange.start,
+            end0: this.analysisConfig[0].timeRange.end,
+            file1: this.files[1],
+            start1: this.analysisConfig[1].timeRange.start,
+            end1: this.analysisConfig[1].timeRange.end,
+          }
+        })
+      }
     },
     formatString(str) {
       return !str ? "N/A" : str;
