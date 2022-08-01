@@ -118,20 +118,20 @@ public class TestGCModel {
             phase.setDuration(0.1 * (i + 1) * 1000);
             phase.setStartTime(begins[i] * 1000);
         }
-        events[4].getPhases().get(0).setCollectionResult(new GCCollectionResult(new GCCollectionResultItem(TOTAL, 70  * 1024 * 1024, 70  * 1024 * 1024, 300  * 1024 * 1024)));
-        events[4].getPhases().get(1).setCollectionResult(new GCCollectionResult(new GCCollectionResultItem(TOTAL, 70  * 1024 * 1024, 70  * 1024 * 1024, 300  * 1024 * 1024)));
+        events[4].getPhases().get(0).setCollectionResult(new GCCollectionResult(new GCCollectionResultItem(TOTAL, 70 * 1024 * 1024, 70 * 1024 * 1024, 300 * 1024 * 1024)));
+        events[4].getPhases().get(1).setCollectionResult(new GCCollectionResult(new GCCollectionResultItem(TOTAL, 70 * 1024 * 1024, 70 * 1024 * 1024, 300 * 1024 * 1024)));
 
         events[5].setEventType(YOUNG_GC);
         events[5].setStartTime(32.0 * 1000);
         events[5].setDuration(0.3 * 1000);
         events[5].setCause("G1 Evacuation Pause");
         collectionResult = new GCCollectionResult();
-        collectionResult.addItem(new GCCollectionResultItem(EDEN, 16  * 1024 * 1024, 0, 100  * 1024 * 1024));
-        collectionResult.addItem(new GCCollectionResultItem(SURVIVOR, 0, 4  * 1024 * 1024, 100  * 1024 * 1024));
-        collectionResult.addItem(new GCCollectionResultItem(HUMONGOUS, 50  * 1024 * 1024, 50  * 1024 * 1024, UNKNOWN_INT));
-        collectionResult.addItem(new GCCollectionResultItem(METASPACE, 15  * 1024 * 1024, 15  * 1024 * 1024, 40  * 1024 * 1024));
+        collectionResult.addItem(new GCCollectionResultItem(EDEN, 16 * 1024 * 1024, 0, 100 * 1024 * 1024));
+        collectionResult.addItem(new GCCollectionResultItem(SURVIVOR, 0, 4 * 1024 * 1024, 100 * 1024 * 1024));
+        collectionResult.addItem(new GCCollectionResultItem(HUMONGOUS, 50 * 1024 * 1024, 50 * 1024 * 1024, UNKNOWN_INT));
+        collectionResult.addItem(new GCCollectionResultItem(METASPACE, 15 * 1024 * 1024, 15 * 1024 * 1024, 40 * 1024 * 1024));
 //      expected result:  collectionResult.addItem(new GCCollectionResultItem(OLD,10,12,100));
-        collectionResult.addItem(new GCCollectionResultItem(TOTAL, 76  * 1024 * 1024, 66  * 1024 * 1024, 300  * 1024 * 1024));
+        collectionResult.addItem(new GCCollectionResultItem(TOTAL, 76 * 1024 * 1024, 66 * 1024 * 1024, 300 * 1024 * 1024));
         events[5].setCollectionResult(collectionResult);
 
         Safepoint safepoint = new Safepoint();
@@ -167,7 +167,7 @@ public class TestGCModel {
         ObjectStatistics objectStatistics = model.getObjectStatistics(new TimeRange(500, 33000));
         Assert.assertEquals(objectStatistics.getObjectCreationSpeed(), (40 + 18 + 22 + 40 + 6) * 1024 * 1024 / 31800.0, DELTA);
         Assert.assertEquals(objectStatistics.getObjectPromotionSpeed(), (2 + 2) * 1024 * 1024 / 31800.0, DELTA);
-        Assert.assertEquals(objectStatistics.getObjectPromotionAvg(), 2 * 1024 * 1024 );
+        Assert.assertEquals(objectStatistics.getObjectPromotionAvg(), 2 * 1024 * 1024);
         Assert.assertEquals(objectStatistics.getObjectPromotionMax(), 2 * 1024 * 1024);
 
         // pause statistics
@@ -205,6 +205,30 @@ public class TestGCModel {
                 "(0)1970-01-01 08:00:02.000 1.000: [Young GC (G1 Evacuation Pause) (To-space Exhausted), 0.500s] [Young: 20M->10M(200M)] [Old: 10M->12M(100M)] [Humongous: 10M->10M] [Total: 40M->32M(300M)] [Metaspace: 15M->15M(20M)] [promotion 2048 K]");
         Assert.assertEquals(model.getGcEvents().get(4).toString(),
                 "(4)1970-01-01 08:00:25.000 24.000: [Concurrent Cycle, 0.600s] [interval 6.800s] [Pause Remark 0.100s] [Pause Cleanup 0.200s]");
+
+        Map<String, List<Object[]>> graphData = model.getTimeGraphData(new String[]{"youngCapacity", "heapUsed", "reclamation", "promotion", G1_REMARK.getName()});
+        Assert.assertEquals(graphData.size(), 5);
+
+        List<Object[]> youngCapacity = graphData.get("youngCapacity");
+        Assert.assertEquals(youngCapacity.size(), 4);
+        Assert.assertArrayEquals(youngCapacity.get(3), new Object[]{32300L, 200L * 1024 * 1024,});
+
+        List<Object[]> heapUse = graphData.get("heapUsed");
+        Assert.assertEquals(heapUse.size(), 16);
+        Assert.assertArrayEquals(heapUse.get(14), new Object[]{32000L, 76L * 1024 * 1024,});
+        Assert.assertArrayEquals(heapUse.get(15), new Object[]{32300L, 66L * 1024 * 1024,});
+
+        List<Object[]> reclamation = graphData.get("reclamation");
+        Assert.assertEquals(reclamation.size(), 8);
+        Assert.assertArrayEquals(reclamation.get(7), new Object[]{32000L, 10L * 1024 * 1024,});
+
+        List<Object[]> promotion = graphData.get("promotion");
+        Assert.assertEquals(promotion.size(), 2);
+        Assert.assertArrayEquals(promotion.get(1), new Object[]{32000L, 2L * 1024 * 1024,});
+
+        List<Object[]> remark = graphData.get(G1_REMARK.getName());
+        Assert.assertEquals(remark.size(), 2);
+        Assert.assertArrayEquals(remark.get(1), new Object[]{24000L, 100.0,});
     }
 
     boolean hasDiagnose(String name) {
@@ -220,7 +244,7 @@ public class TestGCModel {
     }
 
     @Test
-    public void testUseCPUTimeAsPause() throws Exception{
+    public void testUseCPUTimeAsPause() throws Exception {
         String log = "2022-05-23T11:29:31.538+0800: 224076.254: [GC pause (G1 Evacuation Pause) (young), 0.6017393 secs]\n" +
                 "   [Parallel Time: 21.6 ms, GC Workers: 13]\n" +
                 "      [GC Worker Start (ms): Min: 224076603.9, Avg: 224076604.1, Max: 224076604.3, Diff: 0.4]\n" +

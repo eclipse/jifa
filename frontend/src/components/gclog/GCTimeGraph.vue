@@ -12,92 +12,155 @@
  -->
 
 <template>
-  <el-card :body-style="{ padding: '0px' }">
-    <div slot="header">
-      <span>{{ $t('jifa.gclog.timeGraph.timeGraph') }}</span>
-    </div>
-    <div>
-      <div ref="canvas" style="height: 400px"/>
+  <el-card>
+    <div class="time-graph">
+      <el-dialog
+          :fullscreen="true"
+          :visible.sync="fullScreen"
+          :close-on-click-modal=false
+          :show-close="false"
+          @open="enterFullScreen"
+          @close="exitFullScreen">
+        <div ref="fullCanvas" class="full-canvas"/>
+      </el-dialog>
+      <div ref="canvas" style="height: 600px"/>
     </div>
   </el-card>
 </template>
 
 <script>
-import {toSizeString, gclogService, formatTimePeriod} from '@/util'
+import {toSizeString, gclogService, formatTimePeriod, formatTime} from '@/util'
 import axios from "axios";
 import Hint from "@/components/gclog/Hint";
 import * as echarts from "echarts";
-import {getIthColor} from "@/components/gclog/ColorUtil";
+import {colors} from "@/components/gclog/ColorUtil";
 
 export default {
   props: ["file", "metadata", "analysisConfig"],
   data() {
     return {
-      loading: true,
-
       dataConfig: {},
-      dataColor: {},
-      dataTypesModel: {},
-      data: {},
+      fullScreen: false,
+      dataLoaded: {},
+      name2type: {},
       useUptime: false,
+      memoryUnit: 128 * 1024 * 1024, // 128MB
     }
   },
   components: {
     Hint
   },
   methods: {
-    refresh() {
-      const missingData = this.getMissingData();
-      if (missingData.length > 0) {
-        this.loadData(missingData);
-      } else {
-        this.generateOptions();
+    getMissingTypes(expectedTypes) {
+      return this.allTypes()
+          .filter(type => expectedTypes[type] === true)
+          .filter(type => this.dataLoaded[type] !== true)
+    },
+    loadData(expectedTypes) {
+      const missingTypes = this.getMissingTypes(expectedTypes)
+      if (missingTypes.length === 0) {
+        return
       }
-    },
-    getMissingData() {
-      return this.allTypes().filter(e => this.data[e] === undefined)
-    },
-    loadData(missingData) {
-      this.loading = true
-      const requestConfig = {params: {dataTypes: JSON.stringify(missingData)}}
+      this.getChart().showLoading();
+      const requestConfig = {params: {dataTypes: JSON.stringify(missingTypes)}}
       axios.get(gclogService(this.file, 'timeGraphData'), requestConfig).then(resp => {
-        Object.assign(this.data, resp.data)
-        this.generateOptions()
+        const option = {
+          series: missingTypes.map(type => {
+            const yUnit = this.getCategory(type) === 'memory' ? this.memoryUnit : 1
+            return {
+              id: type,
+              data: resp.data[type].map(d => [this.transformTime(d[0]), d[1] / yUnit])
+            }
+          })
+        }
+        const chart = this.getChart()
+        chart.setOption(option)
+        chart.hideLoading()
+        missingTypes.forEach(type => this.dataLoaded[type] = true)
+      })
+    },
+    getChart(canvas) {
+      if (canvas === undefined) {
+        if (this.fullScreen) {
+          canvas = this.$refs.fullCanvas
+        } else {
+          canvas = this.$refs.canvas
+        }
+      }
+      let chart = echarts.getInstanceByDom(canvas)
+      if (!chart) {
+        chart = this.initializeChart(canvas)
+      }
+      return chart;
+    },
+    initializeChart(canvas) {
+      const chart = echarts.init(canvas)
+      chart.on('legendselectchanged', (params) => {
+        const expectedTypes = {}
+        Object.keys(params.selected).forEach(name => expectedTypes[this.name2type[name]] = true)
+        this.loadData(expectedTypes)
+      })
+      window.addEventListener('resize', () => chart.resize());
+      return chart
+    },
+    applyTimeToConfig() {
+      const option = this.getChart().getOption()
+      const zoom = option.dataZoom.find(e => e.type === 'slider')
+      this.$emit('applyTimeToConfig', {
+        timeRange: {
+          start: this.revertTransformTime(zoom.startValue),
+          end: this.revertTransformTime(zoom.endValue)
+        }
       })
     },
     generateOptions() {
-      const canvas = this.$refs.canvas
-      let chart = echarts.getInstanceByDom(canvas);
-      if (!chart) {
-        chart = echarts.init(canvas)
-      } else {
-        chart.clear();
-      }
+      let chart = this.getChart()
 
-      const xInterval = this.useUptime ? 300 : 300000 // 5 min
-      const expectedWindowWith = 300000 * 5; // 25 min
-      const start = Math.max(Math.min(this.analysisConfig.timeRange.start, this.metadata.endTime - expectedWindowWith),
-          this.metadata.startTime)
-      const zoomStartValue = this.transformTime(start)
-      const zoomEndValue = this.transformTime(Math.min(start + expectedWindowWith, this.metadata.endTime))
+      const defaultTypes = this.chooseDefaultDataTypes()
+      const selected = {}
+      Object.keys(defaultTypes).forEach(type => selected[this.typeI18n(type)] = defaultTypes[type])
 
       let option = {
+        color: colors,
+        title: {
+          text: this.$t('jifa.gclog.timeGraph.timeGraph'),
+          left: 'left',
+          top: 'top'
+        },
+        toolbox: {
+          feature: {
+            myApplyTime: {
+              show: true,
+              title: this.$t('jifa.gclog.applyTimeToConfig'),
+              icon: "path://M512.001535 1023.967254c-281.904485 0-510.385223-229.231845-510.385223-511.967254C1.617335 229.222635 230.096027 0.032746 512.001535 0.032746c281.899368 0 510.38113 229.189889 510.38113 511.967254C1022.382665 794.735409 793.900903 1023.967254 512.001535 1023.967254zM512.001535 96.000448c-229.024114 0-414.667208 186.225355-414.667208 415.999552 0 229.690286 185.643094 415.95555 414.667208 415.95555 229.02002 0 414.665161-186.265264 414.665161-415.95555C926.666696 282.226826 741.021555 96.000448 512.001535 96.000448zM719.355093 559.962362 623.634008 559.962362l-63.754023 0L512.001535 559.962362l0 0c-26.420743 0-47.839565-21.460778-47.839565-47.962362L464.16197 223.972051c0-26.503631 21.418822-48.00534 47.839565-48.00534 26.459628 0 47.87845 21.50171 47.87845 48.00534l0 240.022609 63.754023 0 95.721085 0c26.415626 0 47.834448 21.502733 47.834448 48.00534S745.771743 559.962362 719.355093 559.962362z",
+              onclick: this.applyTimeToConfig,
+            },
+            myFullScreen: {
+              show: true,
+              title: this.$t('jifa.gclog.timeGraph.fullScreen'),
+              icon: "path://M240.8 196l178.4 178.4-45.6 45.6-177.6-179.2-68 68V128h180.8l-68 68z m133.6 408.8L196 783.2 128 715.2V896h180.8l-68-68 178.4-178.4-44.8-44.8zM715.2 128l68 68-178.4 178.4 45.6 45.6 178.4-178.4 68 68V128H715.2z m-65.6 476.8l-45.6 45.6 178.4 178.4-68 68H896V715.2l-68 68-178.4-178.4z",
+              onclick: () => {
+                this.fullScreen = !this.fullScreen
+              },
+            },
+          }
+        },
         legend: {
           orient: 'horizontal',
           left: 'center',
-          top: '28px'
+          top: '50px',
+          selected: selected
+        },
+        grid: {
+          top: 180,
         },
         xAxis: {
           type: this.useUptime ? 'value' : 'time',
           min: this.useUptime ? this.metadata.startTime / 1000 : this.metadata.startTime + this.metadata.timestamp,
           max: this.useUptime ? this.metadata.endTime / 1000 : this.metadata.endTime + this.metadata.timestamp,
-          interval: xInterval,
-          minInterval: xInterval,
-          maxInterval: xInterval,
-          minorTick: {
-            show: true,
-            splitNumber: 5
-          }
+          axisLabel: {
+            formatter: this.formatXAxis
+          },
         },
         yAxis: [{
           type: 'value',
@@ -108,7 +171,7 @@ export default {
           min: 0,
           splitNumber: 10,
           axisLabel: {
-            formatter: toSizeString,
+            formatter: size => Math.round(size * this.memoryUnit / 1024 / 1024) + 'MB',
           },
           splitLine: {
             show: false
@@ -129,43 +192,60 @@ export default {
         }],
         dataZoom: [
           {
+            id: 'zoom',
             type: 'slider',
-            startValue: zoomStartValue,
-            endValue: zoomEndValue,
+            startValue: this.transformTime(this.analysisConfig.timeRange.start),
+            endValue: this.transformTime(this.analysisConfig.timeRange.end),
             filterMode: 'none',
-            zoomLock: true,
+            zoomLock: false,
             moveOnMouseMove: false,
             zoomOnMouseWheel: false,
-            brushSelect: false
+            brushSelect: true
           },
           {
             type: "inside",
-            zoomOnMouseWheel: false,
-            moveOnMouseWheel: true,
+            zoomOnMouseWheel: true,
             moveOnMouseMove: true
           }
         ],
         series: []
       };
 
-      Object.keys(this.dataTypesModel).filter(type => this.dataTypesModel[type] === true).forEach(type => {
+      this.allTypes().forEach(type => {
         const category = this.getCategory(type)
-        option.series.push({
-          symbol: 'circle',
-          symbolSize: category === 'memory' ? 1 : 6,
-          name: type,
-          yAxisIndex: category === 'memory' ? 0 : 1,
-          type: category === 'memory' ? 'line' : 'scatter',
-          sampling: "lttb",
-          data: this.data[type].map(d => [this.transformTime(d[0]), d[1]])
-        })
+        if (category === 'memory') {
+          option.series.push({
+            symbol: 'circle',
+            symbolSize: 1,
+            id: type,
+            name: this.typeI18n(type),
+            yAxisIndex: 0,
+            type: 'line',
+            sampling: "lttb",
+            data: []
+          })
+        } else if (category === 'time') {
+          option.series.push({
+            symbol: 'circle',
+            symbolSize: 6,
+            id: type,
+            name: this.typeI18n(type),
+            yAxisIndex: 1,
+            type: 'scatter',
+            sampling: "lttb",
+            data: []
+          })
+        }
       })
 
-      console.log(option)
-
       chart.setOption(option);
-
-      this.loading = false;
+    },
+    typeI18n(type) {
+      if (this.getCategory(type) === 'memory') {
+        return this.$t('jifa.gclog.timeGraph.' + type)
+      } else {
+        return this.$t('jifa.gclog.timeGraph.durationOf', {type: type})
+      }
     },
     getCategory(type) {
       for (let t in this.dataConfig) {
@@ -175,7 +255,7 @@ export default {
       }
       return undefined
     },
-    generateDataConfig() {
+    initialize() {
       const memory = [];
       if (this.metadata.generational) {
         memory.push('youngCapacity', 'oldUsed', 'oldCapacity')
@@ -196,19 +276,17 @@ export default {
         memory: memory,
         time: time
       }
-      this.allTypes().forEach((type, index) => {
-        this.dataConfig[type] = getIthColor(index)
-      })
+      this.allTypes().forEach(type => this.name2type[this.typeI18n(type)] = type)
     },
-    choseDefaultDataTypes() {
-      const model = {};
+    chooseDefaultDataTypes() {
+      const result = {};
       this.allTypes().forEach(type => {
-        model[type] = false
+        result[type] = false
       });
       ['oldUsed', 'humongousUsed', 'heapUsed', ...this.metadata.mainPauseEventTypes]
           .filter(type => this.getCategory(type) !== undefined)
-          .forEach(type => model[type] = true);
-      this.dataTypesModel = model;
+          .forEach(type => result[type] = true);
+      return result
     },
     allTypes() {
       return [...this.dataConfig.memory, ...this.dataConfig.time];
@@ -219,22 +297,77 @@ export default {
       } else {
         return time + this.metadata.timestamp;
       }
+    },
+    revertTransformTime(time) {
+      if (this.useUptime) {
+        return time * 1000
+      } else {
+        return time - this.metadata.timestamp
+      }
+    },
+    enterFullScreen() {
+      this.$nextTick(() => {
+        const option = this.getChart(this.$refs.canvas).getOption()
+        this.getChart(this.$refs.fullCanvas).setOption(option)
+      })
+    },
+    exitFullScreen() {
+      const fullChart = this.getChart(this.$refs.fullCanvas);
+      const option = fullChart.getOption()
+      this.getChart(this.$refs.canvas).setOption(option)
+      fullChart.dispose()
+    },
+    formatXAxis(time) {
+      if (this.useUptime) {
+        return Math.round(time)
+      } else {
+        return formatTime(time, 'h:m:s')
+      }
     }
   },
   watch: {
-    analysisConfig(newVal, oldVal) {
-      if (newVal.timeRange.start !== oldVal.timeRange.start ||
-          newVal.timeRange.end !== oldVal.timeRange.end) {
-        this.refresh()
+    analysisConfig(newValue, oldValue) {
+      if (newValue.timeRange.start !== oldValue.timeRange.start ||
+          newValue.timeRange.end !== oldValue.timeRange.end) {
+        this.getChart().setOption({
+          dataZoom: {
+            id: 'zoom',
+            startValue: this.transformTime(newValue.timeRange.start),
+            endValue: this.transformTime(newValue.timeRange.end),
+          }
+        })
       }
     }
   },
   mounted() {
     this.useUptime = (this.metadata.timestamp < 0)
-    this.generateDataConfig();
-    this.choseDefaultDataTypes();
-    this.refresh();
+    this.initialize();
+    this.generateOptions()
+    this.loadData(this.chooseDefaultDataTypes());
   },
   name: "GCTimeGraph"
 }
 </script>
+
+<style>
+.time-graph .el-dialog {
+  position: relative;
+}
+
+.time-graph .el-dialog__header {
+  padding: 0;
+}
+
+.time-graph .el-dialog__body {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  padding: 20px;
+}
+
+.time-graph .full-canvas {
+  position: absolute;
+  height: calc(100% - 40px);
+  width: calc(100% - 40px);
+}
+</style>

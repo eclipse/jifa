@@ -91,8 +91,7 @@ const routes = [
     name: 'gcLog',
     path: "/gcLog",
     component: GCLog,
-    // props: (route) => ({...route.query})
-    props: (route) => ({file: route.query.file})
+    props: (route) => ({...route.query})
   },
   {
     name: 'gcLogCompare',

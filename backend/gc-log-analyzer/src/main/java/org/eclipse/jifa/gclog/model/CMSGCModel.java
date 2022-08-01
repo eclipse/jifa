@@ -37,7 +37,7 @@ public class CMSGCModel extends GenerationalGCModel {
     private static List<GCEventType> mainPauseEventTypes = GCModel.calcMainPauseEventTypes(collector);
     private static List<GCEventType> parentEventTypes = GCModel.calcParentEventTypes(collector);
     private static List<GCEventType> importantEventTypes = List.of(YOUNG_GC, FULL_GC, CMS_CONCURRENT_MARK_SWEPT,
-            CMS_INITIAL_MARK, CMS_INITIAL_MARK, CMS_CONCURRENT_ABORTABLE_PRECLEAN, CMS_FINAL_REMARK, CMS_CONCURRENT_SWEEP);
+            CMS_INITIAL_MARK, CMS_CONCURRENT_ABORTABLE_PRECLEAN, CMS_FINAL_REMARK, CMS_CONCURRENT_SWEEP);
 
 
     @Override

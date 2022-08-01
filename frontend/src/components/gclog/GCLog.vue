@@ -164,10 +164,11 @@
                      id="option"
                      class="main-block"/>
           <GCTimeGraph :file="file"
-                     :metadata="metadata"
-                     :analysisConfig="analysisConfig"
-                     id="timeGraph"
-                     class="main-block"/>
+                       :metadata="metadata"
+                       :analysisConfig="analysisConfig"
+                       @applyTimeToConfig="applyConfigChange"
+                       id="timeGraph"
+                       class="main-block"/>
 
           <!--    for debug -->
           analysisconfig: <div>{{this.analysisConfig}}</div>
@@ -306,6 +307,9 @@
         })
       },
       initializePage() {
+        console.log(this.file)
+        console.log(this.start)
+        console.log(this.end)
         this.analysisConfigModel = {
           timeRange: {
             start: typeof this.start !== 'undefined' ? Math.max(this.metadata.startTime, parseInt(this.start)) : this.metadata.startTime,
@@ -384,6 +388,11 @@
       },
       setSharedInfo(info) {
         this.gcSharedInfo = {...this.gcSharedInfo, ...info}
+      },
+      applyConfigChange(params) {
+        Object.assign(this.analysisConfig,params)
+        this.analysisConfig = {...this.analysisConfig} //notify change
+        this.updateUrl()
       },
       doCompare() {
         this.$refs['compareForm'].validate((valid) => {

@@ -424,7 +424,7 @@ public abstract class GCModel {
             }
             if (used) {
                 if (memory.getPreUsed() != UNKNOWN_LONG) {
-                    result.add(new Object[]{(long)event.getEndTime(), memory.getPreUsed()});
+                    result.add(new Object[]{(long)event.getStartTime(), memory.getPreUsed()});
                 }
                 if (memory.getPostUsed() != UNKNOWN_LONG) {
                     result.add(new Object[]{(long)event.getEndTime(), memory.getPostUsed()});
