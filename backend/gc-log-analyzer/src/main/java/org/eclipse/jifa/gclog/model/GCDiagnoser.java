@@ -216,7 +216,7 @@ public class GCDiagnoser {
         List<GCEvent> gcEvents = model.getGcEvents();
         for (int i = 0; i < gcEvents.size() - HUMONGOUS_TO_SPACE_THRESHOLD - 1; i++) {
             GCEvent gcEvent = gcEvents.get(i);
-            if (G1_HUMONGOUS_ALLOCATION.equals(gcEvent.getCause())) {
+            if (G1_HUMONGOUS_ALLOCATION.equals(gcEvent.getCause().getName())) {
                 for (int j = 1; j <= HUMONGOUS_TO_SPACE_THRESHOLD; j++) {
                     if (gcEvents.get(i + j).hasSpecialSituation(GCSpecialSituation.TO_SPACE_EXHAUSTED)) {
                         GCModel.ProblemAndSuggestion diagnose = new GCModel.ProblemAndSuggestion(
@@ -263,13 +263,13 @@ public class GCDiagnoser {
             if (event.getCause() == null) {
                 continue;
             }
-            if (event.getCause().equals(METASPACE_GC_THRESHOLD) && event.getEventType() != FULL_GC) {
+            if (event.getCause().getName().equals(METASPACE_GC_THRESHOLD) && event.getEventType() != FULL_GC) {
                 continue;
             }
-            if (event.getCause().equals(SYSTEM_GC) && event.getEventType() != FULL_GC) {
+            if (event.getCause().getName().equals(SYSTEM_GC) && event.getEventType() != FULL_GC) {
                 continue;
             }
-            causes.put(event.getCause());
+            causes.put(event.getCause().getName());
         }
 
         if (causes.containKey(METASPACE_GC_THRESHOLD)) {

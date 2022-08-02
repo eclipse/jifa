@@ -39,7 +39,7 @@ public class GCEvent extends TimedEvent {
     private ReferenceGC referenceGC;
 
     private GCEventType eventType = GCEventType.UNDEFINED;
-    private String cause;
+    private GCCause cause;
 
     private GCCollectionResult collectionResult;// record original info in log
     private Map<HeapGeneration, GCCollectionResultItem> collectionAgg;// aggregation result;
@@ -146,7 +146,7 @@ public class GCEvent extends TimedEvent {
         specialSituations.add(specialSituation);
     }
 
-    public String getCause() {
+    public GCCause getCause() {
         return cause;
     }
 
@@ -188,7 +188,7 @@ public class GCEvent extends TimedEvent {
     }
 
     public void setCause(String cause) {
-        this.cause = cause;
+        this.cause = GCCause.getCause(cause);
     }
 
     public void setCpuTime(CpuTime cpuTime) {

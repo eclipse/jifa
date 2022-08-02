@@ -256,7 +256,7 @@ public abstract class GCModel {
             }
             putPhaseStatisticData(event, event.getEventType().getName(), parentData);
             if (event.getCause() != null) {
-                putPhaseStatisticData(event, event.getCause(), causeData.get(index));
+                putPhaseStatisticData(event, event.getCause().getName(), causeData.get(index));
             }
             if (event.getPhases() != null) {
                 for (GCEvent phase : event.getPhases()) {
@@ -530,9 +530,6 @@ public abstract class GCModel {
 
     private void decideAndFixEventInfo() {
         for (GCEvent event : gcEvents) {
-            if ("System.gc".equals(event.getCause())) {
-                event.setCause("System.gc()");
-            }
             List<GCEvent> phases = event.getPhases();
             if (phases == null) {
                 continue;
@@ -846,6 +843,7 @@ public abstract class GCModel {
         metadata.setCauses(gcEvents.stream()
                 .map(GCEvent::getCause)
                 .filter(Objects::nonNull)
+                .map(GCCause::getName)
                 .distinct()
                 .collect(Collectors.toList()));
         metadata.setCollector(getCollectorType().toString());
@@ -935,7 +933,7 @@ public abstract class GCModel {
         public boolean isFiltered(GCEvent event) {
             return event.getEventType() == SAFEPOINT ||
                     !((eventType == null || eventType.equals(event.getEventType().getName()))
-                            && (gcCause == null || gcCause.equals(event.getCause()))
+                            && (gcCause == null || gcCause.equals(event.getCause().getName()))
                             && (logTimeLow <= event.getEndTime() && event.getEndTime() <= logTimeHigh)
                             && (pauseTimeLow <= event.getPause()));
         }

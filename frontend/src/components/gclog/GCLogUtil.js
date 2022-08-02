@@ -93,6 +93,7 @@ export function getCauseHint(cause) {
     // case "Old Generation Too Full To Scavenge":
     // case "ILLEGAL VALUE - last gc cause - ILLEGAL VALUE":
     // case "WhiteBox Initiated Full GC":
+    // case "unknown GCCause":
     default:
       return ""
   }
