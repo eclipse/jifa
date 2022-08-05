@@ -14,7 +14,9 @@
 package org.eclipse.jifa.gclog.model;
 
 import org.eclipse.jifa.common.listener.ProgressListener;
+import org.eclipse.jifa.gclog.diagnoser.GlobalDiagnoser;
 import org.eclipse.jifa.gclog.util.DoubleData;
+import org.eclipse.jifa.gclog.util.I18nStringView;
 import org.eclipse.jifa.gclog.util.LongData;
 import org.eclipse.jifa.gclog.vo.*;
 import lombok.AllArgsConstructor;
@@ -72,8 +74,6 @@ public abstract class GCModel {
     private GCLogStyle logStyle;
     private GCLogMetadata metadata;
     private List<String> gcEventsDetailCache;
-
-    private List<ProblemAndSuggestion> problemAndSuggestion = new ArrayList<>();
 
     public static final String NA = "N/A";
 
@@ -181,8 +181,7 @@ public abstract class GCModel {
             return eventList.size();
         }
 
-        TimedEvent eventForSearching = new TimedEvent();
-        eventForSearching.setStartTime(time);
+        TimedEvent eventForSearching = new TimedEvent(time);
         int result = Collections.binarySearch(eventList, eventForSearching, Comparator.comparingDouble(TimedEvent::getStartTime));
         if (result < 0) {
             return -(result + 1);
@@ -505,13 +504,7 @@ public abstract class GCModel {
         // data in events should not change after this line
         // calculate specific data prepared for route api, order of these calls doesn't matter
         calculateGCEventDetails();
-
         calculateGcModelMetadata();
-
-        // do some diagnoses
-        progressListener.worked(250);
-        progressListener.subTask("Diagnosing");
-        diagnoseAndSuggest();
     }
 
     protected void doBeforeCalculatingDerivedInfo() {
@@ -568,14 +561,6 @@ public abstract class GCModel {
         gcEventsDetailCache = new ArrayList<>();
         for (GCEvent event : gcEvents) {
             gcEventsDetailCache.add(event.toString());
-        }
-    }
-
-    private void diagnoseAndSuggest() {
-        try {
-            this.problemAndSuggestion = new GCDiagnoser(this).diagnose();
-        } catch (Exception e) {
-            LOGGER.info(e.getMessage());
         }
     }
 
@@ -777,10 +762,6 @@ public abstract class GCModel {
         this.vmOptions = vmOptions;
     }
 
-    public List<ProblemAndSuggestion> getProblemAndSuggestion() {
-        return problemAndSuggestion;
-    }
-
     public VmOptions getVmOptions() {
         return vmOptions;
     }
@@ -860,7 +841,7 @@ public abstract class GCModel {
         metadata.setAllEventTypes(getAllEventTypes().stream().map(GCEventType::getName).collect(Collectors.toList()));
         metadata.setMainPauseEventTypes(getMainPauseEventTypes().stream().map(GCEventType::getName).collect(Collectors.toList()));
         metadata.setParallelGCThreads(getParallelThread());
-        metadata.setConcurrentGCGCThreads(getConcurrentThread());
+        metadata.setConcurrentGCThreads(getConcurrentThread());
     }
 
     protected boolean isMetaspaceCapacityReliable() {

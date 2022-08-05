@@ -39,7 +39,7 @@ public class GCLogMetadata {
     private boolean pauseless = false;
     private boolean metaspaceCapacityReliable = false;
     private int parallelGCThreads = UNKNOWN_INT;
-    private int concurrentGCGCThreads = UNKNOWN_INT;
+    private int concurrentGCThreads = UNKNOWN_INT;
     private List<String> parentEventTypes;
     private List<String> importantEventTypes;
     private List<String> pauseEventTypes;

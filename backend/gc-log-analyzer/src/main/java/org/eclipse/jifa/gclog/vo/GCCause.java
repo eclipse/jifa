@@ -1,6 +1,7 @@
 package org.eclipse.jifa.gclog.vo;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class GCCause {
@@ -63,6 +64,18 @@ public class GCCause {
 
     public String getName() {
         return name;
+    }
+
+    public boolean isMetaspaceFullGCCause() {
+        return this == METADATA_GENERATION_THRESHOLD || this == META_CLEAR_SOFT_REF || this == LAST_DITCH_COLLECTION;
+    }
+
+    //
+    private static final List<GCCause> HeapMemoryTriggeredFullGCCauses = List.of(GC_LOCKER, ALLOCATION_FAILURE,
+            ERGONOMICS, G1_HUMONGOUS_ALLOCATION, PROMOTION_FAILED);
+
+    public boolean isHeapMemoryTriggeredFullGCCause() {
+        return HeapMemoryTriggeredFullGCCauses.contains(this);
     }
 
     @Override

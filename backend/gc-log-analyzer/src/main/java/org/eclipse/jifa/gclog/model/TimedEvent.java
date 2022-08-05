@@ -13,11 +13,17 @@
 
 package org.eclipse.jifa.gclog.model;
 
+import org.eclipse.jifa.gclog.vo.TimeRange;
+
+import static org.eclipse.jifa.gclog.model.GCEvent.UNKNOWN_DOUBLE;
+
 public class TimedEvent {
-    // unit of all time is ms
-    protected double startTime = GCEvent.UNKNOWN_DOUBLE;
-    // real time duration of event
-    private double duration = GCEvent.UNKNOWN_DOUBLE;
+    // We assume that start time always exists. We will refuse to analyze logs that does not print any time,
+    // and will add a suitable start time to events that does not have a start time in log.
+    // Unit of all time variables is ms.
+    protected double startTime = UNKNOWN_DOUBLE;
+    // Real time duration of event. The duration may not exist, and we should always check its existence when using.
+    private double duration = UNKNOWN_DOUBLE;
 
     public double getStartTime() {
         return startTime;
@@ -28,10 +34,10 @@ public class TimedEvent {
     }
 
     public double getEndTime() {
-        if (getStartTime() != GCEvent.UNKNOWN_DOUBLE && getDuration() != GCEvent.UNKNOWN_DOUBLE) {
+        if (getStartTime() != UNKNOWN_DOUBLE && getDuration() != UNKNOWN_DOUBLE) {
             return getStartTime() + getDuration();
         } else {
-            return GCEvent.UNKNOWN_DOUBLE;
+            return UNKNOWN_DOUBLE;
         }
     }
 
@@ -41,5 +47,25 @@ public class TimedEvent {
 
     public void setDuration(double duration) {
         this.duration = duration;
+    }
+
+    public TimedEvent(double startTime, double duration) {
+        this.startTime = startTime;
+        this.duration = duration;
+    }
+
+    public TimedEvent(double startTime) {
+        this.startTime = startTime;
+    }
+
+    public TimedEvent() {
+    }
+
+    public TimeRange toTimeRange() {
+        if (duration != UNKNOWN_DOUBLE) {
+            return new TimeRange(getStartTime(), getEndTime());
+        } else {
+            return new TimeRange(getStartTime(), getStartTime());
+        }
     }
 }

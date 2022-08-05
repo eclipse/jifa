@@ -317,6 +317,9 @@
         })
       },
       initializePage() {
+        /*
+         * Notice: This variable should be kept in sync with AnalysisConfig class in AnalysisConfig.java.
+         */
         this.analysisConfigModel = {
           timeRange: {
             start: typeof this.start !== 'undefined' ? Math.max(this.metadata.startTime, parseInt(this.start)) : this.metadata.startTime,

@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
 
-package org.eclipse.jifa.gclog.model;
+package org.eclipse.jifa.gclog.util;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -26,15 +26,24 @@ import java.util.Objects;
 @AllArgsConstructor
 public class I18nStringView {
     private String name;// should be i18n name in frontend
-    private Map<String, Object> params = new HashMap<>();
-
-    public I18nStringView(String name, String paramKey, Object paramValue) {
-        this.name = name;
-        params.put(paramKey, paramValue);
-    }
+    private Map<String, Object> params;
 
     public I18nStringView(String name) {
         this.name = name;
+    }
+
+    public I18nStringView(String name, Object... params) {
+        this.name = name;
+        if (params.length % 2 != 0) {
+            throw new RuntimeException("params number should be multiple of 2");
+        }
+        if (params.length == 0) {
+            return;
+        }
+        this.params = new HashMap<>();
+        for (int i = 0; i < params.length; i += 2) {
+            this.params.put(params[i].toString(), params[i + 1]);
+        }
     }
 
     @Override
