@@ -17,7 +17,11 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.eclipse.jifa.common.JifaException;
+import org.eclipse.jifa.common.util.ErrorUtil;
+import org.eclipse.jifa.gclog.model.GCEvent;
 import org.eclipse.jifa.gclog.model.GCModel;
+import org.eclipse.jifa.gclog.model.OutOfMemory;
+import org.eclipse.jifa.gclog.model.ZGCModel;
 import org.eclipse.jifa.gclog.util.I18nStringView;
 import org.eclipse.jifa.gclog.util.Key2ValueListMap;
 import org.eclipse.jifa.gclog.vo.*;
@@ -54,7 +58,7 @@ public class GlobalDiagnoser {
     private Key2ValueListMap<String, Double> allProblems = new Key2ValueListMap<>();
     private List<AbnormalPoint> mostSeriousProblemList = new ArrayList<>();
     private List<AbnormalPoint> mergedMostSeriousProblemList = new ArrayList<>();
-    private AbnormalPoint mostSerious = new AbnormalPoint(LAST_TYPE, null, NONE);
+    private AbnormalPoint mostSerious = AbnormalPoint.LEAST_SERIOUS;
 
     public GlobalDiagnoser(GCModel model, AnalysisConfig config) {
         this.model = model;
@@ -72,9 +76,7 @@ public class GlobalDiagnoser {
             try {
                 rule.invoke(this);
             } catch (Exception e) {
-                e.printStackTrace();
-                //todo: remove this line
-                System.exit(1);
+                ErrorUtil.shouldNotReachHere();
             }
         }
     }
@@ -114,7 +116,7 @@ public class GlobalDiagnoser {
 
     private GlobalAbnormalInfo generateVo() {
         MostSeriousProblemSummary summary = null;
-        if (mergedMostSeriousProblemList.size() > 0) {
+        if (mostSerious != AbnormalPoint.LEAST_SERIOUS) {
             mergedMostSeriousProblemList.sort(
                     (ab1, ab2) -> Double.compare(ab2.getSite().getDuration(), ab1.getSite().getDuration()));
             AbnormalPoint first = mergedMostSeriousProblemList.get(0);
@@ -152,7 +154,40 @@ public class GlobalDiagnoser {
     }
 
     @GlobalDiagnoseRule
+    protected void longGCPause() {
+        model.iterateEventsWithinTimeRange(model.getAllEvents(), config.getTimRange(), event -> {
+            event.pauseEventOrPhasesDo(pauseEvent -> {
+                if (pauseEvent.getPause() <= config.getLongPauseThreshold()) {
+                    return;
+                }
+                if (pauseEvent.isYoungGC()) {
+                    addAbnormalPoint(new AbnormalPoint(LONG_YOUNG_GC_PAUSE, pauseEvent, HIGH));
+                }
+            });
+        });
+    }
+
+    @GlobalDiagnoseRule
+    protected void allocationStall() {
+        if (model.getCollectorType() != GCCollectorType.ZGC) {
+            return;
+        }
+        ZGCModel zModel = (ZGCModel) model;
+        for (GCEvent stall : zModel.getAllocationStalls()) {
+            addAbnormalPoint(new AbnormalPoint(ALLOCATION_STALL, stall, ULTRA));
+        }
+    }
+
+    @GlobalDiagnoseRule
+    protected void outOfMemory() {
+        for (OutOfMemory oom : model.getOoms()) {
+            addAbnormalPoint(new AbnormalPoint(AbnormalType.OUT_OF_MEMORY, oom, ULTRA));
+        }
+    }
+
+    @GlobalDiagnoseRule
     protected void fullGC() {
+        boolean shouldAvoidFullGC = model.shouldAvoidFullGC();
         model.iterateEventsWithinTimeRange(model.getGcEvents(), config.getTimRange(), event -> {
             if (event.getEventType() != FULL_GC) {
                 return;
@@ -160,7 +195,7 @@ public class GlobalDiagnoser {
             GCCause cause = event.getCause();
             if (cause.isMetaspaceFullGCCause()) {
                 addAbnormalPoint(new AbnormalPoint(METASPACE_FULL_GC, event, ULTRA));
-            } else if (cause.isHeapMemoryTriggeredFullGCCause()) {
+            } else if (shouldAvoidFullGC && cause.isHeapMemoryTriggeredFullGCCause()) {
                 addAbnormalPoint(new AbnormalPoint(HEAP_MEMORY_FULL_GC, event, ULTRA));
             } else if (cause == GCCause.SYSTEM_GC) {
                 addAbnormalPoint(new AbnormalPoint(AbnormalType.SYSTEM_GC, event, HIGH));

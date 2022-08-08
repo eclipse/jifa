@@ -13,6 +13,7 @@
 
 package org.eclipse.jifa.gclog;
 
+import org.checkerframework.checker.units.qual.A;
 import org.eclipse.jifa.common.listener.DefaultProgressListener;
 import org.eclipse.jifa.gclog.model.*;
 import org.eclipse.jifa.gclog.parser.*;
@@ -325,7 +326,8 @@ public class TestParser {
                         "[7.555s]      System: Java Threads                                    911 / 911             910 / 911             901 / 913             901 / 913         threads\n" +
                         "[7.555s] =========================================================================================================================================================\n" +
                         "[7.777s] Allocation Stall (ThreadPoolTaskScheduler-1) 0.204ms\n" +
-                        "[7.888s] Allocation Stall (NioProcessor-2) 0.391ms";
+                        "[7.888s] Allocation Stall (NioProcessor-2) 0.391ms\n" +
+                        "[7.889s] Out Of Memory (thread 8)";
         JDK11ZGCLogParser parser = (JDK11ZGCLogParser)
                 (new GCLogParserFactory().getParser(stringToBufferedReader(log)));
         ZGCModel model = (ZGCModel) parser.parse(stringToBufferedReader(log));
@@ -361,6 +363,10 @@ public class TestParser {
         Assert.assertEquals(allocationStalls.get(1).getEndTime(), 7888, DELTA);
         Assert.assertEquals(allocationStalls.get(1).getDuration(), 0.391, DELTA);
 
+        Assert.assertEquals(model.getOoms().size(),1);
+        OutOfMemory oom = model.getOoms().get(0);
+        Assert.assertEquals(oom.getStartTime(), 7889, DELTA);
+        Assert.assertEquals(oom.getThreadName(), "thread 8");
     }
 
     @Test

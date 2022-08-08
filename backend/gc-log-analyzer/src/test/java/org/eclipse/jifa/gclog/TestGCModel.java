@@ -196,10 +196,6 @@ public class TestGCModel {
         Assert.assertEquals(parents.get(1).getPhases().get(1), new PhaseStatistics.PhaseStatisticItem(
                 G1_REMARK.getName(), 2, 7800, 7800, 150, 200, 300));
 
-        // diagnose
-        Assert.assertTrue(hasDiagnose("jifa.gclog.diagnosis.problems.metaspaceFullGC"));
-        Assert.assertTrue(hasDiagnose("jifa.gclog.diagnosis.problems.fullGC"));
-
         // event toString
         Assert.assertEquals(model.getGcEvents().get(0).toString(),
                 "(0)1970-01-01 08:00:02.000 1.000: [Young GC (G1 Evacuation Pause) (To-space Exhausted), 0.500s] [Young: 20M->10M(200M)] [Old: 10M->12M(100M)] [Humongous: 10M->10M] [Total: 40M->32M(300M)] [Metaspace: 15M->15M(20M)] [promotion 2048 K]");
@@ -229,18 +225,6 @@ public class TestGCModel {
         List<Object[]> remark = graphData.get(G1_REMARK.getName());
         Assert.assertEquals(remark.size(), 2);
         Assert.assertArrayEquals(remark.get(1), new Object[]{24000L, 100.0,});
-    }
-
-    boolean hasDiagnose(String name) {
-        if (model.getProblemAndSuggestion() == null) {
-            return false;
-        }
-        for (GCModel.ProblemAndSuggestion problemAndSuggestion : model.getProblemAndSuggestion()) {
-            if (problemAndSuggestion.getProblem().getName().equals(name)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     @Test

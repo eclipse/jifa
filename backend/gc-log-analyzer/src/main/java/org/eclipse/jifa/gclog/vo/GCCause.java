@@ -70,7 +70,6 @@ public class GCCause {
         return this == METADATA_GENERATION_THRESHOLD || this == META_CLEAR_SOFT_REF || this == LAST_DITCH_COLLECTION;
     }
 
-    //
     private static final List<GCCause> HeapMemoryTriggeredFullGCCauses = List.of(GC_LOCKER, ALLOCATION_FAILURE,
             ERGONOMICS, G1_HUMONGOUS_ALLOCATION, PROMOTION_FAILED);
 

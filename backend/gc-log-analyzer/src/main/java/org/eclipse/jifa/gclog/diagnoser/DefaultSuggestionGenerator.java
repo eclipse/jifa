@@ -1,3 +1,15 @@
+/********************************************************************************
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ ********************************************************************************/
 package org.eclipse.jifa.gclog.diagnoser;
 
 import org.eclipse.jifa.common.JifaException;
@@ -13,14 +25,14 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
 
-public class DefaultSuggestionGenerator {
-    private GCModel model;
+import static org.eclipse.jifa.gclog.diagnoser.SuggestionType.*;
+
+// This class generates common suggestions when we can not find the exact cause of problem.
+public class DefaultSuggestionGenerator extends SuggestionGenerator {
     private AbnormalPoint ab;
-    private BitSet givenCause = new BitSet();
-    private List<I18nStringView> result = new ArrayList<>();
 
     public DefaultSuggestionGenerator(GCModel model, AbnormalPoint ab) {
-        this.model = model;
+        super(model);
         this.ab = ab;
     }
 
@@ -40,9 +52,53 @@ public class DefaultSuggestionGenerator {
                 if (Modifier.isAbstract(mod) || Modifier.isFinal(mod)) {
                     throw new JifaException("Illegal method modifier: " + method);
                 }
-                rules.put(AbnormalType.getType(annotation.type()), method);
+                rules.put(AbnormalType.getType(annotation.value()), method);
             }
         }
+    }
+
+    @GeneratorRule("metaspaceFullGC")
+    private void metaspaceFullGC() {
+        addSuggestion(CHECK_METASPACE);
+        addSuggestion(ENLARGE_METASPACE);
+        fullGCSuggestionCommon();
+    }
+
+    @GeneratorRule("systemGC")
+    private void systemGC() {
+        addSuggestion(CHECK_SYSTEM_GC);
+        addSuggestion(DISABLE_SYSTEM_GC);
+        fullGCSuggestionCommon();
+    }
+
+    @GeneratorRule("outOfMemory")
+    private void outOfMemory() {
+        addSuggestion(CHECK_MEMORY_LEAK);
+        suggestEnlargeHeap(false);
+    }
+
+    @GeneratorRule("allocationStall")
+    private void allocationStall() {
+        addSuggestion(CHECK_MEMORY_LEAK);
+        suggestEnlargeHeap(true);
+        addSuggestion(INCREASE_CONC_GC_THREADS);
+    }
+
+    @GeneratorRule("heapMemoryFullGC")
+    private void heapMemoryFullGC() {
+        addSuggestion(CHECK_MEMORY_LEAK);
+        suggestStartOldGCEarly();
+        fullGCSuggestionCommon();
+    }
+
+    @GeneratorRule("longYoungGCPause")
+    private void longYoungGCPause() {
+        addSuggestion(CHECK_LIVE_OBJECTS);
+        addSuggestion(CHECK_REF_BETWEEN_GENERATIONS);
+        suggestCheckEvacuationFailure();
+        addSuggestion(CHECK_CPU_TIME);
+        addSuggestion(CHECK_REFERENCE_GC);
+        addSuggestion(SHRINK_YOUNG_GEN);
     }
 
     public List<I18nStringView> generate() {
@@ -60,18 +116,9 @@ public class DefaultSuggestionGenerator {
         return result;
     }
 
-    private void addSuggestion(SuggestionType type, Object... params) {
-        // don't add duplicate suggestions
-        if (givenCause.get(type.ordinal())) {
-            return;
-        }
-        givenCause.set(type.ordinal());
-        result.add(new I18nStringView(type.toString(), params));
-    }
-
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.METHOD)
     private @interface GeneratorRule {
-        String type();
+        String value();
     }
 }

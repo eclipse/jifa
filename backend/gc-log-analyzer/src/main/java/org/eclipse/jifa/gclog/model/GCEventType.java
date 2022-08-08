@@ -150,6 +150,7 @@ public class GCEventType {
 
     // other
     public static final GCEventType SAFEPOINT = new GCEventType("Safepoint", PAUSE, ALL_GCS);
+    public static final GCEventType OUT_OF_MEMORY = new GCEventType("Out Of Memory", PAUSE, ALL_GCS);
 
     public boolean hasObjectPromotion() {
         return this == YOUNG_GC || this == G1_MIXED_GC;

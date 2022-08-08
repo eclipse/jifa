@@ -142,6 +142,7 @@ public class JDK11ZGCLogParser extends AbstractJDK11GCLogParser {
      * [2021-08-31T11:29:12.823+0800] Allocation Stall (NioProcessor-2) 0.391ms
      * [2021-08-31T11:29:12.823+0800] Allocation Stall (http-nio-8080-exec-85) 0.155ms
      * [2021-08-31T11:29:12.823+0800] Allocation Stall (http-nio-8080-exec-49) 277.588ms
+     * [2021-08-31T11:29:12.825+0800] Out Of Memory (thread 8)
      */
     private static List<ParseRule> withGCIDRules;
 
@@ -154,6 +155,7 @@ public class JDK11ZGCLogParser extends AbstractJDK11GCLogParser {
     private static void initializeParseRules() {
         withoutGCIDRules = new ArrayList<>(AbstractJDK11GCLogParser.getSharedWithoutGCIDRules());
         withoutGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Allocation Stall", JDK11ZGCLogParser::parseAllocationStall));
+        withoutGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Out Of Memory", JDK11ZGCLogParser::pauseOutOfMemory));
         withoutGCIDRules.add(JDK11ZGCLogParser::parseZGCStatisticLine);
 
         withGCIDRules = new ArrayList<>(AbstractJDK11GCLogParser.getSharedWithGCIDRules());
@@ -202,6 +204,15 @@ public class JDK11ZGCLogParser extends AbstractJDK11GCLogParser {
         GCCollectionResultItem item = new GCCollectionResultItem(METASPACE, UNKNOWN_INT,
                 GCLogUtil.toByte(parts[0]), GCLogUtil.toByte(parts[4]));
         event.getOrCreateCollectionResult().addItem(item);
+    }
+
+    // [2021-08-31T11:29:12.825+0800] Out Of Memory (thread 8)
+    private static void pauseOutOfMemory(AbstractGCLogParser parser, ParseRule.ParseRuleContext context, String prefix, String value) {
+        GCModel model = parser.getModel();
+        OutOfMemory event = new OutOfMemory();
+        event.setThreadName(value.substring(1, value.length() - 1));
+        event.setStartTime(context.get(UPTIME));
+        model.addOom(event);
     }
 
     /*

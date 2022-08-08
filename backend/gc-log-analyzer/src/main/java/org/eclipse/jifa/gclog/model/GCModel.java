@@ -55,7 +55,8 @@ public abstract class GCModel {
     private List<GCEvent> allEvents = new ArrayList<>(); // store all events, order by their appearance in log
     private List<GCEvent> gcCollectionEvents = new ArrayList<>(); // store events that contain collection info
 
-    private List<Safepoint> safepoints;
+    private List<Safepoint> safepoints = new ArrayList<>();
+    private List<OutOfMemory> ooms = new ArrayList<>();
     // time from beginning of program
     private double startTime = UNKNOWN_DOUBLE;
     private double endTime = UNKNOWN_DOUBLE;
@@ -205,10 +206,15 @@ public abstract class GCModel {
     }
 
     public void addSafepoint(Safepoint safepoint) {
-        if (safepoints == null) {
-            safepoints = new ArrayList<>();
-        }
         safepoints.add(safepoint);
+    }
+
+    public List<OutOfMemory> getOoms() {
+        return ooms;
+    }
+
+    public void addOom(OutOfMemory oom) {
+        ooms.add(oom);
     }
 
     private TimeRange makeValidTimeRange(TimeRange range) {
@@ -461,7 +467,8 @@ public abstract class GCModel {
     }
 
     public int getRecommendMaxHeapSize() {
-        throw new UnsupportedOperationException();
+        // not supported
+        return UNKNOWN_INT;
     }
 
     public void putEvent(GCEvent event) {
@@ -792,6 +799,10 @@ public abstract class GCModel {
             }
         }
         return sb.toString();
+    }
+
+    public boolean shouldAvoidFullGC() {
+        return collectorType != SERIAL && collectorType != PARALLEL && collectorType != UNKNOWN;
     }
 
     public List<String> getGCDetails() {

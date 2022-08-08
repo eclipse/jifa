@@ -10,12 +10,28 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-package org.eclipse.jifa.gclog.diagnoser;
+package org.eclipse.jifa.gclog.model;
 
-public enum AbnormalSeverity {
-    NONE,
-    LOW,
-    MEDIUM,
-    HIGH,
-    ULTRA,
+public class OutOfMemory extends GCEvent {
+    private String threadName;
+
+    public OutOfMemory() {
+        this.setEventType(GCEventType.OUT_OF_MEMORY);
+    }
+
+    public String getThreadName() {
+        return threadName;
+    }
+
+    public void setThreadName(String threadName) {
+        this.threadName = threadName;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        appendStartTime(sb);
+        sb.append(threadName);
+        return sb.toString();
+    }
 }
