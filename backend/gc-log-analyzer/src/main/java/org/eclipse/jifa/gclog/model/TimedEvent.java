@@ -68,4 +68,6 @@ public class TimedEvent {
             return new TimeRange(getStartTime(), getStartTime());
         }
     }
+
+
 }

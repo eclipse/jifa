@@ -87,16 +87,6 @@ public class ZGCModel extends GCModel {
     }
 
     @Override
-    protected boolean isGenerational() {
-        return false;
-    }
-
-    @Override
-    protected boolean isPauseless() {
-        return true;
-    }
-
-    @Override
     public int getRecommendMaxHeapSize() {
         if (recommendMaxHeapSize == UNKNOWN_INT && !statistics.isEmpty()) {
             // used at marking start + garbage collection cycle * allocation rate

@@ -37,7 +37,7 @@ public class AbnormalPoint {
 
     public static final Comparator<AbnormalPoint> compareByImportance = (ab1, ab2) -> {
         if (ab1.severity != ab2.severity) {
-            return ab2.severity.ordinal() - ab1.severity.ordinal();
+            return ab1.severity.ordinal() - ab2.severity.ordinal();
         } else if (ab1.type != ab2.type) {
             return ab1.type.getOrdinal() - ab2.type.getOrdinal();
         }

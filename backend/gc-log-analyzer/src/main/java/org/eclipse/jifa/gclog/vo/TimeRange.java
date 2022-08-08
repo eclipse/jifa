@@ -38,4 +38,9 @@ public class TimeRange {
             return UNKNOWN_DOUBLE;
         }
     }
+
+    @Override
+    public String toString() {
+        return start + " ~ " + end;
+    }
 }

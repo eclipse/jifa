@@ -28,7 +28,7 @@ public abstract class SuggestionGenerator {
             return;
         }
         givenCause.set(type.ordinal());
-        result.add(new I18nStringView(type.toString(), params));
+        result.add(new I18nStringView(SuggestionType.I18N_PREFIX + type.toString(), params));
     }
 
     protected void suggestEnlargeHeap(boolean suggestHeapSize) {

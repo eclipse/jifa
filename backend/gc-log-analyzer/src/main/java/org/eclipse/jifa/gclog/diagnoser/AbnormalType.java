@@ -16,6 +16,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class AbnormalType {
+    public static String I18N_PREFIX = "jifa.gclog.diagnose.abnormal.";
+    private static Map<String, AbnormalType> name2Type = new HashMap<>();
+
     // order these members by their general importance
     // Whenever a new type is added, add its default suggestions to DefaultSuggestionGenerator
 
@@ -35,8 +38,6 @@ public class AbnormalType {
     private String name;
     private int ordinal;
 
-    private static Map<String, AbnormalType> name2Type = new HashMap<>();
-
     private AbnormalType(String name) {
         this.name = name;
         ordinal = name2Type.size();
@@ -48,6 +49,11 @@ public class AbnormalType {
     }
 
     public String getName() {
+        return name;
+    }
+
+    @Override
+    public String toString() {
         return name;
     }
 

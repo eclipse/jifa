@@ -16,6 +16,7 @@ package org.eclipse.jifa.gclog.diagnoser;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.eclipse.jifa.common.JifaException;
 import org.eclipse.jifa.common.util.ErrorUtil;
 import org.eclipse.jifa.gclog.model.GCEvent;
@@ -98,8 +99,8 @@ public class GlobalDiagnoser {
             } else {
                 double end = Math.max(ab.getSite().getStartTime(), ab.getSite().getEndTime());
                 if (end <= mergePoint) {
-                    double newMergePoint = Math.max(mergePoint, end + MERGE_ABNORMAL_POINTS_THRESHOLD);
-                    double duration = newMergePoint - mergedEvent.getSite().getStartTime();
+                    mergePoint = Math.max(mergePoint, end + MERGE_ABNORMAL_POINTS_THRESHOLD);
+                    double duration = end - mergedEvent.getSite().getStartTime();
                     mergedEvent.getSite().setDuration(duration);
                 } else {
                     mergedMostSeriousProblemList.add(mergedEvent);
@@ -110,22 +111,22 @@ public class GlobalDiagnoser {
             }
         }
         if (mergedEvent != null) {
-            mostSeriousProblemList.add(mergedEvent);
+            mergedMostSeriousProblemList.add(mergedEvent);
         }
     }
 
     private GlobalAbnormalInfo generateVo() {
         MostSeriousProblemSummary summary = null;
         if (mostSerious != AbnormalPoint.LEAST_SERIOUS) {
-            mergedMostSeriousProblemList.sort(
-                    (ab1, ab2) -> Double.compare(ab2.getSite().getDuration(), ab1.getSite().getDuration()));
             AbnormalPoint first = mergedMostSeriousProblemList.get(0);
             summary = new MostSeriousProblemSummary(
                     mergedMostSeriousProblemList.stream()
+                            .sorted((ab1, ab2) -> Double.compare(ab2.getSite().getDuration(), ab1.getSite().getDuration()))
                             .limit(3)
+                            .sorted(Comparator.comparingDouble(ab -> ab.getSite().getStartTime()))
                             .map(ab -> ab.getSite().toTimeRange())
                             .collect(Collectors.toList()),
-                    new I18nStringView(first.getType().getName()),
+                    new I18nStringView(AbnormalType.I18N_PREFIX + first.getType().getName()),
                     first.generateDefaultSuggestions(model)
             );
         }
@@ -155,7 +156,7 @@ public class GlobalDiagnoser {
 
     @GlobalDiagnoseRule
     protected void longGCPause() {
-        model.iterateEventsWithinTimeRange(model.getAllEvents(), config.getTimRange(), event -> {
+        model.iterateEventsWithinTimeRange(model.getAllEvents(), config.getTimeRange(), event -> {
             event.pauseEventOrPhasesDo(pauseEvent -> {
                 if (pauseEvent.getPause() <= config.getLongPauseThreshold()) {
                     return;
@@ -188,7 +189,7 @@ public class GlobalDiagnoser {
     @GlobalDiagnoseRule
     protected void fullGC() {
         boolean shouldAvoidFullGC = model.shouldAvoidFullGC();
-        model.iterateEventsWithinTimeRange(model.getGcEvents(), config.getTimRange(), event -> {
+        model.iterateEventsWithinTimeRange(model.getGcEvents(), config.getTimeRange(), event -> {
             if (event.getEventType() != FULL_GC) {
                 return;
             }
@@ -206,16 +207,13 @@ public class GlobalDiagnoser {
     private void addAbnormalPoint(AbnormalPoint point) {
         allProblems.put(point.getType().getName(), point.getSite().getStartTime());
         int compare = AbnormalPoint.compareByImportance.compare(point, mostSerious);
-        if (compare > 0) {
+        if (compare < 0) {
             mostSeriousProblemList.clear();
+            mostSerious = point;
         }
-        if (compare >= 0) {
+        if (compare <= 0) {
             mostSeriousProblemList.add(point);
         }
-    }
-
-    public GlobalDiagnoser(GCModel model) {
-        this.model = model;
     }
 
     @Retention(RetentionPolicy.RUNTIME)
@@ -228,12 +226,13 @@ public class GlobalDiagnoser {
     @AllArgsConstructor
     public static class GlobalAbnormalInfo {
         private MostSeriousProblemSummary mostSeriousProblem;
-        private Map<String, List<Double>> seriousProblem;
+        private Map<String, List<Double>> seriousProblems;
     }
 
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
+    @ToString
     public static class MostSeriousProblemSummary {
         private List<TimeRange> sites;
         private I18nStringView problem;

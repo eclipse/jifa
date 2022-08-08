@@ -32,9 +32,9 @@ public class Key2ValueListMap<K, V> {
         List<V> list = map.getOrDefault(key, null);
         if (list == null) {
             list = new ArrayList<>();
-            list.add(value);
             map.put(key, list);
         }
+        list.add(value);
     }
 
     public List<V> get(K key) {

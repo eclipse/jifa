@@ -125,12 +125,12 @@ public abstract class GCModel {
         this.startTime = startTime;
     }
 
-    protected boolean isGenerational() {
-        return true;
+    public boolean isGenerational() {
+        return collectorType != ZGC;
     }
 
-    protected boolean isPauseless() {
-        return false;
+    public boolean isPauseless() {
+        return collectorType == ZGC;
     }
 
     public List<GCEvent> getAllEvents() {

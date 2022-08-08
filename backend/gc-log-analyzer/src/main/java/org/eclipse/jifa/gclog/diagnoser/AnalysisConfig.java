@@ -25,7 +25,7 @@ public class AnalysisConfig {
     /*
      * Notice: This class should be kept in sync with initializePage in GCLog.vue.
      */
-    private TimeRange timRange;
+    private TimeRange timeRange;
     private int longPauseThreshold;
     private int longConcurrentThreshold;
     private int youngGCFrequentIntervalThreshold;

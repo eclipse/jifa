@@ -30,6 +30,8 @@ public enum SuggestionType {
     CHECK_EVACUATION_FAILURE("checkEvacuationFailure"),
     CHECK_MEMORY_LEAK("checkMemoryLeak");
 
+    public static final String I18N_PREFIX = "jifa.gclog.diagnose.suggestion.";
+
     private String name;
 
     SuggestionType(String name) {
