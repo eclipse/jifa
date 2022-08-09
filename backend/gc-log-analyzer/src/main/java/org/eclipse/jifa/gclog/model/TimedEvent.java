@@ -69,5 +69,7 @@ public class TimedEvent {
         }
     }
 
-
+    public static TimedEvent newByStartEnd(double start, double end) {
+        return new TimedEvent(start, end - start);
+    }
 }

@@ -19,10 +19,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.eclipse.jifa.common.JifaException;
 import org.eclipse.jifa.common.util.ErrorUtil;
-import org.eclipse.jifa.gclog.model.GCEvent;
-import org.eclipse.jifa.gclog.model.GCModel;
-import org.eclipse.jifa.gclog.model.OutOfMemory;
-import org.eclipse.jifa.gclog.model.ZGCModel;
+import org.eclipse.jifa.gclog.model.*;
 import org.eclipse.jifa.gclog.util.I18nStringView;
 import org.eclipse.jifa.gclog.util.Key2ValueListMap;
 import org.eclipse.jifa.gclog.vo.*;
@@ -38,7 +35,9 @@ import java.util.stream.Collectors;
 
 import static org.eclipse.jifa.gclog.diagnoser.AbnormalSeverity.*;
 import static org.eclipse.jifa.gclog.diagnoser.AbnormalType.*;
+import static org.eclipse.jifa.gclog.model.GCEvent.UNKNOWN_DOUBLE;
 import static org.eclipse.jifa.gclog.model.GCEventType.*;
+import static org.eclipse.jifa.gclog.model.TimedEvent.newByStartEnd;
 
 /**
  * To diagnose abnormal in gclog, we mainly try to analyze 3 things:
@@ -82,36 +81,34 @@ public class GlobalDiagnoser {
         }
     }
 
-    // We consider a problem is happening continuously if two adjacent abnormal points occurs
-    // in one minute.
-    private final static long MERGE_ABNORMAL_POINTS_THRESHOLD = 60000;
+    // Extend the start time forward by 30s so that user can see what happened before the problem.
+    // Extend the end time backward by 30s so adjacent events can be merged.
+    private final static long EXTEND_TIME = 30000;
 
     private void mergeTimeRanges() {
+        if (mostSerious == AbnormalPoint.LEAST_SERIOUS) {
+            return;
+        }
+        AbnormalPoint first = mostSeriousProblemList.get(0);
         mostSeriousProblemList.sort(Comparator.comparingDouble(ab -> ab.getSite().getStartTime()));
-        AbnormalPoint mergedEvent = null;
-        double mergePoint = 0;
+        double start = UNKNOWN_DOUBLE;
+        double end = UNKNOWN_DOUBLE;
         for (AbnormalPoint ab : mostSeriousProblemList) {
-            if (mergedEvent == null) {
-                mergedEvent = ab.cloneExceptSite();
-                // We assume that all events must have a start time, but end time may be unknown
-                mergePoint = Math.max(ab.getSite().getStartTime(), ab.getSite().getEndTime())
-                        + MERGE_ABNORMAL_POINTS_THRESHOLD;
+            if (start == UNKNOWN_DOUBLE) {
+                start = ab.getSite().getStartTime();
+                end = Math.max(ab.getSite().getStartTime(), ab.getSite().getEndTime());
+            } else if (ab.getSite().getStartTime() - end <= 2 * EXTEND_TIME) {
+                end = Math.max(Math.max(ab.getSite().getStartTime(), ab.getSite().getEndTime()), end);
             } else {
-                double end = Math.max(ab.getSite().getStartTime(), ab.getSite().getEndTime());
-                if (end <= mergePoint) {
-                    mergePoint = Math.max(mergePoint, end + MERGE_ABNORMAL_POINTS_THRESHOLD);
-                    double duration = end - mergedEvent.getSite().getStartTime();
-                    mergedEvent.getSite().setDuration(duration);
-                } else {
-                    mergedMostSeriousProblemList.add(mergedEvent);
-                    mergedEvent = ab.cloneExceptSite();
-                    mergePoint = Math.max(ab.getSite().getStartTime(), ab.getSite().getEndTime())
-                            + MERGE_ABNORMAL_POINTS_THRESHOLD;
-                }
+                AbnormalPoint merged = new AbnormalPoint(first.getType(), newByStartEnd(start, end), first.getSeverity());
+                mergedMostSeriousProblemList.add(merged);
+                start = ab.getSite().getStartTime();
+                end = Math.max(ab.getSite().getStartTime(), ab.getSite().getEndTime());
             }
         }
-        if (mergedEvent != null) {
-            mergedMostSeriousProblemList.add(mergedEvent);
+        if (start != UNKNOWN_DOUBLE) {
+            AbnormalPoint merged = new AbnormalPoint(first.getType(), newByStartEnd(start, end), first.getSeverity());
+            mergedMostSeriousProblemList.add(merged);
         }
     }
 
@@ -124,7 +121,10 @@ public class GlobalDiagnoser {
                             .sorted((ab1, ab2) -> Double.compare(ab2.getSite().getDuration(), ab1.getSite().getDuration()))
                             .limit(3)
                             .sorted(Comparator.comparingDouble(ab -> ab.getSite().getStartTime()))
-                            .map(ab -> ab.getSite().toTimeRange())
+                            .map(ab -> new TimeRange(
+                                    Math.max(ab.getSite().getStartTime() - EXTEND_TIME, model.getStartTime()),
+                                    Math.min(ab.getSite().getEndTime() + EXTEND_TIME, model.getEndTime())
+                            ))
                             .collect(Collectors.toList()),
                     new I18nStringView(AbnormalType.I18N_PREFIX + first.getType().getName()),
                     first.generateDefaultSuggestions(model)

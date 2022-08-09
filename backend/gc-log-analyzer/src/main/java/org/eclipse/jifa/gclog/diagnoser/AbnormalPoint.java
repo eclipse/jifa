@@ -44,10 +44,6 @@ public class AbnormalPoint {
         return 0;
     };
 
-    public AbnormalPoint cloneExceptSite() {
-        return new AbnormalPoint(type, new TimedEvent(site.getStartTime(), site.getDuration()), severity);
-    }
-
     public List<I18nStringView> generateDefaultSuggestions(GCModel model) {
         return new DefaultSuggestionGenerator(model, this).generate();
     }

@@ -386,19 +386,15 @@ public abstract class GCModel {
     // decide start and end time using events
     public void autoDecideStartEndTime() {
         gcEvents.sort(Comparator.comparingDouble(GCEvent::getStartTime));
-        if (this.getEndTime() != UNKNOWN_DOUBLE) {
+        if (gcEvents.size() == 0) {
             return;
         }
-        if (gcEvents == null || gcEvents.size() == 0) {
-            return;
-        }
-        setStartTime(gcEvents.get(0).getEndTime());
         GCEvent event = gcEvents.get(gcEvents.size() - 1);
         double endTime = event.getEndTime();
         if (event.hasPhases()) {
-            endTime = event.getPhases().get(event.getPhases().size() - 1).getEndTime();
+            endTime = Math.max(endTime, event.getPhases().get(event.getPhases().size() - 1).getEndTime());
         }
-        setEndTime(endTime);
+        setEndTime(Math.max(this.endTime, endTime));
     }
 
     public Map<String, List<Object[]>> getTimeGraphData(String[] dataTypes) {

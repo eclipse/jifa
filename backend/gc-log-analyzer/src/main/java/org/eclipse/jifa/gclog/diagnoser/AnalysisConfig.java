@@ -13,14 +13,12 @@
 package org.eclipse.jifa.gclog.diagnoser;
 
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.eclipse.jifa.gclog.vo.TimeRange;
 
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
 public class AnalysisConfig {
     /*
      * Notice: This class should be kept in sync with initializePage in GCLog.vue.
