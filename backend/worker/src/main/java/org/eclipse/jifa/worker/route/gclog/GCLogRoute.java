@@ -13,6 +13,8 @@
 
 package org.eclipse.jifa.worker.route.gclog;
 
+import org.eclipse.jifa.gclog.diagnoser.AnalysisConfig;
+import org.eclipse.jifa.gclog.diagnoser.GlobalDiagnoser;
 import org.eclipse.jifa.gclog.model.GCModel;
 import io.vertx.core.Promise;
 import org.eclipse.jifa.common.request.PagingRequest;
@@ -111,5 +113,13 @@ public class GCLogRoute extends org.eclipse.jifa.worker.route.gclog.GCLogBaseRou
         final GCModel model = Analyzer.getOrOpenGCLogModel(file);
         model.setVmOptions(new VmOptions(options));
         promise.complete();
+    }
+
+    @RouteMeta(path = "/diagnoseInfo", method = HttpMethod.GET)
+    void getDiagnoseInfo(Promise<GlobalDiagnoser.GlobalAbnormalInfo> promise,
+                          @ParamKey("file") String file,
+                          @ParamKey("config") AnalysisConfig config) {
+        final GCModel model = Analyzer.getOrOpenGCLogModel(file);
+        promise.complete(model.getGlobalDiagnoseInfo(config));
     }
 }

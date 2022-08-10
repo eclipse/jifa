@@ -1,6 +1,5 @@
 package org.eclipse.jifa.gclog.diagnoser;
 
-import org.eclipse.jifa.gclog.model.G1GCModel;
 import org.eclipse.jifa.gclog.model.GCModel;
 import org.eclipse.jifa.gclog.util.I18nStringView;
 import org.eclipse.jifa.gclog.vo.GCCollectorType;
@@ -31,6 +30,20 @@ public abstract class SuggestionGenerator {
         result.add(new I18nStringView(SuggestionType.I18N_PREFIX + type.toString(), params));
     }
 
+    protected void suggestShrinkYoungGen() {
+        if (model.getCollectorType() == GCCollectorType.G1) {
+            addSuggestion(SHRINK_YOUNG_GEN_G1);
+        } else {
+            addSuggestion(SHRINK_YOUNG_GEN);
+        }
+    }
+
+    protected void suggestOldSystemGC() {
+        if (model.hasOldGC()) {
+            addSuggestion(OLD_SYSTEM_GC);
+        }
+    }
+
     protected void suggestEnlargeHeap(boolean suggestHeapSize) {
         if (suggestHeapSize) {
             long size = model.getRecommendMaxHeapSize();
@@ -53,7 +66,7 @@ public abstract class SuggestionGenerator {
     protected void suggestStartOldGCEarly() {
         switch (model.getCollectorType()) {
             case CMS:
-                addSuggestion(DECREASE_CMSIOP);
+                addSuggestion(DECREASE_CMSIOF);
                 break;
             case G1:
                 addSuggestion(DECREASE_IHOP);

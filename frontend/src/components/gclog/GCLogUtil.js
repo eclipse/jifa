@@ -165,9 +165,20 @@ export function hasParallelGCThreads(metadata) {
 }
 
 export function formatTimeRange(start, end, timestamp) {
-  if (timestamp > 0) {
-    return formatTime(start + timestamp, 'Y-M-D h:m:s') + ' ~ '
-      + formatTime(end + timestamp, 'Y-M-D h:m:s')
+  if (timestamp >= 0) {
+    const time1 = new Date(start + timestamp)
+    const time2 = new Date(end + timestamp)
+    const format1 = 'Y-M-D h:m:s'
+    let format2;
+    if (time1.getFullYear() !== time2.getFullYear()) {
+      format2 = 'Y-M-D h:m:s'
+    } else if(time1.toDateString() !== time2.toDateString()) {
+      format2 = 'M-D h:m:s'
+    } else {
+      format2 = 'h:m:s'
+    }
+    return formatTime(start + timestamp, format1) + ' ~ '
+      + formatTime(end + timestamp, format2)
   } else {
     return `${Math.floor(start / 1000)} ~ ${Math.ceil(end / 1000)} s`
   }

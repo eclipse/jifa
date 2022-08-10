@@ -68,14 +68,12 @@ export default {
   methods: {},
   watch: {
     analysisConfig(newValue) {
-      console.log(this.analysisConfig)
       this.configTimeRange = formatTimeRange(newValue.timeRange.start,
           newValue.timeRange.end, this.metadata.timestamp)
       this.configDuration = formatTimePeriod(newValue.timeRange.end - newValue.timeRange.start)
     }
   },
   mounted() {
-    console.log(this.analysisConfig)
     this.logTimeRange = formatTimeRange(this.metadata.startTime, this.metadata.endTime, this.metadata.timestamp)
     this.logDuration = formatTimePeriod(this.metadata.endTime - this.metadata.startTime)
     this.configTimeRange = formatTimeRange(this.analysisConfig.timeRange.start,

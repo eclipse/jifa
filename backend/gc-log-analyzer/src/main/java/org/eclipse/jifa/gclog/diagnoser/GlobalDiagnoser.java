@@ -81,9 +81,14 @@ public class GlobalDiagnoser {
         }
     }
 
-    // Extend the start time forward by 30s so that user can see what happened before the problem.
-    // Extend the end time backward by 30s so adjacent events can be merged.
-    private final static long EXTEND_TIME = 30000;
+    // Extend the start time forward by 2.5 min so that user can see what happened before the problem.
+    // Extend the end time backward by 2.5 min so adjacent events can be merged.
+    private static long EXTEND_TIME = 150 * 1000;
+
+    // allow changing this value for testing
+    public static void setExtendTime(long extendTime) {
+        EXTEND_TIME = extendTime;
+    }
 
     private void mergeTimeRanges() {
         if (mostSerious == AbnormalPoint.LEAST_SERIOUS) {

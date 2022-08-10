@@ -14,6 +14,7 @@
 package org.eclipse.jifa.gclog;
 
 import org.eclipse.jifa.common.listener.DefaultProgressListener;
+import org.eclipse.jifa.gclog.diagnoser.AnalysisConfig;
 import org.eclipse.jifa.gclog.diagnoser.GlobalDiagnoser;
 import org.eclipse.jifa.gclog.diagnoser.GlobalDiagnoser.*;
 import org.eclipse.jifa.gclog.model.GCModel;
@@ -22,6 +23,7 @@ import org.eclipse.jifa.gclog.parser.GCLogParserFactory;
 import org.eclipse.jifa.gclog.util.I18nStringView;
 import org.eclipse.jifa.gclog.vo.TimeRange;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.List;
@@ -30,10 +32,16 @@ import java.util.stream.DoubleStream;
 
 import static org.eclipse.jifa.gclog.TestUtil.*;
 import static org.eclipse.jifa.gclog.diagnoser.AbnormalType.*;
+import static org.eclipse.jifa.gclog.diagnoser.AnalysisConfig.defaultConfig;
 
 
 public class TestGlobalDiagnoser {
     public static final double DELTA = 1e-6;
+
+    @Before
+    public void setExtendTime() {
+        GlobalDiagnoser.setExtendTime(30000);
+    }
 
     @Test
     public void testDiagnoseBasic() throws Exception {
@@ -68,6 +76,13 @@ public class TestGlobalDiagnoser {
         Assert.assertEquals(sites.size(), 2);
         double[] actual = sitesToArray(sites);
         Assert.assertArrayEquals(actual, new double[]{0, 42765 + 115.0614, 73765, 155765 + 115.0614}, DELTA);
+
+        AnalysisConfig config = defaultConfig(model);
+        config.setTimeRange(new TimeRange(100000, 130000));
+        diagnose = new GlobalDiagnoser(model, config).diagnose();
+        seriousProblems = diagnose.getSeriousProblems();
+        Assert.assertEquals(seriousProblems.size(), 1);
+        Assert.assertEquals(seriousProblems.get(METASPACE_FULL_GC.getName()).size(), 2);
     }
 
     @Test

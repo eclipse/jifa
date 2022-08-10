@@ -14,6 +14,7 @@
 package org.eclipse.jifa.gclog.model;
 
 import org.eclipse.jifa.common.listener.ProgressListener;
+import org.eclipse.jifa.gclog.diagnoser.AnalysisConfig;
 import org.eclipse.jifa.gclog.diagnoser.GlobalDiagnoser;
 import org.eclipse.jifa.gclog.util.DoubleData;
 import org.eclipse.jifa.gclog.util.I18nStringView;
@@ -161,6 +162,10 @@ public abstract class GCModel {
         GCEvent event = new GCEvent(gcEvents.size());
         gcEvents.add(event);
         return event;
+    }
+
+    public boolean hasOldGC() {
+        return collectorType == G1 || collectorType == CMS;
     }
 
     public <T extends TimedEvent> void iterateEventsWithinTimeRange(List<T> eventList, TimeRange range, Consumer<T> consumer) {
@@ -460,6 +465,11 @@ public abstract class GCModel {
                         && event.getDuration() != UNKNOWN_DOUBLE)
                 .map(event -> new Object[]{(long) event.getStartTime(), event.getDuration()})
                 .collect(Collectors.toList());
+    }
+
+    public GlobalDiagnoser.GlobalAbnormalInfo getGlobalDiagnoseInfo(AnalysisConfig config) {
+        config.setTimeRange(makeValidTimeRange(config.getTimeRange()));
+        return new GlobalDiagnoser(this, config).diagnose();
     }
 
     public int getRecommendMaxHeapSize() {

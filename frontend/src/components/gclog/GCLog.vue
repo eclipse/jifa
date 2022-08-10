@@ -44,6 +44,7 @@
             <div class="nav-item"><a href="#navTop">{{ $t('jifa.gclog.navToTop') }}</a></div>
             <el-divider/>
             <div class="nav-item"><a href="#overview">{{ $t('jifa.gclog.basicInfo') }}</a></div>
+            <div class="nav-item"><a href="#diagnose">{{ $t('jifa.gclog.diagnose.diagnose') }}</a></div>
             <div class="nav-item"><a href="#pause">{{ $t('jifa.gclog.vmOptions.vmOptions') }}</a></div>
             <div class="nav-item"><a href="#memoryStats">{{ $t('jifa.gclog.memoryStats.memoryStats') }}</a></div>
             <div class="nav-item"><a href="#phaseStats">{{ $t('jifa.gclog.phaseStats.phaseStatsAndCause') }}</a></div>
@@ -144,6 +145,12 @@
                       @showAnalysisConfig="showAnalysisConfig"
                       id="overview"
                       class="main-block"/>
+          <GCDiagnose :file="file"
+                      :metadata="metadata"
+                      :analysisConfig="analysisConfig"
+                      @applyTimeToConfig="changeConfigModelAndOpen"
+                      id="diagnose"
+                      class="main-block"/>
           <GCPause :file="file"
                    :metadata="metadata"
                    :analysisConfig="analysisConfig"
@@ -199,6 +206,7 @@
   import GCObjectStats from "@/components/gclog/GCObjectStats";
   import GCMemoryStats from "@/components/gclog/GCMemoryStats";
   import GCPause from "@/components/gclog/GCPause";
+  import GCDiagnose from "@/components/gclog/GCDiagnose";
   import GCPhaseStats from "@/components/gclog/GCPhaseStats";
   import VmOptions from "@/components/gclog/VmOptions";
   import Hint from "@/components/gclog/Hint";
@@ -266,6 +274,7 @@
       GCMemoryStats,
       GCPhaseStats,
       GCPause,
+      GCDiagnose,
       VmOptions,
       ViewMenu,
       GCLogTimePicker,
@@ -387,10 +396,17 @@
       setSharedInfo(info) {
         this.gcSharedInfo = {...this.gcSharedInfo, ...info}
       },
+      // directly change config and refresh all components
       applyConfigChange(params) {
-        Object.assign(this.analysisConfig,params)
+        Object.assign(this.analysisConfig, params)
         this.analysisConfig = {...this.analysisConfig} //notify change
         this.updateUrl()
+      },
+      // just change the model and need user to confirm
+      changeConfigModelAndOpen(params) {
+        this.analysisConfigModel = {...this.analysisConfig}
+        Object.assign(this.analysisConfigModel, params)
+        this.showAnalysisConfig()
       },
       doCompare() {
         this.$refs['compareForm'].validate((valid) => {

@@ -68,6 +68,7 @@ public class DefaultSuggestionGenerator extends SuggestionGenerator {
     private void systemGC() {
         addSuggestion(CHECK_SYSTEM_GC);
         addSuggestion(DISABLE_SYSTEM_GC);
+        suggestOldSystemGC();
         fullGCSuggestionCommon();
     }
 
@@ -82,6 +83,7 @@ public class DefaultSuggestionGenerator extends SuggestionGenerator {
         addSuggestion(CHECK_MEMORY_LEAK);
         suggestEnlargeHeap(true);
         addSuggestion(INCREASE_CONC_GC_THREADS);
+        addSuggestion(INCREASE_Z_ALLOCATION_SPIKE_TOLERANCE);
     }
 
     @GeneratorRule("heapMemoryFullGC")
@@ -94,11 +96,10 @@ public class DefaultSuggestionGenerator extends SuggestionGenerator {
     @GeneratorRule("longYoungGCPause")
     private void longYoungGCPause() {
         addSuggestion(CHECK_LIVE_OBJECTS);
-        addSuggestion(CHECK_REF_BETWEEN_GENERATIONS);
-        suggestCheckEvacuationFailure();
         addSuggestion(CHECK_CPU_TIME);
         addSuggestion(CHECK_REFERENCE_GC);
-        addSuggestion(SHRINK_YOUNG_GEN);
+        suggestCheckEvacuationFailure();
+        suggestShrinkYoungGen();
     }
 
     public List<I18nStringView> generate() {

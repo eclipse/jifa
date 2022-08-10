@@ -156,8 +156,8 @@ export default {
         },
         xAxis: {
           type: this.useUptime ? 'value' : 'time',
-          min: this.useUptime ? this.metadata.startTime / 1000 : this.metadata.startTime + this.metadata.timestamp,
-          max: this.useUptime ? this.metadata.endTime / 1000 : this.metadata.endTime + this.metadata.timestamp,
+          min: this.transformTime(this.metadata.startTime),
+          max: this.transformTime(this.metadata.endTime),
           axisLabel: {
             formatter: this.formatXAxis
           },
