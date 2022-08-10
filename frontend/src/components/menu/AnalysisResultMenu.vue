@@ -157,12 +157,9 @@
       }).then(resp => {
         let data = resp.data;
 
-        // File too big to download?
-        const showDownloadOpt = data.size <= 512 * 1024 * 1024
-
         // Already shared?
         if (data.shared) {
-          this.showDownloadOpt = showDownloadOpt;
+          this.showDownloadOpt = true;
           return;
         }
 
@@ -180,7 +177,7 @@
 
           // Finally...
           this.showUnlockOpt = true;
-          this.showDownloadOpt = showDownloadOpt;
+          this.showDownloadOpt = true;
         });
       })
     }

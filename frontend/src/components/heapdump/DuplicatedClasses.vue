@@ -65,13 +65,13 @@
 
             <img :src="ICONS.misc.sumPlusIcon" @dblclick="fetchMoreClassLoaders(scope.row)" style="cursor: pointer"
                  v-else/>
-            {{ scope.row.currentSize }} <strong> / </strong> {{ scope.row.totalSize }}
+            {{ toReadableCount(scope.row.currentSize) }} <strong> / </strong> {{ toReadableCount(scope.row.totalSize) }}
           </span>
 
           <span v-if="scope.row.isSummaryItem">
             <img :src="ICONS.misc.sumIcon" v-if="currentSize >= totalSize"/>
             <img :src="ICONS.misc.sumPlusIcon" @dblclick="fetchDuplicatedClasses" style="cursor: pointer" v-else/>
-            {{ currentSize }} <strong> / </strong> {{totalSize}}
+            {{ toReadableCount(currentSize) }} <strong> / </strong> {{ toReadableCount(totalSize) }}
           </span>
         </template>
       </el-table-column>
@@ -80,13 +80,13 @@
       <el-table-column/>
       <el-table-column/>
 
-      <el-table-column label="ClassLoader Counts" prop="classLoaderCount">
+      <el-table-column label="ClassLoader Counts" prop="classLoaderCount" :formatter="toReadableCountFormatter">
       </el-table-column>
 
-      <el-table-column label="Defined Classes" prop="definedClassesCount">
+      <el-table-column label="Defined Classes" prop="definedClassesCount" :formatter="toReadableCountFormatter">
       </el-table-column>
 
-      <el-table-column label="Num of Instances" prop="instantiatedObjectsCount">
+      <el-table-column label="Num of Instances" prop="instantiatedObjectsCount" :formatter="toReadableCountFormatter">
       </el-table-column>
     </el-table>
 
@@ -96,7 +96,7 @@
 <script>
 
   import axios from 'axios'
-  import {heapDumpService} from '../../util'
+  import {heapDumpService, toReadableCount, toReadableCountFormatter} from '../../util'
   import {getIcon, ICONS} from "./IconHealper";
   import {OBJECT_TYPE} from './CommonType'
 
@@ -104,6 +104,8 @@
   export default {
     props: ['file'],
     methods: {
+      toReadableCount,
+      toReadableCountFormatter,
       tableSpanMethod(row) {
         let index = row.columnIndex
         if (index === 0) {

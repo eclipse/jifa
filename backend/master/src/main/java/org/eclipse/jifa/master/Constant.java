@@ -122,8 +122,6 @@ public interface Constant extends org.eclipse.jifa.common.Constant {
     String SYSTEM_DISK_USAGE = "/system/diskUsage";
     String PING = "/system/ping";
 
-    long MAX_SIZE_FOR_DOWNLOAD = 512 * 1024 * 1024; // 512MB
-
     /**
      * K8S CLOUD CONFIG
      */

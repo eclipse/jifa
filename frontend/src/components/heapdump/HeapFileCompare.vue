@@ -89,20 +89,20 @@
               <span v-if="scope.row.isSummary">
             <img :src="sumIcon" v-if="records.length >= summary.totalSize"/>
             <img :src="sumPlusIcon" @dblclick="fetchRecords" style="cursor: pointer" v-else/>
-            {{ records.length }} <strong> / </strong> {{summary.totalSize}}
+            {{ toReadableCount(records.length) }} <strong> / </strong> {{ toReadableCount(summary.totalSize) }}
           </span>
             </template>
           </el-table-column>
 
           <el-table-column label="Objects">
             <template slot-scope="scope">
-              {{ scope.row.objects > 0 ? '+' : '' }} {{ scope.row.objects}}
+              {{ scope.row.objects > 0 ? '+' : '' }} {{ toReadableCount(scope.row.objects)}}
             </template>
           </el-table-column>
 
           <el-table-column label="Shallow Heap">
             <template slot-scope="scope">
-              {{ scope.row.shallowHeap> 0 ? '+' : '' }} {{ scope.row.shallowHeap}}
+              {{ scope.row.shallowHeap > 0 ? '+' : '' }} {{ toReadableSizeWithUnit(scope.row.shallowHeap) }}
             </template>
           </el-table-column>
         </el-table>
@@ -113,12 +113,14 @@
 
 <script>
   import axios from 'axios'
-  import {heapDumpService} from '../../util'
+  import {heapDumpService, toReadableCount, toReadableSizeWithUnit} from '../../util'
 
   let rowKey = 1
   export default {
     props: ['file'],
     methods: {
+      toReadableCount,
+      toReadableSizeWithUnit,
       fetchCompareSummary() {
         this.loading = true
         axios.get(heapDumpService(this.file, 'compare/summary'), {

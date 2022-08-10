@@ -90,7 +90,7 @@ exports.default = {
       uploadToOSS: 'Upload file to OSS',
       setShare: 'Set file as shared',
       deleteFile: 'Delete file permanently',
-      downloadFile: 'Download file. Max supported size is 512MB',
+      downloadFile: 'Download file',
     },
 
     heap: {

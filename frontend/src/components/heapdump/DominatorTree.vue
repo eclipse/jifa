@@ -11,7 +11,7 @@
     SPDX-License-Identifier: EPL-2.0
  -->
 <template xmlns:v-contextmenu="http://www.w3.org/1999/xhtml">
-  <div style="height: 100%">
+  <div style="height: 100%; display: flex; flex-direction: column;">
     <el-row>
       <el-col :span="15">
         <el-radio-group v-model="grouping" style="margin-top:10px; margin-left: 10px" @change="changeGrouping"
@@ -73,24 +73,24 @@
       </v-contextmenu-item>
     </v-contextmenu>
 
-    <el-table
-        ref='recordTable' :data="tableData"
-        :highlight-current-row="true"
-        stripe
-        :header-cell-style="headerCellStyle"
-        :cell-style='cellStyle'
-        row-key="rowKey"
-        :load="loadChildren"
-        @sort-change="sortTable"
-        height="100%"
-        :span-method="spanMethod"
-        :indent=8
-        lazy
-        fit
-        v-loading="loading"
-    >
-      <el-table-column prop="id" label="Class Name" show-overflow-tooltip sortable="custom">
-        <template slot-scope="scope">
+    <div style="flex-grow: 1; overflow: auto">
+      <el-table
+          ref='recordTable' :data="tableData"
+          :highlight-current-row="true"
+          stripe
+          :header-cell-style="headerCellStyle"
+          :cell-style='cellStyle'
+          row-key="rowKey"
+          :load="loadChildren"
+          @sort-change="sortTable"
+          :span-method="spanMethod"
+          :indent=8
+          lazy
+          fit
+          v-loading="loading"
+      >
+        <el-table-column prop="id" label="Class Name" show-overflow-tooltip sortable="custom">
+          <template slot-scope="scope">
           <span v-if="scope.row.isResult"
                 @click="scope.row.isObjType ? $emit('setSelectedObjectId', scope.row.objectId) : {}"
                 style="cursor: pointer"
@@ -103,48 +103,51 @@
             </span>
           </span>
 
-          <span v-if="scope.row.isSummaryItem">
+            <span v-if="scope.row.isSummaryItem">
             <img :src="ICONS.misc.sumIcon" v-if="records.length >= totalSize"/>
             <img :src="ICONS.misc.sumPlusIcon" @dblclick="fetchNextPageData" style="cursor: pointer" v-else/>
-            {{ records.length }} <strong> / </strong> {{totalSize}}
+            {{ toReadableCount(records.length) }} <strong> / </strong> {{ toReadableCount(totalSize) }}
           </span>
 
-          <span v-if="scope.row.isChildrenSummary">
+            <span v-if="scope.row.isChildrenSummary">
             <img :src="ICONS.misc.sumIcon" v-if="scope.row.currentSize >= scope.row.totalSize"/>
             <img :src="ICONS.misc.sumPlusIcon"
                  @dblclick="fetchChildren(scope.row.parentRowKey, scope.row.objectId, scope.row.nextPage, scope.row.idPathInResultTree, scope.row.resolve)"
                  style="cursor: pointer"
                  v-else/>
-            {{ scope.row.currentSize }} <strong> / </strong> {{ scope.row.totalSize }}
+            {{ toReadableCount(scope.row.currentSize) }} <strong> / </strong> {{ toReadableCount(scope.row.totalSize) }}
           </span>
-        </template>
-      </el-table-column>
-      <el-table-column/>
-      <el-table-column/>
-      <el-table-column/>
-      <el-table-column/>
-      <el-table-column/>
+          </template>
+        </el-table-column>
+        <el-table-column/>
+        <el-table-column/>
+        <el-table-column/>
+        <el-table-column/>
+        <el-table-column/>
 
-      <el-table-column v-if="grouping!=='NONE'" label="Objects" prop="Objects" sortable="custom">
-        <template slot-scope="scope">
-          {{ grouping !== "NONE" ? scope.row.objects : ''}}
-        </template>
-      </el-table-column>
+        <el-table-column v-if="grouping!=='NONE'" label="Objects" prop="Objects" sortable="custom">
+          <template slot-scope="scope">
+            {{ grouping !== "NONE" ? toReadableCount(scope.row.objects) : '' }}
+          </template>
+        </el-table-column>
 
-      <el-table-column label="Shallow Heap" prop="shallowHeap" sortable="custom">
-      </el-table-column>
-      <el-table-column label="Retained Heap" prop="retainedHeap" sortable="custom">
-      </el-table-column>
-      <el-table-column label="Percentage" prop="percent" sortable="custom">
-      </el-table-column>
-    </el-table>
+        <el-table-column label="Shallow Heap" prop="shallowHeap" sortable="custom"
+                         :formatter="toReadableSizeWithUnitFormatter">
+        </el-table-column>
+        <el-table-column label="Retained Heap" prop="retainedHeap" sortable="custom"
+                         :formatter="toReadableSizeWithUnitFormatter">
+        </el-table-column>
+        <el-table-column label="Percentage" prop="percent" sortable="custom">
+        </el-table-column>
+      </el-table>
+    </div>
   </div>
 </template>
 
 <script>
   import axios from 'axios'
   import {getIcon, ICONS} from "./IconHealper";
-  import {heapDumpService} from "../../util";
+  import {heapDumpService, toReadableCount, toReadableSizeWithUnitFormatter} from "../../util";
 
   let rowKey = 1
 
@@ -179,6 +182,8 @@
       }
     },
     methods: {
+      toReadableCount,
+      toReadableSizeWithUnitFormatter,
       spanMethod(row) {
         let index = row.columnIndex
         if (index === 0) {

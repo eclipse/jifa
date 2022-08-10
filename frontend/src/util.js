@@ -10,47 +10,41 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-export function toSizeString(bytes) {
-  if (bytes < 0) {
-    return "N/A"
-  }
-  if (bytes <= 1024) return bytes + " B"
+function nullOrUndefined(v) {
+  return v === null || v === undefined;
+}
+
+export function toReadableSizeWithUnit(bytes) {
+  if (nullOrUndefined(bytes)) return ''
+  if (bytes <= 1024) return bytes.toLocaleString() + "B"
   let k = 1024,
-      suffix = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'],
+      suffix = ['B', 'K', 'M', 'G'],
       i = Math.floor(Math.log(bytes) / Math.log(k))
 
-  const num = bytes / Math.pow(k, i)
-  return (num >= 1000 ? num.toFixed(0) : num.toPrecision(3)) + ' ' + suffix[i]
+  return (bytes / Math.pow(k, i)).toPrecision(3).toLocaleString() + suffix[i]
 }
 
-export function toCountString(counts) {
-  if (counts <= 1000) return counts + " "
+export function toReadableSizeWithUnitFormatter(r, c, cellValue) {
+  return toReadableSizeWithUnit(cellValue)
+}
+
+export function toReadableCountWithUnit(counts) {
+  if (nullOrUndefined(counts)) return ''
+  if (counts <= 1000) return counts.toLocaleString()
   let k = 1000,
-      suffix = [' ', 'k', 'm', 'g', 't', 'p', 'e', 'z', 'y'],
+      suffix = ['', 'k', 'm', 'g', 't', 'p', 'e', 'z', 'y'],
       i = Math.floor(Math.log(counts) / Math.log(k))
 
-  return (counts / Math.pow(k, i)).toPrecision(4) + ' ' + suffix[i]
+  return (counts / Math.pow(k, i)).toPrecision(4).toLocaleString() + suffix[i]
 }
 
-export function fromSizeString(str) {
-  let k = 1024, suffix = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
-  let [a, b] = str.split(' ')
-  if (suffix.indexOf(b) === -1) {
-    throw "should not reach here";
-  }
-  return parseFloat(a) * Math.pow(k, suffix.indexOf(b))
+export function toReadableCount(counts) {
+  if (nullOrUndefined(counts)) return ''
+  return counts.toLocaleString();
 }
 
-export function fromCountString(str) {
-  let k = 1000, suffix = [' ', 'k', 'm', 'g', 't', 'p', 'e', 'z', 'y']
-  let [a, b] = str.split(' ')
-  if (b === '') {
-    return parseFloat(a);
-  }
-  if (suffix.indexOf(b) === -1) {
-    throw "should not reach here";
-  }
-  return parseFloat(a) * Math.pow(k, suffix.indexOf(b))
+export function toReadableCountFormatter(r, c, cellValue) {
+  return toReadableCount(cellValue)
 }
 
 const SERVICE_PREFIX = '/jifa-api'

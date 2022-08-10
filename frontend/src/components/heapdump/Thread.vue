@@ -83,24 +83,24 @@
                  @dblclick="fetchOutbounds(scope.row.parentRowKey, scope.row.objectId, scope.row.nextPage, scope.row.resolve)"
                  style="cursor: pointer"
                  v-else/>
-            {{ scope.row.currentSize }} <strong> / </strong> {{ scope.row.totalSize }}
+            {{ toReadableCount(scope.row.currentSize) }} <strong> / </strong> {{ toReadableCount(scope.row.totalSize) }}
           </span>
 
           <span v-if="scope.row.isThreadSummaryItem">
             <img :src="sumIcon" v-if="currentSize >= totalSize"/>
             <img :src="sumPlusIcon" @dblclick="fetchThreadDetails" style="cursor: pointer" v-else/>
-            {{ currentSize }} <strong> / </strong> {{totalSize}}
+            {{ toReadableCount(currentSize) }} <strong> / </strong> {{ toReadableCount(totalSize) }}
           </span>
         </template>
       </el-table-column>
 
       <el-table-column label="Name" width="300px" prop="name"  show-overflow-tooltip sortable="custom">
       </el-table-column>
-      <el-table-column label="Shallow Heap" prop="shallowHeap" sortable="custom">
+      <el-table-column label="Shallow Heap" prop="shallowHeap" sortable="custom" :formatter="toReadableSizeWithUnitFormatter">
       </el-table-column>
-      <el-table-column label="Retained Heap" prop="retainedHeap" sortable="custom">
+      <el-table-column label="Retained Heap" prop="retainedHeap" sortable="custom" :formatter="toReadableSizeWithUnitFormatter">
       </el-table-column>
-      <el-table-column label="Max Locals' Retained Heap" prop="maxLocalsRetainedHeap">
+      <el-table-column label="Max Locals' Retained Heap" prop="maxLocalsRetainedHeap" :formatter="toReadableSizeWithUnitFormatter">
       </el-table-column>
       <el-table-column label="Context Class Loader" prop="contextClassLoader" width="420px" show-overflow-tooltip
                        sortable="custom">
@@ -114,7 +114,7 @@
 
 <script>
   import axios from 'axios'
-  import {heapDumpService} from '../../util'
+  import {heapDumpService, toReadableCount, toReadableSizeWithUnitFormatter} from '../../util'
   import {getOutboundIcon, ICONS} from './IconHealper'
 
   let rowKey = 1
@@ -122,6 +122,8 @@
   export default {
     props: ['file'],
     methods: {
+      toReadableCount,
+      toReadableSizeWithUnitFormatter,
       sortTable(val) {
         this.sortBy = val.prop
         this.nextPage = 1

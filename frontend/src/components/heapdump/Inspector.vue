@@ -92,7 +92,7 @@
 <script>
 
   import axios from 'axios'
-  import {heapDumpService} from '../../util'
+  import {heapDumpService, toReadableSizeWithUnit} from '../../util'
   import {getIcon, ICONS} from './IconHealper';
   import {OBJECT_TYPE} from './CommonType';
   import Fields from './Fields'
@@ -183,8 +183,8 @@
             data: ov.classLoaderLabel,
             icon: getIcon(ov.classLoaderGCRoot, OBJECT_TYPE.CLASSLOADER)
           })
-          tmpView.push({data: ov.shallowSize + ' (shallow size)', icon: ICONS.size})
-          tmpView.push({data: ov.retainedSize + ' (retained size)', icon: ICONS.size})
+          tmpView.push({data: toReadableSizeWithUnit(ov.shallowSize) + ' (shallow size)', icon: ICONS.size})
+          tmpView.push({data: toReadableSizeWithUnit(ov.retainedSize) + ' (retained size)', icon: ICONS.size})
           tmpView.push({data: ov.gcRootInfo, icon: ICONS.decorations.gc_root})
           this.objectOverview = tmpView
           let maxContent = ''

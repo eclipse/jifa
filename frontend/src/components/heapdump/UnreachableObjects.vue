@@ -34,7 +34,7 @@
           <span v-if="scope.row.isSummary">
             <img :src="sumIcon" v-if="records.length >= totalSize"/>
             <img :src="sumPlusIcon" @dblclick="fetchRecords" style="cursor: pointer" v-else/>
-            {{ records.length }} <strong> / </strong> {{totalSize}}
+            {{ toReadableCount(records.length) }} <strong> / </strong> {{ toReadableCount(totalSize) }}
           </span>
         </template>
       </el-table-column>
@@ -45,10 +45,10 @@
       <el-table-column/>
       <el-table-column/>
 
-      <el-table-column label="Objects" prop="objects">
+      <el-table-column label="Objects" prop="objects" :formatter="toReadableCountFormatter">
       </el-table-column>
 
-      <el-table-column label="Shallow Heap" prop="shallowSize">
+      <el-table-column label="Shallow Heap" prop="shallowSize" :formatter="toReadableSizeWithUnitFormatter">
       </el-table-column>
     </el-table>
   </div>
@@ -56,12 +56,15 @@
 
 <script>
   import axios from 'axios'
-  import {heapDumpService} from '../../util'
+  import {heapDumpService, toReadableCount, toReadableCountFormatter, toReadableSizeWithUnitFormatter} from '../../util'
 
   let rowKey = 1
   export default {
     props: ['file'],
     methods: {
+      toReadableCount,
+      toReadableCountFormatter,
+      toReadableSizeWithUnitFormatter,
       spanMethod(row) {
         let index = row.columnIndex
         if (index === 0) {

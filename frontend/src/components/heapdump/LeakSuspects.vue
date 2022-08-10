@@ -38,7 +38,7 @@
                   {{ data.label }}
                 </span>
               <span>
-                    {{ data.shallowSize }} / {{ data.retainedSize }}
+                    {{ toReadableSizeWithUnit(data.shallowSize) }} / {{ toReadableSizeWithUnit(data.retainedSize) }}
               </span>
             </span>
 
@@ -53,7 +53,7 @@
 <script>
   import axios from 'axios'
   import DoughnutChart from '../charts/DoughnutChart'
-  import {heapDumpService} from '../../util'
+  import {heapDumpService, toReadableSizeWithUnit} from '../../util'
   import {a2rgb, PIE_COLORS, REMAINDER_COLOR} from "./ColorHelper";
   import {getIcon} from "./IconHealper"
 
@@ -63,6 +63,7 @@
       DoughnutChart
     },
     methods: {
+      toReadableSizeWithUnit,
       getIcon,
       clickPie(event, elements) {
         if (elements.length > 0) {

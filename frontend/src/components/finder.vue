@@ -81,7 +81,6 @@
                     <span>
                       <el-divider direction="vertical"></el-divider>
                       <el-link icon="el-icon-download" :underline="false"
-                               :disabled="fileTooBigToDownload(file(row, col))"
                                target="_blank"
                                download
                                :href="`/jifa-api/file/download?name=${file(row,col).name}&type=${currentMenuItem}`"
@@ -113,7 +112,7 @@
               <el-row :align='"middle"' type="flex">
                 <el-col :span="12">
                   <p style="font-size: 12px; margin: 10px auto 7px; white-space: nowrap; color: #606266;" align="left">
-                    {{toSizeString(file(row, col).size)}}</p>
+                    {{toReadableSizeWithUnit(file(row, col).size)}}</p>
                 </el-col>
 
                 <el-col :span="12">
@@ -177,7 +176,7 @@ import Footer from "./footer"
 
 
 import {formatDate} from 'element-ui/src/utils/date-util'
-import {service, toSizeString} from '../util'
+import {service, toReadableSizeWithUnit} from '../util'
 import TransferFile from './transferFile'
 import ViewMenu from './menu/ViewMenu'
 
@@ -225,7 +224,7 @@ const defaultMenuItem = 'HEAP_DUMP'
 
       service,
       formatDate,
-      toSizeString,
+      toReadableSizeWithUnit,
 
       handleCurrentPageChange(page) {
         this.go(page)
@@ -265,11 +264,6 @@ const defaultMenuItem = 'HEAP_DUMP'
             new URLSearchParams(formData)).then(() => {
           file.shared = !file.shared
         })
-      },
-
-      fileTooBigToDownload(file) {
-        // don't restrict size in worker only mode
-        return file.size > 512 * 1024 * 1024 && !this.$jifa.workerOnly
       },
 
       transferIsSuccess(file) {
