@@ -61,10 +61,11 @@
 </template>
 
 <script>
-import {gclogService, formatTimePeriod} from '@/util'
+import {gclogService} from '@/util'
 import axios from "axios";
 import Hint from "@/components/gclog/Hint";
 import * as gcutil from "@/components/gclog/GCLogUtil"
+import {formatTimePeriod} from "@/components/gclog/GCLogUtil";
 
 export default {
   props: ["file", "metadata", "analysisConfig"],

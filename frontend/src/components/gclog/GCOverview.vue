@@ -49,8 +49,7 @@
 
 <script>
 import Hint from "@/components/gclog/Hint";
-import {formatTimeRange} from "@/components/gclog/GCLogUtil";
-import {formatTimePeriod} from "@/util";
+import {formatTimePeriod, formatTimeRange} from "@/components/gclog/GCLogUtil";
 
 export default {
   props: ["file", "metadata", "analysisConfig"],

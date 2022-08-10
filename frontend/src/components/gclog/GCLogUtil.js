@@ -12,7 +12,7 @@
  ********************************************************************************/
 
 
-import {formatTime} from "@/util";
+import {formatTime, toReadableSizeWithUnit} from "@/util";
 
 export function getPhaseHint(phase) {
   // todo
@@ -162,6 +162,53 @@ export function hasConcurrentGCThreads(metadata) {
 
 export function hasParallelGCThreads(metadata) {
   return metadata.collector !== 'Serial GC'
+}
+
+export function formatSize(bytes) {
+  if (bytes < 0) {
+    return "N/A"
+  }
+  return toReadableSizeWithUnit(bytes)
+}
+
+export function formatSizeSpeed(bytesPerMs) {
+  if (bytesPerMs < 0) {
+    return "N/A"
+  }
+  return toReadableSizeWithUnit(bytesPerMs * 1000) + "/s"
+}
+
+// e.g 0.1234 -> '12.34%'
+export function formatPercentage(percent) {
+  if (percent < 0) {
+    return "N/A"
+  }
+  return (percent * 100).toFixed(2) + '%'
+}
+
+// e.g 100,000 (ms) -> '1.67min'
+export function formatTimePeriod(time) {
+  // negative means not available
+  if (time < 0 || typeof time === "undefined") {
+    return "N/A"
+  }
+  if (time < 0.001) {
+    return "0"
+  }
+  if (time < 1) {
+    return `${time.toFixed(3)}ms`
+  }
+  const units = ["ms", "s", "min", "h"]
+  const gap = [1000, 60, 60]
+  let i;
+  for (i = 0; i < 3; i++) {
+    if (time > gap[i]) {
+      time /= gap[i]
+    } else {
+      break
+    }
+  }
+  return (time >= 1000 ? Math.round(time) : time.toPrecision(3)) + " " + units[i];
 }
 
 export function formatTimeRange(start, end, timestamp) {

@@ -40,10 +40,10 @@
 </template>
 
 <script>
-import {toSizeString, gclogService} from '@/util'
+import {gclogService} from '@/util'
 import axios from "axios";
 import Hint from "@/components/gclog/Hint";
-import {hasOldGC} from "@/components/gclog/GCLogUtil";
+import {formatSize, hasOldGC} from "@/components/gclog/GCLogUtil";
 
 export default {
   props: ["file", "metadata", "analysisConfig"],
@@ -86,7 +86,7 @@ export default {
           let item = {}
           metrics.forEach(metric => {
             item[metric] = {
-              value: toSizeString(resp.data[generation][metric]),
+              value: formatSize(resp.data[generation][metric]),
               bad: this.badValue(resp.data[generation], metric, generation, heapCapacity)
             }
           })

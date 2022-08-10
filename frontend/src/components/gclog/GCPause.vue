@@ -41,10 +41,11 @@
 </template>
 
 <script>
-import {formatPercentage, formatTimePeriod, gclogService} from '@/util'
+import {gclogService} from '@/util'
 import axios from "axios";
 import * as echarts from 'echarts';
 import Hint from "@/components/gclog/Hint";
+import {formatPercentage, formatTimePeriod} from "@/components/gclog/GCLogUtil";
 
 export default {
   props: ["file", "metadata", "analysisConfig"],

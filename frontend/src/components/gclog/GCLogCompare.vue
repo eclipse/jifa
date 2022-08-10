@@ -68,9 +68,10 @@
 
 <script>
 import axios from 'axios'
-import {formatPercentage, formatTimePeriod, gclogService, service, toSizeSpeedString, toSizeString} from '../../util'
+import {gclogService, service} from '../../util'
 import ViewMenu from "../menu/ViewMenu";
 import {
+  formatPercentage, formatSize, formatSizeSpeed, formatTimePeriod,
   formatTimeRange, getUrlParams, hasConcurrentGCThreads,
   hasOldGC,
   hasParallelGCThreads,
@@ -183,113 +184,113 @@ export default {
             {
               key: 'youngCapacityAvg',
               name: 'memoryStats.youngCapacityAvg',
-              format: toSizeString,
+              format: formatSize,
               compare: "just compare",
               needed: this.isGenerational
             },
             {
               key: 'youngUsedMax',
               name: 'memoryStats.youngUsedMax',
-              format: toSizeString,
+              format: formatSize,
               compare: "just compare",
               needed: this.isGenerational
             },
             {
               key: 'oldCapacityAvg',
               name: 'memoryStats.oldCapacityAvg',
-              format: toSizeString,
+              format: formatSize,
               compare: "just compare",
               needed: this.isGenerational
             },
             {
               key: 'oldUsedMax',
               name: 'memoryStats.oldUsedMax',
-              format: toSizeString,
+              format: formatSize,
               compare: "the less the better",
               needed: this.isGenerational
             },
             {
               key: 'oldUsedAvgAfterFullGC',
               name: 'memoryStats.oldUsedAvgAfterFullGC',
-              format: toSizeString,
+              format: formatSize,
               compare: "the less the better",
               needed: this.isGenerational
             },
             {
               key: 'oldUsedAvgAfterOldGC',
               name: 'memoryStats.oldUsedAvgAfterOldGC',
-              format: toSizeString,
+              format: formatSize,
               compare: "the less the better",
               needed: hasOldGC
             },
             {
               key: 'humongousUsedMax',
               name: 'memoryStats.humongousUsedMax',
-              format: toSizeString,
+              format: formatSize,
               compare: "the less the better",
               needed: this.isG1
             },
             {
               key: 'humongousUsedAvgAfterFullGC',
               name: 'memoryStats.humongousUsedAvgAfterFullGC',
-              format: toSizeString,
+              format: formatSize,
               compare: "the less the better",
               needed: this.isG1
             },
             {
               key: 'humongousUsedAvgAfterOldGC',
               name: 'memoryStats.humongousUsedAvgAfterOldGC',
-              format: toSizeString,
+              format: formatSize,
               compare: "the less the better",
               needed: this.isG1
             },
             {
               key: 'heapCapacityAvg',
               name: 'memoryStats.heapCapacityAvg',
-              format: toSizeString,
+              format: formatSize,
               compare: "just compare",
             },
             {
               key: 'heapUsedMax',
               name: 'memoryStats.heapUsedMax',
-              format: toSizeString,
+              format: formatSize,
               compare: "the less the better",
             },
             {
               key: 'heapUsedAvgAfterFullGC',
               name: 'memoryStats.heapUsedAvgAfterFullGC',
-              format: toSizeString,
+              format: formatSize,
               compare: "the less the better",
             },
             {
               key: 'heapUsedAvgAfterOldGC',
               name: 'memoryStats.heapUsedAvgAfterOldGC',
-              format: toSizeString,
+              format: formatSize,
               compare: "the less the better",
               needed: hasOldGC
             },
             {
               key: 'metaspaceCapacityAvg',
               name: 'memoryStats.metaspaceCapacityAvg',
-              format: toSizeString,
+              format: formatSize,
               compare: "just compare",
             },
             {
               key: 'metaspaceUsedMax',
               name: 'memoryStats.metaspaceUsedMax',
-              format: toSizeString,
+              format: formatSize,
               compare: "the less the better",
             },
             {
               key: 'metaspaceUsedAvgAfterFullGC',
               name: 'memoryStats.metaspaceUsedAvgAfterFullGC',
-              format: toSizeString,
+              format: formatSize,
               compare: "the less the better",
             },
             {
               key: 'metaspaceUsedAvgAfterOldGC',
               name: 'memoryStats.metaspaceUsedAvgAfterOldGC',
-              format: toSizeString,
+              format: formatSize,
               compare: "the less the better",
               needed: hasOldGC
             },
@@ -416,27 +417,27 @@ export default {
             {
               key: 'objectCreationSpeed',
               name: 'objectCreationSpeed',
-              format: toSizeSpeedString,
+              format: formatSizeSpeed,
               compare: "the less the better",
             },
             {
               key: 'objectPromotionSpeed',
               name: 'objectPromotionSpeed',
-              format: toSizeSpeedString,
+              format: formatSizeSpeed,
               compare: "the less the better",
               needed: this.isGenerational
             },
             {
               key: 'objectPromotionAvg',
               name: 'objectPromotionAvg',
-              format: toSizeString,
+              format: formatSize,
               compare: "the less the better",
               needed: this.isGenerational
             },
             {
               key: 'objectPromotionMax',
               name: 'objectPromotionMax',
-              format: toSizeString,
+              format: formatSize,
               compare: "the less the better",
               needed: this.isGenerational
             },
@@ -515,7 +516,7 @@ export default {
         }
       })
     },
-    initialze() {
+    initialize() {
       for (let i = 0; i < this.fileCount; i++) {
         this.displayConfig.forEach(config => {
           this.originalData[i][config.key] = {}
@@ -752,7 +753,7 @@ export default {
     }
   },
   mounted() {
-    this.initialze();
+    this.initialize();
     this.analyzeGCLogs();
   }
 }

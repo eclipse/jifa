@@ -97,46 +97,6 @@ export function formatTime (number, format) {
   return format;
 }
 
-// e.g 100,000 (ms) -> '1.67min'
-export function formatTimePeriod(time) {
-  // negative means not available
-  if (time < 0 || typeof time === "undefined") {
-    return "N/A"
-  }
-  if (time < 0.001) {
-    return "0"
-  }
-  if (time < 1) {
-    return `${time.toFixed(3)}ms`
-  }
-  const units = ["ms", "s", "min", "h"]
-  const gap = [1000, 60, 60]
-  let i;
-  for (i = 0; i < 3; i++) {
-    if (time > gap[i]) {
-      time /= gap[i]
-    } else {
-      break
-    }
-  }
-  return (time >= 1000 ? Math.round(time) : time.toPrecision(3)) + " " + units[i];
-}
-
-export function toSizeSpeedString(bytesPerMs) {
-  if (bytesPerMs < 0) {
-    return "N/A"
-  }
-  return toSizeString(bytesPerMs * 1000) + "/s"
-}
-
-// e.g 0.1234 -> '12.34%'
-export function formatPercentage(percent) {
-  if (percent < 0) {
-    return "N/A"
-  }
-  return (percent * 100).toFixed(2) + '%'
-}
-
 function formatNumber (n) {
   n = n.toString()
   return n[1] ? n : '0' + n;

@@ -35,8 +35,9 @@
 </template>
 
 <script>
-import {toSizeString, toSizeSpeedString, gclogService} from '@/util'
+import {gclogService} from '@/util'
 import axios from "axios";
+import {formatSize, formatSizeSpeed} from "@/components/gclog/GCLogUtil";
 
 export default {
   props: ["file", "metadata", "analysisConfig", "sharedInfo"],
@@ -69,21 +70,21 @@ export default {
       this.tableData = [
         {
           objectCreationSpeed: {
-            value: toSizeSpeedString(this.originalData.objectCreationSpeed),
+            value: formatSizeSpeed(this.originalData.objectCreationSpeed),
             bad: this.metadata.generational ?
                 (youngCapacity >= 0 && youngCapacity / this.originalData.objectCreationSpeed < this.analysisConfig.youngGCFrequentIntervalThreshold) :
                 (heapCapacity >= 0 && heapCapacity / this.originalData.objectCreationSpeed < this.analysisConfig.fullGCFrequentIntervalThreshold)
           },
           objectPromotionSpeed: {
-            value: toSizeSpeedString(this.originalData.objectPromotionSpeed),
+            value: formatSizeSpeed(this.originalData.objectPromotionSpeed),
             bad: oldCapacity > 0 && this.originalData.objectPromotionSpeed > oldCapacity * highPromotionThresholdPercent / this.analysisConfig.youngGCFrequentIntervalThreshold
           },
           objectPromotionAvg: {
-            value: toSizeString(this.originalData.objectPromotionAvg),
+            value: formatSize(this.originalData.objectPromotionAvg),
             bad: oldCapacity > 0 && this.originalData.objectPromotionAvg > oldCapacity * highPromotionThresholdPercent
           },
           objectPromotionMax: {
-            value: toSizeString(this.originalData.objectPromotionMax),
+            value: formatSize(this.originalData.objectPromotionMax),
             bad: oldCapacity > 0 && this.originalData.objectPromotionMax > oldCapacity * highPromotionThresholdPercent * 2
           },
         }]

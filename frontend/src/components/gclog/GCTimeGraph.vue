@@ -29,11 +29,12 @@
 </template>
 
 <script>
-import {toSizeString, gclogService, formatTimePeriod, formatTime} from '@/util'
+import {gclogService, formatTime} from '@/util'
 import axios from "axios";
 import Hint from "@/components/gclog/Hint";
 import * as echarts from "echarts";
 import {colors} from "@/components/gclog/ColorUtil";
+import {formatTimePeriod} from "@/components/gclog/GCLogUtil";
 
 export default {
   props: ["file", "metadata", "analysisConfig"],
