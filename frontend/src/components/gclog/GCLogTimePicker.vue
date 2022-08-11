@@ -32,13 +32,14 @@
                        :min="Math.max(this.min, this.low)" :max="this.max"
                        @change="emitValue"/>
       <span style="margin-left: 10px;margin-right: 10px">s</span>
-      <Hint :info="$t('jifa.gclog.noDatestamp')"/>
+      <Hint :info="getNoDateStampHint()"/>
     </span>
   </div>
 </template>
 
 <script>
 import Hint from "@/components/gclog/Hint";
+import {uppercaseFirstLetter} from "@/components/gclog/GCLogUtil";
 export default {
   components: {Hint},
   props: ["metadata", "value"],
@@ -99,6 +100,9 @@ export default {
         this.timeRange = [new Date(this.value.start + this.metadata.timestamp),
           new Date(this.value.end + this.metadata.timestamp)]
       }
+    },
+    getNoDateStampHint() {
+      return 'jifa.gclog.noDateStamp' + uppercaseFirstLetter(this.metadata.logStyle)
     }
   },
   watch: {

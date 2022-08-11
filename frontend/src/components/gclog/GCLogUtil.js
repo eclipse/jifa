@@ -40,7 +40,7 @@ export function getCauseHint(cause) {
     case "G1 Evacuation Pause":
       return 'jifa.gclog.cause.g1Evacuation'
     case "G1 Humongous Allocation":
-      return 'jifa.gclog.cause.humongous'
+      return ['jifa.gclog.cause.humongous', 'jifa.gclog.generation.humongousHint']
     case "Last ditch collection":
       return 'jifa.gclog.cause.lastDitch'
     case "Promotion failed":
@@ -219,7 +219,7 @@ export function formatTimeRange(start, end, timestamp) {
     let format2;
     if (time1.getFullYear() !== time2.getFullYear()) {
       format2 = 'Y-M-D h:m:s'
-    } else if(time1.toDateString() !== time2.toDateString()) {
+    } else if (time1.toDateString() !== time2.toDateString()) {
       format2 = 'M-D h:m:s'
     } else {
       format2 = 'h:m:s'
@@ -242,4 +242,8 @@ export function getUrlParams(url) {
     })
   }
   return params;
+}
+
+export function uppercaseFirstLetter(string) {
+  return string[0].toUpperCase() + string.slice(1)
 }

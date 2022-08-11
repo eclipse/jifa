@@ -22,7 +22,7 @@
         <div style="height: 150px" ref="canvas"/>
         <hr style="margin: 0"/>
         <div style="padding: 20px">
-          <p>
+          <p style="font-weight: bold">
             <template v-for="part in problem">
               <a v-if="part.action"
                  href="javascript:void(0);"

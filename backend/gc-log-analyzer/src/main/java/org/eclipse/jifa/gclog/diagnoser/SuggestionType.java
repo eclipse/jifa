@@ -30,6 +30,7 @@ public enum SuggestionType {
     SHRINK_YOUNG_GEN("shrinkYoungGen"),
     SHRINK_YOUNG_GEN_G1("shrinkYoungGenG1"),
     CHECK_EVACUATION_FAILURE("checkEvacuationFailure"),
+    CHECK_FAST_PROMOTION("checkFastPromotion"),
     CHECK_MEMORY_LEAK("checkMemoryLeak");
 
     public static final String I18N_PREFIX = "jifa.gclog.diagnose.suggestion.";

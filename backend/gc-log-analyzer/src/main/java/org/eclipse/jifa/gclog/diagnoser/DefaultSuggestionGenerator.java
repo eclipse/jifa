@@ -89,6 +89,7 @@ public class DefaultSuggestionGenerator extends SuggestionGenerator {
     @GeneratorRule("heapMemoryFullGC")
     private void heapMemoryFullGC() {
         addSuggestion(CHECK_MEMORY_LEAK);
+        addSuggestion(CHECK_FAST_PROMOTION);
         suggestStartOldGCEarly();
         fullGCSuggestionCommon();
     }
