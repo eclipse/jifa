@@ -255,8 +255,14 @@ public class VmOptions {
     public VmOptionResult getVmOptionResult() {
         VmOptionResult optionResult = new VmOptionResult();
         options.values().stream()
-                .sorted((o1, o2) -> o2.priority - o1.priority)
-                .forEach(o -> (o.isGCRelated() ? optionResult.gcRelated : optionResult.other).add(new VmOptionVo(o.originalText)));
+                .sorted((o1, o2) -> {
+                    if (o1.priority != o2.priority) {
+                        return o2.priority - o1.priority;
+                    }
+                    return o1.getOptionName().compareTo(o2.getOptionName());
+                })
+                .forEach(o -> (o.isGCRelated() ? optionResult.gcRelated : optionResult.other)
+                        .add(new VmOptionVo(o.originalText, o.optionName)));
         return optionResult;
     }
 
@@ -283,6 +289,7 @@ public class VmOptions {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class VmOptionVo {
+        private String name;
         private String text;
         // todo: In the future, we should help decide if the option is set well and give some suggestion
     }

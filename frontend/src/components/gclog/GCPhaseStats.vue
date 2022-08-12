@@ -74,9 +74,9 @@ export default {
       loading: true,
       data: null,
       metrics: null,
-      displayModeOptions: ["importantMode", "pauseMode", "structuredMode", "causeMode"],
+      displayModeOptions: ["pauseMode", "structuredMode", "causeMode"],
       columns: ['name', 'count', 'intervalAvg', 'intervalMin', 'durationAvg', 'durationMax', 'durationTotal'],
-      displayMode: "importantMode",
+      displayMode: "structuredMode",
       originalData: [],
       displayData: [],
     }
