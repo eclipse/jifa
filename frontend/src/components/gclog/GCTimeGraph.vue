@@ -159,9 +159,6 @@ export default {
           type: this.useUptime ? 'value' : 'time',
           min: this.transformTime(this.metadata.startTime),
           max: this.transformTime(this.metadata.endTime),
-          axisLabel: {
-            formatter: this.formatXAxis
-          },
         },
         yAxis: [{
           type: 'value',
@@ -201,7 +198,16 @@ export default {
             zoomLock: false,
             moveOnMouseMove: false,
             zoomOnMouseWheel: false,
-            brushSelect: true
+            brushSelect: true,
+            labelFormatter: this.formatXAxis,
+            dataBackground: {
+              lineStyle: {
+                opacity: 0
+              },
+              areaStyle: {
+                opacity: 0
+              }
+            }
           },
           {
             type: "inside",
@@ -322,7 +328,7 @@ export default {
       if (this.useUptime) {
         return Math.round(time)
       } else {
-        return formatTime(time, 'h:m:s')
+        return formatTime(time, 'M-D h:m:s')
       }
     }
   },

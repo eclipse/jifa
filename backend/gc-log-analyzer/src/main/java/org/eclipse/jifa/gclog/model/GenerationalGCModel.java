@@ -13,9 +13,7 @@
 
 package org.eclipse.jifa.gclog.model;
 
-import org.eclipse.jifa.gclog.vo.GCCollectorType;
-import org.eclipse.jifa.gclog.vo.GCLogStyle;
-import org.eclipse.jifa.gclog.vo.GCSpecialSituation;
+import org.eclipse.jifa.gclog.vo.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -64,9 +62,25 @@ public abstract class GenerationalGCModel extends GCModel {
         }
     }
 
+    private void youngGenUsedShouldBeZeroAfterFullGC() {
+        if (getLogStyle() != GCLogStyle.PRE_UNIFIED) {
+            return;
+        }
+        for (GCEvent event : getGcEvents()) {
+            if (event.getEventType() == FULL_GC && event.getCollectionResult() != null) {
+                for (GCCollectionResultItem item : event.getCollectionResult().getItems()) {
+                    if (item.getGeneration() == HeapGeneration.YOUNG) {
+                        item.setPostUsed(0);
+                    }
+                }
+            }
+        }
+    }
+
     @Override
     protected void doBeforeCalculatingDerivedInfo() {
         removeYoungGCThatBecomeFullGC();
         fixYoungGCPromotionFail();
+        youngGenUsedShouldBeZeroAfterFullGC();
     }
 }

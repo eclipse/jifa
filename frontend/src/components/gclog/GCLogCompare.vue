@@ -111,8 +111,7 @@ export default {
               key: 'logTimeRange', // for getting data from original data
               name: 'logTimeRange', // for i18n display in table, will add jifa.gclog in the front
               // hint: '' // // for the hint of metric, will add jifa.gclog in the front
-              format: this.formatString, // how the value will be displayed when is not set or either data is not available
-              // compareFormat: // if both data are available, customize how data will be displayed
+              format: this.formatString, // how the value will be displayed
               compare: "don't compare", // enum of "don't compare", "just compare", "the more the better", "the less the better"
               // needed: (metadata => true) // is this metric needed?
             },
@@ -451,15 +450,13 @@ export default {
             {
               key: 'gcRelated',
               name: 'vmOptions.gcRelatedOptions',
-              format: this.formatVmOption,
-              compareFormat: this.formatVmOptionCompare,
+              format: this.formatString,
               compare: "don't compare",
             },
             {
               key: 'other',
               name: 'vmOptions.otherOptions',
               format: this.formatString,
-              compareFormat: this.formatVmOptionCompare,
               compare: "don't compare",
             },
           ]
@@ -588,8 +585,8 @@ export default {
           return
         }
         this.originalData[i].vmOptions = {
-          gcRelated: resp.data.gcRelated,
-          other: resp.data.other,
+          gcRelated: resp.data.gcRelated.map(option => option.text).join(' '),
+          other: resp.data.other.map(option => option.text).join(' '),
         }
       }).finally(this.doAfterLoadData)
     },
@@ -691,14 +688,11 @@ export default {
               }
             }
           }
-          const value = metricConfig.formatCompare ?
-              metricConfig.formatCompare(originalValue[0], originalValue[1]) :
-              (originalValue.map((v, index) => valueAvailable[index] ? metricConfig.format(v) : 'N/A'))
           const metricObj = {
             metric: this.$t('jifa.gclog.' + metricConfig.name),
             metricHint: metricConfig.metricHint === undefined ? undefined : this.$t('jifa.gclog.' + metricConfig.metricHint),
-            value0: value[0],
-            value1: value[1],
+            value0: valueAvailable[0] ? metricConfig.format(originalValue[0]) : 'N/A',
+            value1: valueAvailable[1] ? metricConfig.format(originalValue[1]) : 'N/A',
             compare: compare,
             compareClass: compareClass
           }
@@ -745,23 +739,6 @@ export default {
     uppercaseFirstLetter(str) {
       return str.slice(0, 1).toUpperCase() + str.slice(1)
     },
-    formatVmOption(options) {
-      return options.map(op => op.text).join(' ')
-    },
-    formatVmOptionCompare(op1, op2) {
-      const optionIndex = [op1, op2].map(options => {
-        const optionList = options.map(ops => ops.split(/ +/));
-        const arranged = [[], []];
-        op1.forEach(option1 => {
-          option1
-        })
-      })
-      return optionIndex.map(arr => {
-        arr.map(singleOptionList => {
-          singleOptionList.map(`<p>${singleOptionList.map(op => op.text).join(' ')}</p>`)
-        })
-      })
-    },
     clickTitle(i) {
       const url = this.$router.resolve({
         name: 'gcLog',
@@ -772,6 +749,7 @@ export default {
         }
       })
       window.open(url.href)
+      this.compareConfigVisible = false
     }
   },
   mounted() {

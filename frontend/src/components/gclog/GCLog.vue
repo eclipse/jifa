@@ -39,18 +39,18 @@
       </div>
 
       <div v-if="analysisState === 'SUCCESS'">
-        <div style="right: calc(50% - 680px);top: 10%; position: fixed; z-index: 100; width: 160px; font-size: 14px">
+        <div style="right: calc(50% - 600px);top: 10%; position: fixed; z-index: 100; width: 160px; font-size: 14px">
           <el-card :header="$t('jifa.gclog.navigation')">
             <div class="nav-item"><a href="#navTop">{{ $t('jifa.gclog.navToTop') }}</a></div>
             <el-divider/>
             <div class="nav-item"><a href="#overview">{{ $t('jifa.gclog.basicInfo') }}</a></div>
             <div class="nav-item"><a href="#diagnose">{{ $t('jifa.gclog.diagnose.diagnose') }}</a></div>
+            <div class="nav-item"><a href="#timeGraph">{{ $t('jifa.gclog.timeGraph.timeGraph') }}</a></div>
             <div class="nav-item"><a href="#pause">{{ $t('jifa.gclog.vmOptions.vmOptions') }}</a></div>
             <div class="nav-item"><a href="#memoryStats">{{ $t('jifa.gclog.memoryStats.memoryStats') }}</a></div>
             <div class="nav-item"><a href="#phaseStats">{{ $t('jifa.gclog.phaseStats.phaseStatsAndCause') }}</a></div>
             <div class="nav-item"><a href="#objectStats">{{ $t('jifa.gclog.objectStats') }}</a></div>
             <div class="nav-item"><a href="#option">{{ $t('jifa.gclog.vmOptions.vmOptions') }}</a></div>
-            <div class="nav-item"><a href="#timeGraph">{{ $t('jifa.gclog.timeGraph.timeGraph') }}</a></div>
             <el-divider/>
             <div class="nav-item"><a href="javascript:void(0);" @click="showDetail">{{ $t('jifa.gclog.gcDetail') }}</a></div>
           </el-card>
@@ -138,57 +138,53 @@
           </el-form>
         </el-dialog>
 
-        <el-main style="padding: 10px 5px 5px; width: 1000px; margin: 0 auto">
-          <GCOverview :file="file"
-                      :metadata="metadata"
-                      :analysisConfig="analysisConfig"
-                      @showAnalysisConfig="showAnalysisConfig"
-                      id="overview"
-                      class="main-block"/>
-          <GCDiagnose :file="file"
-                      :metadata="metadata"
-                      :analysisConfig="analysisConfig"
-                      @applyTimeToConfig="changeConfigModelAndOpen"
-                      id="diagnose"
-                      class="main-block"/>
-          <GCPause :file="file"
-                   :metadata="metadata"
-                   :analysisConfig="analysisConfig"
-                   id="pause"
-                   class="main-block"/>
-          <GCMemoryStats :file="file"
-                         :metadata="metadata"
-                         :analysisConfig="analysisConfig"
-                         class="main-block"
-                         id="memoryStats"
-                         @saveSharedInfo="setSharedInfo"/>
-          <GCPhaseStats :file="file"
+        <el-main style="padding: 10px 5px 5px; width: 1200px; margin: 0 auto">
+          <div style="width: 1000px">
+            <GCOverview :file="file"
                         :metadata="metadata"
                         :analysisConfig="analysisConfig"
-                        id="phaseStats"
+                        @showAnalysisConfig="showAnalysisConfig"
+                        id="overview"
                         class="main-block"/>
-          <GCObjectStats :file="file"
+            <GCDiagnose :file="file"
+                        :metadata="metadata"
+                        :analysisConfig="analysisConfig"
+                        @applyTimeToConfig="changeConfigModelAndOpen"
+                        id="diagnose"
+                        class="main-block"/>
+            <GCTimeGraph :file="file"
                          :metadata="metadata"
                          :analysisConfig="analysisConfig"
-                         class="main-block"
-                         id="objectStats"
-                         :shared-info="gcSharedInfo"/>
-          <VmOptions :file="file"
+                         @applyTimeToConfig="applyConfigChange"
+                         id="timeGraph"
+                         class="main-block"/>
+            <GCPause :file="file"
                      :metadata="metadata"
-                     id="option"
+                     :analysisConfig="analysisConfig"
+                     id="pause"
                      class="main-block"/>
-          <GCTimeGraph :file="file"
+            <GCMemoryStats :file="file"
+                           :metadata="metadata"
+                           :analysisConfig="analysisConfig"
+                           class="main-block"
+                           id="memoryStats"
+                           @saveSharedInfo="setSharedInfo"/>
+            <GCPhaseStats :file="file"
+                          :metadata="metadata"
+                          :analysisConfig="analysisConfig"
+                          id="phaseStats"
+                          class="main-block"/>
+            <GCObjectStats :file="file"
+                           :metadata="metadata"
+                           :analysisConfig="analysisConfig"
+                           class="main-block"
+                           id="objectStats"
+                           :shared-info="gcSharedInfo"/>
+            <VmOptions :file="file"
                        :metadata="metadata"
-                       :analysisConfig="analysisConfig"
-                       @applyTimeToConfig="applyConfigChange"
-                       id="timeGraph"
+                       id="option"
                        class="main-block"/>
-
-          <!--    for debug -->
-          analysisconfig: <div>{{this.analysisConfig}}</div>
-          compareConfig: <div>{{this.compareConfigModel}}</div>
-          metadata: <div>{{this.metadata}}</div>
-          <!--    for debug    -->
+          </div>
         </el-main>
 
       </div>

@@ -131,9 +131,6 @@ export default {
             type: this.useUptime ? 'value' : 'time',
             min: this.transformTime(this.analysisConfig.timeRange.start),
             max: this.transformTime(this.analysisConfig.timeRange.end),
-            axisLabel: {
-              formatter: this.formatXAxis
-            },
           },
           series: Object.keys(seriousProblems).map((type, index) => {
             return {
@@ -166,13 +163,6 @@ export default {
               }
             }
           })
-    },
-    formatXAxis(time) {
-      if (this.useUptime) {
-        return Math.round(time)
-      } else {
-        return formatTime(time, 'h:m:s')
-      }
     },
     transformTime(time) {
       if (this.useUptime) {

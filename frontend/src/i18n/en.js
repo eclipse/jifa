@@ -229,8 +229,8 @@ exports.default = {
       },
 
       phaseStats: {
-        phaseStatsAndCause: "GC Phase And cause",
-        phaseStats: "GC Phase Statistics",
+        phaseStatsAndCause: "Phase And Cause",
+        phaseStats: "Phase Statistics",
         importantMode: "Important Phases Only",
         pauseMode: "Pause Phases Only",
         structuredMode: "Display By Phase Hierarchy",

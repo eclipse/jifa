@@ -33,7 +33,7 @@
     <el-table :data="displayData"
               :loading="loading"
               row-key="key"
-              default-expand-all
+              :default-expand-all="false"
               size="medium"
               max-height="500"
               :tree-props="{children: 'children', hasChildren: 'hasChildren'}"
@@ -132,7 +132,7 @@ export default {
     sortEventItems(items) {
       const order = {}
       this.metadata.allEventTypes.forEach((event, index) => order[event] = index)
-      items.sort((i1, i2) =>(order[i1.name.value] - order[i2.name.value]))
+      items.sort((i1, i2) => (order[i1.name.value] - order[i2.name.value]))
     },
     formatDataItem(isPhase, originalData, originalParent) {
       return {
@@ -153,7 +153,7 @@ export default {
         },
         intervalMin: {
           value: formatTimePeriod(originalData.intervalMin),
-          bad: isPhase && originalData.intervalMin >= 0 && originalData.intervalMin <= gcutil.badIntervalThreshold(originalData.name, this.analysisConfig) / 2
+          bad: isPhase && originalData.intervalMin >= 0 && originalData.intervalMin <= gcutil.badIntervalThreshold(originalData.name, this.analysisConfig)
         },
         durationAvg: {
           value: formatTimePeriod(originalData.durationAvg),
@@ -161,7 +161,7 @@ export default {
         },
         durationMax: {
           value: formatTimePeriod(originalData.durationMax),
-          bad: originalData.durationMax >= gcutil.badDurationThreshold(isPhase ? originalData.name : originalParent.name, this.analysisConfig, this.metadata) * 2
+          bad: originalData.durationMax >= gcutil.badDurationThreshold(isPhase ? originalData.name : originalParent.name, this.analysisConfig, this.metadata)
         },
         durationTotal: {
           value: formatTimePeriod(originalData.durationTotal),
@@ -172,7 +172,7 @@ export default {
       if (!isPhase) {
         const cause = originalData.name;
         if ((originalParent.count >= 10 && originalData.count / originalParent.count >= 0.3) &&
-            (cause === 'G1 Humongous Allocation' || cause === 'GCLocker Initiated GC' )) {
+            (cause === 'G1 Humongous Allocation' || cause === 'GCLocker Initiated GC')) {
           return true
         }
       }

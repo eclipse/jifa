@@ -81,7 +81,7 @@ export default {
           },
           pauseMax: {
             value: formatTimePeriod(resp.data.pauseMax),
-            bad: resp.data.pauseMax >= this.analysisConfig.longPauseThreshold * 2
+            bad: resp.data.pauseMax >= this.analysisConfig.longPauseThreshold
           },
         }]
         this.loadingStats = false;

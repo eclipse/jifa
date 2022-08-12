@@ -56,7 +56,7 @@ public class TestVmOptions {
         Assert.assertEquals("gc.log", options.getOptionValue("Xloggc"));
 
         VmOptions.VmOptionResult result = options.getVmOptionResult();
-        Assert.assertTrue(result.getOther().contains(new VmOptions.VmOptionVo("-XX:ErrorFile=/home/admin/logs/hs_err_pid%p.log", "ErrorFile")));
+        Assert.assertTrue(result.getOther().contains(new VmOptions.VmOptionVo("-XX:ErrorFile=/home/admin/logs/hs_err_pid%p.log")));
         Map<String, Integer> optionIndex = new HashMap<>();
         for (int i = 0; i < result.getGcRelated().size(); i++) {
             optionIndex.put(result.getGcRelated().get(i).getText(), i);

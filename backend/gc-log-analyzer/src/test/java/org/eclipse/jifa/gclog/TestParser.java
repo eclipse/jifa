@@ -363,7 +363,7 @@ public class TestParser {
         Assert.assertEquals(allocationStalls.get(1).getEndTime(), 7888, DELTA);
         Assert.assertEquals(allocationStalls.get(1).getDuration(), 0.391, DELTA);
 
-        Assert.assertEquals(model.getOoms().size(),1);
+        Assert.assertEquals(model.getOoms().size(), 1);
         OutOfMemory oom = model.getOoms().get(0);
         Assert.assertEquals(oom.getStartTime(), 7889, DELTA);
         Assert.assertEquals(oom.getThreadName(), "thread 8");
@@ -1012,7 +1012,7 @@ public class TestParser {
         Assert.assertEquals(fullGC.getDuration(), 1095.987, DELTA);
         youngGen = fullGC.getCollectionResult().getFirstItemOfGeneRation(YOUNG);
         Assert.assertEquals(youngGen.getPreUsed(), 271999 * 1024);
-        Assert.assertEquals(youngGen.getPostUsed(), 30207 * 1024);
+        Assert.assertEquals(youngGen.getPostUsed(), 0);
         Assert.assertEquals(youngGen.getTotal(), 272000 * 1024);
         GCCollectionResultItem oldGen = fullGC.getCollectionResult().getFirstItemOfGeneRation(OLD);
         Assert.assertEquals(oldGen.getPreUsed(), 785946 * 1024);
@@ -1028,6 +1028,30 @@ public class TestParser {
         Assert.assertEquals(total.getTotal(), 1058120 * 1024);
         Assert.assertEquals(fullGC.getCpuTime().getSys(), 70, DELTA);
     }
+
+    @Test
+    public void testJDK8GenerationalGCInterleave() throws Exception {
+        String log =
+                "2022-08-02T10:26:05.043+0800: 61988.328: [GC (Allocation Failure) 2022-08-02T10:26:05.043+0800: 61988.328: [ParNew: 2621440K->2621440K(2883584K), 0.0000519 secs]2022-08-02T10:26:05.043+0800: 61988.328: [CMS: 1341593K->1329988K(2097152K), 2.0152293 secs] 3963033K->1329988K(4980736K), [Metaspace: 310050K->309844K(1343488K)], 2.0160411 secs] [Times: user=1.98 sys=0.05, real=2.01 secs] ";
+
+        GCLogParser parser = new GCLogParserFactory().getParser(stringToBufferedReader(log));
+        GCModel model = parser.parse(stringToBufferedReader(log));
+        model.calculateDerivedInfo(new DefaultProgressListener());
+        Assert.assertNotNull(model);
+
+        Assert.assertEquals(model.getGcEvents().size(), 1);
+        GCEvent fullGC = model.getGcEvents().get(0);
+        Assert.assertEquals(fullGC.getStartTime(), 61988328, DELTA);
+        Assert.assertEquals(fullGC.getDuration(), 2016.0411, DELTA);
+        Assert.assertEquals(fullGC.getEventType(), GCEventType.FULL_GC);
+        Assert.assertEquals(fullGC.getCause(), ALLOCATION_FAILURE);
+        Assert.assertEquals(fullGC.getCollectionAgg().get(YOUNG), new GCCollectionResultItem(YOUNG, 2621440L * 1024, 0, 2883584L * 1024));
+        Assert.assertEquals(fullGC.getCollectionAgg().get(OLD), new GCCollectionResultItem(OLD, 1341593L * 1024, 1329988L * 1024, 2097152L * 1024));
+        Assert.assertEquals(fullGC.getCollectionAgg().get(TOTAL), new GCCollectionResultItem(TOTAL, 3963033L * 1024, 1329988L * 1024, 4980736L * 1024));
+        Assert.assertEquals(fullGC.getCollectionAgg().get(METASPACE), new GCCollectionResultItem(METASPACE, 310050L * 1024, 309844L * 1024, 1343488L * 1024));
+        Assert.assertEquals(fullGC.getCpuTime().getReal(), 2010, DELTA);
+    }
+
 
     @Test
     public void testJDK11GenerationalGCInterleave() throws Exception {
@@ -1063,7 +1087,10 @@ public class TestParser {
         Assert.assertEquals(fullGC.getDuration(), 146.211, DELTA);
         Assert.assertEquals(fullGC.getEventType(), GCEventType.FULL_GC);
         Assert.assertEquals(fullGC.getCause(), ALLOCATION_FAILURE);
-        Assert.assertEquals(fullGC.getCollectionResult().getSummary(), new GCCollectionResultItem(TOTAL, 215 * 1024 * 1024, 132 * 1024 * 1024, 247 * 1024 * 1024));
+        Assert.assertEquals(fullGC.getCollectionAgg().get(YOUNG), new GCCollectionResultItem(YOUNG, 78655 * 1024, 0, 78656 * 1024));
+        Assert.assertEquals(fullGC.getCollectionAgg().get(OLD), new GCCollectionResultItem(OLD, 142112 * 1024, 135957 * 1024, 174784 * 1024));
+        Assert.assertEquals(fullGC.getCollectionAgg().get(TOTAL), new GCCollectionResultItem(TOTAL, 215 * 1024 * 1024, 132 * 1024 * 1024, 247 * 1024 * 1024));
+        Assert.assertEquals(fullGC.getCollectionAgg().get(METASPACE), new GCCollectionResultItem(METASPACE, 7462 * 1024, 7462 * 1024, 1056768 * 1024));
         Assert.assertEquals(fullGC.getPhases().size(), 4);
         for (GCEvent phase : fullGC.getPhases()) {
             Assert.assertTrue(phase.getStartTime() != UNKNOWN_DOUBLE);
@@ -1074,38 +1101,38 @@ public class TestParser {
     }
 
     @Test
-    public void TestIncompleteGCLog() throws Exception{
+    public void TestIncompleteGCLog() throws Exception {
         String log =
                 "[0.510s][info][gc,heap      ] GC(0) CMS: 0K->24072K(174784K)\n" +
-                "[0.510s][info][gc,metaspace ] GC(0) Metaspace: 6531K->6530K(1056768K)\n" +
-                "[0.510s][info][gc           ] GC(0) Pause Young (Allocation Failure) 68M->32M(247M) 31.208ms\n" +
-                "[0.510s][info][gc,cpu       ] GC(0) User=0.06s Sys=0.03s Real=0.03s\n" +
-                "[3.231s][info][gc,start     ] GC(1) Pause Initial Mark\n" +
-                "[3.235s][info][gc           ] GC(1) Pause Initial Mark 147M->147M(247M) 3.236ms\n" +
-                "[3.235s][info][gc,cpu       ] GC(1) User=0.01s Sys=0.02s Real=0.03s\n" +
-                "[3.235s][info][gc           ] GC(1) Concurrent Mark\n" +
-                "[3.235s][info][gc,task      ] GC(1) Using 2 workers of 2 for marking\n" +
-                "[3.257s][info][gc           ] GC(1) Concurrent Mark 22.229ms\n" +
-                "[3.257s][info][gc,cpu       ] GC(1) User=0.07s Sys=0.00s Real=0.03s\n" +
-                "[3.257s][info][gc           ] GC(1) Concurrent Preclean\n" +
-                "[3.257s][info][gc           ] GC(1) Concurrent Preclean 0.264ms\n" +
-                "[3.257s][info][gc,cpu       ] GC(1) User=0.00s Sys=0.00s Real=0.00s\n" +
-                "[3.257s][info][gc,start     ] GC(1) Pause Remark\n" +
-                "[3.259s][info][gc           ] GC(1) Pause Remark 149M->149M(247M) 1.991ms\n" +
-                "[3.259s][info][gc,cpu       ] GC(1) User=0.02s Sys=0.03s Real=0.01s\n" +
-                "[3.259s][info][gc           ] GC(1) Concurrent Sweep\n" +
-                "[3.279s][info][gc           ] GC(1) Concurrent Sweep 19.826ms\n" +
-                "[3.279s][info][gc,cpu       ] GC(1) User=0.03s Sys=0.00s Real=0.02s\n" +
-                "[3.279s][info][gc           ] GC(1) Concurrent Reset\n" +
-                "[3.280s][info][gc           ] GC(1) Concurrent Reset 0.386ms\n" +
-                "[3.280s][info][gc,cpu       ] GC(1) User=0.00s Sys=0.00s Real=0.00s\n" +
-                "[3.280s][info][gc,heap      ] GC(1) Old: 142662K->92308K(174784K)\n" +
-                "[8.970s][info][gc,start     ] GC(2) Pause Full (Allocation Failure)\n" +
-                "[8.970s][info][gc,phases,start] GC(2) Phase 1: Mark live objects\n" +
-                "[9.026s][info][gc,phases      ] GC(2) Phase 1: Mark live objects 55.761ms\n" +
-                "[9.026s][info][gc,phases,start] GC(2) Phase 2: Compute new object addresses\n" +
-                "[9.051s][info][gc,phases      ] GC(2) Phase 2: Compute new object addresses 24.761ms\n" +
-                "[9.051s][info][gc,phases,start] GC(2) Phase 3: Adjust pointers\n";
+                        "[0.510s][info][gc,metaspace ] GC(0) Metaspace: 6531K->6530K(1056768K)\n" +
+                        "[0.510s][info][gc           ] GC(0) Pause Young (Allocation Failure) 68M->32M(247M) 31.208ms\n" +
+                        "[0.510s][info][gc,cpu       ] GC(0) User=0.06s Sys=0.03s Real=0.03s\n" +
+                        "[3.231s][info][gc,start     ] GC(1) Pause Initial Mark\n" +
+                        "[3.235s][info][gc           ] GC(1) Pause Initial Mark 147M->147M(247M) 3.236ms\n" +
+                        "[3.235s][info][gc,cpu       ] GC(1) User=0.01s Sys=0.02s Real=0.03s\n" +
+                        "[3.235s][info][gc           ] GC(1) Concurrent Mark\n" +
+                        "[3.235s][info][gc,task      ] GC(1) Using 2 workers of 2 for marking\n" +
+                        "[3.257s][info][gc           ] GC(1) Concurrent Mark 22.229ms\n" +
+                        "[3.257s][info][gc,cpu       ] GC(1) User=0.07s Sys=0.00s Real=0.03s\n" +
+                        "[3.257s][info][gc           ] GC(1) Concurrent Preclean\n" +
+                        "[3.257s][info][gc           ] GC(1) Concurrent Preclean 0.264ms\n" +
+                        "[3.257s][info][gc,cpu       ] GC(1) User=0.00s Sys=0.00s Real=0.00s\n" +
+                        "[3.257s][info][gc,start     ] GC(1) Pause Remark\n" +
+                        "[3.259s][info][gc           ] GC(1) Pause Remark 149M->149M(247M) 1.991ms\n" +
+                        "[3.259s][info][gc,cpu       ] GC(1) User=0.02s Sys=0.03s Real=0.01s\n" +
+                        "[3.259s][info][gc           ] GC(1) Concurrent Sweep\n" +
+                        "[3.279s][info][gc           ] GC(1) Concurrent Sweep 19.826ms\n" +
+                        "[3.279s][info][gc,cpu       ] GC(1) User=0.03s Sys=0.00s Real=0.02s\n" +
+                        "[3.279s][info][gc           ] GC(1) Concurrent Reset\n" +
+                        "[3.280s][info][gc           ] GC(1) Concurrent Reset 0.386ms\n" +
+                        "[3.280s][info][gc,cpu       ] GC(1) User=0.00s Sys=0.00s Real=0.00s\n" +
+                        "[3.280s][info][gc,heap      ] GC(1) Old: 142662K->92308K(174784K)\n" +
+                        "[8.970s][info][gc,start     ] GC(2) Pause Full (Allocation Failure)\n" +
+                        "[8.970s][info][gc,phases,start] GC(2) Phase 1: Mark live objects\n" +
+                        "[9.026s][info][gc,phases      ] GC(2) Phase 1: Mark live objects 55.761ms\n" +
+                        "[9.026s][info][gc,phases,start] GC(2) Phase 2: Compute new object addresses\n" +
+                        "[9.051s][info][gc,phases      ] GC(2) Phase 2: Compute new object addresses 24.761ms\n" +
+                        "[9.051s][info][gc,phases,start] GC(2) Phase 3: Adjust pointers\n";
 
         JDK11GenerationalGCLogParser parser = (JDK11GenerationalGCLogParser)
                 (new GCLogParserFactory().getParser(stringToBufferedReader(log)));
@@ -1116,6 +1143,101 @@ public class TestParser {
 
         Assert.assertEquals(model.getGcEvents().size(), 2);
         Assert.assertEquals(model.getAllEvents().size(), 8);
-
     }
+
+    @Test
+    public void testJDK8ConcurrentPrintDateTimeStamp() throws Exception {
+        String log = "2022-04-25T11:38:47.548+0800: 725.062: [GC pause (G1 Evacuation Pause) (young) (initial-mark) 725.062: [G1Ergonomics (CSet Construction) start choosing CSet, _pending_cards: 5369, predicted base time: 22.02 ms, remaining time: 177.98 ms, target pause time: 200.00 ms]\n" +
+                " 725.062: [G1Ergonomics (CSet Construction) add young regions to CSet, eden: 10 regions, survivors: 1 regions, predicted young region time: 2.34 ms]\n" +
+                " 725.062: [G1Ergonomics (CSet Construction) finish choosing CSet, eden: 10 regions, survivors: 1 regions, old: 0 regions, predicted pause time: 24.37 ms, target pause time: 200.00 ms]\n" +
+                ", 0.0182684 secs]\n" +
+                "   [Parallel Time: 17.4 ms, GC Workers: 4]\n" +
+                "      [GC Worker Start (ms): Min: 725063.0, Avg: 725063.0, Max: 725063.0, Diff: 0.0]\n" +
+                "      [Ext Root Scanning (ms): Min: 7.6, Avg: 7.9, Max: 8.4, Diff: 0.8, Sum: 31.6]\n" +
+                "      [Update RS (ms): Min: 2.6, Avg: 2.7, Max: 2.9, Diff: 0.3, Sum: 10.8]\n" +
+                "         [Processed Buffers: Min: 6, Avg: 6.8, Max: 7, Diff: 1, Sum: 27]\n" +
+                "      [Scan RS (ms): Min: 0.0, Avg: 0.0, Max: 0.0, Diff: 0.0, Sum: 0.0]\n" +
+                "      [Code Root Scanning (ms): Min: 0.0, Avg: 0.0, Max: 0.0, Diff: 0.0, Sum: 0.0]\n" +
+                "      [Object Copy (ms): Min: 5.4, Avg: 6.1, Max: 6.5, Diff: 1.1, Sum: 24.5]\n" +
+                "      [Termination (ms): Min: 0.0, Avg: 0.0, Max: 0.0, Diff: 0.0, Sum: 0.1]\n" +
+                "         [Termination Attempts: Min: 1, Avg: 4.8, Max: 8, Diff: 7, Sum: 19]\n" +
+                "      [GC Worker Other (ms): Min: 0.0, Avg: 0.0, Max: 0.0, Diff: 0.0, Sum: 0.1]\n" +
+                "      [GC Worker Total (ms): Min: 16.8, Avg: 16.8, Max: 16.8, Diff: 0.0, Sum: 67.1]\n" +
+                "      [GC Worker End (ms): Min: 725079.8, Avg: 725079.8, Max: 725079.8, Diff: 0.0]\n" +
+                "   [Code Root Fixup: 0.0 ms]\n" +
+                "   [Code Root Purge: 0.0 ms]\n" +
+                "   [Clear CT: 0.1 ms]\n" +
+                "   [Other: 0.7 ms]\n" +
+                "      [Choose CSet: 0.0 ms]\n" +
+                "      [Ref Proc: 0.1 ms]\n" +
+                "      [Ref Enq: 0.0 ms]\n" +
+                "      [Redirty Cards: 0.1 ms]\n" +
+                "      [Humongous Register: 0.0 ms]\n" +
+                "      [Humongous Reclaim: 0.0 ms]\n" +
+                "      [Free CSet: 0.0 ms]\n" +
+                "   [Eden: 320.0M(320.0M)->0.0B(320.0M) Survivors: 32768.0K->32768.0K Heap: 2223.9M(2560.0M)->1902.5M(2560.0M)]\n" +
+                " [Times: user=0.07 sys=0.00, real=0.02 secs]\n" +
+                /*
+                 * This test mainly test the line below. The format here is:
+                 * [DateStamp] [DateStamp] [TimeStamp] [TimeStamp] [Safepoint]
+                 * [Concurrent cycle phase]
+                 */
+                "2022-04-25T11:38:47.567+0800: 2022-04-25T11:38:47.567+0800: 725.081: 725.081: Total time for which application threads were stopped: 0.0227079 seconds, Stopping threads took: 0.0000889 seconds\n" +
+                "[GC concurrent-root-region-scan-start]\n" +
+                "2022-04-25T11:38:47.581+0800: 725.095: Application time: 0.0138476 seconds\n" +
+                "2022-04-25T11:38:47.585+0800: 725.099: Total time for which application threads were stopped: 0.0042001 seconds, Stopping threads took: 0.0000809 seconds\n" +
+                "2022-04-25T11:38:47.613+0800: 725.127: [GC concurrent-root-region-scan-end, 0.0460720 secs]\n" +
+                "2022-04-25T11:38:47.613+0800: 725.127: [GC concurrent-mark-start]\n" +
+                "2022-04-25T11:38:51.924+0800: 729.438: [GC pause (G1 Evacuation Pause) (young) 729.438: [G1Ergonomics (CSet Construction) start choosing CSet, _pending_cards: 4375, predicted base time: 22.74 ms, remaining time: 177.26 ms, target pause time: 200.00 ms]\n" +
+                " 729.438: [G1Ergonomics (CSet Construction) add young regions to CSet, eden: 10 regions, survivors: 1 regions, predicted young region time: 4.90 ms]\n" +
+                " 729.438: [G1Ergonomics (CSet Construction) finish choosing CSet, eden: 10 regions, survivors: 1 regions, old: 0 regions, predicted pause time: 27.64 ms, target pause time: 200.00 ms]\n" +
+                ", 0.0535660 secs]\n" +
+                "   [Parallel Time: 52.5 ms, GC Workers: 4]\n" +
+                "      [GC Worker Start (ms): Min: 729438.4, Avg: 729438.5, Max: 729438.5, Diff: 0.0]\n" +
+                "      [Ext Root Scanning (ms): Min: 5.2, Avg: 5.9, Max: 6.9, Diff: 1.8, Sum: 23.7]\n" +
+                "      [Update RS (ms): Min: 1.7, Avg: 2.5, Max: 3.3, Diff: 1.7, Sum: 10.0]\n" +
+                "         [Processed Buffers: Min: 4, Avg: 6.0, Max: 7, Diff: 3, Sum: 24]\n" +
+                "      [Scan RS (ms): Min: 0.0, Avg: 0.0, Max: 0.0, Diff: 0.0, Sum: 0.0]\n" +
+                "      [Code Root Scanning (ms): Min: 0.0, Avg: 0.0, Max: 0.0, Diff: 0.0, Sum: 0.0]\n" +
+                "      [Object Copy (ms): Min: 5.6, Avg: 5.7, Max: 6.1, Diff: 0.5, Sum: 22.9]\n" +
+                "      [Termination (ms): Min: 37.2, Avg: 37.5, Max: 38.2, Diff: 1.0, Sum: 149.9]\n" +
+                "         [Termination Attempts: Min: 1, Avg: 10.8, Max: 17, Diff: 16, Sum: 43]\n" +
+                "      [GC Worker Other (ms): Min: 0.0, Avg: 0.0, Max: 0.0, Diff: 0.0, Sum: 0.1]\n" +
+                "      [GC Worker Total (ms): Min: 51.4, Avg: 51.7, Max: 52.4, Diff: 0.9, Sum: 206.7]\n" +
+                "      [GC Worker End (ms): Min: 729489.9, Avg: 729490.1, Max: 729490.8, Diff: 0.9]\n" +
+                "   [Code Root Fixup: 0.0 ms]\n" +
+                "   [Code Root Purge: 0.0 ms]\n" +
+                "   [Clear CT: 0.1 ms]\n" +
+                "   [Other: 1.0 ms]\n" +
+                "      [Choose CSet: 0.0 ms]\n" +
+                "      [Ref Proc: 0.4 ms]\n" +
+                "      [Ref Enq: 0.0 ms]\n" +
+                "      [Redirty Cards: 0.0 ms]\n" +
+                "      [Humongous Register: 0.0 ms]\n" +
+                "      [Humongous Reclaim: 0.0 ms]\n" +
+                "      [Free CSet: 0.0 ms]\n" +
+                "   [Eden: 320.0M(320.0M)->0.0B(320.0M) Survivors: 32768.0K->32768.0K Heap: 2230.5M(2560.0M)->1906.2M(2560.0M)]\n" +
+                " [Times: user=0.06 sys=0.01, real=0.05 secs]\n" +
+                "2022-04-25T11:38:51.978+0800: 729.492: Total time for which application threads were stopped: 0.0578224 seconds, Stopping threads took: 0.0000709 seconds\n" +
+                "2022-04-25T11:38:52.409+0800: 729.923: Application time: 0.4310531 seconds\n" +
+                "2022-04-25T11:38:52.944+0800: 730.458: [GC concurrent-mark-end, 5.3312732 secs]\n" +
+                "2022-04-25T11:38:52.944+0800: 730.458: Application time: 0.1087156 seconds\n" +
+                "2022-04-25T11:38:52.949+0800: 730.463: [GC remark 2022-04-25T11:38:52.949+0800: 730.463: [Finalize Marking, 0.0014784 secs] 2022-04-25T11:38:52.950+0800: 730.464: [GC ref-proc, 0.0007278 secs] 2022-04-25T11:38:52.951+0800: 730.465: [Unloading, 0.1281692 secs], 0.1350560 secs]\n" +
+                " [Times: user=0.21 sys=0.01, real=0.13 secs]\n" +
+                "2022-04-25T11:38:53.084+0800: 730.598: Total time for which application threads were stopped: 0.1396855 seconds, Stopping threads took: 0.0000545 seconds\n" +
+                "2022-04-25T11:38:53.084+0800: 730.598: Application time: 0.0000928 seconds\n" +
+                "2022-04-25T11:38:53.089+0800: 730.603: [GC cleanup 1984M->1984M(2560M), 0.0016114 secs]\n" +
+                " [Times: user=0.01 sys=0.00, real=0.01 secs]\n";
+        JDK8G1GCLogParser parser = (JDK8G1GCLogParser)
+                (new GCLogParserFactory().getParser(stringToBufferedReader(log)));
+        G1GCModel model = (G1GCModel) parser.parse(stringToBufferedReader(log));
+        model.calculateDerivedInfo(new DefaultProgressListener());
+        Assert.assertEquals(model.getGcEvents().size(), 3);
+        Assert.assertEquals(model.getGcEvents().get(0).getEventType(), GCEventType.YOUNG_GC);
+        Assert.assertEquals(model.getGcEvents().get(1).getEventType(), GCEventType.G1_CONCURRENT_CYCLE);
+        Assert.assertEquals(model.getGcEvents().get(1).getPhases().get(0).getEventType(), GCEventType.G1_CONCURRENT_SCAN_ROOT_REGIONS);
+        Assert.assertEquals(model.getGcEvents().get(1).getPhases().get(0).getStartTime(), 725081, DELTA);
+        Assert.assertEquals(model.getGcEvents().get(2).getEventType(), GCEventType.YOUNG_GC);
+    }
+
 }
