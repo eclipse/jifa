@@ -13,7 +13,7 @@
 
 package org.eclipse.jifa.gclog;
 
-import org.eclipse.jifa.gclog.model.VmOptions;
+import org.eclipse.jifa.gclog.model.modeInfo.VmOptions;
 import org.junit.Assert;
 import org.junit.Test;
 

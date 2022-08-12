@@ -14,16 +14,17 @@
 package org.eclipse.jifa.gclog.model;
 
 import com.google.common.util.concurrent.AtomicDouble;
+import org.eclipse.jifa.gclog.event.GCEvent;
+import org.eclipse.jifa.gclog.model.modeInfo.GCCollectorType;
 import org.eclipse.jifa.gclog.util.LongData;
-import org.eclipse.jifa.gclog.vo.GCCollectorType;
 import org.eclipse.jifa.gclog.vo.TimeRange;
 
 import java.util.List;
 
-import static org.eclipse.jifa.gclog.model.GCEvent.UNKNOWN_LONG;
+import static org.eclipse.jifa.gclog.util.Constant.UNKNOWN_LONG;
+import static org.eclipse.jifa.gclog.event.evnetInfo.HeapGeneration.METASPACE;
+import static org.eclipse.jifa.gclog.event.evnetInfo.HeapGeneration.OLD;
 import static org.eclipse.jifa.gclog.model.GCEventType.*;
-import static org.eclipse.jifa.gclog.vo.HeapGeneration.METASPACE;
-import static org.eclipse.jifa.gclog.vo.HeapGeneration.OLD;
 
 public class CMSGCModel extends GenerationalGCModel {
     private static GCCollectorType collector = GCCollectorType.CMS;

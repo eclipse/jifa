@@ -13,16 +13,17 @@
 
 package org.eclipse.jifa.gclog.model;
 
-import org.eclipse.jifa.gclog.vo.GCCollectorType;
-import org.eclipse.jifa.gclog.vo.GCEventLevel;
-import org.eclipse.jifa.gclog.vo.GCPause;
+import org.eclipse.jifa.gclog.event.evnetInfo.GCEventLevel;
+import org.eclipse.jifa.gclog.event.evnetInfo.GCPause;
+import org.eclipse.jifa.gclog.model.modeInfo.GCCollectorType;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.eclipse.jifa.gclog.vo.GCEventLevel.*;
-import static org.eclipse.jifa.gclog.vo.GCPause.*;
+import static org.eclipse.jifa.gclog.event.evnetInfo.GCEventLevel.EVENT;
+import static org.eclipse.jifa.gclog.event.evnetInfo.GCEventLevel.PHASE;
+import static org.eclipse.jifa.gclog.event.evnetInfo.GCPause.*;
 
 /*
  * store all info that may affect the way model is organized and explained

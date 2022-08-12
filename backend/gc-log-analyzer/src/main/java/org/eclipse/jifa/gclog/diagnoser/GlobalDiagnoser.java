@@ -19,10 +19,15 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.eclipse.jifa.common.JifaException;
 import org.eclipse.jifa.common.util.ErrorUtil;
-import org.eclipse.jifa.gclog.model.*;
+import org.eclipse.jifa.gclog.event.GCEvent;
+import org.eclipse.jifa.gclog.event.OutOfMemory;
+import org.eclipse.jifa.gclog.event.evnetInfo.GCCause;
+import org.eclipse.jifa.gclog.model.GCModel;
+import org.eclipse.jifa.gclog.model.ZGCModel;
+import org.eclipse.jifa.gclog.model.modeInfo.GCCollectorType;
 import org.eclipse.jifa.gclog.util.I18nStringView;
 import org.eclipse.jifa.gclog.util.Key2ValueListMap;
-import org.eclipse.jifa.gclog.vo.*;
+import org.eclipse.jifa.gclog.vo.TimeRange;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -30,14 +35,18 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
-import static org.eclipse.jifa.gclog.diagnoser.AbnormalSeverity.*;
+import static org.eclipse.jifa.gclog.diagnoser.AbnormalSeverity.HIGH;
+import static org.eclipse.jifa.gclog.diagnoser.AbnormalSeverity.ULTRA;
 import static org.eclipse.jifa.gclog.diagnoser.AbnormalType.*;
-import static org.eclipse.jifa.gclog.model.GCEvent.UNKNOWN_DOUBLE;
-import static org.eclipse.jifa.gclog.model.GCEventType.*;
-import static org.eclipse.jifa.gclog.model.TimedEvent.newByStartEnd;
+import static org.eclipse.jifa.gclog.util.Constant.UNKNOWN_DOUBLE;
+import static org.eclipse.jifa.gclog.event.TimedEvent.newByStartEnd;
+import static org.eclipse.jifa.gclog.model.GCEventType.FULL_GC;
 
 /**
  * To diagnose abnormal in gclog, we mainly try to analyze 3 things:

@@ -13,8 +13,8 @@
 
 package org.eclipse.jifa.gclog.util;
 
-import static org.eclipse.jifa.gclog.model.GCEvent.UNKNOWN_DOUBLE;
-import static org.eclipse.jifa.gclog.model.GCEvent.UNKNOWN_INT;
+import static org.eclipse.jifa.gclog.util.Constant.UNKNOWN_DOUBLE;
+import static org.eclipse.jifa.gclog.util.Constant.UNKNOWN_INT;
 
 public class IntData {
 

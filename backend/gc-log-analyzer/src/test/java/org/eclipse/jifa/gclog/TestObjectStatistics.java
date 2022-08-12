@@ -7,13 +7,12 @@ import org.eclipse.jifa.gclog.parser.GCLogParserFactory;
 import org.eclipse.jifa.gclog.parser.JDK11G1GCLogParser;
 import org.eclipse.jifa.gclog.parser.JDK8GenerationalGCLogParser;
 import org.eclipse.jifa.gclog.vo.MemoryStatistics;
-import org.eclipse.jifa.gclog.vo.ObjectStatistics;
 import org.eclipse.jifa.gclog.vo.TimeRange;
 import org.junit.Assert;
 import org.junit.Test;
 
 import static org.eclipse.jifa.gclog.TestUtil.stringToBufferedReader;
-import static org.eclipse.jifa.gclog.model.GCEvent.UNKNOWN_INT;
+import static org.eclipse.jifa.gclog.util.Constant.UNKNOWN_INT;
 
 public class TestObjectStatistics {
     public static final double DELTA = 1e-6;

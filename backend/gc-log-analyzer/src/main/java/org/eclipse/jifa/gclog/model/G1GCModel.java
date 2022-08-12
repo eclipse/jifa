@@ -14,16 +14,20 @@
 package org.eclipse.jifa.gclog.model;
 
 import com.google.common.util.concurrent.AtomicDouble;
+import org.eclipse.jifa.gclog.event.GCEvent;
+import org.eclipse.jifa.gclog.event.evnetInfo.HeapGeneration;
+import org.eclipse.jifa.gclog.event.evnetInfo.GCCollectionResultItem;
+import org.eclipse.jifa.gclog.model.modeInfo.GCCollectorType;
+import org.eclipse.jifa.gclog.model.modeInfo.GCLogStyle;
 import org.eclipse.jifa.gclog.util.LongData;
-import org.eclipse.jifa.gclog.vo.*;
+import org.eclipse.jifa.gclog.vo.TimeRange;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static org.eclipse.jifa.gclog.model.GCEvent.*;
+import static org.eclipse.jifa.gclog.util.Constant.UNKNOWN_INT;
+import static org.eclipse.jifa.gclog.event.evnetInfo.HeapGeneration.*;
 import static org.eclipse.jifa.gclog.model.GCEventType.*;
-import static org.eclipse.jifa.gclog.vo.HeapGeneration.*;
 
 public class G1GCModel extends GCModel {
     private long heapRegionSize = UNKNOWN_INT;   // in kb

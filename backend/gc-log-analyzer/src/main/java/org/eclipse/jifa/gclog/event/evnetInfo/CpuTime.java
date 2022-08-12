@@ -10,28 +10,26 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-package org.eclipse.jifa.gclog.model;
 
-public class OutOfMemory extends GCEvent {
-    private String threadName;
+package org.eclipse.jifa.gclog.event.evnetInfo;
 
-    public OutOfMemory() {
-        this.setEventType(GCEventType.OUT_OF_MEMORY);
-    }
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-    public String getThreadName() {
-        return threadName;
-    }
+import static org.eclipse.jifa.gclog.util.Constant.UNKNOWN_DOUBLE;
 
-    public void setThreadName(String threadName) {
-        this.threadName = threadName;
-    }
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class CpuTime {
+    //unit is ms
+    private double user = UNKNOWN_DOUBLE;
+    private double sys = UNKNOWN_DOUBLE;
+    private double real = UNKNOWN_DOUBLE;
 
-    @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        appendStartTime(sb);
-        sb.append(threadName);
-        return sb.toString();
+        return String.format("User=%.2fs Sys=%.2fs Real=%.2fs", user / 1000, sys / 1000, real / 1000);
     }
+
 }

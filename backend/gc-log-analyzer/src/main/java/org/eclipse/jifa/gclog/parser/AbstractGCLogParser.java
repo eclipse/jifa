@@ -13,18 +13,17 @@
 
 package org.eclipse.jifa.gclog.parser;
 
+import org.eclipse.jifa.gclog.event.Safepoint;
 import org.eclipse.jifa.gclog.model.GCModel;
 import org.eclipse.jifa.gclog.model.GCModelFactory;
-import org.eclipse.jifa.gclog.model.Safepoint;
 import org.eclipse.jifa.gclog.parser.ParseRule.ParseRuleContext;
-import org.eclipse.jifa.gclog.vo.GCLogParsingMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.util.List;
 
-import static org.eclipse.jifa.gclog.model.GCModel.MS2S;
+import static org.eclipse.jifa.gclog.util.Constant.MS2S;
 
 public abstract class AbstractGCLogParser implements GCLogParser {
     protected static final Logger LOGGER = LoggerFactory.getLogger(AbstractGCLogParser.class);

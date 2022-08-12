@@ -11,11 +11,11 @@
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
 
-package org.eclipse.jifa.gclog.model;
+package org.eclipse.jifa.gclog.event;
 
 import org.eclipse.jifa.gclog.vo.TimeRange;
 
-import static org.eclipse.jifa.gclog.model.GCEvent.UNKNOWN_DOUBLE;
+import static org.eclipse.jifa.gclog.util.Constant.UNKNOWN_DOUBLE;
 
 public class TimedEvent {
     // We assume that start time always exists. We will refuse to analyze logs that does not print any time,

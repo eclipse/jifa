@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
 
-package org.eclipse.jifa.gclog.vo;
+package org.eclipse.jifa.gclog.event.evnetInfo;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -19,8 +19,8 @@ import lombok.NoArgsConstructor;
 
 import java.util.Objects;
 
-import static org.eclipse.jifa.gclog.model.GCEvent.UNKNOWN_INT;
-import static org.eclipse.jifa.gclog.model.GCModel.KB2MB;
+import static org.eclipse.jifa.gclog.util.Constant.UNKNOWN_INT;
+import static org.eclipse.jifa.gclog.util.Constant.KB2MB;
 
 @Data
 @AllArgsConstructor

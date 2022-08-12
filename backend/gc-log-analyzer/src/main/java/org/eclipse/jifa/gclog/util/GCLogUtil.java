@@ -13,15 +13,16 @@
 
 package org.eclipse.jifa.gclog.util;
 
-import org.eclipse.jifa.gclog.vo.CpuTime;
+import org.eclipse.jifa.gclog.event.evnetInfo.CpuTime;
 
 import java.time.OffsetDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static org.eclipse.jifa.gclog.model.GCEvent.UNKNOWN_INT;
-import static org.eclipse.jifa.gclog.model.GCModel.MS2S;
+import static org.eclipse.jifa.gclog.util.Constant.UNKNOWN_INT;
+import static org.eclipse.jifa.gclog.util.Constant.MS2S;
 
 public class GCLogUtil {
     private GCLogUtil() {

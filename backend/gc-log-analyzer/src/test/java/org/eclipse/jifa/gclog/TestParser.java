@@ -13,24 +13,26 @@
 
 package org.eclipse.jifa.gclog;
 
-import org.checkerframework.checker.units.qual.A;
 import org.eclipse.jifa.common.listener.DefaultProgressListener;
+import org.eclipse.jifa.gclog.event.GCEvent;
+import org.eclipse.jifa.gclog.event.OutOfMemory;
+import org.eclipse.jifa.gclog.event.Safepoint;
 import org.eclipse.jifa.gclog.model.*;
 import org.eclipse.jifa.gclog.parser.*;
-import org.eclipse.jifa.gclog.vo.GCCollectionResultItem;
-import org.eclipse.jifa.gclog.vo.GCCollectorType;
-import org.eclipse.jifa.gclog.vo.GCLogParsingMetadata;
-import org.eclipse.jifa.gclog.vo.GCLogStyle;
+import org.eclipse.jifa.gclog.event.evnetInfo.GCCollectionResultItem;
+import org.eclipse.jifa.gclog.model.modeInfo.GCCollectorType;
+import org.eclipse.jifa.gclog.parser.GCLogParsingMetadata;
+import org.eclipse.jifa.gclog.model.modeInfo.GCLogStyle;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.List;
 
-import static org.eclipse.jifa.gclog.model.GCEvent.UNKNOWN_DOUBLE;
-import static org.eclipse.jifa.gclog.model.GCEvent.UNKNOWN_INT;
-import static org.eclipse.jifa.gclog.vo.GCCause.*;
-import static org.eclipse.jifa.gclog.vo.GCSpecialSituation.TO_SPACE_EXHAUSTED;
-import static org.eclipse.jifa.gclog.vo.HeapGeneration.*;
+import static org.eclipse.jifa.gclog.util.Constant.UNKNOWN_DOUBLE;
+import static org.eclipse.jifa.gclog.util.Constant.UNKNOWN_INT;
+import static org.eclipse.jifa.gclog.event.evnetInfo.GCCause.*;
+import static org.eclipse.jifa.gclog.event.evnetInfo.GCSpecialSituation.TO_SPACE_EXHAUSTED;
+import static org.eclipse.jifa.gclog.event.evnetInfo.HeapGeneration.*;
 import static org.eclipse.jifa.gclog.TestUtil.stringToBufferedReader;
 
 public class TestParser {

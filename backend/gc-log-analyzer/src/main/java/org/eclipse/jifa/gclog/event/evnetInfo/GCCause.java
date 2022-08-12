@@ -1,4 +1,4 @@
-package org.eclipse.jifa.gclog.vo;
+package org.eclipse.jifa.gclog.event.evnetInfo;
 
 import java.util.HashMap;
 import java.util.List;

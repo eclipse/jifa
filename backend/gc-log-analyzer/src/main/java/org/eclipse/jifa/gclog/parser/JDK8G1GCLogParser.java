@@ -15,18 +15,21 @@ package org.eclipse.jifa.gclog.parser;
 
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jifa.common.util.ErrorUtil;
+import org.eclipse.jifa.gclog.event.GCEvent;
+import org.eclipse.jifa.gclog.event.evnetInfo.HeapGeneration;
+import org.eclipse.jifa.gclog.event.evnetInfo.GCCollectionResult;
+import org.eclipse.jifa.gclog.event.evnetInfo.GCCollectionResultItem;
+import org.eclipse.jifa.gclog.event.evnetInfo.GCSpecialSituation;
+import org.eclipse.jifa.gclog.model.GCEventType;
 import org.eclipse.jifa.gclog.model.GCModel;
 import org.eclipse.jifa.gclog.util.GCLogUtil;
-import org.eclipse.jifa.gclog.model.GCEvent;
-import org.eclipse.jifa.gclog.model.GCEventType;
-import org.eclipse.jifa.gclog.vo.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.eclipse.jifa.gclog.model.GCEventType.*;
 import static org.eclipse.jifa.gclog.parser.ParseRule.*;
-import static org.eclipse.jifa.gclog.parser.ParseRule.ParseRuleContext.*;
+import static org.eclipse.jifa.gclog.parser.ParseRule.ParseRuleContext.EVENT;
 
 public class JDK8G1GCLogParser extends AbstractJDK8GCLogParser {
     private final static GCEventType[] REF_GC_TYPES = {YOUNG_GC, FULL_GC, G1_MIXED_GC, G1_REMARK};

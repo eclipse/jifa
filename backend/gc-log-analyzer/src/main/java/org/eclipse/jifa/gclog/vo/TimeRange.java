@@ -17,7 +17,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import static org.eclipse.jifa.gclog.model.GCEvent.UNKNOWN_DOUBLE;
+import static org.eclipse.jifa.gclog.util.Constant.UNKNOWN_DOUBLE;
 
 @Data
 @AllArgsConstructor

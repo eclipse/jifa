@@ -13,18 +13,18 @@
 
 package org.eclipse.jifa.gclog.parser;
 
-import org.eclipse.jifa.common.JifaException;
-import org.eclipse.jifa.common.util.ErrorUtil;
-import org.eclipse.jifa.gclog.vo.GCCollectorType;
-import org.eclipse.jifa.gclog.vo.GCLogParsingMetadata;
-import org.eclipse.jifa.gclog.vo.GCLogStyle;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import org.eclipse.jifa.common.JifaException;
+import org.eclipse.jifa.common.util.ErrorUtil;
+import org.eclipse.jifa.gclog.model.modeInfo.GCCollectorType;
+import org.eclipse.jifa.gclog.model.modeInfo.GCLogStyle;
 
 import java.io.BufferedReader;
 
-import static org.eclipse.jifa.gclog.vo.GCLogStyle.*;
-import static org.eclipse.jifa.gclog.vo.GCCollectorType.*;
+import static org.eclipse.jifa.gclog.model.modeInfo.GCCollectorType.*;
+import static org.eclipse.jifa.gclog.model.modeInfo.GCLogStyle.PRE_UNIFIED;
+import static org.eclipse.jifa.gclog.model.modeInfo.GCLogStyle.UNIFIED;
 
 public class GCLogParserFactory {
     static final int MAX_ATTEMPT_LINE = 1000;

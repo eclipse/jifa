@@ -13,21 +13,27 @@
 
 package org.eclipse.jifa.gclog.model;
 
-import org.eclipse.jifa.common.listener.ProgressListener;
-import org.eclipse.jifa.gclog.diagnoser.AnalysisConfig;
-import org.eclipse.jifa.gclog.diagnoser.GlobalDiagnoser;
-import org.eclipse.jifa.gclog.util.DoubleData;
-import org.eclipse.jifa.gclog.util.I18nStringView;
-import org.eclipse.jifa.gclog.util.LongData;
-import org.eclipse.jifa.gclog.vo.*;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import org.eclipse.jifa.common.listener.ProgressListener;
 import org.eclipse.jifa.common.request.PagingRequest;
 import org.eclipse.jifa.common.vo.PageView;
+import org.eclipse.jifa.gclog.diagnoser.AnalysisConfig;
+import org.eclipse.jifa.gclog.diagnoser.GlobalDiagnoser;
+import org.eclipse.jifa.gclog.event.*;
+import org.eclipse.jifa.gclog.event.evnetInfo.*;
+import org.eclipse.jifa.gclog.model.modeInfo.GCCollectorType;
+import org.eclipse.jifa.gclog.model.modeInfo.GCLogMetadata;
+import org.eclipse.jifa.gclog.model.modeInfo.GCLogStyle;
+import org.eclipse.jifa.gclog.model.modeInfo.VmOptions;
+import org.eclipse.jifa.gclog.util.Constant;
+import org.eclipse.jifa.gclog.util.DoubleData;
+import org.eclipse.jifa.gclog.util.LongData;
+import org.eclipse.jifa.gclog.vo.*;
 import org.eclipse.jifa.gclog.vo.MemoryStatistics.MemoryStatisticsItem;
-import org.eclipse.jifa.gclog.vo.PhaseStatistics.*;
+import org.eclipse.jifa.gclog.vo.PhaseStatistics.ParentStatisticsInfo;
+import org.eclipse.jifa.gclog.vo.PhaseStatistics.PhaseStatisticItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,10 +43,9 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.eclipse.jifa.gclog.model.GCEvent.*;
+import static org.eclipse.jifa.gclog.event.evnetInfo.HeapGeneration.*;
 import static org.eclipse.jifa.gclog.model.GCEventType.*;
-import static org.eclipse.jifa.gclog.vo.GCCollectorType.*;
-import static org.eclipse.jifa.gclog.vo.HeapGeneration.*;
+import static org.eclipse.jifa.gclog.model.modeInfo.GCCollectorType.*;
 
 /**
  * GCModel contains all direct information from log and analysed data for query
@@ -59,15 +64,15 @@ public abstract class GCModel {
     private List<Safepoint> safepoints = new ArrayList<>();
     private List<OutOfMemory> ooms = new ArrayList<>();
     // time from beginning of program
-    private double startTime = UNKNOWN_DOUBLE;
-    private double endTime = UNKNOWN_DOUBLE;
+    private double startTime = Constant.UNKNOWN_DOUBLE;
+    private double endTime = Constant.UNKNOWN_DOUBLE;
 
-    private int parallelThread = UNKNOWN_INT;
-    private int concurrentThread = UNKNOWN_INT;
+    private int parallelThread = Constant.UNKNOWN_INT;
+    private int concurrentThread = Constant.UNKNOWN_INT;
 
     // in ms. referenceTimestamp + uptime of events is the true timestamp of events.
     // notice that uptime may not begin from 0
-    private double referenceTimestamp = UNKNOWN_DOUBLE;
+    private double referenceTimestamp = Constant.UNKNOWN_DOUBLE;
     //shared basic info among different collectors
     private VmOptions vmOptions;
 
@@ -76,13 +81,6 @@ public abstract class GCModel {
     private GCLogStyle logStyle;
     private GCLogMetadata metadata;
     private List<String> gcEventsDetailCache;
-
-    public static final String NA = "N/A";
-
-    public static final double MS2S = 1e3;
-    public static final double KB2MB = 1 << 10;
-    public static final double START_TIME_ZERO_THRESHOLD = 60000;
-    public static final double EPS = 1e-6;
 
     public GCModel() {
     }
@@ -118,6 +116,8 @@ public abstract class GCModel {
     public double getEndTime() {
         return endTime;
     }
+
+    private static final double START_TIME_ZERO_THRESHOLD = 60000;
 
     public void setStartTime(double startTime) {
         if (startTime < START_TIME_ZERO_THRESHOLD) {
@@ -294,7 +294,7 @@ public abstract class GCModel {
         iterateEventsWithinTimeRange(gcEvents, range, e -> {
             e.pauseEventOrPhasesDo(event -> pause.add(event.getPause()));
         });
-        return new PauseStatistics(pause.getN() == 0 ? UNKNOWN_DOUBLE : 1 - pause.getSum() / range.length(),
+        return new PauseStatistics(pause.getN() == 0 ? Constant.UNKNOWN_DOUBLE : 1 - pause.getSum() / range.length(),
                 pause.average(), pause.getMedian(), pause.getMax());
     }
 
@@ -354,11 +354,11 @@ public abstract class GCModel {
 
         // generate result
         MemoryStatistics statistics = new MemoryStatistics();
-        statistics.setYoung(new MemoryStatisticsItem((long) data[0][0].average(), data[0][1].getMax(), UNKNOWN_LONG, UNKNOWN_LONG));
+        statistics.setYoung(new MemoryStatisticsItem((long) data[0][0].average(), data[0][1].getMax(), Constant.UNKNOWN_LONG, Constant.UNKNOWN_LONG));
         statistics.setOld(new MemoryStatisticsItem((long) data[1][0].average(), data[1][1].getMax(), (long) data[1][2].average(), (long) data[1][3].average()));
         statistics.setHumongous(new MemoryStatisticsItem((long) data[2][0].average(), data[2][1].getMax(), (long) data[2][2].average(), (long) data[2][3].average()));
         statistics.setHeap(new MemoryStatisticsItem((long) data[3][0].average(), data[3][1].getMax(), (long) data[3][2].average(), (long) data[3][3].average()));
-        statistics.setMetaspace(new MemoryStatisticsItem(UNKNOWN_LONG, data[4][1].getMax(), (long) data[4][2].average(), (long) data[4][3].average()));
+        statistics.setMetaspace(new MemoryStatisticsItem(Constant.UNKNOWN_LONG, data[4][1].getMax(), (long) data[4][2].average(), (long) data[4][3].average()));
         // Metaspace capacity printed in gclog may be reserve space rather than commit size, so we
         // try to read it from vm option
         if (isMetaspaceCapacityReliable()) {
@@ -382,8 +382,8 @@ public abstract class GCModel {
             promotion.add(event.getPromotion());
         });
         return new ObjectStatistics(
-                allocation.getSum() != UNKNOWN_DOUBLE ? allocation.getSum() / range.length() : UNKNOWN_DOUBLE,
-                promotion.getSum() != UNKNOWN_DOUBLE ? promotion.getSum() / range.length() : UNKNOWN_DOUBLE,
+                allocation.getSum() != Constant.UNKNOWN_DOUBLE ? allocation.getSum() / range.length() : Constant.UNKNOWN_DOUBLE,
+                promotion.getSum() != Constant.UNKNOWN_DOUBLE ? promotion.getSum() / range.length() : Constant.UNKNOWN_DOUBLE,
                 (long) promotion.average(), promotion.getMax()
         );
     }
@@ -429,14 +429,14 @@ public abstract class GCModel {
                 continue;
             }
             if (used) {
-                if (memory.getPreUsed() != UNKNOWN_LONG) {
+                if (memory.getPreUsed() != Constant.UNKNOWN_LONG) {
                     result.add(new Object[]{(long) event.getStartTime(), memory.getPreUsed()});
                 }
-                if (memory.getPostUsed() != UNKNOWN_LONG) {
+                if (memory.getPostUsed() != Constant.UNKNOWN_LONG) {
                     result.add(new Object[]{(long) event.getEndTime(), memory.getPostUsed()});
                 }
             } else {
-                if (memory.getTotal() != UNKNOWN_LONG) {
+                if (memory.getTotal() != Constant.UNKNOWN_LONG) {
                     result.add(new Object[]{(long) event.getEndTime(), memory.getTotal()});
                 }
             }
@@ -454,7 +454,7 @@ public abstract class GCModel {
 
     private List<Object[]> getTimeGraphReclamationData() {
         return gcCollectionEvents.stream()
-                .filter(event -> event.getReclamation() != UNKNOWN_LONG)
+                .filter(event -> event.getReclamation() != Constant.UNKNOWN_LONG)
                 .map(event -> new Object[]{(long) event.getStartTime(), event.getReclamation()})
                 .collect(Collectors.toList());
     }
@@ -462,7 +462,7 @@ public abstract class GCModel {
     private List<Object[]> getTimeGraphDurationData(String phaseName) {
         return allEvents.stream()
                 .filter(event -> event.getEventType().getName().equals(phaseName)
-                        && event.getDuration() != UNKNOWN_DOUBLE)
+                        && event.getDuration() != Constant.UNKNOWN_DOUBLE)
                 .map(event -> new Object[]{(long) event.getStartTime(), event.getDuration()})
                 .collect(Collectors.toList());
     }
@@ -474,7 +474,7 @@ public abstract class GCModel {
 
     public int getRecommendMaxHeapSize() {
         // not supported
-        return UNKNOWN_INT;
+        return Constant.UNKNOWN_INT;
     }
 
     public void putEvent(GCEvent event) {
@@ -542,12 +542,12 @@ public abstract class GCModel {
             }
             for (int i = phases.size() - 1; i >= 0; i--) {
                 GCEvent phase = phases.get(i);
-                if (phase.getDuration() == UNKNOWN_DOUBLE) {
+                if (phase.getDuration() == Constant.UNKNOWN_DOUBLE) {
                     //this is unlikely to happen, just give a reasonable value
                     phase.setDuration(phases.get(phases.size() - 1).getStartTime() - phase.getStartTime());
                 }
             }
-            if (event.getDuration() == UNKNOWN_DOUBLE && getStartTime() != UNKNOWN_DOUBLE) {
+            if (event.getDuration() == Constant.UNKNOWN_DOUBLE && getStartTime() != Constant.UNKNOWN_DOUBLE) {
                 event.setDuration(phases.get(phases.size() - 1).getEndTime() - event.getStartTime());
             }
         }
@@ -556,7 +556,7 @@ public abstract class GCModel {
 
     private void calculateEventTimestamps() {
         double referenceTimestamp = getReferenceTimestamp();
-        if (referenceTimestamp == UNKNOWN_DOUBLE) {
+        if (referenceTimestamp == Constant.UNKNOWN_DOUBLE) {
             return;
         }
         for (GCEvent event : getGcEvents()) {
@@ -595,27 +595,27 @@ public abstract class GCModel {
             GCCollectionResultItem humongous = collectionAgg.get(HUMONGOUS);
             // reclamation
             // sometimes it may have been calculated during parsing log
-            if (event.getReclamation() == UNKNOWN_INT &&
-                    total.getPreUsed() != UNKNOWN_INT && total.getPostUsed() != UNKNOWN_INT) {
+            if (event.getReclamation() == Constant.UNKNOWN_INT &&
+                    total.getPreUsed() != Constant.UNKNOWN_INT && total.getPostUsed() != Constant.UNKNOWN_INT) {
                 event.setReclamation(total.getPreUsed() - total.getPostUsed());
             }
             // promotion
-            if (event.getPromotion() == UNKNOWN_INT &&
+            if (event.getPromotion() == Constant.UNKNOWN_INT &&
                     event.hasPromotion() && event.getEventType() != G1_MIXED_GC) {
                 // notice: g1 young mixed gc should have promotion, but we have no way to know it exactly
                 long youngReduction = young.getMemoryReduction();
                 long totalReduction = total.getMemoryReduction();
-                if (youngReduction != UNKNOWN_INT && totalReduction != UNKNOWN_INT) {
+                if (youngReduction != Constant.UNKNOWN_INT && totalReduction != Constant.UNKNOWN_INT) {
                     long promotion = youngReduction - totalReduction;
                     long humongousReduction = humongous.getMemoryReduction();
-                    if (humongousReduction != UNKNOWN_INT) {
+                    if (humongousReduction != Constant.UNKNOWN_INT) {
                         promotion -= humongousReduction;
                     }
                     event.setPromotion(promotion);
                 }
             }
             // allocation
-            if (event.getAllocation() == UNKNOWN_INT && total.getPreUsed() != UNKNOWN_INT) {
+            if (event.getAllocation() == Constant.UNKNOWN_INT && total.getPreUsed() != Constant.UNKNOWN_INT) {
                 // As to concurrent event, allocation is composed of two parts: allocation between two adjacent events
                 // and during event. If original allocation is not unknown, that value is allocation during event.
                 event.setAllocation(zeroIfUnknownInt(event.getAllocation()) + total.getPreUsed() - lastTotalMemory);
@@ -625,7 +625,7 @@ public abstract class GCModel {
     }
 
     private long zeroIfUnknownInt(long x) {
-        return x == UNKNOWN_INT ? 0 : x;
+        return x == Constant.UNKNOWN_INT ? 0 : x;
     }
 
     private void calculateEventCollectionAgg(GCEvent event) {
@@ -660,7 +660,7 @@ public abstract class GCModel {
                 HeapGeneration generation = item.getGeneration();
                 // hack: Survivor capacity of g1 is not printed in jdk8. Make it equal to pre used so that
                 // we can calculate young and old capacity
-                if (generation == HeapGeneration.SURVIVOR && item.getTotal() == UNKNOWN_INT) {
+                if (generation == HeapGeneration.SURVIVOR && item.getTotal() == Constant.UNKNOWN_INT) {
                     item.setTotal(item.getPreUsed());
                 }
 
@@ -703,7 +703,7 @@ public abstract class GCModel {
         // Sometimes the given log is just a part of the complete log. This may lead to some incomplete events at
         // beginning or end of this log. Such event at beginning is likely to have been dealt by parser, so here we try
         // to deal with the last event
-        if (gcEvents.get(gcEvents.size() - 1).getEndTime() == UNKNOWN_DOUBLE) {
+        if (gcEvents.get(gcEvents.size() - 1).getEndTime() == Constant.UNKNOWN_DOUBLE) {
             gcEvents.remove(gcEvents.size() - 1);
         }
     }
@@ -874,39 +874,17 @@ public abstract class GCModel {
     }
 
     public int getParallelThread() {
-        if (parallelThread == UNKNOWN_INT && vmOptions != null) {
-            return vmOptions.<Long>getOptionValue("ParallelGCThreads", UNKNOWN_LONG).intValue();
+        if (parallelThread == Constant.UNKNOWN_INT && vmOptions != null) {
+            return vmOptions.<Long>getOptionValue("ParallelGCThreads", Constant.UNKNOWN_LONG).intValue();
         }
         return parallelThread;
     }
 
     public int getConcurrentThread() {
-        if (concurrentThread == UNKNOWN_INT && vmOptions != null) {
-            return vmOptions.<Long>getOptionValue("ConcGCThreads", UNKNOWN_LONG).intValue();
+        if (concurrentThread == Constant.UNKNOWN_INT && vmOptions != null) {
+            return vmOptions.<Long>getOptionValue("ConcGCThreads", Constant.UNKNOWN_LONG).intValue();
         }
         return concurrentThread;
-    }
-
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class ProblemAndSuggestion {
-        private I18nStringView problem;
-        private List<I18nStringView> suggestions = new ArrayList<>(4);
-
-        public void addSuggestion(I18nStringView suggestion) {
-            suggestions.add(suggestion);
-        }
-
-        public ProblemAndSuggestion(I18nStringView problem, I18nStringView suggestion) {
-            this.problem = problem;
-            this.suggestions.add(suggestion);
-        }
-
-        public ProblemAndSuggestion(I18nStringView problem, I18nStringView... suggestion) {
-            this.problem = problem;
-            Collections.addAll(suggestions, suggestion);
-        }
     }
 
     @Data

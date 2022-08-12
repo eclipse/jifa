@@ -14,15 +14,22 @@
 package org.eclipse.jifa.gclog.parser;
 
 import org.apache.commons.lang.StringUtils;
-import org.eclipse.jifa.gclog.util.GCLogUtil;
-import org.eclipse.jifa.gclog.model.GCEvent;
+import org.eclipse.jifa.gclog.event.GCEvent;
+import org.eclipse.jifa.gclog.event.evnetInfo.HeapGeneration;
+import org.eclipse.jifa.gclog.event.evnetInfo.CpuTime;
+import org.eclipse.jifa.gclog.event.evnetInfo.GCCollectionResult;
+import org.eclipse.jifa.gclog.event.evnetInfo.GCCollectionResultItem;
+import org.eclipse.jifa.gclog.event.evnetInfo.GCSpecialSituation;
 import org.eclipse.jifa.gclog.model.GCEventType;
 import org.eclipse.jifa.gclog.model.GCModel;
+import org.eclipse.jifa.gclog.model.modeInfo.GCCollectorType;
+import org.eclipse.jifa.gclog.parser.ParseRule.ParseRuleContext;
+import org.eclipse.jifa.gclog.parser.ParseRule.PrefixAndValueParseRule;
+import org.eclipse.jifa.gclog.util.Constant;
+import org.eclipse.jifa.gclog.util.GCLogUtil;
 
-import org.eclipse.jifa.gclog.parser.ParseRule.*;
-import org.eclipse.jifa.gclog.vo.*;
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.eclipse.jifa.gclog.model.GCEventType.*;
 import static org.eclipse.jifa.gclog.parser.ParseRule.ParseRuleContext.GCID;
@@ -158,7 +165,7 @@ public abstract class JDK11G1OrGenerationalGCLogParser extends AbstractJDK11GCLo
             } else if (part.endsWith("ms")) {
                 double duration = GCLogUtil.toMillisecond(part);
                 event.setDuration(duration);
-                if (event.getStartTime() == GCEvent.UNKNOWN_DOUBLE) {
+                if (event.getStartTime() == Constant.UNKNOWN_DOUBLE) {
                     event.setStartTime((double) context.get(UPTIME) - duration);
                 }
             }

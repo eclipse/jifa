@@ -13,12 +13,12 @@
 
 package org.eclipse.jifa.gclog.model;
 
-import org.eclipse.jifa.gclog.vo.GCCollectorType;
+import org.eclipse.jifa.gclog.model.modeInfo.GCCollectorType;
 
-import java.util.Arrays;
 import java.util.List;
 
-import static org.eclipse.jifa.gclog.model.GCEventType.*;
+import static org.eclipse.jifa.gclog.model.GCEventType.FULL_GC;
+import static org.eclipse.jifa.gclog.model.GCEventType.YOUNG_GC;
 
 public class SerialGCModel extends GenerationalGCModel {
 

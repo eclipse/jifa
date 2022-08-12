@@ -11,25 +11,10 @@
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
 
-package org.eclipse.jifa.gclog.vo;
+package org.eclipse.jifa.gclog.event.evnetInfo;
 
-public enum GCLogStyle {
-    PRE_UNIFIED("preunified"),
-    UNIFIED("unified"),
-    UNKNOWN("unknown");
-
-    private String name;
-
-    GCLogStyle(String name) {
-        this.name = name;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public String toString() {
-        return name;
-    }
+public enum GCPause {
+    PAUSE,
+    CONCURRENT,
+    PARTIAL  // to get its pause time, we need to consider its paused phases
 }

@@ -11,10 +11,12 @@
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
 
-package org.eclipse.jifa.gclog.model;
+package org.eclipse.jifa.gclog.event;
 
-import org.eclipse.jifa.gclog.vo.*;
 import org.eclipse.jifa.common.util.ErrorUtil;
+import org.eclipse.jifa.gclog.event.evnetInfo.*;
+import org.eclipse.jifa.gclog.model.GCEventType;
+import org.eclipse.jifa.gclog.util.Constant;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -22,19 +24,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import static org.eclipse.jifa.gclog.model.GCModel.*;
-import static org.eclipse.jifa.gclog.vo.GCEventLevel.*;
-import static org.eclipse.jifa.gclog.vo.HeapGeneration.*;
+import static org.eclipse.jifa.gclog.event.evnetInfo.HeapGeneration.*;
+import static org.eclipse.jifa.gclog.event.evnetInfo.GCEventLevel.EVENT;
+import static org.eclipse.jifa.gclog.event.evnetInfo.GCEventLevel.PHASE;
+import static org.eclipse.jifa.gclog.util.Constant.KB2MB;
 
 public class GCEvent extends TimedEvent {
 
-    public static final double UNKNOWN_DOUBLE = -1d;
-    public static final int UNKNOWN_INT = -1;
-    public static final long UNKNOWN_LONG = -1L;
+    private int gcid = Constant.UNKNOWN_INT;
 
-    private int gcid = UNKNOWN_INT;
-
-    private double startTimestamp = UNKNOWN_DOUBLE;
+    private double startTimestamp = Constant.UNKNOWN_DOUBLE;
     private CpuTime cpuTime;
     private ReferenceGC referenceGC;
 
@@ -50,12 +49,12 @@ public class GCEvent extends TimedEvent {
     private List<GCEvent> phases;
     private List<GCSpecialSituation> specialSituations;
 
-    private double pause = UNKNOWN_DOUBLE;
-    private double interval = UNKNOWN_DOUBLE;
+    private double pause = Constant.UNKNOWN_DOUBLE;
+    private double interval = Constant.UNKNOWN_DOUBLE;
 
-    private long promotion = UNKNOWN_INT;
-    private long allocation = UNKNOWN_INT;
-    private long reclamation = UNKNOWN_INT;
+    private long promotion = Constant.UNKNOWN_INT;
+    private long allocation = Constant.UNKNOWN_INT;
+    private long reclamation = Constant.UNKNOWN_INT;
 
     public void setCollectionResult(GCCollectionResult collectionResult) {
         this.collectionResult = collectionResult;
@@ -164,21 +163,21 @@ public class GCEvent extends TimedEvent {
 
     public void setPromotion(long promotion) {
         if (promotion < 0) {
-            promotion = UNKNOWN_INT;
+            promotion = Constant.UNKNOWN_INT;
         }
         this.promotion = promotion;
     }
 
     public void setAllocation(long allocation) {
         if (allocation < 0) {
-            allocation = UNKNOWN_INT;
+            allocation = Constant.UNKNOWN_INT;
         }
         this.allocation = allocation;
     }
 
     public void setReclamation(long reclamation) {
         if (reclamation < 0) {
-            reclamation = UNKNOWN_INT;
+            reclamation = Constant.UNKNOWN_INT;
         }
         this.reclamation = reclamation;
     }
@@ -223,8 +222,8 @@ public class GCEvent extends TimedEvent {
     }
 
     public double getEndTimestamp() {
-        if (getStartTimestamp() == UNKNOWN_DOUBLE || getDuration() == UNKNOWN_DOUBLE) {
-            return UNKNOWN_DOUBLE;
+        if (getStartTimestamp() == Constant.UNKNOWN_DOUBLE || getDuration() == Constant.UNKNOWN_DOUBLE) {
+            return Constant.UNKNOWN_DOUBLE;
         } else {
             return getStartTimestamp() + getDuration();
         }
@@ -241,14 +240,14 @@ public class GCEvent extends TimedEvent {
     private static final double GCTRACETIME_TRACECPUTIME_CLOSE_THRESHOLD = 10.0;
 
     public double getPause() {
-        if (pause == UNKNOWN_DOUBLE) {
+        if (pause == Constant.UNKNOWN_DOUBLE) {
             switch (eventType.getPause()) {
                 case PAUSE:
                     // In most cases, duration is more accurate than cputime because of rounding error.
                     // In very rare cases, cputime may be significantly larger than duration. In these cases
                     // cputime is more accurate value.
                     if (cpuTime != null) {
-                        if (getDuration() != UNKNOWN_DOUBLE &&
+                        if (getDuration() != Constant.UNKNOWN_DOUBLE &&
                                 Math.abs(cpuTime.getReal() - getDuration()) > GCTRACETIME_TRACECPUTIME_CLOSE_THRESHOLD) {
                             pause = getCpuTime().getReal();
                         } else {
@@ -307,12 +306,12 @@ public class GCEvent extends TimedEvent {
      * This function is mainly used in diagnose, displays only one of timestamp or uptime
      */
     public String getStartTimeString() {
-        if (startTimestamp != UNKNOWN_DOUBLE) {
+        if (startTimestamp != Constant.UNKNOWN_DOUBLE) {
             SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
             return format.format((long) getStartTimestamp());
         }
 
-        if (startTime != UNKNOWN_DOUBLE) {
+        if (startTime != Constant.UNKNOWN_DOUBLE) {
             return String.format("%.3f", getStartTime() / 1000);
         }
 
@@ -327,12 +326,12 @@ public class GCEvent extends TimedEvent {
      * just like the format in preunified gclogs
      */
     protected void appendStartTime(StringBuilder sb) {
-        if (startTimestamp != UNKNOWN_DOUBLE) {
+        if (startTimestamp != Constant.UNKNOWN_DOUBLE) {
             SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
             sb.append(format.format((long) getStartTimestamp())).append(" ");
         }
 
-        if (startTime != UNKNOWN_DOUBLE) {
+        if (startTime != Constant.UNKNOWN_DOUBLE) {
             sb.append(String.format("%.3f: ", getStartTime() / 1000));
         }
     }
@@ -341,7 +340,7 @@ public class GCEvent extends TimedEvent {
     public String toString() {
         // reference format: (1)14.244: [Full GC (Ergonomics), 0.001s] [Young: 2548K->0K(18944K)] [Old: 33595K->11813K(44032K)] [Total: 36143K->11813K(62976K)] [Metaspace: 19355K->19355K(1067008K)] [promotion 3000 K, interval 30s]
         StringBuilder sb = new StringBuilder();
-        if (gcid != UNKNOWN_INT) {
+        if (gcid != Constant.UNKNOWN_INT) {
             sb.append('(').append(gcid).append(')');
         }
 
@@ -363,7 +362,7 @@ public class GCEvent extends TimedEvent {
             }
             sb.append(')');
         }
-        if (getDuration() != UNKNOWN_DOUBLE) {
+        if (getDuration() != Constant.UNKNOWN_DOUBLE) {
             sb.append(", ").append(String.format("%.3f", getDuration() / 1000)).append("s");
         }
         sb.append("]");
@@ -378,15 +377,15 @@ public class GCEvent extends TimedEvent {
         }
 
         boolean moreInfoAvailable = getEventLevel() == EVENT
-                && (getPromotion() != UNKNOWN_INT || getInterval() != UNKNOWN_DOUBLE);
+                && (getPromotion() != Constant.UNKNOWN_INT || getInterval() != Constant.UNKNOWN_DOUBLE);
         if (moreInfoAvailable) {
             boolean first = true;
             sb.append(" [");
-            if (getPromotion() != UNKNOWN_INT) {
+            if (getPromotion() != Constant.UNKNOWN_INT) {
                 sb.append("promotion ").append(getPromotion() / (long) KB2MB).append(" K");
                 first = false;
             }
-            if (getInterval() != UNKNOWN_INT) {
+            if (getInterval() != Constant.UNKNOWN_INT) {
                 if (!first) {
                     sb.append(", ");
                 }

@@ -11,10 +11,26 @@
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
 
-package org.eclipse.jifa.gclog.vo;
+package org.eclipse.jifa.gclog.event.evnetInfo;
 
-public enum GCEventLevel {
-    EVENT,
-    PHASE,
-    SUBPHASE,
+public enum GCSpecialSituation {
+    PROMOTION_FAILED("Promotion failed"),
+    TO_SPACE_EXHAUSTED("To-space Exhausted"),
+    INITIAL_MARK("Initial Mark"),
+    PREPARE_MIXED("Prepare Mixed");
+
+    private String name;
+
+    GCSpecialSituation(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public String toString() {
+        return name;
+    }
 }

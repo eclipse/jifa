@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static org.eclipse.jifa.gclog.model.GCEvent.UNKNOWN_DOUBLE;
+import static org.eclipse.jifa.gclog.util.Constant.UNKNOWN_DOUBLE;
 
 public class DoubleData {
 

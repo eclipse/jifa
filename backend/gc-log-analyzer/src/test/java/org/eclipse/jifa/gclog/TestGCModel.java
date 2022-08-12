@@ -14,9 +14,17 @@
 package org.eclipse.jifa.gclog;
 
 import org.eclipse.jifa.common.listener.DefaultProgressListener;
+import org.eclipse.jifa.gclog.event.*;
+import org.eclipse.jifa.gclog.event.evnetInfo.GCCollectionResult;
+import org.eclipse.jifa.gclog.event.evnetInfo.GCCollectionResultItem;
+import org.eclipse.jifa.gclog.event.evnetInfo.GCSpecialSituation;
 import org.eclipse.jifa.gclog.model.*;
+import org.eclipse.jifa.gclog.model.modeInfo.GCCollectorType;
+import org.eclipse.jifa.gclog.model.modeInfo.GCLogStyle;
+import org.eclipse.jifa.gclog.model.modeInfo.VmOptions;
 import org.eclipse.jifa.gclog.parser.GCLogParserFactory;
 import org.eclipse.jifa.gclog.parser.JDK8G1GCLogParser;
+import org.eclipse.jifa.gclog.util.Constant;
 import org.eclipse.jifa.gclog.vo.*;
 import org.junit.Assert;
 import org.junit.Before;
@@ -26,9 +34,8 @@ import java.util.List;
 import java.util.Map;
 
 import static org.eclipse.jifa.gclog.TestUtil.stringToBufferedReader;
-import static org.eclipse.jifa.gclog.model.GCEvent.*;
 import static org.eclipse.jifa.gclog.model.GCEventType.*;
-import static org.eclipse.jifa.gclog.vo.HeapGeneration.*;
+import static org.eclipse.jifa.gclog.event.evnetInfo.HeapGeneration.*;
 
 public class TestGCModel {
 
@@ -60,7 +67,7 @@ public class TestGCModel {
         collectionResult = new GCCollectionResult();
         collectionResult.addItem(new GCCollectionResultItem(EDEN, 20 * 1024 * 1024, 0, 100 * 1024 * 1024));
         collectionResult.addItem(new GCCollectionResultItem(SURVIVOR, 0, 10 * 1024 * 1024, 100 * 1024 * 1024));
-        collectionResult.addItem(new GCCollectionResultItem(HUMONGOUS, 10 * 1024 * 1024, 10 * 1024 * 1024, UNKNOWN_INT));
+        collectionResult.addItem(new GCCollectionResultItem(HUMONGOUS, 10 * 1024 * 1024, 10 * 1024 * 1024, Constant.UNKNOWN_INT));
         collectionResult.addItem(new GCCollectionResultItem(METASPACE, 15 * 1024 * 1024, 15 * 1024 * 1024, 20 * 1024 * 1024));
         collectionResult.addItem(new GCCollectionResultItem(OLD, 10 * 1024 * 1024, 12 * 1024 * 1024, 100 * 1024 * 1024));
         events[0].addSpecialSituation(GCSpecialSituation.TO_SPACE_EXHAUSTED);
@@ -74,7 +81,7 @@ public class TestGCModel {
         collectionResult = new GCCollectionResult();
         collectionResult.addItem(new GCCollectionResultItem(EDEN, 30 * 1024 * 1024, 0, 100 * 1024 * 1024));
         collectionResult.addItem(new GCCollectionResultItem(SURVIVOR, 0, 0, 100 * 1024 * 1024));
-        collectionResult.addItem(new GCCollectionResultItem(HUMONGOUS, 10 * 1024 * 1024, 10 * 1024 * 1024, UNKNOWN_INT));
+        collectionResult.addItem(new GCCollectionResultItem(HUMONGOUS, 10 * 1024 * 1024, 10 * 1024 * 1024, Constant.UNKNOWN_INT));
         collectionResult.addItem(new GCCollectionResultItem(OLD, 10 * 1024 * 1024, 30 * 1024 * 1024, 100 * 1024 * 1024));
 //      expected result:  collectionResult.addItem(new GCCollectionResultItem(TOTAL,50,40,300));
         events[1].setCollectionResult(collectionResult);
@@ -86,7 +93,7 @@ public class TestGCModel {
         collectionResult = new GCCollectionResult();
         collectionResult.addItem(new GCCollectionResultItem(EDEN, 24 * 1024 * 1024, 0, 100 * 1024 * 1024));
         collectionResult.addItem(new GCCollectionResultItem(SURVIVOR, 8 * 1024 * 1024, 0, 100 * 1024 * 1024));
-        collectionResult.addItem(new GCCollectionResultItem(HUMONGOUS, 20 * 1024 * 1024, 20 * 1024 * 1024, UNKNOWN_INT));
+        collectionResult.addItem(new GCCollectionResultItem(HUMONGOUS, 20 * 1024 * 1024, 20 * 1024 * 1024, Constant.UNKNOWN_INT));
         collectionResult.addItem(new GCCollectionResultItem(OLD, 10 * 1024 * 1024, 10 * 1024 * 1024, 100 * 1024 * 1024));
         collectionResult.addItem(new GCCollectionResultItem(TOTAL, 62 * 1024 * 1024, 30 * 1024 * 1024, 300 * 1024 * 1024));
         events[2].setCollectionResult(collectionResult);
@@ -128,7 +135,7 @@ public class TestGCModel {
         collectionResult = new GCCollectionResult();
         collectionResult.addItem(new GCCollectionResultItem(EDEN, 16 * 1024 * 1024, 0, 100 * 1024 * 1024));
         collectionResult.addItem(new GCCollectionResultItem(SURVIVOR, 0, 4 * 1024 * 1024, 100 * 1024 * 1024));
-        collectionResult.addItem(new GCCollectionResultItem(HUMONGOUS, 50 * 1024 * 1024, 50 * 1024 * 1024, UNKNOWN_INT));
+        collectionResult.addItem(new GCCollectionResultItem(HUMONGOUS, 50 * 1024 * 1024, 50 * 1024 * 1024, Constant.UNKNOWN_INT));
         collectionResult.addItem(new GCCollectionResultItem(METASPACE, 15 * 1024 * 1024, 15 * 1024 * 1024, 40 * 1024 * 1024));
 //      expected result:  collectionResult.addItem(new GCCollectionResultItem(OLD,10,12,100));
         collectionResult.addItem(new GCCollectionResultItem(TOTAL, 76 * 1024 * 1024, 66 * 1024 * 1024, 300 * 1024 * 1024));

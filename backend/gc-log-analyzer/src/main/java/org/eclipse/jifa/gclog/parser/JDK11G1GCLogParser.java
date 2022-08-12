@@ -14,12 +14,13 @@
 package org.eclipse.jifa.gclog.parser;
 
 import org.eclipse.jifa.common.util.ErrorUtil;
+import org.eclipse.jifa.gclog.event.GCEvent;
+import org.eclipse.jifa.gclog.event.evnetInfo.GCSpecialSituation;
 import org.eclipse.jifa.gclog.model.G1GCModel;
-import org.eclipse.jifa.gclog.model.GCEvent;
 import org.eclipse.jifa.gclog.model.GCEventType;
 import org.eclipse.jifa.gclog.model.GCModel;
+import org.eclipse.jifa.gclog.util.Constant;
 import org.eclipse.jifa.gclog.util.GCLogUtil;
-import org.eclipse.jifa.gclog.vo.GCSpecialSituation;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -151,7 +152,7 @@ public class JDK11G1GCLogParser extends JDK11G1OrGenerationalGCLogParser {
         GCEventType eventType = G1_CONCURRENT_CYCLE;
         boolean end = value.endsWith("ms");
         GCEvent event;
-        if (!end || (event = model.getLastEventOfType(eventType)).getDuration() != GCEvent.UNKNOWN_DOUBLE) {
+        if (!end || (event = model.getLastEventOfType(eventType)).getDuration() != Constant.UNKNOWN_DOUBLE) {
             event = new GCEvent();
             event.setStartTime(context.get(UPTIME));
             event.setEventType(eventType);

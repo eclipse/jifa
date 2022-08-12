@@ -13,7 +13,12 @@
 
 package org.eclipse.jifa.gclog.model;
 
-import org.eclipse.jifa.gclog.vo.*;
+import org.eclipse.jifa.gclog.event.GCEvent;
+import org.eclipse.jifa.gclog.event.evnetInfo.HeapGeneration;
+import org.eclipse.jifa.gclog.event.evnetInfo.GCCollectionResultItem;
+import org.eclipse.jifa.gclog.event.evnetInfo.GCSpecialSituation;
+import org.eclipse.jifa.gclog.model.modeInfo.GCCollectorType;
+import org.eclipse.jifa.gclog.model.modeInfo.GCLogStyle;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -13,20 +13,27 @@
 
 package org.eclipse.jifa.gclog.parser;
 
-import org.eclipse.jifa.gclog.model.*;
-import org.eclipse.jifa.gclog.util.GCLogUtil;
-import org.eclipse.jifa.gclog.parser.ParseRule.PrefixAndValueParseRule;
-import org.eclipse.jifa.gclog.vo.*;
 import lombok.Data;
 import org.eclipse.jifa.common.util.ErrorUtil;
+import org.eclipse.jifa.gclog.event.GCEvent;
+import org.eclipse.jifa.gclog.event.evnetInfo.HeapGeneration;
+import org.eclipse.jifa.gclog.event.evnetInfo.CpuTime;
+import org.eclipse.jifa.gclog.event.evnetInfo.GCCollectionResultItem;
+import org.eclipse.jifa.gclog.event.evnetInfo.ReferenceGC;
+import org.eclipse.jifa.gclog.model.GCEventType;
+import org.eclipse.jifa.gclog.model.GCModel;
+import org.eclipse.jifa.gclog.model.modeInfo.VmOptions;
+import org.eclipse.jifa.gclog.parser.ParseRule.PrefixAndValueParseRule;
+import org.eclipse.jifa.gclog.util.Constant;
+import org.eclipse.jifa.gclog.util.GCLogUtil;
 
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static org.eclipse.jifa.gclog.model.GCEvent.UNKNOWN_DOUBLE;
-import static org.eclipse.jifa.gclog.model.GCModel.KB2MB;
-import static org.eclipse.jifa.gclog.model.GCModel.MS2S;
+import static org.eclipse.jifa.gclog.util.Constant.UNKNOWN_DOUBLE;
+import static org.eclipse.jifa.gclog.util.Constant.KB2MB;
+import static org.eclipse.jifa.gclog.util.Constant.MS2S;
 
 /*
  * We mainly consider -XX:+PrintGCDetails. -XX:+PrintReferenceGC and -XX:+PrintApplicationStopTime  are also considered
@@ -779,10 +786,10 @@ public abstract class AbstractJDK8GCLogParser extends AbstractGCLogParser {
     }
 
     protected static void copyPhaseDataToStart(GCEvent phaseStart, GCEvent phase) {
-        if (phaseStart.getDuration() == GCEvent.UNKNOWN_DOUBLE) {
-            if (phase.getDuration() != GCEvent.UNKNOWN_DOUBLE) {
+        if (phaseStart.getDuration() == Constant.UNKNOWN_DOUBLE) {
+            if (phase.getDuration() != Constant.UNKNOWN_DOUBLE) {
                 phaseStart.setDuration(phase.getDuration());
-            } else if (phase.getStartTime() != GCEvent.UNKNOWN_DOUBLE && phaseStart.getStartTime() != GCEvent.UNKNOWN_DOUBLE) {
+            } else if (phase.getStartTime() != Constant.UNKNOWN_DOUBLE && phaseStart.getStartTime() != Constant.UNKNOWN_DOUBLE) {
                 phaseStart.setDuration(phase.getStartTime() - phaseStart.getStartTime());
             }
         }

@@ -11,20 +11,22 @@
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
 
-package org.eclipse.jifa.gclog.model;
+package org.eclipse.jifa.gclog.model.modeInfo;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.eclipse.jifa.gclog.util.GCLogUtil;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
-import static org.eclipse.jifa.gclog.model.GCEvent.UNKNOWN_INT;
-import static org.eclipse.jifa.gclog.model.GCModel.KB2MB;
+import static org.eclipse.jifa.gclog.util.Constant.UNKNOWN_INT;
+import static org.eclipse.jifa.gclog.util.Constant.KB2MB;
 
 public class VmOptions {
     private Map<String, VmOption> options = new LinkedHashMap<>(); // use LinkedHashMap to preserve option order

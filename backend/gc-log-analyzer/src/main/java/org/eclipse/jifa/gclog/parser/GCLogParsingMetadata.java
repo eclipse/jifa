@@ -11,10 +11,12 @@
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
 
-package org.eclipse.jifa.gclog.vo;
+package org.eclipse.jifa.gclog.parser;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import org.eclipse.jifa.gclog.model.modeInfo.GCCollectorType;
+import org.eclipse.jifa.gclog.model.modeInfo.GCLogStyle;
 
 @Data
 @AllArgsConstructor

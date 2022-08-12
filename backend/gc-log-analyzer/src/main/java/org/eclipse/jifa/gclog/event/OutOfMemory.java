@@ -10,27 +10,30 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
+package org.eclipse.jifa.gclog.event;
 
-package org.eclipse.jifa.gclog.vo;
+import org.eclipse.jifa.gclog.model.GCEventType;
 
-public enum GCSpecialSituation {
-    PROMOTION_FAILED("Promotion failed"),
-    TO_SPACE_EXHAUSTED("To-space Exhausted"),
-    INITIAL_MARK("Initial Mark"),
-    PREPARE_MIXED("Prepare Mixed");
+public class OutOfMemory extends GCEvent {
+    private String threadName;
 
-    private String name;
-
-    GCSpecialSituation(String name) {
-        this.name = name;
+    public OutOfMemory() {
+        this.setEventType(GCEventType.OUT_OF_MEMORY);
     }
 
-    public String getName() {
-        return name;
+    public String getThreadName() {
+        return threadName;
+    }
+
+    public void setThreadName(String threadName) {
+        this.threadName = threadName;
     }
 
     @Override
     public String toString() {
-        return name;
+        StringBuilder sb = new StringBuilder();
+        appendStartTime(sb);
+        sb.append(threadName);
+        return sb.toString();
     }
 }

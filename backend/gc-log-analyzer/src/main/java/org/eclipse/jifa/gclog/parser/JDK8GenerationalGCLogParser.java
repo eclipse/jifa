@@ -14,22 +14,23 @@
 package org.eclipse.jifa.gclog.parser;
 
 import org.eclipse.jifa.common.util.ErrorUtil;
-import org.eclipse.jifa.gclog.util.GCLogUtil;
-import org.eclipse.jifa.gclog.model.GCEvent;
+import org.eclipse.jifa.gclog.event.GCEvent;
+import org.eclipse.jifa.gclog.event.evnetInfo.HeapGeneration;
+import org.eclipse.jifa.gclog.event.evnetInfo.GCCollectionResult;
+import org.eclipse.jifa.gclog.event.evnetInfo.GCCollectionResultItem;
+import org.eclipse.jifa.gclog.event.evnetInfo.GCSpecialSituation;
 import org.eclipse.jifa.gclog.model.GCEventType;
 import org.eclipse.jifa.gclog.model.GCModel;
-import org.eclipse.jifa.gclog.vo.GCCollectionResult;
-import org.eclipse.jifa.gclog.vo.GCCollectionResultItem;
-import org.eclipse.jifa.gclog.vo.GCSpecialSituation;
-import org.eclipse.jifa.gclog.vo.HeapGeneration;
+import org.eclipse.jifa.gclog.util.GCLogUtil;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.eclipse.jifa.gclog.event.evnetInfo.HeapGeneration.METASPACE;
 import static org.eclipse.jifa.gclog.model.GCEventType.*;
-import static org.eclipse.jifa.gclog.parser.ParseRule.*;
+import static org.eclipse.jifa.gclog.parser.ParseRule.ParseRuleContext;
 import static org.eclipse.jifa.gclog.parser.ParseRule.ParseRuleContext.EVENT;
-import static org.eclipse.jifa.gclog.vo.HeapGeneration.*;
+import static org.eclipse.jifa.gclog.parser.ParseRule.PrefixAndValueParseRule;
 
 public class JDK8GenerationalGCLogParser extends AbstractJDK8GCLogParser {
     private final static GCEventType[] YOUNG_FULL_GC = {YOUNG_GC, FULL_GC};

@@ -15,15 +15,15 @@ package org.eclipse.jifa.gclog.diagnoser;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.eclipse.jifa.gclog.event.TimedEvent;
 import org.eclipse.jifa.gclog.model.GCModel;
-import org.eclipse.jifa.gclog.model.TimedEvent;
 import org.eclipse.jifa.gclog.util.I18nStringView;
 
 import java.util.Comparator;
 import java.util.List;
 
-import static org.eclipse.jifa.gclog.diagnoser.AbnormalSeverity.*;
-import static org.eclipse.jifa.gclog.diagnoser.AbnormalType.*;
+import static org.eclipse.jifa.gclog.diagnoser.AbnormalSeverity.NONE;
+import static org.eclipse.jifa.gclog.diagnoser.AbnormalType.LAST_TYPE;
 
 @Data
 @AllArgsConstructor

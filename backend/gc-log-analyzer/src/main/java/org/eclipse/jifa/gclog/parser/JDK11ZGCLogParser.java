@@ -13,19 +13,25 @@
 
 package org.eclipse.jifa.gclog.parser;
 
-import org.eclipse.jifa.gclog.util.GCLogUtil;
-import org.eclipse.jifa.gclog.model.*;
-import org.eclipse.jifa.gclog.model.ZGCModel.ZStatistics;
-import org.eclipse.jifa.gclog.vo.GCCollectionResultItem;
 import org.eclipse.jifa.common.util.ErrorUtil;
+import org.eclipse.jifa.gclog.event.GCEvent;
+import org.eclipse.jifa.gclog.event.OutOfMemory;
+import org.eclipse.jifa.gclog.event.evnetInfo.GCCollectionResultItem;
+import org.eclipse.jifa.gclog.model.GCEventType;
+import org.eclipse.jifa.gclog.model.GCModel;
+import org.eclipse.jifa.gclog.model.ZGCModel;
+import org.eclipse.jifa.gclog.model.ZGCModel.ZStatistics;
+import org.eclipse.jifa.gclog.util.GCLogUtil;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
-import static org.eclipse.jifa.gclog.model.GCEvent.*;
+import static org.eclipse.jifa.gclog.util.Constant.UNKNOWN_INT;
+import static org.eclipse.jifa.gclog.event.evnetInfo.HeapGeneration.METASPACE;
+import static org.eclipse.jifa.gclog.event.evnetInfo.HeapGeneration.TOTAL;
 import static org.eclipse.jifa.gclog.model.GCEventType.*;
 import static org.eclipse.jifa.gclog.parser.ParseRule.ParseRuleContext.GCID;
 import static org.eclipse.jifa.gclog.parser.ParseRule.ParseRuleContext.UPTIME;
-import static org.eclipse.jifa.gclog.vo.HeapGeneration.*;
 
 public class JDK11ZGCLogParser extends AbstractJDK11GCLogParser {
     /*

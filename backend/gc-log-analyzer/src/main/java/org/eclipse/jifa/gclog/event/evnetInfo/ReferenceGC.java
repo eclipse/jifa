@@ -1,9 +1,10 @@
-package org.eclipse.jifa.gclog.vo;
+package org.eclipse.jifa.gclog.event.evnetInfo;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import static org.eclipse.jifa.gclog.model.GCEvent.*;
+import static org.eclipse.jifa.gclog.util.Constant.UNKNOWN_DOUBLE;
+import static org.eclipse.jifa.gclog.util.Constant.UNKNOWN_INT;
 
 @Data
 @NoArgsConstructor

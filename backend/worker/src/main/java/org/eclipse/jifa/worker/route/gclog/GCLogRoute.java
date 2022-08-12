@@ -15,11 +15,12 @@ package org.eclipse.jifa.worker.route.gclog;
 
 import org.eclipse.jifa.gclog.diagnoser.AnalysisConfig;
 import org.eclipse.jifa.gclog.diagnoser.GlobalDiagnoser;
+import org.eclipse.jifa.gclog.model.modeInfo.GCLogMetadata;
 import org.eclipse.jifa.gclog.model.GCModel;
 import io.vertx.core.Promise;
 import org.eclipse.jifa.common.request.PagingRequest;
 import org.eclipse.jifa.common.vo.PageView;
-import org.eclipse.jifa.gclog.model.VmOptions;
+import org.eclipse.jifa.gclog.model.modeInfo.VmOptions;
 import org.eclipse.jifa.gclog.vo.*;
 import org.eclipse.jifa.worker.route.HttpMethod;
 import org.eclipse.jifa.worker.route.ParamKey;

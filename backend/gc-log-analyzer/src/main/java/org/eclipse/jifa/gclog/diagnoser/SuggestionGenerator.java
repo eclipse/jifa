@@ -1,16 +1,16 @@
 package org.eclipse.jifa.gclog.diagnoser;
 
 import org.eclipse.jifa.gclog.model.GCModel;
+import org.eclipse.jifa.gclog.model.modeInfo.GCCollectorType;
+import org.eclipse.jifa.gclog.model.modeInfo.GCLogStyle;
 import org.eclipse.jifa.gclog.util.I18nStringView;
-import org.eclipse.jifa.gclog.vo.GCCollectorType;
-import org.eclipse.jifa.gclog.vo.GCLogStyle;
 
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
 
 import static org.eclipse.jifa.gclog.diagnoser.SuggestionType.*;
-import static org.eclipse.jifa.gclog.model.GCEvent.UNKNOWN_INT;
+import static org.eclipse.jifa.gclog.util.Constant.UNKNOWN_INT;
 
 public abstract class SuggestionGenerator {
     protected GCModel model;

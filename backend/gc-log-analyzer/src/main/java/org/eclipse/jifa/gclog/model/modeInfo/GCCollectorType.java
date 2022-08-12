@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
 
-package org.eclipse.jifa.gclog.vo;
+package org.eclipse.jifa.gclog.model.modeInfo;
 
 public enum GCCollectorType {
     SERIAL("Serial GC"),

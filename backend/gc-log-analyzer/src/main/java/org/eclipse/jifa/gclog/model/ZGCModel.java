@@ -13,17 +13,21 @@
 
 package org.eclipse.jifa.gclog.model;
 
-import org.eclipse.jifa.gclog.vo.GCCollectorType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.eclipse.jifa.gclog.event.GCEvent;
+import org.eclipse.jifa.gclog.event.TimedEvent;
+import org.eclipse.jifa.gclog.model.modeInfo.GCCollectorType;
+import org.eclipse.jifa.gclog.util.Constant;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import static org.eclipse.jifa.gclog.model.GCEvent.UNKNOWN_INT;
+import static org.eclipse.jifa.gclog.util.Constant.UNKNOWN_INT;
 import static org.eclipse.jifa.gclog.model.GCEventType.*;
-import static org.eclipse.jifa.gclog.vo.GCPause.CONCURRENT;
-import static org.eclipse.jifa.gclog.vo.GCPause.PAUSE;
 
 public class ZGCModel extends GCModel {
 
@@ -110,7 +114,7 @@ public class ZGCModel extends GCModel {
                 double collectionCycleMs = statistics.get(statisticIndex).get("Collector: Garbage Collection Cycle ms").getMax10s();
                 double allocationRateMBps = statistics.get(statisticIndex).get("Memory: Allocation Rate MB/s").getMax10s();
                 double size = collection.getCollectionResult().getSummary().getPreUsed() +
-                        (collectionCycleMs / MS2S) * (allocationRateMBps * KB2MB);
+                        (collectionCycleMs / Constant.MS2S) * (allocationRateMBps * Constant.KB2MB);
                 recommendMaxHeapSize = Math.max(recommendMaxHeapSize, (int) size);
             }
         }

@@ -14,10 +14,10 @@
 package org.eclipse.jifa.gclog.parser;
 
 import org.eclipse.jifa.common.util.ErrorUtil;
-import org.eclipse.jifa.gclog.model.GCEvent;
+import org.eclipse.jifa.gclog.event.GCEvent;
+import org.eclipse.jifa.gclog.event.evnetInfo.GCSpecialSituation;
 import org.eclipse.jifa.gclog.model.GCEventType;
 import org.eclipse.jifa.gclog.model.GCModel;
-import org.eclipse.jifa.gclog.vo.GCSpecialSituation;
 
 import java.util.ArrayList;
 import java.util.List;

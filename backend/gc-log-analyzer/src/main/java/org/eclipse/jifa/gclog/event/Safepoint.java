@@ -1,10 +1,10 @@
-package org.eclipse.jifa.gclog.model;
+package org.eclipse.jifa.gclog.event;
 
-import org.eclipse.jifa.gclog.model.GCEvent;
 import org.eclipse.jifa.gclog.model.GCEventType;
+import org.eclipse.jifa.gclog.util.Constant;
 
 public class Safepoint extends GCEvent {
-    private double timeToEnter = UNKNOWN_DOUBLE;
+    private double timeToEnter = Constant.UNKNOWN_DOUBLE;
 
     public Safepoint() {
         this.setEventType(GCEventType.SAFEPOINT);
