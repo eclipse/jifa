@@ -43,7 +43,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.eclipse.jifa.gclog.event.evnetInfo.HeapGeneration.*;
+import static org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea.*;
 import static org.eclipse.jifa.gclog.model.GCEventType.*;
 import static org.eclipse.jifa.gclog.model.modeInfo.GCCollectorType.*;
 
@@ -333,7 +333,7 @@ public abstract class GCModel {
         // 2nd dimension is capacityAvg, usedMax, usedAvgAfterFullGC,usedAvgAfterOldGC see definition of MemoryStatisticsItem
         // usedAvgAfterOldGC is more complicated, will deal with it afterwards
         LongData[][] data = new LongData[5][4];
-        HeapGeneration[] generations = {YOUNG, OLD, HUMONGOUS, TOTAL, METASPACE};
+        MemoryArea[] generations = {YOUNG, OLD, HUMONGOUS, HEAP, METASPACE};
         for (int i = 0; i < 5; i++) {
             for (int j = 0; j < 4; j++) {
                 data[i][j] = new LongData();
@@ -341,12 +341,14 @@ public abstract class GCModel {
         }
         iterateEventsWithinTimeRange(gcCollectionEvents, range, event -> {
             for (int genIndex = 0; genIndex < generations.length; genIndex++) {
-                HeapGeneration generation = generations[genIndex];
-                GCCollectionResultItem memory = event.getCollectionAgg().get(generation);
-                data[genIndex][0].add(memory.getTotal());
-                data[genIndex][1].add(Math.max(memory.getPreUsed(), memory.getPostUsed()));
-                if (event.isFullGC() && generation != YOUNG) {
-                    data[genIndex][2].add(memory.getPostUsed());
+                MemoryArea generation = generations[genIndex];
+                GCMemoryItem memory = event.getMemoryItem(generation);
+                if (memory != null) {
+                    data[genIndex][0].add(memory.getTotal());
+                    data[genIndex][1].add(Math.max(memory.getPreUsed(), memory.getPostUsed()));
+                    if (event.isFullGC() && generation != YOUNG) {
+                        data[genIndex][2].add(memory.getPostUsed());
+                    }
                 }
             }
         });
@@ -420,11 +422,11 @@ public abstract class GCModel {
 
     private List<Object[]> getTimeGraphMemoryData(String dataType) {
         boolean used = dataType.endsWith("Used");
-        String generationString = dataType.substring(0, dataType.length() - (used ? "Used" : "Capacity").length());
-        HeapGeneration generation = HeapGeneration.getHeapGeneration(generationString);
+        String areString = dataType.substring(0, dataType.length() - (used ? "Used" : "Capacity").length());
+        MemoryArea area = MemoryArea.getMemoryArea(areString);
         List<Object[]> result = new ArrayList<>();
         for (GCEvent event : this.gcCollectionEvents) {
-            GCCollectionResultItem memory = event.getCollectionAgg().getOrDefault(generation, null);
+            GCMemoryItem memory = event.getMemoryItem(area);
             if (memory == null) {
                 continue;
             }
@@ -472,7 +474,7 @@ public abstract class GCModel {
         return new GlobalDiagnoser(this, config).diagnose();
     }
 
-    public int getRecommendMaxHeapSize() {
+    public long getRecommendMaxHeapSize() {
         // not supported
         return Constant.UNKNOWN_INT;
     }
@@ -583,39 +585,39 @@ public abstract class GCModel {
      */
     private void calculateEventsMemoryInfo() {
         for (GCEvent event : gcEvents) {
-            calculateEventCollectionAgg(event);
+            calculateEventMemoryItems(event);
         }
         gcCollectionEvents.sort(Comparator.comparingDouble(GCEvent::getStartTime));
 
         long lastTotalMemory = 0;
         for (GCEvent event : gcCollectionEvents) {
-            Map<HeapGeneration, GCCollectionResultItem> collectionAgg = event.getCollectionAgg();
-            GCCollectionResultItem young = collectionAgg.get(YOUNG);
-            GCCollectionResultItem total = collectionAgg.get(TOTAL);
-            GCCollectionResultItem humongous = collectionAgg.get(HUMONGOUS);
+            GCMemoryItem young = event.getMemoryItem(YOUNG);
+            GCMemoryItem total = event.getMemoryItem(HEAP);
+            GCMemoryItem humongous = event.getMemoryItem(HUMONGOUS);
             // reclamation
             // sometimes it may have been calculated during parsing log
-            if (event.getReclamation() == Constant.UNKNOWN_INT &&
+            if (event.getReclamation() == Constant.UNKNOWN_INT && total != null &&
                     total.getPreUsed() != Constant.UNKNOWN_INT && total.getPostUsed() != Constant.UNKNOWN_INT) {
                 event.setReclamation(total.getPreUsed() - total.getPostUsed());
             }
             // promotion
-            if (event.getPromotion() == Constant.UNKNOWN_INT &&
-                    event.hasPromotion() && event.getEventType() != G1_MIXED_GC) {
+            if (event.getPromotion() == Constant.UNKNOWN_INT
+                    && event.hasPromotion() && event.getEventType() != G1_MIXED_GC
+                    && young != null && total != null) {
                 // notice: g1 young mixed gc should have promotion, but we have no way to know it exactly
                 long youngReduction = young.getMemoryReduction();
                 long totalReduction = total.getMemoryReduction();
                 if (youngReduction != Constant.UNKNOWN_INT && totalReduction != Constant.UNKNOWN_INT) {
                     long promotion = youngReduction - totalReduction;
-                    long humongousReduction = humongous.getMemoryReduction();
-                    if (humongousReduction != Constant.UNKNOWN_INT) {
-                        promotion -= humongousReduction;
+                    if (humongous != null && humongous.getMemoryReduction() != Constant.UNKNOWN_INT) {
+                        promotion -= humongous.getMemoryReduction();
                     }
                     event.setPromotion(promotion);
                 }
             }
             // allocation
-            if (event.getAllocation() == Constant.UNKNOWN_INT && total.getPreUsed() != Constant.UNKNOWN_INT) {
+            if (event.getAllocation() == Constant.UNKNOWN_INT &&
+                    total != null && total.getPreUsed() != Constant.UNKNOWN_INT) {
                 // As to concurrent event, allocation is composed of two parts: allocation between two adjacent events
                 // and during event. If original allocation is not unknown, that value is allocation during event.
                 event.setAllocation(zeroIfUnknownInt(event.getAllocation()) + total.getPreUsed() - lastTotalMemory);
@@ -628,75 +630,55 @@ public abstract class GCModel {
         return x == Constant.UNKNOWN_INT ? 0 : x;
     }
 
-    private void calculateEventCollectionAgg(GCEvent event) {
+    private void calculateEventMemoryItems(GCEvent event) {
         if (event.hasPhases()) {
             for (GCEvent phase : event.getPhases()) {
-                calculateEventCollectionAgg(phase);
+                calculateEventMemoryItems(phase);
             }
         }
 
-        GCCollectionResult collectionResult = event.getCollectionResult();
-        if (collectionResult == null) {
+        if (event.getMemoryItems() == null) {
             return;
         }
         gcCollectionEvents.add(event);
-        // just consider young old and metaspace areas, and total of young and old
-        // sometimes total != young + old because of rounding error
-        // sometimes total is known but young/old are known
-        Map<HeapGeneration, GCCollectionResultItem> collectionAgg = new HashMap<>();
-        event.setCollectionAgg(collectionAgg);
 
-        // design pattern: Null Object
-        HeapGeneration[] generations = {YOUNG, OLD, HUMONGOUS, METASPACE, TOTAL};
-        for (HeapGeneration generation : generations) {
-            collectionAgg.put(generation, new GCCollectionResultItem(generation));
+        // hack: Survivor capacity of g1 is not printed in jdk8. Make it equal to pre used so that
+        // we can calculate young and old capacity
+        if (event.getMemoryItem(SURVIVOR) != null &&
+                event.getMemoryItem(SURVIVOR).getTotal() == Constant.UNKNOWN_INT) {
+            event.getMemoryItem(SURVIVOR).setTotal(event.getMemoryItem(SURVIVOR).getPreUsed());
         }
 
-        if (collectionResult.getSummary() != null) {
-            collectionAgg.put(HeapGeneration.TOTAL, collectionResult.getSummary());
-        }
-        if (collectionResult.getItems() != null) {
-            for (GCCollectionResultItem item : collectionResult.getItems()) {
-                HeapGeneration generation = item.getGeneration();
-                // hack: Survivor capacity of g1 is not printed in jdk8. Make it equal to pre used so that
-                // we can calculate young and old capacity
-                if (generation == HeapGeneration.SURVIVOR && item.getTotal() == Constant.UNKNOWN_INT) {
-                    item.setTotal(item.getPreUsed());
-                }
+        //case 1: know eden and survivor, calculate young
+        GCMemoryItem young = event.getMemoryItemOrEmptyObject(EDEN)
+                .merge(event.getMemoryItem(SURVIVOR));
+        young.setArea(YOUNG);
+        event.setMemoryItem(event.getMemoryItemOrEmptyObject(YOUNG)
+                .updateIfAbsent(young), true);
 
-                if (generation == EDEN || generation == SURVIVOR) {
-                    generation = YOUNG;
-                }
-                GCCollectionResultItem newItem = item.mergeIfPresent(collectionAgg.get(generation));
-                newItem.setGeneration(generation);
-                collectionAgg.put(generation, newItem);
-            }
-            // sometimes we know partial info and we can infer remaining
-            calculateRemainingFromCollectionAggregation(collectionAgg);
-        }
-    }
+        //case 2: know young and old, calculate heap
+        GCMemoryItem heap = event.getMemoryItemOrEmptyObject(YOUNG)
+                .merge(event.getMemoryItem(OLD))
+                .mergeIfPresent(event.getMemoryItem(HUMONGOUS));
+        heap.setArea(HEAP);
+        event.setMemoryItem(event.getMemoryItemOrEmptyObject(HEAP)
+                .updateIfAbsent(heap), true);
 
-    private void calculateRemainingFromCollectionAggregation(Map<HeapGeneration, GCCollectionResultItem> collectionAgg) {
-        //case 1: know young and old, calculate total
-        GCCollectionResultItem total = collectionAgg.get(YOUNG)
-                .merge(collectionAgg.get(OLD))
-                .mergeIfPresent(collectionAgg.get(HUMONGOUS));
-        total.setGeneration(TOTAL);
-        collectionAgg.put(TOTAL, collectionAgg.get(TOTAL).updateIfAbsent(total));
+        //case 3: know old and heap, calculate young
+        young = event.getMemoryItemOrEmptyObject(HEAP)
+                .subtract(event.getMemoryItem(OLD))
+                .subtractIfPresent(event.getMemoryItem(HUMONGOUS));
+        young.setArea(YOUNG);
+        event.setMemoryItem(event.getMemoryItemOrEmptyObject(YOUNG)
+                .updateIfAbsent(young), true);
 
-        //case 2: know old and total, calculate young
-        GCCollectionResultItem young = collectionAgg.get(TOTAL)
-                .subtract(collectionAgg.get(OLD))
-                .subtractIfPresent(collectionAgg.get(HUMONGOUS));
-        young.setGeneration(YOUNG);
-        collectionAgg.put(YOUNG, collectionAgg.get(YOUNG).updateIfAbsent(young));
-
-        //case 3: know young and total, calculate old
-        GCCollectionResultItem old = collectionAgg.get(TOTAL)
-                .subtract(collectionAgg.get(YOUNG))
-                .subtractIfPresent(collectionAgg.get(HUMONGOUS));
-        old.setGeneration(OLD);
-        collectionAgg.put(OLD, collectionAgg.get(OLD).updateIfAbsent(old));
+        //case 4: know young and heap, calculate old
+        GCMemoryItem old = event.getMemoryItemOrEmptyObject(HEAP)
+                .subtract(event.getMemoryItem(YOUNG))
+                .subtractIfPresent(event.getMemoryItem(HUMONGOUS));
+        old.setArea(OLD);
+        event.setMemoryItem(event.getMemoryItemOrEmptyObject(OLD)
+                .updateIfAbsent(old), true);
     }
 
     private void filterInvalidEvents() {

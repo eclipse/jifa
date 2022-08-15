@@ -25,20 +25,21 @@ import static org.eclipse.jifa.gclog.util.Constant.KB2MB;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class GCCollectionResultItem {
-    private HeapGeneration generation;
+public class GCMemoryItem {
+    private MemoryArea area;
 
     // memory size in kb
     private long preUsed = UNKNOWN_INT;
     private long postUsed = UNKNOWN_INT;
     private long total = UNKNOWN_INT;
 
-    public GCCollectionResultItem(HeapGeneration generation) {
-        this.generation = generation;
+    public GCMemoryItem(MemoryArea area) {
+        this.area = area;
     }
 
-    public GCCollectionResultItem(HeapGeneration generation, long[] memories) {
-        this(generation, memories[0], memories[1], memories[2]);
+
+    public GCMemoryItem(MemoryArea area, long[] memories) {
+        this(area, memories[0], memories[1], memories[2]);
     }
 
     public long getMemoryReduction() {
@@ -48,8 +49,11 @@ public class GCCollectionResultItem {
     /**
      * unknown value in this or anotherItem will lead result to be unknown.
      */
-    public GCCollectionResultItem merge(GCCollectionResultItem anotherItem) {
-        return new GCCollectionResultItem(generation,
+    public GCMemoryItem merge(GCMemoryItem anotherItem) {
+        if (anotherItem == null) {
+            return new GCMemoryItem(area, UNKNOWN_INT, UNKNOWN_INT, UNKNOWN_INT);
+        }
+        return new GCMemoryItem(area,
                 plus(preUsed, anotherItem.preUsed),
                 plus(postUsed, anotherItem.postUsed),
                 plus(total, anotherItem.total));
@@ -59,8 +63,11 @@ public class GCCollectionResultItem {
      * unknown value in this will lead result to be unknown.
      * unknown value in anotherItem are seen as 0
      */
-    public GCCollectionResultItem mergeIfPresent(GCCollectionResultItem anotherItem) {
-        return new GCCollectionResultItem(generation,
+    public GCMemoryItem mergeIfPresent(GCMemoryItem anotherItem) {
+        if (anotherItem == null) {
+            return this;
+        }
+        return new GCMemoryItem(area,
                 plusIfPresent(preUsed, anotherItem.preUsed),
                 plusIfPresent(postUsed, anotherItem.postUsed),
                 plusIfPresent(total, anotherItem.total));
@@ -69,8 +76,11 @@ public class GCCollectionResultItem {
     /**
      * unknown value in this or anotherItem will lead result to be unknown.
      */
-    public GCCollectionResultItem subtract(GCCollectionResultItem anotherItem) {
-        return new GCCollectionResultItem(generation,
+    public GCMemoryItem subtract(GCMemoryItem anotherItem) {
+        if (anotherItem == null) {
+            return new GCMemoryItem(area, UNKNOWN_INT, UNKNOWN_INT, UNKNOWN_INT);
+        }
+        return new GCMemoryItem(area,
                 minus(preUsed, anotherItem.preUsed),
                 minus(postUsed, anotherItem.postUsed),
                 minus(total, anotherItem.total));
@@ -80,15 +90,21 @@ public class GCCollectionResultItem {
      * unknown value in this will lead result to be unknown.
      * unknown value in anotherItem are seen as 0
      */
-    public GCCollectionResultItem subtractIfPresent(GCCollectionResultItem anotherItem) {
-        return new GCCollectionResultItem(generation,
+    public GCMemoryItem subtractIfPresent(GCMemoryItem anotherItem) {
+        if (anotherItem == null) {
+            return this;
+        }
+        return new GCMemoryItem(area,
                 minusIfPresent(preUsed, anotherItem.preUsed),
                 minusIfPresent(postUsed, anotherItem.postUsed),
                 minusIfPresent(total, anotherItem.total));
     }
 
-    public GCCollectionResultItem updateIfAbsent(GCCollectionResultItem anotherItem) {
-        return new GCCollectionResultItem(generation,
+    public GCMemoryItem updateIfAbsent(GCMemoryItem anotherItem) {
+        if (anotherItem == null) {
+            return this;
+        }
+        return new GCMemoryItem(area,
                 preUsed == UNKNOWN_INT ? anotherItem.preUsed : preUsed,
                 postUsed == UNKNOWN_INT ? anotherItem.postUsed : postUsed,
                 total == UNKNOWN_INT ? anotherItem.total : total);
@@ -122,22 +138,6 @@ public class GCCollectionResultItem {
         return x - y;
     }
 
-    public void setGeneration(HeapGeneration generation) {
-        this.generation = generation;
-    }
-
-    public void setPreUsed(long preUsed) {
-        this.preUsed = preUsed;
-    }
-
-    public void setPostUsed(long postUsed) {
-        this.postUsed = postUsed;
-    }
-
-    public void setTotal(long total) {
-        this.total = total;
-    }
-
     public void multiply(long x) {
         if (preUsed != UNKNOWN_INT) {
             preUsed *= x;
@@ -154,13 +154,13 @@ public class GCCollectionResultItem {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        GCCollectionResultItem that = (GCCollectionResultItem) o;
-        return preUsed == that.preUsed && postUsed == that.postUsed && total == that.total && generation == that.generation;
+        GCMemoryItem that = (GCMemoryItem) o;
+        return preUsed == that.preUsed && postUsed == that.postUsed && total == that.total && area == that.area;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(generation, preUsed, postUsed, total);
+        return Objects.hash(area, preUsed, postUsed, total);
     }
 
     public boolean isEmpty() {
@@ -170,21 +170,21 @@ public class GCCollectionResultItem {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        String generation = this.generation.toString().toLowerCase();
-        sb.append((char) (generation.charAt(0) - 32)).append(generation.substring(1)).append(": ");
+        String area = this.area.toString().toLowerCase();
+        sb.append((char) (area.charAt(0) - 32)).append(area.substring(1)).append(": ");
         if (isEmpty()) {
             sb.append("unknown");
         } else {
             if (preUsed != UNKNOWN_INT) {
-                sb.append((long)(Math.max(0, preUsed) / KB2MB / KB2MB)).append("M->");
+                sb.append((long) (Math.max(0, preUsed) / KB2MB / KB2MB)).append("M->");
             }
             if (postUsed != UNKNOWN_INT) {
-                sb.append((long)(Math.max(0, postUsed) / KB2MB / KB2MB)).append('M');
+                sb.append((long) (Math.max(0, postUsed) / KB2MB / KB2MB)).append('M');
             } else {
                 sb.append("unknown");
             }
             if (total != UNKNOWN_INT) {
-                sb.append('(').append((long)(Math.max(0, total) / KB2MB / KB2MB)).append("M)");
+                sb.append('(').append((long) (Math.max(0, total) / KB2MB / KB2MB)).append("M)");
             }
         }
         return sb.toString();

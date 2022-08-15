@@ -16,7 +16,7 @@ package org.eclipse.jifa.gclog.parser;
 import org.eclipse.jifa.common.util.ErrorUtil;
 import org.eclipse.jifa.gclog.event.GCEvent;
 import org.eclipse.jifa.gclog.event.OutOfMemory;
-import org.eclipse.jifa.gclog.event.evnetInfo.GCCollectionResultItem;
+import org.eclipse.jifa.gclog.event.evnetInfo.GCMemoryItem;
 import org.eclipse.jifa.gclog.model.GCEventType;
 import org.eclipse.jifa.gclog.model.GCModel;
 import org.eclipse.jifa.gclog.model.ZGCModel;
@@ -27,8 +27,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.eclipse.jifa.gclog.util.Constant.UNKNOWN_INT;
-import static org.eclipse.jifa.gclog.event.evnetInfo.HeapGeneration.METASPACE;
-import static org.eclipse.jifa.gclog.event.evnetInfo.HeapGeneration.TOTAL;
+import static org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea.METASPACE;
+import static org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea.HEAP;
 import static org.eclipse.jifa.gclog.model.GCEventType.*;
 import static org.eclipse.jifa.gclog.parser.ParseRule.ParseRuleContext.GCID;
 import static org.eclipse.jifa.gclog.parser.ParseRule.ParseRuleContext.UPTIME;
@@ -207,9 +207,9 @@ public class JDK11ZGCLogParser extends AbstractJDK11GCLogParser {
         if (event == null) {
             return;
         }
-        GCCollectionResultItem item = new GCCollectionResultItem(METASPACE, UNKNOWN_INT,
+        GCMemoryItem item = new GCMemoryItem(METASPACE, UNKNOWN_INT,
                 GCLogUtil.toByte(parts[0]), GCLogUtil.toByte(parts[4]));
-        event.getOrCreateCollectionResult().addItem(item);
+        event.setMemoryItem(item);
     }
 
     // [2021-08-31T11:29:12.825+0800] Out Of Memory (thread 8)
@@ -241,12 +241,12 @@ public class JDK11ZGCLogParser extends AbstractJDK11GCLogParser {
         }
         switch (prefix) {
             case "Capacity":
-                GCCollectionResultItem item = new GCCollectionResultItem(TOTAL);
+                GCMemoryItem item = new GCMemoryItem(HEAP);
                 item.setTotal(GCLogUtil.toByte(parts[6]));
-                event.getOrCreateCollectionResult().setSummary(item);
+                event.setMemoryItem(item);
                 break;
             case "Used":
-                item = event.getCollectionResult().getSummary();
+                item = event.getMemoryItem(HEAP);
                 item.setPreUsed(GCLogUtil.toByte(parts[0]));
                 item.setPostUsed(GCLogUtil.toByte(parts[6]));
                 break;

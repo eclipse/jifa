@@ -18,6 +18,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.eclipse.jifa.gclog.event.GCEvent;
 import org.eclipse.jifa.gclog.event.TimedEvent;
+import org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea;
 import org.eclipse.jifa.gclog.model.modeInfo.GCCollectorType;
 import org.eclipse.jifa.gclog.util.Constant;
 
@@ -35,7 +36,7 @@ public class ZGCModel extends GCModel {
     // "Memory: Allocation Rate MB/s" to deduplicate
     private List<ZStatistics> statistics = new ArrayList<>();
     private List<GCEvent> allocationStalls = new ArrayList<>();
-    private int recommendMaxHeapSize = UNKNOWN_INT;
+    private long recommendMaxHeapSize = UNKNOWN_INT;
 
 
     private static GCCollectorType collector = GCCollectorType.ZGC;
@@ -91,17 +92,15 @@ public class ZGCModel extends GCModel {
     }
 
     @Override
-    public int getRecommendMaxHeapSize() {
+    public long getRecommendMaxHeapSize() {
         if (recommendMaxHeapSize == UNKNOWN_INT && !statistics.isEmpty()) {
             // used at marking start + garbage collection cycle * allocation rate
             int statisticIndex = 0;
-            for (GCEvent collection : getGcEvents()) {
+            for (GCEvent collection : getGcCollectionEvents()) {
                 if (collection.getEventType() != ZGC_GARBAGE_COLLECTION) {
                     continue;
                 }
-                if (collection.getCollectionResult() == null ||
-                        collection.getCollectionResult().getSummary() == null ||
-                        collection.getCollectionResult().getSummary().getPreUsed() == UNKNOWN_INT) {
+                if (collection.getMemoryItem(MemoryArea.HEAP).getPreUsed() == UNKNOWN_INT) {
                     continue;
                 }
                 while (statisticIndex < statistics.size() &&
@@ -113,9 +112,9 @@ public class ZGCModel extends GCModel {
                 }
                 double collectionCycleMs = statistics.get(statisticIndex).get("Collector: Garbage Collection Cycle ms").getMax10s();
                 double allocationRateMBps = statistics.get(statisticIndex).get("Memory: Allocation Rate MB/s").getMax10s();
-                double size = collection.getCollectionResult().getSummary().getPreUsed() +
+                double size = collection.getMemoryItem(MemoryArea.HEAP).getPreUsed() +
                         (collectionCycleMs / Constant.MS2S) * (allocationRateMBps * Constant.KB2MB);
-                recommendMaxHeapSize = Math.max(recommendMaxHeapSize, (int) size);
+                recommendMaxHeapSize = Math.max(recommendMaxHeapSize, (long) size);
             }
         }
         return recommendMaxHeapSize;

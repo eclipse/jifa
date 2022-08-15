@@ -15,9 +15,8 @@ package org.eclipse.jifa.gclog.parser;
 
 import org.eclipse.jifa.common.util.ErrorUtil;
 import org.eclipse.jifa.gclog.event.GCEvent;
-import org.eclipse.jifa.gclog.event.evnetInfo.HeapGeneration;
-import org.eclipse.jifa.gclog.event.evnetInfo.GCCollectionResult;
-import org.eclipse.jifa.gclog.event.evnetInfo.GCCollectionResultItem;
+import org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea;
+import org.eclipse.jifa.gclog.event.evnetInfo.GCMemoryItem;
 import org.eclipse.jifa.gclog.event.evnetInfo.GCSpecialSituation;
 import org.eclipse.jifa.gclog.model.GCEventType;
 import org.eclipse.jifa.gclog.model.GCModel;
@@ -26,7 +25,8 @@ import org.eclipse.jifa.gclog.util.GCLogUtil;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.eclipse.jifa.gclog.event.evnetInfo.HeapGeneration.METASPACE;
+import static org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea.HEAP;
+import static org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea.METASPACE;
 import static org.eclipse.jifa.gclog.model.GCEventType.*;
 import static org.eclipse.jifa.gclog.parser.ParseRule.ParseRuleContext;
 import static org.eclipse.jifa.gclog.parser.ParseRule.ParseRuleContext.EVENT;
@@ -163,7 +163,7 @@ public class JDK8GenerationalGCLogParser extends AbstractJDK8GCLogParser {
     private static void parseYoungFullGC(AbstractGCLogParser parser, ParseRuleContext context, String prefix, String cause) {
         GCEventType eventType = prefix.equals("GC") ? YOUNG_GC : FULL_GC;
         GCEvent event = context.get(EVENT);
-        if (event.getCollectionResult() != null && event.getCollectionResult().getFirstItemOfGeneRation(METASPACE) != null) {
+        if (event.getMemoryItem(METASPACE) != null) {
             // if metaspace is printed, it must be a full gc no matter full gc is printed in prefix
             eventType = FULL_GC;
         }
@@ -176,8 +176,8 @@ public class JDK8GenerationalGCLogParser extends AbstractJDK8GCLogParser {
     }
 
     private static boolean parseGenerationCollection(AbstractGCLogParser parser, ParseRuleContext context, String s) {
-        HeapGeneration generation = HeapGeneration.getHeapGeneration(s);
-        if (generation == null) {
+        MemoryArea area = MemoryArea.getMemoryArea(s);
+        if (area == null) {
             return false;
         }
         // put the collection on the correct event
@@ -186,16 +186,12 @@ public class JDK8GenerationalGCLogParser extends AbstractJDK8GCLogParser {
         if (event == null) {
             return true;
         }
-        GCCollectionResult collection = ((GCEvent) context.get(EVENT)).getCollectionResult();
+        GCMemoryItem collection = ((GCEvent) context.get(EVENT)).getMemoryItem(HEAP);
         if (collection == null) {
             return true;
         }
-        GCCollectionResultItem item = collection.getSummary();
-        if (item == null) {
-            return true;
-        }
-        item.setGeneration(generation);
-        event.getOrCreateCollectionResult().addItem(item);
+        collection.setArea(area);
+        event.setMemoryItem(collection);
         return true;
     }
 

@@ -16,9 +16,8 @@ package org.eclipse.jifa.gclog.parser;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jifa.common.util.ErrorUtil;
 import org.eclipse.jifa.gclog.event.GCEvent;
-import org.eclipse.jifa.gclog.event.evnetInfo.HeapGeneration;
-import org.eclipse.jifa.gclog.event.evnetInfo.GCCollectionResult;
-import org.eclipse.jifa.gclog.event.evnetInfo.GCCollectionResultItem;
+import org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea;
+import org.eclipse.jifa.gclog.event.evnetInfo.GCMemoryItem;
 import org.eclipse.jifa.gclog.event.evnetInfo.GCSpecialSituation;
 import org.eclipse.jifa.gclog.model.GCEventType;
 import org.eclipse.jifa.gclog.model.GCModel;
@@ -170,19 +169,14 @@ public class JDK8G1GCLogParser extends AbstractJDK8GCLogParser {
         if (event == null) {
             return;
         }
-        GCCollectionResult collection = event.getOrCreateCollectionResult();
         String[] parts = GCLogUtil.splitBySpace("  [Eden: " + value);
         for (int i = 0; i < parts.length; i += 2) {
-            String generationString = StringUtils.strip(parts[i], "[:");
-            HeapGeneration generation = HeapGeneration.getHeapGeneration(generationString);
+            String areaString = StringUtils.strip(parts[i], "[:");
+            MemoryArea area = MemoryArea.getMemoryArea(areaString);
             String memoryChangeString = StringUtils.strip(parts[i + 1], ",]");
             long[] memories = GCLogUtil.parseMemorySizeFromTo(memoryChangeString);
-            GCCollectionResultItem item = new GCCollectionResultItem(generation, memories);
-            if (generation == HeapGeneration.TOTAL) {
-                collection.setSummary(item);
-            } else {
-                collection.addItem(item);
-            }
+            GCMemoryItem item = new GCMemoryItem(area, memories);
+            event.setMemoryItem(item, true);
         }
     }
 

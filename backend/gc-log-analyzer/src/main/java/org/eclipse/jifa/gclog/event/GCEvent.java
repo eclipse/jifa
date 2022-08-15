@@ -21,10 +21,9 @@ import org.eclipse.jifa.gclog.util.Constant;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Consumer;
 
-import static org.eclipse.jifa.gclog.event.evnetInfo.HeapGeneration.*;
+import static org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea.*;
 import static org.eclipse.jifa.gclog.event.evnetInfo.GCEventLevel.EVENT;
 import static org.eclipse.jifa.gclog.event.evnetInfo.GCEventLevel.PHASE;
 import static org.eclipse.jifa.gclog.util.Constant.KB2MB;
@@ -40,8 +39,7 @@ public class GCEvent extends TimedEvent {
     private GCEventType eventType = GCEventType.UNDEFINED;
     private GCCause cause;
 
-    private GCCollectionResult collectionResult;// record original info in log
-    private Map<HeapGeneration, GCCollectionResultItem> collectionAgg;// aggregation result;
+    private GCMemoryItem[] memory;
 
     // phases may contain more detailed info about an event. For simplicity, we put subphase of an event as
     // a direct child in phases field rather than child of child. Use level field of EventType to check
@@ -56,19 +54,44 @@ public class GCEvent extends TimedEvent {
     private long allocation = Constant.UNKNOWN_INT;
     private long reclamation = Constant.UNKNOWN_INT;
 
-    public void setCollectionResult(GCCollectionResult collectionResult) {
-        this.collectionResult = collectionResult;
+    public GCMemoryItem[] getMemoryItems() {
+        return memory;
     }
 
-    public GCCollectionResult getCollectionResult() {
-        return collectionResult;
-    }
-
-    public GCCollectionResult getOrCreateCollectionResult() {
-        if (collectionResult == null) {
-            collectionResult = new GCCollectionResult();
+    public GCMemoryItem getMemoryItem(MemoryArea area) {
+        if (memory == null) {
+            return null;
         }
-        return collectionResult;
+        return memory[area.ordinal()];
+    }
+
+    public GCMemoryItem getMemoryItemOrEmptyObject(MemoryArea area) {
+        GCMemoryItem result = getMemoryItem(area);
+        if (result == null) {
+            return new GCMemoryItem(area);
+        } else {
+            return result;
+        }
+    }
+
+    public void setMemoryItem(GCMemoryItem item) {
+        setMemoryItem(item, false);
+    }
+
+    public void setMemoryItem(GCMemoryItem item, boolean force) {
+        if (item == null || item.isEmpty()) {
+            return;
+        }
+        if (memory == null) {
+            memory = new GCMemoryItem[MEMORY_AREA_COUNT.ordinal()];
+        }
+        if (force || getMemoryItem(item.getArea()) == null) {
+            memory[item.getArea().ordinal()] = item;
+        }
+    }
+
+    public void setMemoryItems(GCMemoryItem[] memory) {
+        this.memory = memory;
     }
 
     public List<GCEvent> getPhases() {
@@ -281,14 +304,6 @@ public class GCEvent extends TimedEvent {
         return promotion;
     }
 
-    public Map<HeapGeneration, GCCollectionResultItem> getCollectionAgg() {
-        return collectionAgg;
-    }
-
-    public void setCollectionAgg(Map<HeapGeneration, GCCollectionResultItem> collectionAgg) {
-        this.collectionAgg = collectionAgg;
-    }
-
     public boolean hasSpecialSituation(GCSpecialSituation situation) {
         if (specialSituations == null) {
             return false;
@@ -319,7 +334,7 @@ public class GCEvent extends TimedEvent {
         return "";
     }
 
-    private static final HeapGeneration[] TO_STRING_GENERATION_ORDER = {YOUNG, OLD, HUMONGOUS, TOTAL, METASPACE};
+    private static final MemoryArea[] TO_STRING_GENERATION_ORDER = {YOUNG, OLD, HUMONGOUS, HEAP, METASPACE};
 
     /*
      * This function is mainly used in toString, that displays both timestamp and uptime,
@@ -366,11 +381,11 @@ public class GCEvent extends TimedEvent {
             sb.append(", ").append(String.format("%.3f", getDuration() / 1000)).append("s");
         }
         sb.append("]");
-        boolean memoryInfoAvailable = collectionAgg != null;
+        boolean memoryInfoAvailable = memory != null;
         if (memoryInfoAvailable) {
-            for (HeapGeneration generation : TO_STRING_GENERATION_ORDER) {
-                GCCollectionResultItem item = collectionAgg.get(generation);
-                if (!item.isEmpty()) {
+            for (MemoryArea generation : TO_STRING_GENERATION_ORDER) {
+                GCMemoryItem item = getMemoryItem(generation);
+                if (item != null && !item.isEmpty()) {
                     sb.append(" [").append(item).append(']');
                 }
             }

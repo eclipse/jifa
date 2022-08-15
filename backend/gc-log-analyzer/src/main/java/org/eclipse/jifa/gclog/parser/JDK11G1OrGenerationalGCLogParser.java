@@ -15,10 +15,9 @@ package org.eclipse.jifa.gclog.parser;
 
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jifa.gclog.event.GCEvent;
-import org.eclipse.jifa.gclog.event.evnetInfo.HeapGeneration;
+import org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea;
 import org.eclipse.jifa.gclog.event.evnetInfo.CpuTime;
-import org.eclipse.jifa.gclog.event.evnetInfo.GCCollectionResult;
-import org.eclipse.jifa.gclog.event.evnetInfo.GCCollectionResultItem;
+import org.eclipse.jifa.gclog.event.evnetInfo.GCMemoryItem;
 import org.eclipse.jifa.gclog.event.evnetInfo.GCSpecialSituation;
 import org.eclipse.jifa.gclog.model.GCEventType;
 import org.eclipse.jifa.gclog.model.GCModel;
@@ -160,8 +159,8 @@ public abstract class JDK11G1OrGenerationalGCLogParser extends AbstractJDK11GCLo
         for (String part : s.split(" ")) {
             if (part.contains("->") && part.endsWith(")") && !part.startsWith("(")) {
                 long[] memories = GCLogUtil.parseMemorySizeFromTo(part);
-                GCCollectionResultItem item = new GCCollectionResultItem(HeapGeneration.TOTAL, memories);
-                event.getOrCreateCollectionResult().setSummary(item);
+                GCMemoryItem item = new GCMemoryItem(MemoryArea.HEAP, memories);
+                event.setMemoryItem(item);
             } else if (part.endsWith("ms")) {
                 double duration = GCLogUtil.toMillisecond(part);
                 event.setDuration(duration);
@@ -193,7 +192,7 @@ public abstract class JDK11G1OrGenerationalGCLogParser extends AbstractJDK11GCLo
         if (generationName.endsWith(" regions")) {
             generationName = generationName.substring(0, generationName.length() - " regions".length());
         }
-        HeapGeneration generation = HeapGeneration.getHeapGeneration(generationName);
+        MemoryArea generation = MemoryArea.getMemoryArea(generationName);
         if (generation == null) {
             return false;
         }
@@ -211,10 +210,9 @@ public abstract class JDK11G1OrGenerationalGCLogParser extends AbstractJDK11GCLo
             }
         }
         long[] memories = GCLogUtil.parseMemorySizeFromTo(parts[1], 1);
-        GCCollectionResult collectionResult = event.getOrCreateCollectionResult();
         // will multiply region size before calculating derived info for g1
-        GCCollectionResultItem item = new GCCollectionResultItem(generation, memories);
-        collectionResult.addItem(item);
+        GCMemoryItem item = new GCMemoryItem(generation, memories);
+        event.setMemoryItem(item);
         return true;
     }
 

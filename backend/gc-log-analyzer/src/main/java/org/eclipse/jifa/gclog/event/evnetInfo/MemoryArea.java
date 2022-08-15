@@ -13,16 +13,17 @@
 
 package org.eclipse.jifa.gclog.event.evnetInfo;
 
-public enum HeapGeneration {
-    YOUNG,
+public enum MemoryArea {
     EDEN,
     SURVIVOR,
+    YOUNG,
     OLD,
-    METASPACE, // also represents perm
     HUMONGOUS,
-    TOTAL; //young + old + humongous
+    HEAP, //young + old + humongous
+    METASPACE, // also represents perm
+    MEMORY_AREA_COUNT;
 
-    public static HeapGeneration getHeapGeneration(String name) {
+    public static MemoryArea getMemoryArea(String name) {
         if (name == null) {
             return null;
         }
@@ -51,7 +52,7 @@ public enum HeapGeneration {
                 return HUMONGOUS;
             case "total":
             case "heap":
-                return TOTAL;
+                return HEAP;
             default:
                 return null;
         }

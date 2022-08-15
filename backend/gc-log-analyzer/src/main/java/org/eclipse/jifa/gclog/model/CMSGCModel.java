@@ -22,8 +22,8 @@ import org.eclipse.jifa.gclog.vo.TimeRange;
 import java.util.List;
 
 import static org.eclipse.jifa.gclog.util.Constant.UNKNOWN_LONG;
-import static org.eclipse.jifa.gclog.event.evnetInfo.HeapGeneration.METASPACE;
-import static org.eclipse.jifa.gclog.event.evnetInfo.HeapGeneration.OLD;
+import static org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea.METASPACE;
+import static org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea.OLD;
 import static org.eclipse.jifa.gclog.model.GCEventType.*;
 
 public class CMSGCModel extends GenerationalGCModel {
@@ -78,8 +78,8 @@ public class CMSGCModel extends GenerationalGCModel {
                     return;
                 }
                 GCEvent swept = event.getLastPhaseOfType(CMS_CONCURRENT_SWEEP);
-                if (swept != null && swept.getCollectionAgg() != null) {
-                    long usedAfterGC = swept.getCollectionAgg().get(OLD).getPostUsed();
+                if (swept != null && swept.getMemoryItem(OLD) != null) {
+                    long usedAfterGC = swept.getMemoryItem(OLD).getPostUsed();
                     if (usedAfterGC != UNKNOWN_LONG) {
                         data[1][3].add(usedAfterGC);
                         return;
@@ -88,9 +88,11 @@ public class CMSGCModel extends GenerationalGCModel {
                 lastCMSEndTime.set(event.getEndTime());
             } else if ((event.getEventType() == YOUNG_GC || event.getEventType() == FULL_GC)
                     && event.getStartTime() > lastCMSEndTime.get()) {
-                if (event.getCollectionAgg() != null) {
-                    data[1][3].add(event.getCollectionAgg().get(OLD).getPreUsed());
-                    data[4][3].add(event.getCollectionAgg().get(METASPACE).getPreUsed());
+                if (event.getMemoryItem(OLD) != null) {
+                    data[1][3].add(event.getMemoryItem(OLD).getPreUsed());
+                }
+                if (event.getMemoryItem(METASPACE) != null) {
+                    data[4][3].add(event.getMemoryItem(METASPACE).getPreUsed());
                 }
                 lastCMSEndTime.set(Double.MAX_VALUE);
             }

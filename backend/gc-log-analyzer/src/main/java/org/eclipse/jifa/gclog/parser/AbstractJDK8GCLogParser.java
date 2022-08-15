@@ -16,9 +16,9 @@ package org.eclipse.jifa.gclog.parser;
 import lombok.Data;
 import org.eclipse.jifa.common.util.ErrorUtil;
 import org.eclipse.jifa.gclog.event.GCEvent;
-import org.eclipse.jifa.gclog.event.evnetInfo.HeapGeneration;
+import org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea;
 import org.eclipse.jifa.gclog.event.evnetInfo.CpuTime;
-import org.eclipse.jifa.gclog.event.evnetInfo.GCCollectionResultItem;
+import org.eclipse.jifa.gclog.event.evnetInfo.GCMemoryItem;
 import org.eclipse.jifa.gclog.event.evnetInfo.ReferenceGC;
 import org.eclipse.jifa.gclog.model.GCEventType;
 import org.eclipse.jifa.gclog.model.GCModel;
@@ -251,16 +251,16 @@ public abstract class AbstractJDK8GCLogParser extends AbstractGCLogParser {
                     return;
                 } else if (token.getType() == TOKEN_MEMORY_CHANGE) {
                     long[] memories = GCLogUtil.parseMemorySizeFromTo(token.getValue(), (int) KB2MB);
-                    GCCollectionResultItem item = new GCCollectionResultItem(HeapGeneration.TOTAL, memories);
-                    event.getOrCreateCollectionResult().setSummary(item);
+                    GCMemoryItem item = new GCMemoryItem(MemoryArea.HEAP, memories);
+                    event.setMemoryItem(item);
                 } else if (token.getType() == TOKEN_REFERENCE_GC) {
                     referenceGC = token.getValue();
                 } else if (token.getType() == TOKEN_DURATION) {
                     event.setDuration(MS2S * Double.parseDouble(token.getValue()));
                 } else if (token.getType() == TOKEN_METASPACE) {
                     long[] memories = GCLogUtil.parseMemorySizeFromTo(token.getValue(), (int) KB2MB);
-                    GCCollectionResultItem item = new GCCollectionResultItem(HeapGeneration.METASPACE, memories);
-                    event.getOrCreateCollectionResult().addItem(item);
+                    GCMemoryItem item = new GCMemoryItem(MemoryArea.METASPACE, memories);
+                    event.setMemoryItem(item);
                 } else if (token.getType() == TOKEN_RIGHT_BRACKET) {
                     // do nothing
                 } else {
@@ -793,8 +793,8 @@ public abstract class AbstractJDK8GCLogParser extends AbstractGCLogParser {
                 phaseStart.setDuration(phase.getStartTime() - phaseStart.getStartTime());
             }
         }
-        if (phase.getCollectionResult() != null && phaseStart.getCollectionResult() == null) {
-            phaseStart.setCollectionResult(phase.getCollectionResult());
+        if (phase.getMemoryItems() != null && phaseStart.getMemoryItems() == null) {
+            phaseStart.setMemoryItems(phase.getMemoryItems());
         }
         if (phase.getCpuTime() != null && phaseStart.getCpuTime() == null) {
             phaseStart.setCpuTime(phase.getCpuTime());

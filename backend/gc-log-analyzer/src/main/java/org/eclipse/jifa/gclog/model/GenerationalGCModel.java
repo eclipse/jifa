@@ -14,8 +14,8 @@
 package org.eclipse.jifa.gclog.model;
 
 import org.eclipse.jifa.gclog.event.GCEvent;
-import org.eclipse.jifa.gclog.event.evnetInfo.HeapGeneration;
-import org.eclipse.jifa.gclog.event.evnetInfo.GCCollectionResultItem;
+import org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea;
+import org.eclipse.jifa.gclog.event.evnetInfo.GCMemoryItem;
 import org.eclipse.jifa.gclog.event.evnetInfo.GCSpecialSituation;
 import org.eclipse.jifa.gclog.model.modeInfo.GCCollectorType;
 import org.eclipse.jifa.gclog.model.modeInfo.GCLogStyle;
@@ -72,12 +72,8 @@ public abstract class GenerationalGCModel extends GCModel {
             return;
         }
         for (GCEvent event : getGcEvents()) {
-            if (event.getEventType() == FULL_GC && event.getCollectionResult() != null) {
-                for (GCCollectionResultItem item : event.getCollectionResult().getItems()) {
-                    if (item.getGeneration() == HeapGeneration.YOUNG) {
-                        item.setPostUsed(0);
-                    }
-                }
+            if (event.getEventType() == FULL_GC && event.getMemoryItem(MemoryArea.YOUNG) != null) {
+                event.getMemoryItem(MemoryArea.YOUNG).setPostUsed(0);
             }
         }
     }
