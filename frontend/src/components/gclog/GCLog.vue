@@ -342,6 +342,7 @@
           smallGenerationThreshold: 10,
           highPromotionThreshold: 3,
           badThroughputThreshold: 90,
+          tooManyOldGCThreshold: 20,
         }
         this.analysisConfig = {...this.analysisConfigModel}
         this.updateUrl()

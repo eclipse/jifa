@@ -349,7 +349,7 @@ exports.default = {
           checkCPUTime: "Check CPU Time. If real is long but usr，sys are short，this may be owing to disk I/O or interference between processes or containers.",
           shrinkYoungGen: "Decrease -Xmn to shrink young generation capacity",
           shrinkYoungGenG1: "Decrease -XX:G1MaxNewSizePercent to shrink young generation capacity",
-          checkEvacuationFailure: "Check if there is To-space exhausted during. If there is, one way is not to set -Xmn option and the other way is to check if there is memory leak or early promotion.",
+          checkEvacuationFailure: "Check if there is To-space exhausted during. If there is, one way is not to set -Xmn option and the other way is to check if there is too many humongous object allocation, memory leak or early promotion.",
           checkMemoryLeak: "Check if there is memory leak by means of Heap Dump etc.",
           checkFastPromotion: "If memory used in old generation increases rapidly before the full gc，check if there is early promotion led by long life cycle objects by means of Heap Dump before Full GC.",
         }

@@ -25,18 +25,19 @@ public class AnalysisConfig {
      * Notice: This class should be kept in sync with initializePage in GCLog.vue.
      */
     private TimeRange timeRange;
-    private int longPauseThreshold;
-    private int longConcurrentThreshold;
-    private int youngGCFrequentIntervalThreshold;
-    private int oldGCFrequentIntervalThreshold;
-    private int fullGCFrequentIntervalThreshold;
-    private int highOldUsageThreshold;
-    private int highHumongousUsageThreshold;
-    private int highHeapUsageThreshold;
-    private int highMetaspaceUsageThreshold;
-    private int smallGenerationThreshold;
-    private int highPromotionThreshold;
-    private int badThroughputThreshold;
+    private double longPauseThreshold;
+    private double longConcurrentThreshold;
+    private double youngGCFrequentIntervalThreshold;
+    private double oldGCFrequentIntervalThreshold;
+    private double fullGCFrequentIntervalThreshold;
+    private double highOldUsageThreshold;
+    private double highHumongousUsageThreshold;
+    private double highHeapUsageThreshold;
+    private double highMetaspaceUsageThreshold;
+    private double smallGenerationThreshold;
+    private double highPromotionThreshold;
+    private double badThroughputThreshold;
+    private double tooManyOldGCThreshold;
 
     // Basically mirror of analysisConfigModel in GCLog.vue, but this function is for testing and debugging.
     // No need to keep sync with frontend
@@ -55,6 +56,7 @@ public class AnalysisConfig {
         config.setSmallGenerationThreshold(10);
         config.setHighPromotionThreshold(3);
         config.setBadThroughputThreshold(90);
+        config.setTooManyOldGCThreshold(20);
         return config;
     }
 }

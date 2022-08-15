@@ -347,7 +347,7 @@ exports.default = {
           checkCPUTime: "检查GC的CPU Time，如果real时间长而usr，sys时间短，可能是磁盘IO或者同一宿主机上不同进程或容器互相干扰导致的",
           shrinkYoungGen: "适当减小参数-Xmn，来减少年轻代大小",
           shrinkYoungGenG1: "适当减小参数-XX:G1MaxNewSizePercent，来减少年轻代大小",
-          checkEvacuationFailure: "如果GC出现了To-space exhausted的情况，会大幅拉长GC暂停，解决方法一方面是G1尽量不要设Xmn参数，另一方面考虑排查是否存在内存泄露或者晋升过快等情况",
+          checkEvacuationFailure: "如果GC出现了To-space exhausted的情况，会大幅拉长GC暂停，解决方法一方面是G1尽量不要设Xmn参数，另一方面考虑排查是否存在大对象分配过多或者内存泄露或者晋升过快等情况",
           checkMemoryLeak: "通过Heap Dump等方式排查是否存在内存泄露的情况",
           checkFastPromotion: "如果这次Full GC前老年代增长地较快，考虑通过做Full GC前的Heap Dump来分析是否存在长生命周期对象引起的过早晋升",
         }

@@ -65,7 +65,7 @@ import {gclogService} from '@/util'
 import axios from "axios";
 import Hint from "@/components/gclog/Hint";
 import * as gcutil from "@/components/gclog/GCLogUtil"
-import {formatTimePeriod} from "@/components/gclog/GCLogUtil";
+import {formatTimePeriod, isOldGC, isYoungGC} from "@/components/gclog/GCLogUtil";
 
 export default {
   props: ["file", "metadata", "analysisConfig"],
@@ -134,7 +134,7 @@ export default {
       this.metadata.allEventTypes.forEach((event, index) => order[event] = index)
       items.sort((i1, i2) => (order[i1.name.value] - order[i2.name.value]))
     },
-    formatDataItem(isPhase, originalData, originalParent) {
+    formatDataItem(isPhase, originalData, originalParent, allData) {
       return {
         key: (originalParent === null ? '' : originalParent.name) + originalData.name,
         name: {
@@ -145,7 +145,8 @@ export default {
         },
         count: {
           value: originalData.count,
-          bad: this.badCount(isPhase, originalData, originalParent)
+          bad: isPhase ? this.badPhaseCount(originalData, originalParent)
+              : this.badCauseCount(originalData, originalParent)
         },
         intervalAvg: {
           value: formatTimePeriod(originalData.intervalAvg),
@@ -168,11 +169,20 @@ export default {
         },
       }
     },
-    badCount(isPhase, originalData, originalParent) {
-      if (!isPhase) {
-        const cause = originalData.name;
-        if ((originalParent.count >= 10 && originalData.count / originalParent.count >= 0.3) &&
-            (cause === 'G1 Humongous Allocation' || cause === 'GCLocker Initiated GC')) {
+    badCauseCount(item, parent) {
+      const cause = item.name;
+      if ((parent.count >= 10 && item.count / parent.count >= 0.3) &&
+          (cause === 'G1 Humongous Allocation' || cause === 'GCLocker Initiated GC')) {
+        return true
+      }
+      return false
+    },
+    badPhaseCount(item, parent) {
+      if (isOldGC(item.name)) {
+        const youngGCCount = this.originalData.filter(d => isYoungGC(d.name))
+            .map(d => d.count)
+            .reduce((prev, next, index, array) => prev + next, 0)
+        if (item.count >= 5 && item.count > youngGCCount * this.analysisConfig.tooManyOldGCThreshold / 100) {
           return true
         }
       }

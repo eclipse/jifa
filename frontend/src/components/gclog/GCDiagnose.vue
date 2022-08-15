@@ -23,6 +23,7 @@
         <hr style="margin: 0"/>
         <div style="padding: 20px">
           <p style="font-weight: bold">
+            <i class="el-icon-warning"/>
             <template v-for="part in problem">
               <a v-if="part.action"
                  href="javascript:void(0);"
@@ -107,9 +108,6 @@ export default {
         if (!chart) {
           chart = echarts.init(canvas)
           const option = {
-            tooltip: {
-
-            },
             color: colors,
             legend: {
               top: 10,
