@@ -33,7 +33,7 @@
     <el-table :data="displayData"
               :loading="loading"
               row-key="key"
-              :default-expand-all="false"
+              :default-expand-all="true"
               size="medium"
               max-height="500"
               :tree-props="{children: 'children', hasChildren: 'hasChildren'}"
@@ -76,7 +76,7 @@ export default {
       metrics: null,
       displayModeOptions: ["pauseMode", "structuredMode", "causeMode"],
       columns: ['name', 'count', 'intervalAvg', 'intervalMin', 'durationAvg', 'durationMax', 'durationTotal'],
-      displayMode: "structuredMode",
+      displayMode: "pauseMode",
       originalData: [],
       displayData: [],
     }
@@ -201,7 +201,7 @@ export default {
       return phase !== "CMS" && phase !== "Concurrent Cycle"
     },
     columnWidth(column) {
-      return column === "name" ? undefined : "100"
+      return column === "name" ? undefined : "120"
     }
   },
   watch: {

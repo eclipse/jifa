@@ -65,12 +65,12 @@
         </el-drawer>
         <el-dialog
             :title="$t('jifa.gclog.analysisConfig')"
-            width="700px"
+            width="800px"
             :visible.sync="analysisConfigVisible"
             :close-on-click-modal=false
             append-to-body>
           <el-form ref="configForm" :model="analysisConfigModel" :rules="analysisConfigRules"
-                   label-width="200px" size="medium" label-position="right"
+                   label-width="280px" size="medium" label-position="right"
                    style="margin-top: 10px" status-icon :show-message=false>
             <el-form-item prop="timeRange">
               <template slot="label">

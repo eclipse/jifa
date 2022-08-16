@@ -25,7 +25,7 @@
           <Hint :info="getGenerationHint(scope.row.generation)"/>
         </template>
       </el-table-column>
-      <el-table-column v-for="metric in metrics" :key="metric" props="metric">
+      <el-table-column v-for="metric in metrics" :key="metric" props="metric" :width="columnWidth(metric)">
         <template slot="header">
           {{ $t(`jifa.gclog.memoryStats.${metric}`) }}
           <Hint :info="getMetricHint(metric)"/>
@@ -136,6 +136,9 @@ export default {
         hint.push(this.$t('jifa.gclog.memoryStats.g1DynamicCapacity'))
       }
       return hint
+    },
+    columnWidth(column) {
+      return column.startsWith("usedAvgAfter") ? 200 : 150
     }
   },
   watch: {
