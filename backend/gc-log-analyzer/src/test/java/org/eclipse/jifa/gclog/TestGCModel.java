@@ -172,6 +172,8 @@ public class TestGCModel {
         Assert.assertEquals(pauseStatistics.getThroughput(), 1 - (1000 + 100 + 200 + 200 + 400) / 20000.0, DELTA);
         Assert.assertEquals(pauseStatistics.getPauseAvg(), (1000 + 100 + 200 + 200 + 400) / 5.0, DELTA);
         Assert.assertEquals(pauseStatistics.getPauseMedian(), 200, DELTA);
+        Assert.assertEquals(pauseStatistics.getPauseP99(), 0.96 * 1000 + 0.04 * 400, DELTA);
+        Assert.assertEquals(pauseStatistics.getPauseP999(), 0.996 * 1000 + 0.004 * 400, DELTA);
         Assert.assertEquals(pauseStatistics.getPauseMax(), 1000.0, DELTA);
 
         // pause Distribution

@@ -146,6 +146,8 @@ exports.default = {
       gclogFile: "GC Log File",
       navigation: 'Navigation',
       navToTop: 'Top',
+      gcCause: 'GC Cause',
+      clickToChooseTime: 'Click To Custom',
       gclogFilePlaceholder: "Fill with the URL of analysis page of the file. To choose the time range of analysis, please config it in the page of that file in advance. You can compare two time ranges of one GC log.",
       stwTooltip: "The Java program stops the world in this phase",
       analysisConfig: 'Analysis Config',
@@ -192,6 +194,8 @@ exports.default = {
         pauseAvg: "Average Pause",
         pauseMax: "Max Pause",
         pauseMedian: "Median Pause",
+        pauseP99: "Pause P99",
+        pauseP999: "Pause P999",
         pauseTime: "Pause Time",
         pauseCount: "Pause Count"
       },

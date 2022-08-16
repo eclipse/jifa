@@ -15,6 +15,7 @@ package org.eclipse.jifa.gclog.vo;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import static org.eclipse.jifa.gclog.util.Constant.UNKNOWN_DOUBLE;
@@ -22,6 +23,7 @@ import static org.eclipse.jifa.gclog.util.Constant.UNKNOWN_DOUBLE;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode
 public class TimeRange {
     //unit is ms
     private double start = UNKNOWN_DOUBLE;

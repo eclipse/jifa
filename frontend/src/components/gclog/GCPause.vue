@@ -53,7 +53,7 @@ export default {
     return {
       loadingStats: true,
       loadingDistribution: true,
-      columns: ['throughput', 'pauseAvg', 'pauseMedian' ,'pauseMax'],
+      columns: ['throughput', 'pauseAvg', 'pauseMedian', 'pauseP99', 'pauseP999', 'pauseMax'],
       tableData: [],
       distribution: null,
     }
@@ -78,6 +78,14 @@ export default {
           pauseMedian: {
             value: formatTimePeriod(resp.data.pauseMedian),
             bad: resp.data.pauseMedian >= this.analysisConfig.longPauseThreshold
+          },
+          pauseP99: {
+            value: formatTimePeriod(resp.data.pauseP99),
+            bad: resp.data.pauseP99 >= this.analysisConfig.longPauseThreshold
+          },
+          pauseP999: {
+            value: formatTimePeriod(resp.data.pauseP999),
+            bad: resp.data.pauseP999 >= this.analysisConfig.longPauseThreshold
           },
           pauseMax: {
             value: formatTimePeriod(resp.data.pauseMax),

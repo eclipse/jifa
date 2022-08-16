@@ -37,8 +37,9 @@
           <i class="el-icon-timer icon"/>
           <span class="content" style="margin-right: 10px">{{ $t('jifa.gclog.analysisTimeRange') }}</span>
           <a href="javascript:void(0);" @click="() => $emit('showAnalysisConfig')">
-            <span class="content" style="margin-right: 20px">{{ this.configTimeRange }}</span>
+            <span class="content">{{ this.configTimeRange }}</span>
           </a>
+          <span class="content" style="margin-right: 20px; font-size: 10px">{{ '(' + $t('jifa.gclog.clickToChooseTime') + ')' }}</span>
           <span class="content" style="margin-right: 10px">{{ $t('jifa.gclog.duration') }}</span>
           <span class="content">{{ this.configDuration }}</span>
         </div>

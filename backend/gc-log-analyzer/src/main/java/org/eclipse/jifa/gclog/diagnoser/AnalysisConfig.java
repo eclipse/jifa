@@ -14,12 +14,16 @@ package org.eclipse.jifa.gclog.diagnoser;
 
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.eclipse.jifa.gclog.model.GCModel;
 import org.eclipse.jifa.gclog.vo.TimeRange;
 
 @Data
 @NoArgsConstructor
+@EqualsAndHashCode
+@ToString
 public class AnalysisConfig {
     /*
      * Notice: This class should be kept in sync with initializePage in GCLog.vue.
@@ -59,4 +63,6 @@ public class AnalysisConfig {
         config.setTooManyOldGCThreshold(20);
         return config;
     }
+
+
 }

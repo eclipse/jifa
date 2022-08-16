@@ -24,5 +24,7 @@ public class PauseStatistics {
     double throughput;
     double pauseAvg;
     double pauseMedian;
+    double pauseP99;
+    double pauseP999;
     double pauseMax;
 }

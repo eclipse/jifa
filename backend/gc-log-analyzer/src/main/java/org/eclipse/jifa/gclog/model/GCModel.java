@@ -294,8 +294,13 @@ public abstract class GCModel {
         iterateEventsWithinTimeRange(gcEvents, range, e -> {
             e.pauseEventOrPhasesDo(event -> pause.add(event.getPause()));
         });
-        return new PauseStatistics(pause.getN() == 0 ? Constant.UNKNOWN_DOUBLE : 1 - pause.getSum() / range.length(),
-                pause.average(), pause.getMedian(), pause.getMax());
+        return new PauseStatistics(
+                pause.getN() == 0 ? Constant.UNKNOWN_DOUBLE : 1 - pause.getSum() / range.length(),
+                pause.average(),
+                pause.getMedian(),
+                pause.getPercentile(0.99),
+                pause.getPercentile(0.999),
+                pause.getMax());
     }
 
     public Map<String, int[]> getPauseDistribution(TimeRange range, int[] partitions) {

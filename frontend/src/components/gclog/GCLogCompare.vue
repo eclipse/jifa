@@ -170,6 +170,18 @@ export default {
               compare: "the less the better",
             },
             {
+              key: 'pauseP99',
+              name: 'pauseInfo.pauseP99',
+              format: formatTimePeriod,
+              compare: "the less the better",
+            },
+            {
+              key: 'pauseP999',
+              name: 'pauseInfo.pauseP999',
+              format: formatTimePeriod,
+              compare: "the less the better",
+            },
+            {
               key: 'pauseMax',
               name: 'pauseInfo.pauseMax',
               format: formatTimePeriod,

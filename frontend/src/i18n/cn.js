@@ -144,6 +144,8 @@ exports.default = {
       gclogFile: "GC日志文件",
       navigation: '导航',
       navToTop: '回到最上方',
+      gcCause: 'GC原因',
+      clickToChooseTime: '点击可自选时间',
       gclogFilePlaceholder: "填写文件分析页面的URL，如果要选择分析的时间段请在文件分析页面里先配置好。可以对比同一个GC日志的两个不同时间段",
       stwTooltip: "程序在这个阶段会暂停(stop the world)",
       analysisConfig: '分析配置',
@@ -190,6 +192,8 @@ exports.default = {
         pauseAvg: "平均暂停时间",
         pauseMax: "最大暂停时间",
         pauseMedian: "暂停时间中位数",
+        pauseP99: "暂停时间P99",
+        pauseP999: "暂停时间P999",
         pauseTime: "暂停时间",
         pauseCount: "暂停次数"
       },

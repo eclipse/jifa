@@ -27,6 +27,7 @@ public class DoubleData {
     // min value of double is not Double.MIN_VALUE
     private double max = -Double.MAX_VALUE;
     private List<Double> originalData;
+    private boolean dataSorted;
 
     public DoubleData(boolean recordOriginalData) {
         // recording all data is expensive, only do it if necessary
@@ -40,16 +41,26 @@ public class DoubleData {
     }
 
     public double getMedian() {
+        return getPercentile(0.5);
+    }
+
+    public double getPercentile(double percentile) {
         // should not call this method if originalData is null
         if (originalData.size() == 0) {
             return UNKNOWN_DOUBLE;
         }
-        Collections.sort(originalData);
-        int mid = originalData.size() / 2;
-        if (originalData.size() == mid * 2) {
-            return (originalData.get(mid - 1) + originalData.get(mid)) / 2;
+        if (!dataSorted) {
+            Collections.sort(originalData);
+            dataSorted = true;
+        }
+
+        double p = (n - 1) * percentile;
+        int i = (int) Math.floor(p);
+        double weight = p - i;
+        if (weight == 0) {
+            return originalData.get(i);
         } else {
-            return originalData.get(mid);
+            return weight * originalData.get(i + 1) + (1 - weight) * originalData.get(i);
         }
     }
 
@@ -59,6 +70,7 @@ public class DoubleData {
         }
         if (originalData != null) {
             originalData.add(x);
+            dataSorted = false;
         }
         sum += x;
         n++;
