@@ -224,8 +224,8 @@ import {gclogService} from "@/util";
 
 <style scoped>
   .filter{
+    overflow: hidden;
     font-size: 14px;
-    height: 50px;
   }
 
   .filter-item{
