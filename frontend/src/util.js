@@ -97,34 +97,6 @@ export function formatTime (number, format) {
   return format;
 }
 
-// e.g 100,000 (ms) -> '1min 40s'
-export function formatTimePeriod(time) {
-  // negative means not available
-  if (time < 0 || typeof time === "undefined") {
-    return "N/A"
-  }
-  if (time < 100) {
-    const digit = time < 0.001 ? 0 : time < 10 ? 3 : 1;
-    return `${time.toFixed(digit)}ms`
-  }
-  const ms = Math.floor(time % 1000);
-  const second = Math.floor(time % 60000 / 1000);
-  const minute = Math.floor(time % 3600000 / 60000);
-  const hour = Math.floor(time / 3600000);
-  const unit = ['h', 'min', 's', 'ms'];
-  let parts = [];
-  [hour, minute, second, ms].forEach((value, index) => {
-    if (value !== 0 && (index !== 3 || time < 60000)) {
-      parts.push(value + unit[index])
-    }
-  })
-  return parts.join(' ');
-}
-
-export function toSizeSpeedString(bytes) {
-  return toReadableSizeWithUnit(bytes)+"/s"
-}
-
 function formatNumber (n) {
   n = n.toString()
   return n[1] ? n : '0' + n;

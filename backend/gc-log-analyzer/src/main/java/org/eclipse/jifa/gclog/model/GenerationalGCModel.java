@@ -13,9 +13,12 @@
 
 package org.eclipse.jifa.gclog.model;
 
-import org.eclipse.jifa.gclog.vo.GCCollectorType;
-import org.eclipse.jifa.gclog.vo.GCLogStyle;
-import org.eclipse.jifa.gclog.vo.GCSpecialSituation;
+import org.eclipse.jifa.gclog.event.GCEvent;
+import org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea;
+import org.eclipse.jifa.gclog.event.evnetInfo.GCMemoryItem;
+import org.eclipse.jifa.gclog.event.evnetInfo.GCSpecialSituation;
+import org.eclipse.jifa.gclog.model.modeInfo.GCCollectorType;
+import org.eclipse.jifa.gclog.model.modeInfo.GCLogStyle;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +32,7 @@ public abstract class GenerationalGCModel extends GCModel {
     }
 
     private void removeYoungGCThatBecomeFullGC() {
-        if (getLogStyle() != GCLogStyle.UNIFIED_STYLE) {
+        if (getLogStyle() != GCLogStyle.UNIFIED) {
             return;
         }
         List<GCEvent> newEvents = new ArrayList<>();
@@ -64,9 +67,21 @@ public abstract class GenerationalGCModel extends GCModel {
         }
     }
 
+    private void youngGenUsedShouldBeZeroAfterFullGC() {
+        if (getLogStyle() != GCLogStyle.PRE_UNIFIED) {
+            return;
+        }
+        for (GCEvent event : getGcEvents()) {
+            if (event.getEventType() == FULL_GC && event.getMemoryItem(MemoryArea.YOUNG) != null) {
+                event.getMemoryItem(MemoryArea.YOUNG).setPostUsed(0);
+            }
+        }
+    }
+
     @Override
     protected void doBeforeCalculatingDerivedInfo() {
         removeYoungGCThatBecomeFullGC();
         fixYoungGCPromotionFail();
+        youngGenUsedShouldBeZeroAfterFullGC();
     }
 }

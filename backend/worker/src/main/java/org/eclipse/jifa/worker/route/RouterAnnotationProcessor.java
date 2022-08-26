@@ -21,6 +21,7 @@ import org.eclipse.jifa.common.ErrorCode;
 import org.eclipse.jifa.common.JifaException;
 import org.eclipse.jifa.common.request.PagingRequest;
 import org.eclipse.jifa.common.util.HTTPRespGuarder;
+import org.eclipse.jifa.gclog.diagnoser.AnalysisConfig;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -47,6 +48,8 @@ class RouterAnnotationProcessor {
         converter.put(Boolean.class, Boolean::parseBoolean);
         converter.put(boolean.class, Boolean::parseBoolean);
         converter.put(int[].class, s -> new Gson().fromJson(s, int[].class));
+        converter.put(String[].class, s -> new Gson().fromJson(s, String[].class));
+        converter.put(AnalysisConfig.class, s -> new Gson().fromJson(s, AnalysisConfig.class));
     }
 
     static boolean processParamKey(List<Object> arguments, RoutingContext context, Method method, Parameter param) {

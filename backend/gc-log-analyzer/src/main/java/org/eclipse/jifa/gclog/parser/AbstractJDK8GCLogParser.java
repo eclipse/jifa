@@ -13,20 +13,27 @@
 
 package org.eclipse.jifa.gclog.parser;
 
-import org.eclipse.jifa.gclog.model.*;
-import org.eclipse.jifa.gclog.util.GCLogUtil;
-import org.eclipse.jifa.gclog.parser.ParseRule.PrefixAndValueParseRule;
-import org.eclipse.jifa.gclog.vo.*;
 import lombok.Data;
 import org.eclipse.jifa.common.util.ErrorUtil;
+import org.eclipse.jifa.gclog.event.GCEvent;
+import org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea;
+import org.eclipse.jifa.gclog.event.evnetInfo.CpuTime;
+import org.eclipse.jifa.gclog.event.evnetInfo.GCMemoryItem;
+import org.eclipse.jifa.gclog.event.evnetInfo.ReferenceGC;
+import org.eclipse.jifa.gclog.model.GCEventType;
+import org.eclipse.jifa.gclog.model.GCModel;
+import org.eclipse.jifa.gclog.model.modeInfo.VmOptions;
+import org.eclipse.jifa.gclog.parser.ParseRule.PrefixAndValueParseRule;
+import org.eclipse.jifa.gclog.util.Constant;
+import org.eclipse.jifa.gclog.util.GCLogUtil;
 
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static org.eclipse.jifa.gclog.model.GCEvent.UNKNOWN_DOUBLE;
-import static org.eclipse.jifa.gclog.model.GCModel.KB2MB;
-import static org.eclipse.jifa.gclog.model.GCModel.MS2S;
+import static org.eclipse.jifa.gclog.util.Constant.UNKNOWN_DOUBLE;
+import static org.eclipse.jifa.gclog.util.Constant.KB2MB;
+import static org.eclipse.jifa.gclog.util.Constant.MS2S;
 
 /*
  * We mainly consider -XX:+PrintGCDetails. -XX:+PrintReferenceGC and -XX:+PrintApplicationStopTime  are also considered
@@ -238,21 +245,22 @@ public abstract class AbstractJDK8GCLogParser extends AbstractGCLogParser {
                     // let subclass parse it
                     title = token.getValue();
                 } else if (token.getType() == TOKEN_SAFEPOINT) {
-                    doBeforeParsingGCTraceTime(event);
-                    doParseSafePoint(event, token.getValue());
+                    if (doBeforeParsingGCTraceTime(event)) {
+                        doParseSafePoint(event, token.getValue());
+                    }
                     return;
                 } else if (token.getType() == TOKEN_MEMORY_CHANGE) {
-                    int[] memories = GCLogUtil.parseMemorySizeFromTo(token.getValue(), (int) KB2MB);
-                    GCCollectionResultItem item = new GCCollectionResultItem(HeapGeneration.TOTAL, memories);
-                    event.getOrCreateCollectionResult().setSummary(item);
+                    long[] memories = GCLogUtil.parseMemorySizeFromTo(token.getValue(), (int) KB2MB);
+                    GCMemoryItem item = new GCMemoryItem(MemoryArea.HEAP, memories);
+                    event.setMemoryItem(item);
                 } else if (token.getType() == TOKEN_REFERENCE_GC) {
                     referenceGC = token.getValue();
                 } else if (token.getType() == TOKEN_DURATION) {
                     event.setDuration(MS2S * Double.parseDouble(token.getValue()));
                 } else if (token.getType() == TOKEN_METASPACE) {
-                    int[] memories = GCLogUtil.parseMemorySizeFromTo(token.getValue(), (int) KB2MB);
-                    GCCollectionResultItem item = new GCCollectionResultItem(HeapGeneration.METASPACE, memories);
-                    event.getOrCreateCollectionResult().addItem(item);
+                    long[] memories = GCLogUtil.parseMemorySizeFromTo(token.getValue(), (int) KB2MB);
+                    GCMemoryItem item = new GCMemoryItem(MemoryArea.METASPACE, memories);
+                    event.setMemoryItem(item);
                 } else if (token.getType() == TOKEN_RIGHT_BRACKET) {
                     // do nothing
                 } else {
@@ -262,11 +270,13 @@ public abstract class AbstractJDK8GCLogParser extends AbstractGCLogParser {
             // jni weak does not print reference count
 
             if (referenceGC != null || "JNI Weak Reference".equals(title)) {
-                doBeforeParsingGCTraceTime(event);
-                doParseReferenceGC(event, title, referenceGC);
+                if (doBeforeParsingGCTraceTime(event)) {
+                    doParseReferenceGC(event, title, referenceGC);
+                }
             } else if (title != null) {
-                doBeforeParsingGCTraceTime(event);
-                doParseGCTraceTime(event, title);
+                if (doBeforeParsingGCTraceTime(event)) {
+                    doParseGCTraceTime(event, title);
+                }
             }
         } catch (Exception e) {
             LOGGER.debug(e.getMessage());
@@ -288,18 +298,7 @@ public abstract class AbstractJDK8GCLogParser extends AbstractGCLogParser {
         if (!s.startsWith("Total time for which application")) {
             return;
         }
-        int begin = s.indexOf("stopped: ") + "stopped: ".length();
-        int end = s.indexOf(" seconds, ");
-        double duration = Double.parseDouble(s.substring(begin, end));
-        begin = s.lastIndexOf("took: ") + "took: ".length();
-        end = s.lastIndexOf(" seconds");
-        double timeToEnter = Double.parseDouble(s.substring(begin, end));
-        Safepoint safepoint = new Safepoint();
-        // safepoint is printed at the end of it
-        safepoint.setStartTime(event.getStartTime() - duration);
-        safepoint.setDuration(duration);
-        safepoint.setTimeToEnter(timeToEnter);
-        getModel().putEvent(safepoint);
+        parseSafepointStop(event.getStartTime(), s);
     }
 
     // "123 refs"
@@ -353,7 +352,9 @@ public abstract class AbstractJDK8GCLogParser extends AbstractGCLogParser {
         }
     }
 
-    private void doBeforeParsingGCTraceTime(GCEvent event) {
+    private double lastUptime = UNKNOWN_DOUBLE;
+
+    private boolean doBeforeParsingGCTraceTime(GCEvent event) {
         double timestamp = event.getStartTimestamp();
         double uptime = event.getStartTime();
         GCModel model = getModel();
@@ -362,13 +363,27 @@ public abstract class AbstractJDK8GCLogParser extends AbstractGCLogParser {
             model.setReferenceTimestamp(startTimestamp);
         }
         if (event.getStartTime() == UNKNOWN_DOUBLE) {
-            uptime = timestamp - model.getReferenceTimestamp();
+            if (timestamp != UNKNOWN_DOUBLE && model.getReferenceTimestamp() != UNKNOWN_DOUBLE) {
+                uptime = timestamp - model.getReferenceTimestamp();
+            } else {
+                // HACK: There may be rare concurrency issue in printing uptime and datestamp when two threads
+                // are printing simultaneously and this may lead to problem in parsing. Copy the uptime from
+                // the last known uptime.
+                uptime = lastUptime;
+            }
             event.setStartTime(uptime);
+        }
+        if (event.getStartTime() == UNKNOWN_DOUBLE) {
+            // we have no way to know uptime
+            return false;
+        } else {
+            lastUptime = event.getStartTime();
         }
         if (model.getStartTime() == UNKNOWN_DOUBLE) {
             model.setStartTime(uptime);
         }
         model.setEndTime(Math.max(uptime, model.getEndTime()));
+        return true;
     }
 
     private void pushSentenceToAssemble(List<GCLogToken> sentence) {
@@ -504,12 +519,14 @@ public abstract class AbstractJDK8GCLogParser extends AbstractGCLogParser {
         } else if ((title = GCLogUtil.stringSubEqualsAny(line, index, TRACETIME_GC_START_TITLES)) != null) {
             // gc cause is a part of title
             int end = index + title.length();
+            boolean endWithEmbeddedSentence = false;
             while (true) {
                 if (!GCLogUtil.stringSubEquals(line, end, " (")) {
                     break;
                 }
                 // maybe the () is an embedded sentence
                 if (GCLogUtil.stringSubEqualsAny(line, end, EMBEDDED_SENTENCE_WITH_BRACKET) != null) {
+                    endWithEmbeddedSentence = true;
                     break;
                 }
                 int rightBracket = GCLogUtil.nextBalancedRightBracket(line, end + 2);
@@ -518,7 +535,7 @@ public abstract class AbstractJDK8GCLogParser extends AbstractGCLogParser {
                 }
                 end = rightBracket + 1;
             }
-            if (end < line.length() && line.charAt(end) == ' ') {
+            if (!endWithEmbeddedSentence && end < line.length() && line.charAt(end) == ' ') {
                 end++;
             }
             return new GCLogToken(line.substring(index, end), end);
@@ -769,15 +786,15 @@ public abstract class AbstractJDK8GCLogParser extends AbstractGCLogParser {
     }
 
     protected static void copyPhaseDataToStart(GCEvent phaseStart, GCEvent phase) {
-        if (phaseStart.getDuration() == GCEvent.UNKNOWN_DOUBLE) {
-            if (phase.getDuration() != GCEvent.UNKNOWN_DOUBLE) {
+        if (phaseStart.getDuration() == Constant.UNKNOWN_DOUBLE) {
+            if (phase.getDuration() != Constant.UNKNOWN_DOUBLE) {
                 phaseStart.setDuration(phase.getDuration());
-            } else if (phase.getStartTime() != GCEvent.UNKNOWN_DOUBLE && phaseStart.getStartTime() != GCEvent.UNKNOWN_DOUBLE) {
+            } else if (phase.getStartTime() != Constant.UNKNOWN_DOUBLE && phaseStart.getStartTime() != Constant.UNKNOWN_DOUBLE) {
                 phaseStart.setDuration(phase.getStartTime() - phaseStart.getStartTime());
             }
         }
-        if (phase.getCollectionResult() != null && phaseStart.getCollectionResult() == null) {
-            phaseStart.setCollectionResult(phase.getCollectionResult());
+        if (phase.getMemoryItems() != null && phaseStart.getMemoryItems() == null) {
+            phaseStart.setMemoryItems(phase.getMemoryItems());
         }
         if (phase.getCpuTime() != null && phaseStart.getCpuTime() == null) {
             phaseStart.setCpuTime(phase.getCpuTime());

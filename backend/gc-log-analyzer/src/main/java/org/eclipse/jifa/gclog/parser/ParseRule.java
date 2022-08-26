@@ -13,8 +13,8 @@
 
 package org.eclipse.jifa.gclog.parser;
 
-import org.eclipse.jifa.gclog.util.GCLogUtil;
 import org.eclipse.jifa.gclog.util.FourConsumer;
+import org.eclipse.jifa.gclog.util.GCLogUtil;
 import org.eclipse.jifa.gclog.util.TriConsumer;
 
 import java.util.HashMap;

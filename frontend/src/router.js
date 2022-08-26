@@ -20,6 +20,8 @@ import heapDump from "./components/heapdump/HeapDump"
 
 import GCLog from "./components/gclog/GCLog"
 
+import GCLogCompare from "@/components/gclog/GCLogCompare";
+
 import threadDump from "./components/threaddump/ThreadDump"
 
 import auth from "./components/auth/Auth"
@@ -89,7 +91,13 @@ const routes = [
     name: 'gcLog',
     path: "/gcLog",
     component: GCLog,
-    props: (route) => ({file: route.query.file})
+    props: (route) => ({...route.query})
+  },
+  {
+    name: 'gcLogCompare',
+    path: "/gcLogCompare",
+    component: GCLogCompare,
+    props: (route) => ({...route.query})
   },
   {
     name: 'threadDump',

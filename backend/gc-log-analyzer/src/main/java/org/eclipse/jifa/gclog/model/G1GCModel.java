@@ -13,95 +13,81 @@
 
 package org.eclipse.jifa.gclog.model;
 
-import org.eclipse.jifa.gclog.vo.GCCollectionResultItem;
-import org.eclipse.jifa.gclog.vo.GCCollectorType;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import org.eclipse.jifa.gclog.vo.GCLogStyle;
-import org.eclipse.jifa.gclog.vo.HeapGeneration;
+import com.google.common.util.concurrent.AtomicDouble;
+import org.eclipse.jifa.gclog.event.GCEvent;
+import org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea;
+import org.eclipse.jifa.gclog.event.evnetInfo.GCMemoryItem;
+import org.eclipse.jifa.gclog.model.modeInfo.GCCollectorType;
+import org.eclipse.jifa.gclog.model.modeInfo.GCLogStyle;
+import org.eclipse.jifa.gclog.util.LongData;
+import org.eclipse.jifa.gclog.vo.TimeRange;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
-import static org.eclipse.jifa.gclog.model.GCEvent.*;
+import static org.eclipse.jifa.gclog.util.Constant.UNKNOWN_INT;
+import static org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea.*;
 import static org.eclipse.jifa.gclog.model.GCEventType.*;
 
 public class G1GCModel extends GCModel {
-    private int heapRegionSize = UNKNOWN_INT;   // in kb
+    private long heapRegionSize = UNKNOWN_INT;   // in b
     private boolean regionSizeExact = false;
+    private static GCCollectorType collector = GCCollectorType.G1;
 
     public void setRegionSizeExact(boolean regionSizeExact) {
         this.regionSizeExact = regionSizeExact;
     }
 
-    public void setHeapRegionSize(int heapRegionSize) {
+    public void setHeapRegionSize(long heapRegionSize) {
         this.heapRegionSize = heapRegionSize;
     }
 
-    public int getHeapRegionSize() {
+    public long getHeapRegionSize() {
         return heapRegionSize;
     }
 
-    private final static List<GCEventType> SUPPORTED_PHASE_EVENT_TYPES = Arrays.asList(
-            YOUNG_GC,
-            FULL_GC,
-            INITIAL_MARK,
-            G1_CONCURRENT_CYCLE,
-            G1_CONCURRENT_SCAN_ROOT_REGIONS,
-            CONCURRENT_MARK,
-            REMARK,
-            G1_PAUSE_CLEANUP
-    );
-
-    @Override
-    protected List<GCEventType> getSupportedPhaseEventTypes() {
-        return SUPPORTED_PHASE_EVENT_TYPES;
-    }
 
     public G1GCModel() {
-        super(GCCollectorType.G1);
+        super(collector);
     }
 
-    private final static List<String> METADATA_EVENT_TYPES = Arrays.asList(
-            YOUNG_GC.getName(),
-            G1_YOUNG_MIXED_GC.getName(),
-            G1_CONCURRENT_CYCLE.getName(),
-            FULL_GC.getName()
-    );
+    private static List<GCEventType> allEventTypes = GCModel.calcAllEventTypes(collector);
+    private static List<GCEventType> pauseEventTypes = GCModel.calcPauseEventTypes(collector);
+    private static List<GCEventType> mainPauseEventTypes = GCModel.calcMainPauseEventTypes(collector);
+    private static List<GCEventType> parentEventTypes = GCModel.calcParentEventTypes(collector);
+    private static List<GCEventType> importantEventTypes = List.of(YOUNG_GC, G1_MIXED_GC, FULL_GC, G1_CONCURRENT_CYCLE,
+            G1_CONCURRENT_MARK, G1_REMARK, G1_CONCURRENT_REBUILD_REMEMBERED_SETS, G1_PAUSE_CLEANUP);
 
     @Override
-    protected List<String> getMetadataEventTypes() {
-        return METADATA_EVENT_TYPES;
-
-    }
-
-    private final static List<String> PAUSE_EVENT_NAMES = Arrays.asList(
-            YOUNG_GC.getName(),
-            G1_YOUNG_MIXED_GC.getName(),
-            FULL_GC.getName(),
-            REMARK.getName(),
-            G1_PAUSE_CLEANUP.getName()
-    );
-
-    @Override
-    protected List<String> getPauseEventNames() {
-        return PAUSE_EVENT_NAMES;
+    protected List<GCEventType> getAllEventTypes() {
+        return allEventTypes;
     }
 
     @Override
-    protected void calculateBasicInfo() {
-        G1GCModelBasicInfo basicInfo = new G1GCModelBasicInfo();
-        basicInfo.setHeapRegionSize(heapRegionSize);
-        this.basicInfo = basicInfo;
-        super.calculateBasicInfo();
+    protected List<GCEventType> getPauseEventTypes() {
+        return pauseEventTypes;
     }
+
+    @Override
+    protected List<GCEventType> getMainPauseEventTypes() {
+        return mainPauseEventTypes;
+    }
+
+    @Override
+    protected List<GCEventType> getImportantEventTypes() {
+        return importantEventTypes;
+    }
+
+    @Override
+    protected List<GCEventType> getParentEventTypes() {
+        return parentEventTypes;
+    }
+
 
     private boolean collectionResultUsingRegion(GCEvent event) {
         GCEventType type = event.getEventType();
-        return (type == YOUNG_GC || type == FULL_GC || type == G1_YOUNG_MIXED_GC) &&
-                event.getCollectionResult() != null && event.getCollectionResult().getItems() != null;
+        return (type == YOUNG_GC || type == FULL_GC || type == G1_MIXED_GC) && event.getMemoryItems() != null;
     }
 
     private void inferHeapRegionSize() {
@@ -113,15 +99,15 @@ public class G1GCModel extends GCModel {
             if (!collectionResultUsingRegion(event)) {
                 continue;
             }
-            if (event.getCollectionResult().getSummary().getPreUsed() == UNKNOWN_INT) {
+            if (event.getMemoryItem(HEAP).getPreUsed() == UNKNOWN_INT) {
                 continue;
             }
-            int regionCount = event.getCollectionResult().getItems().stream()
-                    .filter(item -> item.getGeneration() != HeapGeneration.METASPACE)
-                    .mapToInt(GCCollectionResultItem::getPreUsed)
+            long regionCount = Arrays.stream(event.getMemoryItems())
+                    .filter(item -> item != null && item.getArea() != METASPACE && item.getArea() != HEAP)
+                    .mapToLong(GCMemoryItem::getPreUsed)
                     .sum();
-            double kbPerRegion = event.getCollectionResult().getSummary().getPreUsed() / (double) regionCount;
-            heapRegionSize = (int) Math.pow(2, Math.ceil(Math.log(kbPerRegion) / Math.log(2)));
+            double bytesPerRegion = event.getMemoryItem(HEAP).getPreUsed() / (double) regionCount;
+            heapRegionSize = (int) Math.pow(2, Math.ceil(Math.log(bytesPerRegion) / Math.log(2)));
             return;
         }
     }
@@ -134,8 +120,8 @@ public class G1GCModel extends GCModel {
             if (!collectionResultUsingRegion(event)) {
                 continue;
             }
-            for (GCCollectionResultItem item : event.getCollectionResult().getItems()) {
-                if (item.getGeneration() != HeapGeneration.METASPACE) {
+            for (GCMemoryItem item : event.getMemoryItems()) {
+                if (item != null && item.getArea() != MemoryArea.METASPACE && item.getArea() != HEAP) {
                     item.multiply(heapRegionSize);
                 }
             }
@@ -144,18 +130,50 @@ public class G1GCModel extends GCModel {
 
     @Override
     protected void doBeforeCalculatingDerivedInfo() {
-        if (getLogStyle() == GCLogStyle.UNIFIED_STYLE) {
+        if (getLogStyle() == GCLogStyle.UNIFIED) {
             inferHeapRegionSize();
             adjustMemoryInfo();
         }
     }
 
-    @EqualsAndHashCode(callSuper = true)
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class G1GCModelBasicInfo extends GCModelBasicInfo {
-        private int heapRegionSize = UNKNOWN_INT;
-        private String periodicGCInterval = null;
+    @Override
+    protected void calculateUsedAvgAfterOldGC(TimeRange range, LongData[][] data) {
+        AtomicReference<GCEvent> lastMixedGC = new AtomicReference<>();
+        AtomicDouble lastRemarkEndTime = new AtomicDouble(Double.MAX_VALUE);
+        iterateEventsWithinTimeRange(getGcEvents(), range, event -> {
+            GCEventType type = event.getEventType();
+            // read old from the last mixed gc of old gc cycle
+            if (type == G1_MIXED_GC) {
+                lastMixedGC.set(event);
+            } else if (type == YOUNG_GC || type == G1_CONCURRENT_CYCLE || type == FULL_GC) {
+                GCEvent mixedGC = lastMixedGC.get();
+                if (mixedGC != null) {
+                    if (mixedGC.getMemoryItem(OLD) != null) {
+                        data[1][3].add(mixedGC.getMemoryItem(OLD).getPostUsed());
+                    }
+                    lastMixedGC.set(null);
+                }
+            }
+            // read humongous and metaspace from the gc after remark
+            if (event.getEventType() == G1_CONCURRENT_CYCLE) {
+                if (event.getLastPhaseOfType(G1_CONCURRENT_MARK_ABORT) != null) {
+                    return;
+                }
+                GCEvent remark = event.getLastPhaseOfType(G1_REMARK);
+                if (remark != null) {
+                    lastRemarkEndTime.set(remark.getEndTime());
+                }
+            } else if ((event.getEventType() == YOUNG_GC || event.getEventType() == FULL_GC || event.getEventType() == G1_MIXED_GC)
+                    && event.getStartTime() > lastRemarkEndTime.get()) {
+                if (event.getMemoryItem(HUMONGOUS) != null) {
+                    data[2][3].add(event.getMemoryItem(HUMONGOUS).getPreUsed());
+
+                }
+                if (event.getMemoryItem(METASPACE) != null) {
+                    data[4][3].add(event.getMemoryItem(METASPACE).getPreUsed());
+                }
+                lastRemarkEndTime.set(Double.MAX_VALUE);
+            }
+        });
     }
 }

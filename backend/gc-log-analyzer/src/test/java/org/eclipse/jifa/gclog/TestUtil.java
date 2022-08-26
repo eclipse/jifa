@@ -13,6 +13,10 @@
 
 package org.eclipse.jifa.gclog;
 
+import org.eclipse.jifa.gclog.diagnoser.AnalysisConfig;
+import org.eclipse.jifa.gclog.model.GCModel;
+import org.eclipse.jifa.gclog.vo.TimeRange;
+
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;

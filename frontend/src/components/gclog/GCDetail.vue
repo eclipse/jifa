@@ -64,7 +64,7 @@
             </el-date-picker>
 
             <span class="gc-detail-number-parent" v-if="referenceTimestamp < 0">
-              <el-tooltip v-if="referenceTimestamp < 0" effect="dark" :content="this.$t('jifa.gclog.noRealTime')" placement="top-start">
+              <el-tooltip v-if="referenceTimestamp < 0" effect="dark" :content="this.$t('jifa.gclog.noDatestamp')" placement="top-start">
                 <i class="el-icon-warning"></i>
               </el-tooltip>
 
@@ -178,7 +178,7 @@ import {gclogService} from "@/util";
       },
       fetchMetadata() {
         axios.get(gclogService(this.file, 'metadata')).then(resp => {
-          this.gcEventTypeOptions = resp.data.eventTypes;
+          this.gcEventTypeOptions = resp.data.parentEventTypes;
           this.gcCauseOptions = resp.data.causes;
           this.referenceTimestamp = resp.data.timestamp;
           this.startTime = resp.data.startTime
@@ -224,8 +224,8 @@ import {gclogService} from "@/util";
 
 <style scoped>
   .filter{
+    overflow: hidden;
     font-size: 14px;
-    height: 50px;
   }
 
   .filter-item{

@@ -14,15 +14,21 @@
 package org.eclipse.jifa.gclog.parser;
 
 import org.apache.commons.lang.StringUtils;
-import org.eclipse.jifa.gclog.util.GCLogUtil;
-import org.eclipse.jifa.gclog.model.GCEvent;
+import org.eclipse.jifa.gclog.event.GCEvent;
+import org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea;
+import org.eclipse.jifa.gclog.event.evnetInfo.CpuTime;
+import org.eclipse.jifa.gclog.event.evnetInfo.GCMemoryItem;
+import org.eclipse.jifa.gclog.event.evnetInfo.GCSpecialSituation;
 import org.eclipse.jifa.gclog.model.GCEventType;
 import org.eclipse.jifa.gclog.model.GCModel;
+import org.eclipse.jifa.gclog.model.modeInfo.GCCollectorType;
+import org.eclipse.jifa.gclog.parser.ParseRule.ParseRuleContext;
+import org.eclipse.jifa.gclog.parser.ParseRule.PrefixAndValueParseRule;
+import org.eclipse.jifa.gclog.util.Constant;
+import org.eclipse.jifa.gclog.util.GCLogUtil;
 
-import org.eclipse.jifa.gclog.parser.ParseRule.*;
-import org.eclipse.jifa.gclog.vo.*;
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.eclipse.jifa.gclog.model.GCEventType.*;
 import static org.eclipse.jifa.gclog.parser.ParseRule.ParseRuleContext.GCID;
@@ -45,9 +51,9 @@ public abstract class JDK11G1OrGenerationalGCLogParser extends AbstractJDK11GCLo
     }
 
     private static void initializeParseRules() {
-        withoutGCIDRules = new ArrayList<>();
+        withoutGCIDRules = new ArrayList<>(AbstractJDK11GCLogParser.getSharedWithoutGCIDRules());
 
-        withGCIDRules = new ArrayList<>();
+        withGCIDRules = new ArrayList<>(AbstractJDK11GCLogParser.getSharedWithGCIDRules());
         withGCIDRules.add(JDK11G1OrGenerationalGCLogParser::parseHeap);
         withGCIDRules.add(new PrefixAndValueParseRule("Pause Young", JDK11G1OrGenerationalGCLogParser::parseYoungFullGC));
         withGCIDRules.add(new PrefixAndValueParseRule("Pause Full", JDK11G1OrGenerationalGCLogParser::parseYoungFullGC));
@@ -119,7 +125,7 @@ public abstract class JDK11G1OrGenerationalGCLogParser extends AbstractJDK11GCLo
                     specialSituation = GCSpecialSituation.PREPARE_MIXED;
                     break;
                 case "Mixed":
-                    eventType = G1_YOUNG_MIXED_GC;
+                    eventType = G1_MIXED_GC;
                     break;
             }
             causeIndex++;
@@ -152,13 +158,13 @@ public abstract class JDK11G1OrGenerationalGCLogParser extends AbstractJDK11GCLo
         }
         for (String part : s.split(" ")) {
             if (part.contains("->") && part.endsWith(")") && !part.startsWith("(")) {
-                int[] memories = GCLogUtil.parseMemorySizeFromTo(part);
-                GCCollectionResultItem item = new GCCollectionResultItem(HeapGeneration.TOTAL, memories);
-                event.getOrCreateCollectionResult().setSummary(item);
+                long[] memories = GCLogUtil.parseMemorySizeFromTo(part);
+                GCMemoryItem item = new GCMemoryItem(MemoryArea.HEAP, memories);
+                event.setMemoryItem(item);
             } else if (part.endsWith("ms")) {
                 double duration = GCLogUtil.toMillisecond(part);
                 event.setDuration(duration);
-                if (event.getStartTime() == GCEvent.UNKNOWN_DOUBLE) {
+                if (event.getStartTime() == Constant.UNKNOWN_DOUBLE) {
                     event.setStartTime((double) context.get(UPTIME) - duration);
                 }
             }
@@ -171,6 +177,7 @@ public abstract class JDK11G1OrGenerationalGCLogParser extends AbstractJDK11GCLo
      * [0.524s][info   ][gc,heap      ] GC(0) Old regions: 11->12
      * [0.524s][info   ][gc,heap      ] GC(0) Humongous regions: 13->14
      * [0.524s][info   ][gc,metaspace ] GC(0) Metaspace: 15K->16K(17K)
+     * [2.285s][info ][gc,heap      ] GC(2) Old: 23127K->2019K(43712K)
      * [0.160s][info ][gc,heap      ] GC(0) ParNew: 17393K->2175K(19648K)
      * [0.160s][info ][gc,heap      ] GC(0) CMS: 0K->130K(43712K)
      * [0.160s][info ][gc,metaspace ] GC(0) Metaspace: 5147K->5147K(1056768K)
@@ -185,7 +192,7 @@ public abstract class JDK11G1OrGenerationalGCLogParser extends AbstractJDK11GCLo
         if (generationName.endsWith(" regions")) {
             generationName = generationName.substring(0, generationName.length() - " regions".length());
         }
-        HeapGeneration generation = HeapGeneration.getHeapGeneration(generationName);
+        MemoryArea generation = MemoryArea.getMemoryArea(generationName);
         if (generation == null) {
             return false;
         }
@@ -202,11 +209,10 @@ public abstract class JDK11G1OrGenerationalGCLogParser extends AbstractJDK11GCLo
                 return true;
             }
         }
-        int[] memories = GCLogUtil.parseMemorySizeFromTo(parts[1], 1);
-        GCCollectionResult collectionResult = event.getOrCreateCollectionResult();
+        long[] memories = GCLogUtil.parseMemorySizeFromTo(parts[1], 1);
         // will multiply region size before calculating derived info for g1
-        GCCollectionResultItem item = new GCCollectionResultItem(generation, memories);
-        collectionResult.addItem(item);
+        GCMemoryItem item = new GCMemoryItem(generation, memories);
+        event.setMemoryItem(item);
         return true;
     }
 
@@ -227,7 +233,7 @@ public abstract class JDK11G1OrGenerationalGCLogParser extends AbstractJDK11GCLo
         GCEvent event;
         // cms does not have a line to indicate its beginning, hard code here
         if (parser.getMetadata().getCollector() == GCCollectorType.CMS &&
-                phaseType == INITIAL_MARK && !end) {
+                phaseType == CMS_INITIAL_MARK && !end) {
             event = new GCEvent();
             event.setEventType(CMS_CONCURRENT_MARK_SWEPT);
             event.setStartTime(context.get(UPTIME));
@@ -246,6 +252,10 @@ public abstract class JDK11G1OrGenerationalGCLogParser extends AbstractJDK11GCLo
             phase.setEventType(phaseType);
             phase.setGcid(context.get(GCID));
             phase.setStartTime(context.get(UPTIME));
+            if (phaseType == G1_CONCURRENT_MARK_ABORT || phaseType == G1_CONCURRENT_MARK_RESET_FOR_OVERFLOW ||
+                    phaseType == CMS_CONCURRENT_INTERRUPTED || phaseType == CMS_CONCURRENT_FAILURE) {
+                phase.setDuration(0);
+            }
             model.addPhase(event, phase);
         }
         parseCollectionAndDuration(phase, context, value);

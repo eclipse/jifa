@@ -15,24 +15,26 @@ package org.eclipse.jifa.gclog.parser;
 
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jifa.common.util.ErrorUtil;
+import org.eclipse.jifa.gclog.event.GCEvent;
+import org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea;
+import org.eclipse.jifa.gclog.event.evnetInfo.GCMemoryItem;
+import org.eclipse.jifa.gclog.event.evnetInfo.GCSpecialSituation;
+import org.eclipse.jifa.gclog.model.GCEventType;
 import org.eclipse.jifa.gclog.model.GCModel;
 import org.eclipse.jifa.gclog.util.GCLogUtil;
-import org.eclipse.jifa.gclog.model.GCEvent;
-import org.eclipse.jifa.gclog.model.GCEventType;
-import org.eclipse.jifa.gclog.vo.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.eclipse.jifa.gclog.model.GCEventType.*;
 import static org.eclipse.jifa.gclog.parser.ParseRule.*;
-import static org.eclipse.jifa.gclog.parser.ParseRule.ParseRuleContext.*;
+import static org.eclipse.jifa.gclog.parser.ParseRule.ParseRuleContext.EVENT;
 
 public class JDK8G1GCLogParser extends AbstractJDK8GCLogParser {
-    private final static GCEventType[] REF_GC_TYPES = {YOUNG_GC, FULL_GC, G1_YOUNG_MIXED_GC, REMARK};
-    private final static GCEventType[] YOUNG_MIXED = {YOUNG_GC, G1_YOUNG_MIXED_GC};
-    private final static GCEventType[] YOUNG_MIXED_FULL = {YOUNG_GC, G1_YOUNG_MIXED_GC, FULL_GC};
-    private final static GCEventType[] CPU_TIME_TYPES = {YOUNG_GC, FULL_GC, G1_YOUNG_MIXED_GC, REMARK, G1_PAUSE_CLEANUP};
+    private final static GCEventType[] REF_GC_TYPES = {YOUNG_GC, FULL_GC, G1_MIXED_GC, G1_REMARK};
+    private final static GCEventType[] YOUNG_MIXED = {YOUNG_GC, G1_MIXED_GC};
+    private final static GCEventType[] YOUNG_MIXED_FULL = {YOUNG_GC, G1_MIXED_GC, FULL_GC};
+    private final static GCEventType[] CPU_TIME_TYPES = {YOUNG_GC, FULL_GC, G1_MIXED_GC, G1_REMARK, G1_PAUSE_CLEANUP};
 
     /*
      * 2021-05-19T22:52:16.311+0800: 3.960: [GC pause (G1 Evacuation Pause) (young)2021-05-19T22:52:16.351+0800: 4.000: [SoftReference, 0 refs, 0.0000435 secs]2021-05-19T22:52:16.352+0800: 4.000: [WeakReference, 374 refs, 0.0002082 secs]2021-05-19T22:52:16.352+0800: 4.001: [FinalReference, 5466 refs, 0.0141707 secs]2021-05-19T22:52:16.366+0800: 4.015: [PhantomReference, 0 refs, 0 refs, 0.0000253 secs]2021-05-19T22:52:16.366+0800: 4.015: [JNI Weak Reference, 0.0000057 secs], 0.0563085 secs]
@@ -167,19 +169,14 @@ public class JDK8G1GCLogParser extends AbstractJDK8GCLogParser {
         if (event == null) {
             return;
         }
-        GCCollectionResult collection = event.getOrCreateCollectionResult();
         String[] parts = GCLogUtil.splitBySpace("  [Eden: " + value);
         for (int i = 0; i < parts.length; i += 2) {
-            String generationString = StringUtils.strip(parts[i], "[:");
-            HeapGeneration generation = HeapGeneration.getHeapGeneration(generationString);
+            String areaString = StringUtils.strip(parts[i], "[:");
+            MemoryArea area = MemoryArea.getMemoryArea(areaString);
             String memoryChangeString = StringUtils.strip(parts[i + 1], ",]");
-            int[] memories = GCLogUtil.parseMemorySizeFromTo(memoryChangeString);
-            GCCollectionResultItem item = new GCCollectionResultItem(generation, memories);
-            if (generation == HeapGeneration.TOTAL) {
-                collection.setSummary(item);
-            } else {
-                collection.addItem(item);
-            }
+            long[] memories = GCLogUtil.parseMemorySizeFromTo(memoryChangeString);
+            GCMemoryItem item = new GCMemoryItem(area, memories);
+            event.setMemoryItem(item, true);
         }
     }
 
@@ -239,7 +236,7 @@ public class JDK8G1GCLogParser extends AbstractJDK8GCLogParser {
             String cause = causes[i];
             // to space exhausted is not considered here because it is not printed together with other brackets
             if (cause.equals("mixed")) {
-                eventType = G1_YOUNG_MIXED_GC;
+                eventType = G1_MIXED_GC;
             } else if (cause.equals("young")) {
                 eventType = YOUNG_GC;
             } else if (cause.equals("initial-mark")) {
@@ -300,13 +297,13 @@ public class JDK8G1GCLogParser extends AbstractJDK8GCLogParser {
             case "GC concurrent-root-region-scan":
                 return G1_CONCURRENT_SCAN_ROOT_REGIONS;
             case "GC concurrent-mark":
-                return CONCURRENT_MARK;
+                return G1_CONCURRENT_MARK;
             case "GC concurrent-mark-reset-for-overflow":
                 return G1_CONCURRENT_MARK_RESET_FOR_OVERFLOW;
             case "GC concurrent-mark-abort":
                 return G1_CONCURRENT_MARK_ABORT;
             case "GC remark":
-                return REMARK;
+                return G1_REMARK;
             case "Finalize Marking":
                 return G1_FINALIZE_MARKING;
             case "Unloading":

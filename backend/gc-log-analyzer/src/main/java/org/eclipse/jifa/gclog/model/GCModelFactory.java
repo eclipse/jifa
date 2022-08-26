@@ -14,7 +14,7 @@
 package org.eclipse.jifa.gclog.model;
 
 import org.eclipse.jifa.common.util.ErrorUtil;
-import org.eclipse.jifa.gclog.vo.GCCollectorType;
+import org.eclipse.jifa.gclog.model.modeInfo.GCCollectorType;
 
 public class GCModelFactory {
     public static GCModel getModel(GCCollectorType collectorType) {

@@ -13,19 +13,25 @@
 
 package org.eclipse.jifa.gclog.parser;
 
-import org.eclipse.jifa.gclog.util.GCLogUtil;
-import org.eclipse.jifa.gclog.model.*;
-import org.eclipse.jifa.gclog.model.ZGCModel.ZStatistics;
-import org.eclipse.jifa.gclog.vo.GCCollectionResultItem;
 import org.eclipse.jifa.common.util.ErrorUtil;
+import org.eclipse.jifa.gclog.event.GCEvent;
+import org.eclipse.jifa.gclog.event.OutOfMemory;
+import org.eclipse.jifa.gclog.event.evnetInfo.GCMemoryItem;
+import org.eclipse.jifa.gclog.model.GCEventType;
+import org.eclipse.jifa.gclog.model.GCModel;
+import org.eclipse.jifa.gclog.model.ZGCModel;
+import org.eclipse.jifa.gclog.model.ZGCModel.ZStatistics;
+import org.eclipse.jifa.gclog.util.GCLogUtil;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
-import static org.eclipse.jifa.gclog.model.GCEvent.*;
+import static org.eclipse.jifa.gclog.util.Constant.UNKNOWN_INT;
+import static org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea.METASPACE;
+import static org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea.HEAP;
 import static org.eclipse.jifa.gclog.model.GCEventType.*;
 import static org.eclipse.jifa.gclog.parser.ParseRule.ParseRuleContext.GCID;
 import static org.eclipse.jifa.gclog.parser.ParseRule.ParseRuleContext.UPTIME;
-import static org.eclipse.jifa.gclog.vo.HeapGeneration.*;
 
 public class JDK11ZGCLogParser extends AbstractJDK11GCLogParser {
     /*
@@ -142,6 +148,7 @@ public class JDK11ZGCLogParser extends AbstractJDK11GCLogParser {
      * [2021-08-31T11:29:12.823+0800] Allocation Stall (NioProcessor-2) 0.391ms
      * [2021-08-31T11:29:12.823+0800] Allocation Stall (http-nio-8080-exec-85) 0.155ms
      * [2021-08-31T11:29:12.823+0800] Allocation Stall (http-nio-8080-exec-49) 277.588ms
+     * [2021-08-31T11:29:12.825+0800] Out Of Memory (thread 8)
      */
     private static List<ParseRule> withGCIDRules;
 
@@ -152,11 +159,12 @@ public class JDK11ZGCLogParser extends AbstractJDK11GCLogParser {
     }
 
     private static void initializeParseRules() {
-        withoutGCIDRules = new ArrayList<>();
+        withoutGCIDRules = new ArrayList<>(AbstractJDK11GCLogParser.getSharedWithoutGCIDRules());
         withoutGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Allocation Stall", JDK11ZGCLogParser::parseAllocationStall));
+        withoutGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Out Of Memory", JDK11ZGCLogParser::pauseOutOfMemory));
         withoutGCIDRules.add(JDK11ZGCLogParser::parseZGCStatisticLine);
 
-        withGCIDRules = new ArrayList<>();
+        withGCIDRules = new ArrayList<>(AbstractJDK11GCLogParser.getSharedWithGCIDRules());
         withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Pause Mark Start", JDK11ZGCLogParser::parsePhase));
         withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Concurrent Mark", JDK11ZGCLogParser::parsePhase));
         withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Pause Mark End", JDK11ZGCLogParser::parsePhase));
@@ -199,9 +207,18 @@ public class JDK11ZGCLogParser extends AbstractJDK11GCLogParser {
         if (event == null) {
             return;
         }
-        GCCollectionResultItem item = new GCCollectionResultItem(METASPACE, UNKNOWN_INT,
-                GCLogUtil.toKB(parts[0]), GCLogUtil.toKB(parts[2]));
-        event.getOrCreateCollectionResult().addItem(item);
+        GCMemoryItem item = new GCMemoryItem(METASPACE, UNKNOWN_INT,
+                GCLogUtil.toByte(parts[0]), GCLogUtil.toByte(parts[4]));
+        event.setMemoryItem(item);
+    }
+
+    // [2021-08-31T11:29:12.825+0800] Out Of Memory (thread 8)
+    private static void pauseOutOfMemory(AbstractGCLogParser parser, ParseRule.ParseRuleContext context, String prefix, String value) {
+        GCModel model = parser.getModel();
+        OutOfMemory event = new OutOfMemory();
+        event.setThreadName(value.substring(1, value.length() - 1));
+        event.setStartTime(context.get(UPTIME));
+        model.addOom(event);
     }
 
     /*
@@ -224,20 +241,20 @@ public class JDK11ZGCLogParser extends AbstractJDK11GCLogParser {
         }
         switch (prefix) {
             case "Capacity":
-                GCCollectionResultItem item = new GCCollectionResultItem(TOTAL);
-                item.setTotal(GCLogUtil.toKB(parts[6]));
-                event.getOrCreateCollectionResult().setSummary(item);
+                GCMemoryItem item = new GCMemoryItem(HEAP);
+                item.setTotal(GCLogUtil.toByte(parts[6]));
+                event.setMemoryItem(item);
                 break;
             case "Used":
-                item = event.getCollectionResult().getSummary();
-                item.setPreUsed(GCLogUtil.toKB(parts[0]));
-                item.setPostUsed(GCLogUtil.toKB(parts[6]));
+                item = event.getMemoryItem(HEAP);
+                item.setPreUsed(GCLogUtil.toByte(parts[0]));
+                item.setPostUsed(GCLogUtil.toByte(parts[6]));
                 break;
             case "Reclaimed":
-                event.setReclamation(GCLogUtil.toKB(parts[4]));
+                event.setReclamation(GCLogUtil.toByte(parts[4]));
                 break;
             case "Allocated":
-                event.setAllocation(GCLogUtil.toKB(parts[5]));
+                event.setAllocation(GCLogUtil.toByte(parts[5]));
                 break;
         }
     }
@@ -332,18 +349,19 @@ public class JDK11ZGCLogParser extends AbstractJDK11GCLogParser {
             // make unit a part of type name to deduplicate
             String type = text.substring(0, text.indexOf('/') - 1 - tokens[length - 13].length()).trim()
                     + " " + tokens[length - 1];
-            List<Map<String, ZStatistics>> statisticsList = model.getStatistics();
-            Map<String, ZStatistics> map;
+            List<ZStatistics> statisticsList = model.getStatistics();
+            ZStatistics statistics;
             if ("Collector: Garbage Collection Cycle ms".equals(type)) {
-                map = new HashMap<>();
-                statisticsList.add(map);
+                statistics = new ZStatistics();
+                statistics.setStartTime(context.get(UPTIME));
+                statisticsList.add(statistics);
             } else if (statisticsList.isEmpty()) {
                 // log is incomplete
                 return true;
             } else {
-                map = statisticsList.get(statisticsList.size() - 1);
+                statistics = statisticsList.get(statisticsList.size() - 1);
             }
-            ZStatistics statistics = new ZStatistics(context.get(UPTIME),
+            ZGCModel.ZStatisticsItem item = new ZGCModel.ZStatisticsItem(
                     Double.parseDouble(tokens[length - 13]),
                     Double.parseDouble(tokens[length - 11]),
                     Double.parseDouble(tokens[length - 10]),
@@ -352,7 +370,7 @@ public class JDK11ZGCLogParser extends AbstractJDK11GCLogParser {
                     Double.parseDouble(tokens[length - 5]),
                     Double.parseDouble(tokens[length - 4]),
                     Double.parseDouble(tokens[length - 2]));
-            map.put(type, statistics);
+            statistics.put(type, item);
             return true;
         } else {
             return false;

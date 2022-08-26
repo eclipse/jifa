@@ -44,6 +44,14 @@
       </b-dropdown-item>
     </b-nav-item-dropdown>
 
+    <b-nav-item href="#" @click="$emit('gcLogAnalysisConfig')" v-if="analysisState === 'SUCCESS' && type === 'GC_LOG'">
+      <i class="el-icon-s-tools" style="margin-right: 3px"/> {{$t("jifa.gclog.analysisConfig")}}
+    </b-nav-item>
+
+    <b-nav-item href="#" @click="$emit('gclogCompareConfig')" v-if="analysisState === 'SUCCESS' && type === 'GC_LOG'">
+      <i class="el-icon-collection" style="margin-right: 3px"/> {{$t("jifa.gclog.gclogCompare")}}
+    </b-nav-item>
+
     <b-nav-item href="#" @click="doUnlock" v-if="$jifa.fileManagement && !$jifa.workerOnly && showUnlockOpt">
       <i class="el-icon-folder-opened" style="margin-right: 3px"/> {{$t("jifa.unlockFile")}}
     </b-nav-item>

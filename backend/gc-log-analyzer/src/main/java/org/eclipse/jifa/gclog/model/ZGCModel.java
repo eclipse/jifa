@@ -13,64 +13,70 @@
 
 package org.eclipse.jifa.gclog.model;
 
-import org.eclipse.jifa.gclog.vo.GCCollectorType;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.eclipse.jifa.gclog.event.GCEvent;
+import org.eclipse.jifa.gclog.event.TimedEvent;
+import org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea;
+import org.eclipse.jifa.gclog.model.modeInfo.GCCollectorType;
+import org.eclipse.jifa.gclog.util.Constant;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.eclipse.jifa.gclog.model.GCEvent.UNKNOWN_INT;
+import static org.eclipse.jifa.gclog.util.Constant.UNKNOWN_INT;
 import static org.eclipse.jifa.gclog.model.GCEventType.*;
 
 public class ZGCModel extends GCModel {
 
     // key of maps here should include unit like
     // "Memory: Allocation Rate MB/s" to deduplicate
-    private List<Map<String, ZStatistics>> statistics = new ArrayList<>();
+    private List<ZStatistics> statistics = new ArrayList<>();
     private List<GCEvent> allocationStalls = new ArrayList<>();
-    private int recommendMaxHeapSize = UNKNOWN_INT;
+    private long recommendMaxHeapSize = UNKNOWN_INT;
 
-    private final static List<GCEventType> SUPPORTED_PHASE_EVENT_TYPES = Arrays.asList(
-            ZGC_GARBAGE_COLLECTION,
-            ZGC_PAUSE_MARK_START,
-            ZGC_PAUSE_MARK_END,
-            ZGC_PAUSE_RELOCATE_START,
-            ZGC_CONCURRENT_MARK,
-            ZGC_CONCURRENT_NONREF,
-            ZGC_CONCURRENT_RESET_RELOC_SET,
-            ZGC_CONCURRENT_DETATCHED_PAGES,
-            ZGC_CONCURRENT_SELECT_RELOC_SET,
-            ZGC_CONCURRENT_PREPARE_RELOC_SET,
-            ZGC_CONCURRENT_RELOCATE
-    );
 
-    @Override
-    protected List<GCEventType> getSupportedPhaseEventTypes() {
-        return SUPPORTED_PHASE_EVENT_TYPES;
-    }
-
-    private final static List<String> PAUSE_EVENT_NAMES = Arrays.asList(
-            ZGC_PAUSE_MARK_START.getName(),
-            ZGC_PAUSE_MARK_END.getName(),
-            ZGC_PAUSE_RELOCATE_START.getName()
-    );
-
-    @Override
-    protected List<String> getPauseEventNames() {
-        return PAUSE_EVENT_NAMES;
-    }
+    private static GCCollectorType collector = GCCollectorType.ZGC;
 
     public ZGCModel() {
-        super(GCCollectorType.ZGC);
+        super(collector);
     }
 
-    private final static List<String> METADATA_EVENT_TYPES = Arrays.asList(
-            ZGC_GARBAGE_COLLECTION.getName()
-    );
+    private static List<GCEventType> allEventTypes = GCModel.calcAllEventTypes(collector);
+    private static List<GCEventType> pauseEventTypes = GCModel.calcPauseEventTypes(collector);
+    private static List<GCEventType> mainPauseEventTypes = GCModel.calcMainPauseEventTypes(collector);
+    private static List<GCEventType> parentEventTypes = GCModel.calcParentEventTypes(collector);
+    private static List<GCEventType> importantEventTypes = List.of(ZGC_GARBAGE_COLLECTION, ZGC_PAUSE_MARK_START,
+            ZGC_PAUSE_MARK_END, ZGC_PAUSE_RELOCATE_START, ZGC_CONCURRENT_MARK, ZGC_CONCURRENT_NONREF,
+            ZGC_CONCURRENT_SELECT_RELOC_SET, ZGC_CONCURRENT_PREPARE_RELOC_SET, ZGC_CONCURRENT_RELOCATE);
+
+    @Override
+    protected List<GCEventType> getAllEventTypes() {
+        return allEventTypes;
+    }
+
+    @Override
+    protected List<GCEventType> getPauseEventTypes() {
+        return pauseEventTypes;
+    }
+
+    @Override
+    protected List<GCEventType> getMainPauseEventTypes() {
+        return mainPauseEventTypes;
+    }
+
+    @Override
+    protected List<GCEventType> getImportantEventTypes() {
+        return importantEventTypes;
+    }
+
+    @Override
+    protected List<GCEventType> getParentEventTypes() {
+        return parentEventTypes;
+    }
 
     public List<GCEvent> getAllocationStalls() {
         return allocationStalls;
@@ -80,41 +86,25 @@ public class ZGCModel extends GCModel {
         this.allocationStalls.add(allocationStall);
     }
 
-    @Override
-    protected List<String> getMetadataEventTypes() {
-        return METADATA_EVENT_TYPES;
-    }
 
-    public List<Map<String, ZStatistics>> getStatistics() {
+    public List<ZStatistics> getStatistics() {
         return statistics;
     }
 
     @Override
-    protected boolean isGenerational() {
-        return false;
-    }
-
-    @Override
-    protected boolean isPauseless() {
-        return true;
-    }
-
-    @Override
-    public int getRecommendMaxHeapSize() {
+    public long getRecommendMaxHeapSize() {
         if (recommendMaxHeapSize == UNKNOWN_INT && !statistics.isEmpty()) {
             // used at marking start + garbage collection cycle * allocation rate
             int statisticIndex = 0;
-            for (GCEvent collection : getGcEvents()) {
+            for (GCEvent collection : getGcCollectionEvents()) {
                 if (collection.getEventType() != ZGC_GARBAGE_COLLECTION) {
                     continue;
                 }
-                if (collection.getCollectionResult() == null ||
-                        collection.getCollectionResult().getSummary() == null ||
-                        collection.getCollectionResult().getSummary().getPreUsed() == UNKNOWN_INT) {
+                if (collection.getMemoryItem(MemoryArea.HEAP).getPreUsed() == UNKNOWN_INT) {
                     continue;
                 }
                 while (statisticIndex < statistics.size() &&
-                        statistics.get(statisticIndex).get("Collector: Garbage Collection Cycle ms").getUptime() < collection.getEndTime()) {
+                        statistics.get(statisticIndex).getStartTime() < collection.getEndTime()) {
                     statisticIndex++;
                 }
                 if (statisticIndex >= statistics.size()) {
@@ -122,19 +112,37 @@ public class ZGCModel extends GCModel {
                 }
                 double collectionCycleMs = statistics.get(statisticIndex).get("Collector: Garbage Collection Cycle ms").getMax10s();
                 double allocationRateMBps = statistics.get(statisticIndex).get("Memory: Allocation Rate MB/s").getMax10s();
-                double size = collection.getCollectionResult().getSummary().getPreUsed() +
-                        (collectionCycleMs / MS2S) * (allocationRateMBps * KB2MB);
-                recommendMaxHeapSize = Math.max(recommendMaxHeapSize, (int) size);
+                double size = collection.getMemoryItem(MemoryArea.HEAP).getPreUsed() +
+                        (collectionCycleMs / Constant.MS2S) * (allocationRateMBps * Constant.KB2MB);
+                recommendMaxHeapSize = Math.max(recommendMaxHeapSize, (long) size);
             }
         }
         return recommendMaxHeapSize;
     }
 
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ZStatistics extends TimedEvent {
+        private Map<String, ZStatisticsItem> items = new HashMap<>();
+
+        public ZStatisticsItem get(String key) {
+            return items.getOrDefault(key, null);
+        }
+
+        public void put(String key, ZStatisticsItem item) {
+            items.put(key, item);
+        }
+
+        public Map<String, ZStatisticsItem> getStatisticItems() {
+            return items;
+        }
+    }
+
+
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
-    public static class ZStatistics {
-        private double uptime;
+    public static class ZStatisticsItem {
         private double avg10s;
         private double max10s;
         private double avg10m;

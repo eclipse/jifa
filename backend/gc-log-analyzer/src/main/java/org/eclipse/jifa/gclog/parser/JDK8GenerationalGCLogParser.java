@@ -14,27 +14,28 @@
 package org.eclipse.jifa.gclog.parser;
 
 import org.eclipse.jifa.common.util.ErrorUtil;
-import org.eclipse.jifa.gclog.util.GCLogUtil;
-import org.eclipse.jifa.gclog.model.GCEvent;
+import org.eclipse.jifa.gclog.event.GCEvent;
+import org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea;
+import org.eclipse.jifa.gclog.event.evnetInfo.GCMemoryItem;
+import org.eclipse.jifa.gclog.event.evnetInfo.GCSpecialSituation;
 import org.eclipse.jifa.gclog.model.GCEventType;
 import org.eclipse.jifa.gclog.model.GCModel;
-import org.eclipse.jifa.gclog.vo.GCCollectionResult;
-import org.eclipse.jifa.gclog.vo.GCCollectionResultItem;
-import org.eclipse.jifa.gclog.vo.GCSpecialSituation;
-import org.eclipse.jifa.gclog.vo.HeapGeneration;
+import org.eclipse.jifa.gclog.util.GCLogUtil;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea.HEAP;
+import static org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea.METASPACE;
 import static org.eclipse.jifa.gclog.model.GCEventType.*;
-import static org.eclipse.jifa.gclog.parser.ParseRule.*;
+import static org.eclipse.jifa.gclog.parser.ParseRule.ParseRuleContext;
 import static org.eclipse.jifa.gclog.parser.ParseRule.ParseRuleContext.EVENT;
-import static org.eclipse.jifa.gclog.vo.HeapGeneration.*;
+import static org.eclipse.jifa.gclog.parser.ParseRule.PrefixAndValueParseRule;
 
 public class JDK8GenerationalGCLogParser extends AbstractJDK8GCLogParser {
     private final static GCEventType[] YOUNG_FULL_GC = {YOUNG_GC, FULL_GC};
     private final static GCEventType[] REFERENCE_GC_TYPES = {YOUNG_GC, FULL_GC, WEAK_REFS_PROCESSING};
-    private final static GCEventType[] CPU_TIME_TYPES = {YOUNG_GC, FULL_GC, INITIAL_MARK, CONCURRENT_MARK, CMS_CONCURRENT_PRECLEAN, CMS_CONCURRENT_ABORTABLE_PRECLEAN, REMARK, CMS_CONCURRENT_SWEEP, CMS_CONCURRENT_RESET};
+    private final static GCEventType[] CPU_TIME_TYPES = {YOUNG_GC, FULL_GC, CMS_INITIAL_MARK, CMS_CONCURRENT_MARK, CMS_CONCURRENT_PRECLEAN, CMS_CONCURRENT_ABORTABLE_PRECLEAN, CMS_FINAL_REMARK, CMS_CONCURRENT_SWEEP, CMS_CONCURRENT_RESET};
     private final static GCEventType[] CMS_FULL = {CMS_CONCURRENT_MARK_SWEPT, FULL_GC};
 
     /*
@@ -130,7 +131,7 @@ public class JDK8GenerationalGCLogParser extends AbstractJDK8GCLogParser {
         }
 
         GCEvent parent;
-        if (phaseType == INITIAL_MARK) {
+        if (phaseType == CMS_INITIAL_MARK) {
             parent = new GCEvent();
             parent.setEventType(CMS_CONCURRENT_MARK_SWEPT);
             parent.setStartTime(phase.getStartTime());
@@ -162,7 +163,7 @@ public class JDK8GenerationalGCLogParser extends AbstractJDK8GCLogParser {
     private static void parseYoungFullGC(AbstractGCLogParser parser, ParseRuleContext context, String prefix, String cause) {
         GCEventType eventType = prefix.equals("GC") ? YOUNG_GC : FULL_GC;
         GCEvent event = context.get(EVENT);
-        if (event.getCollectionResult() != null && event.getCollectionResult().getFirstItemOfGeneRation(METASPACE) != null) {
+        if (event.getMemoryItem(METASPACE) != null) {
             // if metaspace is printed, it must be a full gc no matter full gc is printed in prefix
             eventType = FULL_GC;
         }
@@ -175,8 +176,8 @@ public class JDK8GenerationalGCLogParser extends AbstractJDK8GCLogParser {
     }
 
     private static boolean parseGenerationCollection(AbstractGCLogParser parser, ParseRuleContext context, String s) {
-        HeapGeneration generation = HeapGeneration.getHeapGeneration(s);
-        if (generation == null) {
+        MemoryArea area = MemoryArea.getMemoryArea(s);
+        if (area == null) {
             return false;
         }
         // put the collection on the correct event
@@ -185,16 +186,12 @@ public class JDK8GenerationalGCLogParser extends AbstractJDK8GCLogParser {
         if (event == null) {
             return true;
         }
-        GCCollectionResult collection = ((GCEvent) context.get(EVENT)).getCollectionResult();
+        GCMemoryItem collection = ((GCEvent) context.get(EVENT)).getMemoryItem(HEAP);
         if (collection == null) {
             return true;
         }
-        GCCollectionResultItem item = collection.getSummary();
-        if (item == null) {
-            return true;
-        }
-        item.setGeneration(generation);
-        event.getOrCreateCollectionResult().addItem(item);
+        collection.setArea(area);
+        event.setMemoryItem(collection);
         return true;
     }
 
@@ -227,15 +224,15 @@ public class JDK8GenerationalGCLogParser extends AbstractJDK8GCLogParser {
             case "concurrent mode failure":
                 return CMS_CONCURRENT_FAILURE;
             case "CMS Initial Mark":
-                return INITIAL_MARK;
+                return CMS_INITIAL_MARK;
             case "CMS-concurrent-mark":
-                return CONCURRENT_MARK;
+                return CMS_CONCURRENT_MARK;
             case "CMS-concurrent-preclean":
                 return CMS_CONCURRENT_PRECLEAN;
             case "CMS-concurrent-abortable-preclean":
                 return CMS_CONCURRENT_ABORTABLE_PRECLEAN;
             case "CMS Final Remark":
-                return REMARK;
+                return CMS_FINAL_REMARK;
             case "Rescan":
                 return CMS_RESCAN;
             case "weak refs processing":

@@ -13,25 +13,49 @@
 
 package org.eclipse.jifa.gclog.parser;
 
+import com.google.common.collect.Sets;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.apache.commons.lang.StringUtils;
-import org.eclipse.jifa.gclog.util.GCLogUtil;
 import org.eclipse.jifa.gclog.model.GCModel;
-import com.google.common.collect.Sets;
+import org.eclipse.jifa.gclog.util.Constant;
+import org.eclipse.jifa.gclog.util.GCLogUtil;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
-import java.util.regex.Pattern;
 
-import static org.eclipse.jifa.gclog.model.GCEvent.*;
+import static org.eclipse.jifa.gclog.parser.ParseRule.ParseRuleContext.UPTIME;
 
 /*
  * Currently, we only consider -Xlog:gc*=info. We will continue support for cases in the future.
  */
 public abstract class AbstractJDK11GCLogParser extends AbstractGCLogParser {
+    private static List<ParseRule> withoutGCIDRules;
+    private static List<ParseRule> withGCIDRules;
+
+    public static List<ParseRule> getSharedWithoutGCIDRules() {
+        return withoutGCIDRules;
+    }
+
+    public static List<ParseRule> getSharedWithGCIDRules() {
+        return withGCIDRules;
+    }
+
+    static {
+        initializeParseRules();
+    }
+
+    private static void initializeParseRules() {
+        withoutGCIDRules = new ArrayList<>();
+        withoutGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Total time for which application",
+                (parser, context, prefix, s) -> parser.parseSafepointStop(context.get(UPTIME), s)));
+
+        withGCIDRules = new ArrayList<>();
+        // subclass will add more rules
+    }
 
     @Override
     protected final void doParseLine(String line) {
@@ -43,7 +67,7 @@ public abstract class AbstractJDK11GCLogParser extends AbstractGCLogParser {
             return;
         }
         doBeforeParsingLine(logLine);
-        if (logLine.getGcid() == UNKNOWN_INT) {
+        if (logLine.getGcid() == Constant.UNKNOWN_INT) {
             doParseLineWithoutGCID(logLine.getDetail(), logLine.getUptime());
         } else {
             // in jdk11 gcid is always logged
@@ -56,7 +80,7 @@ public abstract class AbstractJDK11GCLogParser extends AbstractGCLogParser {
     protected abstract void doParseLineWithoutGCID(String detail, double uptime);
 
     private boolean isLogLineValid(JDK11LogLine logLine) {
-        if (logLine.getTimestamp() == UNKNOWN_LONG && logLine.getUptime() == UNKNOWN_DOUBLE) { // need at least one
+        if (logLine.getTimestamp() == Constant.UNKNOWN_LONG && logLine.getUptime() == Constant.UNKNOWN_DOUBLE) { // need at least one
             return false;
         }
         if (logLine.getLoglevel() != null && !"info".equals(logLine.getLoglevel())) { // parse info level only now
@@ -73,14 +97,14 @@ public abstract class AbstractJDK11GCLogParser extends AbstractGCLogParser {
         double uptime = logLine.getUptime();
         long timestamp = logLine.getTimestamp();
         GCModel model = getModel();
-        if (model.getReferenceTimestamp() == UNKNOWN_LONG && timestamp != UNKNOWN_LONG) {
-            double startTimestamp = uptime == UNKNOWN_DOUBLE ? timestamp : timestamp - uptime;
+        if (model.getReferenceTimestamp() == Constant.UNKNOWN_LONG && timestamp != Constant.UNKNOWN_LONG) {
+            double startTimestamp = uptime == Constant.UNKNOWN_DOUBLE ? timestamp : timestamp - uptime;
             model.setReferenceTimestamp(startTimestamp);
         }
-        if (logLine.getUptime() == UNKNOWN_DOUBLE) {
+        if (logLine.getUptime() == Constant.UNKNOWN_DOUBLE) {
             logLine.setUptime(timestamp - model.getReferenceTimestamp());
         }
-        if (model.getStartTime() == UNKNOWN_DOUBLE) {
+        if (model.getStartTime() == Constant.UNKNOWN_DOUBLE) {
             model.setStartTime(uptime);
         }
         model.setEndTime(Math.max(uptime, model.getEndTime()));
@@ -90,11 +114,11 @@ public abstract class AbstractJDK11GCLogParser extends AbstractGCLogParser {
     @AllArgsConstructor
     @NoArgsConstructor
     private static class JDK11LogLine {
-        private long timestamp = UNKNOWN_LONG;
-        private double uptime = UNKNOWN_DOUBLE;
+        private long timestamp = Constant.UNKNOWN_LONG;
+        private double uptime = Constant.UNKNOWN_DOUBLE;
         private String loglevel;
         private List<String> tags;
-        private int gcid = UNKNOWN_INT;
+        private int gcid = Constant.UNKNOWN_INT;
         private String detail;
     }
 

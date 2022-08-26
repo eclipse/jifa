@@ -14,12 +14,13 @@
 package org.eclipse.jifa.gclog.parser;
 
 import org.eclipse.jifa.common.util.ErrorUtil;
+import org.eclipse.jifa.gclog.event.GCEvent;
+import org.eclipse.jifa.gclog.event.evnetInfo.GCSpecialSituation;
 import org.eclipse.jifa.gclog.model.G1GCModel;
-import org.eclipse.jifa.gclog.model.GCEvent;
 import org.eclipse.jifa.gclog.model.GCEventType;
 import org.eclipse.jifa.gclog.model.GCModel;
+import org.eclipse.jifa.gclog.util.Constant;
 import org.eclipse.jifa.gclog.util.GCLogUtil;
-import org.eclipse.jifa.gclog.vo.GCSpecialSituation;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,9 +31,9 @@ import static org.eclipse.jifa.gclog.parser.ParseRule.ParseRuleContext.GCID;
 import static org.eclipse.jifa.gclog.parser.ParseRule.ParseRuleContext.UPTIME;
 
 public class JDK11G1GCLogParser extends JDK11G1OrGenerationalGCLogParser {
-    private final static GCEventType[] YOUNG_MIXED = {YOUNG_GC, G1_YOUNG_MIXED_GC};
+    private final static GCEventType[] YOUNG_MIXED = {YOUNG_GC, G1_MIXED_GC};
     private final static GCEventType[] CONCURRENT_CYCLE_CPU_TIME_EVENTS = {
-            YOUNG_GC, G1_YOUNG_MIXED_GC, FULL_GC, G1_PAUSE_CLEANUP, REMARK};
+            YOUNG_GC, G1_MIXED_GC, FULL_GC, G1_PAUSE_CLEANUP, G1_REMARK};
 
     /*
      * [0.001s][warning][gc] -XX:+PrintGCDetails is deprecated. Will use -Xlog:gc* instead.
@@ -61,6 +62,7 @@ public class JDK11G1GCLogParser extends JDK11G1OrGenerationalGCLogParser {
      * [2.186s][info][gc,marking   ] GC(5) Concurrent Scan Root Regions
      * [2.189s][info][gc,marking   ] GC(5) Concurrent Scan Root Regions 3.214ms
      * [2.189s][info][gc,marking   ] GC(5) Concurrent Mark (2.189s)
+     * [2.189s][info][gc,marking   ] GC(5) Concurrent Mark Reset For Overflow
      * [2.189s][info][gc,marking   ] GC(5) Concurrent Mark From Roots
      * [2.190s][info][gc,task      ] GC(5) Using 2 workers of 2 for marking
      * [2.190s][info][gc,marking   ] GC(5) Concurrent Mark From Roots 0.226ms
@@ -121,6 +123,7 @@ public class JDK11G1GCLogParser extends JDK11G1OrGenerationalGCLogParser {
         withGCIDRules.add(new PrefixAndValueParseRule("Concurrent Scan Root Regions", JDK11G1OrGenerationalGCLogParser::parsePhase));
         withGCIDRules.add(new PrefixAndValueParseRule("Concurrent Mark From Roots", JDK11G1OrGenerationalGCLogParser::parsePhase));
         withGCIDRules.add(new PrefixAndValueParseRule("Concurrent Mark", JDK11G1OrGenerationalGCLogParser::parsePhase));
+        withGCIDRules.add(new PrefixAndValueParseRule("Concurrent Mark Reset For Overflow", JDK11G1OrGenerationalGCLogParser::parsePhase));
         withGCIDRules.add(new PrefixAndValueParseRule("Concurrent Preclean", JDK11G1OrGenerationalGCLogParser::parsePhase));
         withGCIDRules.add(new PrefixAndValueParseRule("Pause Remark", JDK11G1OrGenerationalGCLogParser::parsePhase));
         withGCIDRules.add(new PrefixAndValueParseRule("Concurrent Rebuild Remembered Sets", JDK11G1OrGenerationalGCLogParser::parsePhase));
@@ -149,7 +152,7 @@ public class JDK11G1GCLogParser extends JDK11G1OrGenerationalGCLogParser {
         GCEventType eventType = G1_CONCURRENT_CYCLE;
         boolean end = value.endsWith("ms");
         GCEvent event;
-        if (!end || (event = model.getLastEventOfType(eventType)).getDuration() != GCEvent.UNKNOWN_DOUBLE) {
+        if (!end || (event = model.getLastEventOfType(eventType)).getDuration() != Constant.UNKNOWN_DOUBLE) {
             event = new GCEvent();
             event.setStartTime(context.get(UPTIME));
             event.setEventType(eventType);
@@ -161,7 +164,7 @@ public class JDK11G1GCLogParser extends JDK11G1OrGenerationalGCLogParser {
 
     private static void parseHeapRegionSize(AbstractGCLogParser parser, ParseRuleContext context, String prefix, String value) {
         G1GCModel model = (G1GCModel) parser.getModel();
-        model.setHeapRegionSize(GCLogUtil.toKB(value));
+        model.setHeapRegionSize(GCLogUtil.toByte(value));
         model.setRegionSizeExact(true);
     }
 
@@ -177,7 +180,7 @@ public class JDK11G1GCLogParser extends JDK11G1OrGenerationalGCLogParser {
 
     @Override
     protected GCEvent getCPUTimeEventOrPhase(GCEvent event) {
-        if (event.getEventType() == YOUNG_GC || event.getEventType() == FULL_GC || event.getEventType() == G1_YOUNG_MIXED_GC) {
+        if (event.getEventType() == YOUNG_GC || event.getEventType() == FULL_GC || event.getEventType() == G1_MIXED_GC) {
             return event;
         } else if (event.getEventType() == G1_CONCURRENT_CYCLE) {
             return getModel().getLastEventOfType(CONCURRENT_CYCLE_CPU_TIME_EVENTS);
@@ -204,11 +207,11 @@ public class JDK11G1GCLogParser extends JDK11G1OrGenerationalGCLogParser {
             case "Concurrent Mark From Roots":
                 return G1_CONCURRENT_MARK_FROM_ROOTS;
             case "Concurrent Mark":
-                return CONCURRENT_MARK;
+                return G1_CONCURRENT_MARK;
             case "Concurrent Preclean":
                 return G1_CONCURRENT_PRECLEAN;
             case "Pause Remark":
-                return REMARK;
+                return G1_REMARK;
             case "Concurrent Rebuild Remembered Sets":
                 return G1_CONCURRENT_REBUILD_REMEMBERED_SETS;
             case "Pause Cleanup":
@@ -225,6 +228,8 @@ public class JDK11G1GCLogParser extends JDK11G1OrGenerationalGCLogParser {
                 return G1_COMPACT_HEAP;
             case "Concurrent Mark Abort":
                 return G1_CONCURRENT_MARK_ABORT;
+            case "Concurrent Mark Reset For Overflow":
+                return G1_CONCURRENT_MARK_RESET_FOR_OVERFLOW;
             default:
                 ErrorUtil.shouldNotReachHere();
         }
