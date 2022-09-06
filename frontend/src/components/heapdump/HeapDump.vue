@@ -261,16 +261,12 @@
         </el-main>
       </el-container>
     </el-main>
-    <el-footer>
-      <Footer/>
-    </el-footer>
   </el-container>
 </template>
 
 <script>
 import axios from 'axios'
 import {heapDumpService} from '../../util'
-import Footer from "../footer"
 
 import Overview from './Overview'
 import Inspector from './Inspector'
@@ -335,7 +331,6 @@ export default {
       ClassLoaders,
       DirectByteBuffer,
       HeapFileCompare,
-      Footer
     },
     methods: {
       expandResultDivWidth() {

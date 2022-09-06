@@ -164,16 +164,11 @@
         </el-col>
       </el-row>
     </el-main>
-    <el-footer>
-      <Footer/>
-    </el-footer>
   </el-container>
 </template>
 
 <script>
 import axios from 'axios'
-import Footer from "./footer"
-
 
 import {formatDate} from 'element-ui/src/utils/date-util'
 import {service, toReadableSizeWithUnit} from '../util'
@@ -183,7 +178,7 @@ import ViewMenu from './menu/ViewMenu'
 const defaultMenuItem = 'HEAP_DUMP'
 
   export default {
-    components: {TransferFile, ViewMenu, Footer},
+    components: {TransferFile, ViewMenu},
     data() {
       return {
         files: [],
