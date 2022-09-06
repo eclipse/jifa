@@ -173,6 +173,7 @@
   import axios from 'axios'
   import {ICONS,getIcon} from "./IconHealper";
   import {heapDumpService, toReadableCount, toReadableCountFormatter, toReadableSizeWithUnit, toReadableSizeWithUnitFormatter} from '../../util'
+  import {OBJECT_TYPE} from "@/components/heapdump/CommonType";
 
   let rowKey = 1
   export default {
@@ -233,7 +234,7 @@
 
                 retainedSize: record.retainedSize,
                 isRecord: true,
-                hasChildren: this.groupingBy!=='by_class'
+                hasChildren: record.type !== OBJECT_TYPE.CLASS
               }))
 
           this.tableData = this.records.concat({
@@ -314,7 +315,7 @@
 
               retainedSize: record.retainedSize,
               isRecord: true,
-              hasChildren: this.groupingBy!=='by_class'
+              hasChildren: record.type !== OBJECT_TYPE.CLASS
             })
           })
 

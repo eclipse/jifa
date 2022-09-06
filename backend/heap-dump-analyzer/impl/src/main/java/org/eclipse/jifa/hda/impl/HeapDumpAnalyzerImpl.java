@@ -1408,7 +1408,7 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer {
                             .calculateRetainedSize(context.snapshot, true, true, Helper.VOID_LISTENER)))
                         .paging(new PagingRequest(page, pageSize))
                         .map(record -> new Model.Histogram.Item(record.getClassId(), record.getLabel(),
-                                                                Model.Histogram.ItemType.CLASS_LOADER,
+                                                                Model.Histogram.ItemType.CLASS,
                                                                 record.getNumberOfObjects(),
                                                                 record.getUsedHeapSize(),
                                                                 record.getRetainedHeapSize()))
