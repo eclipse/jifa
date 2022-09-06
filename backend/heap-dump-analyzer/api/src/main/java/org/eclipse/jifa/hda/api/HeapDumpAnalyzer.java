@@ -116,7 +116,9 @@ public interface HeapDumpAnalyzer {
 
     PageView<Histogram.Item> getHistogram(Histogram.Grouping groupingBy, int[] ids,
                                           String sortBy, boolean ascendingOrder,
-                                          String searchText, SearchType searchType, int page, int pageSize);
+                                         String searchText, SearchType searchType, int page, int pageSize);
+
+    PageView<JavaObject> getHistogramObjects(int classId, int page, int pageSize);
 
     PageView<Histogram.Item> getChildrenOfHistogram(Histogram.Grouping groupBy, int[] ids,
                                                     String sortBy, boolean ascendingOrder, int parentObjectId,

@@ -47,11 +47,13 @@
     <v-contextmenu ref="contextmenu">
       <v-contextmenu-submenu :title="$t('jifa.heap.ref.object.label')">
         <v-contextmenu-item
-                @click="$emit('outgoingRefsOfObj', contextMenuTargetObjectId, contextMenuTargetObjectLabel)">
+                @click="groupingBy === 'by_class' ? $emit('outgoingRefsOfHistogramObjs', contextMenuTargetObjectId, contextMenuTargetObjectLabel)
+                                                  : $emit('outgoingRefsOfObj', contextMenuTargetObjectId, contextMenuTargetObjectLabel)">
           {{$t('jifa.heap.ref.object.outgoing')}}
         </v-contextmenu-item>
         <v-contextmenu-item
-                @click="$emit('incomingRefsOfObj', contextMenuTargetObjectId, contextMenuTargetObjectLabel)">
+                @click="groupingBy === 'by_class' ? $emit('incomingRefsOfHistogramObjs', contextMenuTargetObjectId, contextMenuTargetObjectLabel)
+                                                  : $emit('incomingRefsOfObj', contextMenuTargetObjectId, contextMenuTargetObjectLabel)">
           {{$t('jifa.heap.ref.object.incoming')}}
         </v-contextmenu-item>
       </v-contextmenu-submenu>

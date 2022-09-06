@@ -50,4 +50,11 @@ class HistogramRoute extends HeapBaseRoute {
                                                                  pagingRequest.getPage(), pagingRequest.getPageSize()));
     }
 
+    @RouteMeta(path = "/histogram/objects")
+    void objects(Promise<PageView<Model.JavaObject>> promise, @ParamKey("file") String file,
+                   @ParamKey("classId") int classId, PagingRequest pagingRequest) {
+        promise.complete(analyzerOf(file).getHistogramObjects(classId,
+                                                              pagingRequest.getPage(),
+                                                              pagingRequest.getPageSize()));
+    }
 }
