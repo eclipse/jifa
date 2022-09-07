@@ -109,3 +109,9 @@ Then, you can visit Jifa at `http://localhost:8102`
   Questions are welcome here as well.
 - **Ask a question or start a discussion via the [GitHub issue](https://github.com/eclipse/jifa/issues).(Recommend)**
 - Slack channel: [Eclipse Jifa](https://eclipsejifa.slack.com)
+- 钉钉中文交流群
+
+  <div>
+    <img src=https://user-images.githubusercontent.com/33491035/188837171-7e49b620-fcb0-49b6-9e66-71391d58eca1.JPG width=25%/>
+  </div>
+
