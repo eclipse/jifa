@@ -77,10 +77,10 @@
                 </span>
               </span>
 
-              <span v-if="scope.row.isBoundsSummary">
+              <span v-if="scope.row.isBoundsSummary || scope.row.isHistogramObjsSummary">
                 <img :src="ICONS.misc.sumIcon" v-if="scope.row.currentSize >= scope.row.totalSize"/>
                 <img :src="ICONS.misc.sumPlusIcon"
-                     @dblclick="fetchObjBounds(scope.row.parentRowKey, scope.row.objectId, scope.row.nextPage, scope.row.resolve)"
+                     @dblclick="scope.row.isBoundsSummary ? fetchObjBounds(scope.row.parentRowKey, scope.row.objectId, scope.row.nextPage, scope.row.resolve) : loadHistogramObjs()"
                      style="cursor: pointer"
                      v-else/>
                 {{ scope.row.currentSize }} <strong> / </strong> {{ scope.row.totalSize }}
@@ -358,6 +358,62 @@
               )
               newTab.topItems = topItems
               newTab.loading = false
+            }
+        )
+      },
+
+      outgoingRefsOfHistogramObjs(objectId, label) {
+        this.boundsOfHistogramObjs(objectId, label, true)
+      },
+
+      incomingRefsOfHistogramObjs(objectId, label) {
+        this.boundsOfHistogramObjs(objectId, label, false)
+      },
+
+      boundsOfHistogramObjs(objectId, label, outbound) {
+        let newTabName = ++this.tabIndex + '';
+        let newTab = this.addObjRefsTab(this.buildTitle(this.$t(outbound ?
+                'jifa.heap.ref.object.outgoing' : 'jifa.heap.ref.object.incoming'), label),
+            newTabName, this.loadObjBounds, outbound)
+        newTab.nextPage = 1;
+        newTab.records = [];
+        newTab.classId = objectId;
+        this.loadHistogramObjs();
+      },
+
+      loadHistogramObjs() {
+        let index = this.currentIndex()
+        let tab = this.editableTabs[index]
+        tab.loading = true
+        axios.get(heapDumpService(this.file, 'histogram/objects'), {
+          params: {
+            classId: tab.classId,
+            page: tab.nextPage,
+            pageSize: this.pageSize
+          }
+        }).then((resp) => {
+              let records = resp.data.data
+              records.forEach(item => tab.records.push({
+                rowKey: rowKey++,
+                icon: tab.outbound ? getOutboundIcon(item.gCRoot, item.objectType) : getIcon(item.gCRoot, item.objectType),
+                label: item.label,
+                suffix: item.suffix,
+                shallowHeap: item.shallowSize,
+                retainedHeap: item.retainedSize,
+                hasChildren: true,
+                objectId: item.objectId,
+                isResult: true,
+              }))
+
+              tab.topItems = tab.records.concat({
+                rowKey: rowKey++,
+                currentSize: tab.records.length,
+                totalSize: resp.data.totalSize,
+                isHistogramObjsSummary: true
+              })
+
+              tab.nextPage++
+              tab.loading = false
             }
         )
       },

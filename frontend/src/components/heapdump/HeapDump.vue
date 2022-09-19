@@ -155,6 +155,8 @@
                     <histogram :file="file" :generationInfoAvailable="generationInfoAvailable"
                                @outgoingRefsOfObj="outgoingRefsOfObj"
                                @incomingRefsOfObj="incomingRefsOfObj"
+                               @outgoingRefsOfHistogramObjs="outgoingRefsOfHistogramObj"
+                               @incomingRefsOfHistogramObjs="incomingRefsOfHistogramObj"
                                @outgoingRefsOfClass="outgoingRefsOfClass"
                                @incomingRefsOfClass="incomingRefsOfClass"
                                @pathToGCRootsOfObj="pathToGCRootsOfObj"
@@ -398,6 +400,16 @@ export default {
 
       incomingRefsOfObj(id, label) {
         this.$refs['dynamicResultSlot'].incomingRefsOfObj(id, label);
+        this.enableShowDynamicResultSlot();
+      },
+
+      outgoingRefsOfHistogramObj(id, label) {
+        this.$refs['dynamicResultSlot'].outgoingRefsOfHistogramObjs(id, label);
+        this.enableShowDynamicResultSlot();
+      },
+
+      incomingRefsOfHistogramObj(id, label) {
+        this.$refs['dynamicResultSlot'].incomingRefsOfHistogramObjs(id, label);
         this.enableShowDynamicResultSlot();
       },
 
