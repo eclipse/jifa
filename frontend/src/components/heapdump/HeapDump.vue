@@ -83,18 +83,22 @@
         </span>
       </el-dialog>
 
-      <div style="padding-top: 20px" v-if="analysisState === 'IN_PROGRESS' || analysisState === 'ERROR'">
-        <b-progress height="2rem" show-progress :precision="2"
-                    :value="progress"
-                    :variant="progressState"
-                    striped
-                    :animated="progress < 100"/>
-        <b-card class="mt-3" bg-variant="dark" text-variant="white" v-if="message">
-          <b-card-text style="white-space: pre-line;">{{message}}</b-card-text>
-          <div class="d-flex justify-content-center mb-3" v-if="progressState === 'info'">
-            <b-spinner/>
-          </div>
-        </b-card>
+      <div style="padding-top: 20px; height: 100%; overflow: hidden; display: flex; flex-direction: column" v-if="analysisState === 'IN_PROGRESS' || analysisState === 'ERROR'">
+        <div>
+          <b-progress height="2rem" show-progress :precision="2"
+                      :value="progress"
+                      :variant="progressState"
+                      striped
+                      :animated="progress < 100"/>
+        </div>
+        <div style="flex-grow: 1; overflow: scroll; margin-top: 20px">
+          <b-card bg-variant="dark" text-variant="white" v-if="message">
+            <b-card-text style="white-space: pre-line;">{{ message }}</b-card-text>
+            <div class="d-flex justify-content-center mb-3" v-if="progressState === 'info'">
+              <b-spinner/>
+            </div>
+          </b-card>
+        </div>
       </div>
 
       <el-container v-if="analysisState === 'SUCCESS'" style="height: 100%">
