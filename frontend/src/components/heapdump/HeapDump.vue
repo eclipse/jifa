@@ -83,7 +83,7 @@
         </span>
       </el-dialog>
 
-      <div style="padding-top: 20px; height: 100%; overflow: hidden; display: flex; flex-direction: column" v-if="analysisState === 'IN_PROGRESS' || analysisState === 'ERROR'">
+      <div style="padding-top: 20px; height: 100%; display: flex; flex-direction: column" v-if="analysisState === 'IN_PROGRESS' || analysisState === 'ERROR'">
         <div>
           <b-progress height="2rem" show-progress :precision="2"
                       :value="progress"
@@ -91,7 +91,7 @@
                       striped
                       :animated="progress < 100"/>
         </div>
-        <div style="flex-grow: 1; overflow: scroll; margin-top: 20px">
+        <div style="flex-grow: 1; overflow: auto; margin-top: 20px">
           <b-card bg-variant="dark" text-variant="white" v-if="message">
             <b-card-text style="white-space: pre-line;">{{ message }}</b-card-text>
             <div class="d-flex justify-content-center mb-3" v-if="progressState === 'info'">
