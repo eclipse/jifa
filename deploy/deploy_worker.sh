@@ -20,5 +20,7 @@ unzip -o $WORKER_NAME".zip"
 mkdir $WORKER_NAME/webroot
 cp $FRONTEND_NAME".zip" $WORKER_NAME/webroot
 unzip -o $WORKER_NAME/webroot/$FRONTEND_NAME".zip" -d $WORKER_NAME/webroot
+# You can specify your worker configuration file if you want to do some customizations
+# export WORKER_OPTS=-Djifa.worker.config=/path/to/your/worker-config.json
 cd $WORKER_NAME
 ./bin/worker
