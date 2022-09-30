@@ -12,23 +12,17 @@
  ********************************************************************************/
 package org.eclipse.jifa.worker;
 
-import io.vertx.core.AbstractVerticle;
-import io.vertx.core.DeploymentOptions;
-import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
-import io.vertx.core.VertxOptions;
+import com.google.common.base.Strings;
+import io.vertx.core.*;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.auth.User;
 import io.vertx.ext.web.Router;
-import io.vertx.ext.web.handler.AuthenticationHandler;
-import io.vertx.ext.web.handler.BasicAuthHandler;
-import io.vertx.ext.web.handler.BodyHandler;
-import io.vertx.ext.web.handler.CorsHandler;
-import io.vertx.ext.web.handler.StaticHandler;
+import io.vertx.ext.web.handler.*;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.eclipse.jifa.common.JifaException;
 import org.eclipse.jifa.common.JifaHooks;
-import org.eclipse.jifa.common.util.FileUtil;
 import org.eclipse.jifa.worker.route.RouteFiller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +30,8 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.nio.charset.Charset;
+import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 
 import static org.eclipse.jifa.worker.Constant.ConfigKey.*;
@@ -47,15 +43,13 @@ public class Worker extends AbstractVerticle {
     private static CountDownLatch count = new CountDownLatch(Runtime.getRuntime().availableProcessors());
     private static long startTime;
 
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) throws InterruptedException, IOException {
         startTime = System.currentTimeMillis();
 
-        JsonObject vertxConfig = new JsonObject(
-            FileUtil.content(Worker.class.getClassLoader().getResourceAsStream(DEFAULT_VERTX_CONFIG_FILE)));
+        JsonObject vertxConfig = new JsonObject(readConfig(VERTX_CONFIG_PROP, DEFAULT_VERTX_CONFIG_FILE));
         Vertx vertx = Vertx.vertx(new VertxOptions(vertxConfig));
 
-        JsonObject jifaConfig = new JsonObject(
-            FileUtil.content(Worker.class.getClassLoader().getResourceAsStream(DEFAULT_WORKER_CONFIG_FILE)));
+        JsonObject jifaConfig = new JsonObject(readConfig(WORKER_CONFIG_PROP, DEFAULT_WORKER_CONFIG_FILE));
         jifaConfig.getJsonObject(BASIC_AUTH).put(ENABLED, false);
         vertx.deployVerticle(Worker.class.getName(), new DeploymentOptions().setConfig(jifaConfig).setInstances(
             Runtime.getRuntime().availableProcessors()));
@@ -72,6 +66,14 @@ public class Worker extends AbstractVerticle {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private static String readConfig(String key, String def) throws IOException {
+        String v = System.getProperty(key);
+        return Strings.isNullOrEmpty(v)
+            ? IOUtils.toString(Objects.requireNonNull(Worker.class.getClassLoader().getResource(def)),
+            Charset.defaultCharset())
+            : FileUtils.readFileToString(new File(v), Charset.defaultCharset());
     }
 
     // test support
