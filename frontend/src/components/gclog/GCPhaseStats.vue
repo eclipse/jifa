@@ -150,11 +150,11 @@ export default {
         },
         intervalAvg: {
           value: formatTimePeriod(originalData.intervalAvg),
-          bad: isPhase && originalData.intervalAvg >= 0 && originalData.intervalAvg <= gcutil.badIntervalThreshold(originalData.name, this.analysisConfig)
+          bad: originalData.intervalAvg >= 0 && originalData.intervalAvg <= gcutil.badIntervalThreshold(isPhase ? originalData.name : originalParent.name, this.analysisConfig)
         },
         intervalMin: {
           value: formatTimePeriod(originalData.intervalMin),
-          bad: isPhase && originalData.intervalMin >= 0 && originalData.intervalMin <= gcutil.badIntervalThreshold(originalData.name, this.analysisConfig)
+          bad: originalData.intervalMin >= 0 && originalData.intervalMin <= gcutil.badIntervalThreshold(isPhase ? originalData.name : originalParent.name, this.analysisConfig)
         },
         durationAvg: {
           value: formatTimePeriod(originalData.durationAvg),

@@ -231,7 +231,7 @@ public abstract class GCModel {
         return new TimeRange(start, end);
     }
 
-    private void putPhaseStatisticData(GCEvent event, String name, Map<String, DoubleData[]> map) {
+    private void putPhaseStatisticData(GCEvent event, String name, Map<String, DoubleData[]> map, boolean phase) {
         DoubleData[] data = map.getOrDefault(name, null);
         if (data == null) {
             data = new DoubleData[2];
@@ -239,7 +239,7 @@ public abstract class GCModel {
             data[1] = new DoubleData();
             map.put(name, data);
         }
-        data[0].add(event.getInterval());
+        data[0].add(phase ? event.getInterval() : event.getCauseInterval());
         data[1].add(event.getDuration());
     }
 
@@ -264,13 +264,13 @@ public abstract class GCModel {
             if (index < 0) {
                 return;
             }
-            putPhaseStatisticData(event, event.getEventType().getName(), parentData);
+            putPhaseStatisticData(event, event.getEventType().getName(), parentData, true);
             if (event.getCause() != null) {
-                putPhaseStatisticData(event, event.getCause().getName(), causeData.get(index));
+                putPhaseStatisticData(event, event.getCause().getName(), causeData.get(index), false);
             }
             if (event.getPhases() != null) {
                 for (GCEvent phase : event.getPhases()) {
-                    putPhaseStatisticData(phase, phase.getEventType().getName(), phaseData.get(index));
+                    putPhaseStatisticData(phase, phase.getEventType().getName(), phaseData.get(index), true);
                 }
             }
         });
@@ -768,16 +768,31 @@ public abstract class GCModel {
 
     private void calculateEventsInterval() {
         Map<GCEventType, Double> lastEndTime = new HashMap<>();
+        Map<GCEventType, Map<GCCause, Double>> lastCauseEndTime = new HashMap<>();
         for (GCEvent event : allEvents) {
             GCEventType eventType = event.getEventType();
             // regard mixed gc as young gc
             if (event.isYoungGC()) {
                 eventType = YOUNG_GC;
             }
+
             if (lastEndTime.containsKey(eventType)) {
                 event.setInterval(Math.max(0, event.getStartTime() - lastEndTime.get(eventType)));
             }
             lastEndTime.put(eventType, event.getEndTime());
+
+            GCCause cause = event.getCause();
+            if (cause != null) {
+                Map<GCCause, Double> map = lastCauseEndTime.getOrDefault(eventType, null);
+                if (map == null) {
+                    map = new HashMap<>();
+                    lastCauseEndTime.put(eventType, map);
+                }
+                if (map.containsKey(cause)) {
+                    event.setCauseInterval(Math.max(0, event.getStartTime() - map.get(cause)));
+                }
+                map.put(cause, event.getEndTime());
+            }
         }
     }
 

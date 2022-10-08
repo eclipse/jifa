@@ -15,12 +15,14 @@ package org.eclipse.jifa.gclog;
 
 import org.eclipse.jifa.common.listener.DefaultProgressListener;
 import org.eclipse.jifa.gclog.event.*;
+import org.eclipse.jifa.gclog.event.evnetInfo.GCCause;
 import org.eclipse.jifa.gclog.event.evnetInfo.GCMemoryItem;
 import org.eclipse.jifa.gclog.event.evnetInfo.GCSpecialSituation;
 import org.eclipse.jifa.gclog.model.*;
 import org.eclipse.jifa.gclog.model.modeInfo.GCCollectorType;
 import org.eclipse.jifa.gclog.model.modeInfo.GCLogStyle;
 import org.eclipse.jifa.gclog.model.modeInfo.VmOptions;
+import org.eclipse.jifa.gclog.parser.GCLogParser;
 import org.eclipse.jifa.gclog.parser.GCLogParserFactory;
 import org.eclipse.jifa.gclog.parser.JDK8G1GCLogParser;
 import org.eclipse.jifa.gclog.util.Constant;
@@ -35,6 +37,7 @@ import java.util.Map;
 import static org.eclipse.jifa.gclog.TestUtil.stringToBufferedReader;
 import static org.eclipse.jifa.gclog.model.GCEventType.*;
 import static org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea.*;
+import static org.eclipse.jifa.gclog.util.Constant.UNKNOWN_DOUBLE;
 
 public class TestGCModel {
 
@@ -268,5 +271,38 @@ public class TestGCModel {
         model.calculateDerivedInfo(new DefaultProgressListener());
         Assert.assertNotNull(model);
         Assert.assertEquals(model.getGcEvents().get(0).getPause(), 710, DELTA);
+    }
+
+    @Test
+    public void testCauseInterval() throws Exception {
+        String log = "0.003: [GC (Allocation Failure) 0.003: [ParNew: 1826919K->78900K(1922432K), 0.0572643 secs] 3445819K->1697799K(4019584K), 0.0575802 secs] [Times: user=0.21 sys=0.00, real=0.05 secs]\n" +
+                "12.765: [Full GC (Last ditch collection) 12.765: [CMS: 92159K->92159K(92160K), 0.1150376 secs] 99203K->99169K(101376K), [Metaspace: 3805K->3805K(1056768K)], 0.1150614 secs] [Times: user=0.11 sys=0.00, real=0.12 secs]\n" +
+                "80.765: [Full GC (System.gc()) 80.765: [CMS: 92159K->92159K(92160K), 0.1150376 secs] 99203K->99169K(101376K), [Metaspace: 3805K->3805K(1056768K)], 0.1150614 secs] [Times: user=0.11 sys=0.00, real=0.12 secs]\n" +
+                "95.765: [Full GC (Allocation Failure) 95.765: [CMS: 92159K->92159K(92160K), 0.1150376 secs] 99203K->99169K(101376K), [Metaspace: 3805K->3805K(1056768K)], 0.1150614 secs] [Times: user=0.11 sys=0.00, real=0.12 secs]\n" +
+                "103.765: [Full GC (Metadata GC Threshold) 103.765: [CMS: 92159K->92159K(92160K), 0.1150376 secs] 99203K->99169K(101376K), [Metaspace: 3805K->3805K(1056768K)], 0.1150614 secs] [Times: user=0.11 sys=0.00, real=0.12 secs]\n" +
+                "120.765: [Full GC (Allocation Failure) 120.765: [CMS: 92159K->92159K(92160K), 0.1150376 secs] 99203K->99169K(101376K), [Metaspace: 3805K->3805K(1056768K)], 0.1150614 secs] [Times: user=0.11 sys=0.00, real=0.12 secs]\n" +
+                "155.765: [Full GC (Allocation Failure) 155.765: [CMS: 92159K->92159K(92160K), 0.1150376 secs] 99203K->99169K(101376K), [Metaspace: 3805K->3805K(1056768K)], 0.1150614 secs] [Times: user=0.11 sys=0.00, real=0.12 secs]";
+        GCLogParser parser = new GCLogParserFactory().getParser(stringToBufferedReader(log));
+        GCModel model = parser.parse(stringToBufferedReader(log));
+        model.calculateDerivedInfo(new DefaultProgressListener());
+
+        Assert.assertEquals(model.getGcEvents().get(3).getCauseInterval(), UNKNOWN_DOUBLE, DELTA);
+        Assert.assertEquals(model.getGcEvents().get(5).getCauseInterval(), 24884.9386, DELTA);
+        Assert.assertEquals(model.getGcEvents().get(6).getCauseInterval(), 34884.9386, DELTA);
+
+        List<PhaseStatistics.ParentStatisticsInfo> parents = model.getPhaseStatistics(new TimeRange(0, 99999999)).getParents();
+        for (PhaseStatistics.ParentStatisticsInfo parent : parents) {
+            if (parent.getSelf().getName().equals(FULL_GC.getName())) {
+                for (PhaseStatistics.PhaseStatisticItem cause : parent.getCauses()) {
+                    if (cause.getName().equals(GCCause.ALLOCATION_FAILURE.getName())) {
+                        Assert.assertEquals(cause.getCount(), 3);
+                        Assert.assertEquals(cause.getIntervalMin(), 24884.9386, DELTA);
+                        Assert.assertEquals(cause.getIntervalAvg(), (24884.9386 + 34884.9386) / 2, DELTA);
+                        return;
+                    }
+                }
+            }
+        }
+        Assert.fail("should find full gc with Allocation Failure");
     }
 }
