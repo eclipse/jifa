@@ -46,7 +46,7 @@
             <div class="nav-item"><a href="#overview">{{ $t('jifa.gclog.basicInfo') }}</a></div>
             <div class="nav-item"><a href="#diagnose">{{ $t('jifa.gclog.diagnose.diagnose') }}</a></div>
             <div class="nav-item"><a href="#timeGraph">{{ $t('jifa.gclog.timeGraph.timeGraph') }}</a></div>
-            <div class="nav-item"><a href="#pause">{{ $t('jifa.gclog.vmOptions.vmOptions') }}</a></div>
+            <div class="nav-item"><a href="#pause">{{ $t('jifa.gclog.pauseInfo.pauseInfo') }}</a></div>
             <div class="nav-item"><a href="#memoryStats">{{ $t('jifa.gclog.memoryStats.memoryStats') }}</a></div>
             <div class="nav-item"><a href="#phaseStats">{{ $t('jifa.gclog.phaseStats.phaseStatsAndCause') }}</a></div>
             <div class="nav-item"><a href="#objectStats">{{ $t('jifa.gclog.objectStats') }}</a></div>
