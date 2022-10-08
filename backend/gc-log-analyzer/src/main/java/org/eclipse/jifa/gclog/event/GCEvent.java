@@ -48,7 +48,8 @@ public class GCEvent extends TimedEvent {
     private List<GCSpecialSituation> specialSituations;
 
     private double pause = Constant.UNKNOWN_DOUBLE;
-    private double interval = Constant.UNKNOWN_DOUBLE;
+    private double interval = Constant.UNKNOWN_DOUBLE; // interval from last event with same type
+    private double causeInterval = Constant.UNKNOWN_DOUBLE; // interval from last event with same type and cause
 
     private long promotion = Constant.UNKNOWN_INT;
     private long allocation = Constant.UNKNOWN_INT;
@@ -242,6 +243,14 @@ public class GCEvent extends TimedEvent {
 
     public void setInterval(double interval) {
         this.interval = interval;
+    }
+
+    public double getCauseInterval() {
+        return causeInterval;
+    }
+
+    public void setCauseInterval(double causeInterval) {
+        this.causeInterval = causeInterval;
     }
 
     public double getEndTimestamp() {
