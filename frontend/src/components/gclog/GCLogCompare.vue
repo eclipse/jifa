@@ -51,11 +51,14 @@
           <el-table-column v-for="i in fileCount" :key="i" :prop="'value' + (i-1)">
             <template slot="header">
               <a href="javascript:void(0);" @click="()=> {clickTitle(i - 1)}">
-                <span>{{ files[i - 1] }}</span>
+                <span>{{ i === 1 ? $t('jifa.gclog.baselineFile') : $t('jifa.gclog.targetFile') }}</span>
               </a>
             </template>
           </el-table-column>
-          <el-table-column prop="compare" :label="$t('jifa.gclog.metricCompare')" width="150">
+          <el-table-column prop="compare" width="150">
+            <template slot="header">
+              <div v-html="$t('jifa.gclog.metricCompare')"></div>
+            </template>
             <template slot-scope="scope">
               <span :class="scope.row.compareClass">{{ scope.row.compare }}</span>
             </template>
@@ -101,12 +104,17 @@ export default {
       analysisConfig: [{}, {}],
       originalData: [{}, {}],
       tableData: [],
-      displayName: [null, null],
       displayConfig: [ // use array to preserve the order of keys
         {
           key: 'basicInfo', // for getting data from original data
           name: 'basicInfo', // for i18n display in table, will add jifa.gclog in the front
           children: [
+            {
+              key: 'name',
+              name: 'gclogFile',
+              format: this.formatString,
+              compare: "don't compare",
+            },
             {
               key: 'logTimeRange', // for getting data from original data
               name: 'logTimeRange', // for i18n display in table, will add jifa.gclog in the front
@@ -575,7 +583,7 @@ export default {
           type: this.type
         }
       }).then(resp => {
-        this.displayName[i] = resp.data.displayName ? resp.data.displayName : file
+        this.originalData[i].basicInfo.name = resp.data.displayName ? resp.data.displayName : resp.data.originalName
       }).finally(this.doAfterLoadData)
     },
     loadDataRelatedToConfig() {
@@ -689,8 +697,8 @@ export default {
           }
           let compare = '', compareClass = ''
           if (valueAvailable[0] && valueAvailable[1] && metricConfig.compare !== "don't compare") {
-            const diff = originalValue[0] - originalValue[1]
-            compare = (diff > 0 ? '+' : '-') + formatPercentage(Math.abs(diff / originalValue[1]))
+            const diff = originalValue[1] - originalValue[0]
+            compare = (diff >= 0 ? '+' : '-') + formatPercentage(Math.abs(diff / originalValue[0]))
             if (metricConfig.compare !== "just compare" && diff !== 0) {
               if ((diff > 0 && metricConfig.compare === 'the more the better') ||
                   (diff < 0 && metricConfig.compare === 'the less the better')) {

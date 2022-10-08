@@ -128,7 +128,7 @@
           <el-form ref="compareForm" :model="compareConfigModel" label-width="200px" size="medium"
                    label-position="right"
                    style="margin-top: 10px" status-icon :show-message=false :rules="compareRule">
-            <el-form-item v-for="i in 2" :label="$t('jifa.gclog.gclogFile') + '' + i" :prop="'file'+(i-1)" :key="i">
+            <el-form-item v-for="i in 2" :label="getCompareLabel(i)" :prop="'file'+(i-1)" :key="i">
               <el-input type="textarea" v-model="compareConfigModel['file' + (i-1)]" autosize resize="none"
                         style="width: 400px" :placeholder="$t('jifa.gclog.gclogFilePlaceholder')"/>
             </el-form-item>
@@ -404,6 +404,9 @@
         this.analysisConfigModel = {...this.analysisConfig}
         Object.assign(this.analysisConfigModel, params)
         this.showAnalysisConfig()
+      },
+      getCompareLabel(i) {
+        return i === 1 ? this.$t('jifa.gclog.baselineFile') : this.$t('jifa.gclog.targetFile')
       },
       doCompare() {
         this.$refs['compareForm'].validate((valid) => {
