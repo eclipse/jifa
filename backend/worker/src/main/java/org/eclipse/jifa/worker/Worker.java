@@ -20,9 +20,9 @@ import io.vertx.ext.auth.User;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.*;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.eclipse.jifa.common.JifaException;
 import org.eclipse.jifa.common.JifaHooks;
+import org.eclipse.jifa.common.util.FileUtil;
 import org.eclipse.jifa.worker.route.RouteFiller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,7 +31,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.nio.charset.Charset;
-import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 
 import static org.eclipse.jifa.worker.Constant.ConfigKey.*;
@@ -46,10 +45,10 @@ public class Worker extends AbstractVerticle {
     public static void main(String[] args) throws InterruptedException, IOException {
         startTime = System.currentTimeMillis();
 
-        JsonObject vertxConfig = new JsonObject(readConfig(VERTX_CONFIG_PROP, DEFAULT_VERTX_CONFIG_FILE));
+        JsonObject vertxConfig = readConfig(VERTX_CONFIG_PROP, DEFAULT_VERTX_CONFIG_FILE);
         Vertx vertx = Vertx.vertx(new VertxOptions(vertxConfig));
 
-        JsonObject jifaConfig = new JsonObject(readConfig(WORKER_CONFIG_PROP, DEFAULT_WORKER_CONFIG_FILE));
+        JsonObject jifaConfig = readConfig(WORKER_CONFIG_PROP, DEFAULT_WORKER_CONFIG_FILE);
         jifaConfig.getJsonObject(BASIC_AUTH).put(ENABLED, false);
         vertx.deployVerticle(Worker.class.getName(), new DeploymentOptions().setConfig(jifaConfig).setInstances(
             Runtime.getRuntime().availableProcessors()));
@@ -68,12 +67,16 @@ public class Worker extends AbstractVerticle {
         }
     }
 
-    private static String readConfig(String key, String def) throws IOException {
+    private static JsonObject readConfig(String key, String def) throws IOException {
+        JsonObject config = new JsonObject(FileUtil.content(Worker.class.getClassLoader().getResourceAsStream(def)));
         String v = System.getProperty(key);
-        return Strings.isNullOrEmpty(v)
-            ? IOUtils.toString(Objects.requireNonNull(Worker.class.getClassLoader().getResource(def)),
-            Charset.defaultCharset())
-            : FileUtils.readFileToString(new File(v), Charset.defaultCharset());
+        if (!Strings.isNullOrEmpty(v)) {
+            JsonObject override = new JsonObject(FileUtils.readFileToString(new File(v), Charset.defaultCharset()));
+            for (String k : override.fieldNames()) {
+                config.put(k, override.getValue(k));
+            }
+        }
+        return config;
     }
 
     // test support
