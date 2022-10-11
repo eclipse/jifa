@@ -33,7 +33,7 @@ import {gclogService, formatTime} from '@/util'
 import axios from "axios";
 import Hint from "@/components/gclog/Hint";
 import * as echarts from "echarts";
-import {colors} from "@/components/gclog/ColorUtil";
+import {colors, getIthColor} from "@/components/gclog/ColorUtil";
 import {formatTimePeriod} from "@/components/gclog/GCLogUtil";
 
 export default {
@@ -46,6 +46,15 @@ export default {
       name2type: {},
       useUptime: false,
       memoryUnit: 128 * 1024 * 1024, // 128MB
+      fixedColor: {
+        'Young GC': '#5470c6',
+        'Mixed GC': '#fac858',
+        'Full GC': '#ee6666',
+        'Garbage Collection': '#ee6666',
+        'Concurrent Cycle': '#91cc75',
+        'CMS': '#91cc75',
+      },
+      color: {}
     }
   },
   components: {
@@ -229,6 +238,7 @@ export default {
             yAxisIndex: 0,
             type: 'line',
             sampling: "lttb",
+            color: this.color[type],
             data: []
           })
         } else if (category === 'time') {
@@ -240,6 +250,7 @@ export default {
             yAxisIndex: 1,
             type: 'scatter',
             sampling: "lttb",
+            color: this.color[type],
             data: []
           })
         }
@@ -263,6 +274,7 @@ export default {
       return undefined
     },
     initialize() {
+      // decide what series should appear in graph
       const memory = [];
       if (this.metadata.generational) {
         memory.push('youngCapacity', 'oldUsed', 'oldCapacity')
@@ -284,6 +296,20 @@ export default {
         time: time
       }
       this.allTypes().forEach(type => this.name2type[this.typeI18n(type)] = type)
+
+      // decide color for each series
+      this.color = {};
+      const allTypes = ['youngCapacity', 'oldUsed', 'oldCapacity', 'humongousUsed', 'heapUsed', 'heapCapacity',
+        'metaspaceUsed', 'metaspaceCapacity', 'reclamation', 'promotion', ...this.metadata.importantEventTypes]
+      let i = 0;
+      allTypes.forEach(type => {
+        if (this.fixedColor.hasOwnProperty(type)) {
+          this.color[type] = this.fixedColor[type]
+        } else {
+          this.color[type] = getIthColor(i)
+          i++
+        }
+      })
     },
     chooseDefaultDataTypes() {
       const result = {};
