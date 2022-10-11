@@ -56,6 +56,19 @@ export default {
       columns: ['throughput', 'pauseAvg', 'pauseMedian', 'pauseP99', 'pauseP999', 'pauseMax'],
       tableData: [],
       distribution: null,
+      // colors below are from default colors of ECharts
+      fixedColor: {
+        'Young GC': '#5470c6',
+        'Mixed GC': '#fac858',
+        'Full GC': '#ee6666',
+      },
+      autoColor: [
+        '#91cc75',
+        '#73c0de',
+        '#3ba272',
+        '#fc8452',
+        '#9a60b4',
+        '#ea7ccc']
     }
   },
   components: {
@@ -133,9 +146,9 @@ export default {
         const yAxisData = this.subArray(partitions.map((value, index) =>
             this.formatYAxis(partitions[index], partitions[index + 1])), subArrayIndex)
 
-        const series = this.metadata.pauseEventTypes.filter(e => resp.data.hasOwnProperty(e)).map(key => {
-          return {
-            name: key,
+        const series = this.metadata.mainPauseEventTypes.filter(e => resp.data.hasOwnProperty(e)).map(name => {
+          const series = {
+            name: name,
             type: 'bar',
             stack: 'total',
             label: {
@@ -144,10 +157,17 @@ export default {
             emphasis: {
               focus: 'series'
             },
-            data: this.subArray(resp.data[key], subArrayIndex).map(v => v === 0 ? undefined : v)
+            data: this.subArray(resp.data[name], subArrayIndex).map(v => v === 0 ? undefined : v)
           }
+          if (this.fixedColor.hasOwnProperty(name)) {
+            series.itemStyle = {
+              color: this.fixedColor[name]
+            }
+          }
+          return series
         });
         const option = {
+          color: this.autoColor,
           tooltip: {
             trigger: 'axis',
             axisPointer: {
