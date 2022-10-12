@@ -894,7 +894,7 @@ public abstract class GCModel {
     @ToString
     public static class GCDetailFilter {
         private String eventType;
-        private String gcCause;
+        private GCCause gcCause;
         //in ms
         private double logTimeLow;
         private double logTimeHigh;
@@ -902,7 +902,7 @@ public abstract class GCModel {
 
         public GCDetailFilter(String eventType, String gcCause, Double logTimeLow, Double logTimeHigh, Double pauseTimeLow) {
             this.eventType = eventType;
-            this.gcCause = gcCause;
+            this.gcCause = GCCause.getCause(gcCause);
             this.logTimeLow = logTimeLow == null ? -Double.MAX_VALUE : logTimeLow;
             this.logTimeHigh = logTimeHigh == null ? Double.MAX_VALUE : logTimeHigh;
             this.pauseTimeLow = pauseTimeLow == null ? -Double.MAX_VALUE : pauseTimeLow;
@@ -911,7 +911,7 @@ public abstract class GCModel {
         public boolean isFiltered(GCEvent event) {
             return event.getEventType() == SAFEPOINT ||
                     !((eventType == null || eventType.equals(event.getEventType().getName()))
-                            && (gcCause == null || gcCause.equals(event.getCause().getName()))
+                            && (gcCause == null || gcCause == event.getCause())
                             && (logTimeLow <= event.getEndTime() && event.getEndTime() <= logTimeHigh)
                             && (pauseTimeLow <= event.getPause()));
         }
