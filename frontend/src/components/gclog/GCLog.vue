@@ -445,12 +445,6 @@
 }
 </style>
 
-<style>
-.bad-metric {
-  color: #E74C3C;
-}
-</style>
-
 <style scoped>
 .main-block {
   margin-bottom: 40px;

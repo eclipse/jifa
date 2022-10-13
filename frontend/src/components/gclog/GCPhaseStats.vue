@@ -52,8 +52,10 @@
               placement="bottom">
             <i class="el-icon-video-pause"></i>
           </el-tooltip>
-          <span :class="scope.row[column].bad ? 'bad-metric' : ''">{{ scope.row[column].value }}</span>
-          <Hint :info="scope.row[column].hint"/>
+          <ValueWithBadHint :value="scope.row[column].value"
+                            :bad="scope.row[column].bad"
+                            :badHint="scope.row[column].badHint"
+                            :hint="scope.row[column].hint"/>
         </template>
       </el-table-column>
     </el-table>
@@ -66,6 +68,7 @@ import axios from "axios";
 import Hint from "@/components/gclog/Hint";
 import * as gcutil from "@/components/gclog/GCLogUtil"
 import {formatTimePeriod, isOldGC, isYoungGC} from "@/components/gclog/GCLogUtil";
+import ValueWithBadHint from "@/components/gclog/ValueWithBadHint";
 
 export default {
   props: ["file", "metadata", "analysisConfig"],
@@ -82,6 +85,7 @@ export default {
     }
   },
   components: {
+    ValueWithBadHint,
     Hint
   },
   methods: {
@@ -140,29 +144,33 @@ export default {
         name: {
           value: originalData.name,
           hint: isPhase ? gcutil.getPhaseHint(originalData.name) : gcutil.getCauseHint(originalData.name),
-          bad: isPhase ? gcutil.badPhase(originalData.name) : gcutil.badCause(originalParent.name, originalData.name),
+          ...(isPhase ? gcutil.badPhase(originalData.name, this) : gcutil.badCause(originalParent.name, originalData.name, this)),
           pause: isPhase && gcutil.isPause(originalData.name, this.metadata)
         },
         count: {
           value: originalData.count,
-          bad: isPhase ? this.badPhaseCount(originalData, originalParent)
-              : this.badCauseCount(originalData, originalParent)
+          ...(isPhase ? this.badPhaseCount(originalData, originalParent)
+              : this.badCauseCount(originalData, originalParent))
         },
         intervalAvg: {
           value: formatTimePeriod(originalData.intervalAvg),
-          bad: originalData.intervalAvg >= 0 && originalData.intervalAvg <= gcutil.badIntervalThreshold(isPhase ? originalData.name : originalParent.name, this.analysisConfig)
+          bad: originalData.intervalAvg >= 0 && originalData.intervalAvg <= gcutil.badIntervalThreshold(isPhase ? originalData.name : originalParent.name, this.analysisConfig),
+          badHint: this.$t('jifa.gclog.badHint.badInterval', {name: originalData.name})
         },
         intervalMin: {
           value: formatTimePeriod(originalData.intervalMin),
-          bad: originalData.intervalMin >= 0 && originalData.intervalMin <= gcutil.badIntervalThreshold(isPhase ? originalData.name : originalParent.name, this.analysisConfig)
+          bad: originalData.intervalMin >= 0 && originalData.intervalMin <= gcutil.badIntervalThreshold(isPhase ? originalData.name : originalParent.name, this.analysisConfig),
+          badHint: this.$t('jifa.gclog.badHint.badInterval', {name: originalData.name})
         },
         durationAvg: {
           value: formatTimePeriod(originalData.durationAvg),
-          bad: originalData.durationAvg >= gcutil.badDurationThreshold(isPhase ? originalData.name : originalParent.name, this.analysisConfig, this.metadata)
+          bad: originalData.durationAvg >= gcutil.badDurationThreshold(isPhase ? originalData.name : originalParent.name, this.analysisConfig, this.metadata),
+          badHint: this.$t('jifa.gclog.badHint.badDuration', {name: originalData.name})
         },
         durationMax: {
           value: formatTimePeriod(originalData.durationMax),
-          bad: originalData.durationMax >= gcutil.badDurationThreshold(isPhase ? originalData.name : originalParent.name, this.analysisConfig, this.metadata)
+          bad: originalData.durationMax >= gcutil.badDurationThreshold(isPhase ? originalData.name : originalParent.name, this.analysisConfig, this.metadata),
+          badHint: this.$t('jifa.gclog.badHint.badDuration', {name: originalData.name})
         },
         durationTotal: {
           value: formatTimePeriod(originalData.durationTotal),
@@ -173,20 +181,26 @@ export default {
       const cause = item.name;
       if ((parent.count >= 10 && item.count / parent.count >= 0.3) &&
           (cause === 'G1 Humongous Allocation' || cause === 'GCLocker Initiated GC')) {
-        return true
+        return {
+          bad: true,
+          badHint: this.$t('jifa.gclog.badHint.badCauseCount', {name: item.name})
+        }
       }
-      return false
+      return {bad: false}
     },
     badPhaseCount(item, parent) {
       if (isOldGC(item.name)) {
-        const youngGCCount = this.originalData.filter(d => isYoungGC(d.name))
-            .map(d => d.count)
+        const youngGCCount = this.originalData.filter(d => isYoungGC(d.self.name))
+            .map(d => d.self.count)
             .reduce((prev, next, index, array) => prev + next, 0)
         if (item.count >= 5 && item.count > youngGCCount * this.analysisConfig.tooManyOldGCThreshold / 100) {
-          return true
+          return {
+            bad: true,
+            badHint: this.$t('jifa.gclog.badHint.badPhaseCount', {name: item.name})
+          }
         }
       }
-      return false
+      return {bad: false}
     },
     loadData() {
       this.loading = true

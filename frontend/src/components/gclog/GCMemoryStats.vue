@@ -31,8 +31,10 @@
           <Hint :info="getMetricHint(metric)"/>
         </template>
         <template slot-scope="scope">
-          <span :class="scope.row[metric].bad ? 'bad-metric' : ''">{{ scope.row[metric].value }}</span>
-          <Hint :info="getValueHint(scope.row.generation, metric)"/>
+          <ValueWithBadHint :value="scope.row[metric].value"
+                            :bad="scope.row[metric].bad"
+                            :badHint="scope.row[metric].badHint"
+                            :hint="scope.row[metric].hint"/>
         </template>
       </el-table-column>
     </el-table>
@@ -44,6 +46,7 @@ import {gclogService} from '@/util'
 import axios from "axios";
 import Hint from "@/components/gclog/Hint";
 import {formatSize, hasOldGC} from "@/components/gclog/GCLogUtil";
+import ValueWithBadHint from "@/components/gclog/ValueWithBadHint";
 
 export default {
   props: ["file", "metadata", "analysisConfig"],
@@ -55,6 +58,7 @@ export default {
     }
   },
   components: {
+    ValueWithBadHint,
     Hint
   },
   methods: {
@@ -82,12 +86,13 @@ export default {
         const sharedInfo = {}
         const heapCapacity = resp.data.heap.capacityAvg
         generations.forEach(generation => {
-          sharedInfo[generation+"CapacityAvg"] = resp.data[generation].capacityAvg
+          sharedInfo[generation + "CapacityAvg"] = resp.data[generation].capacityAvg
           let item = {}
           metrics.forEach(metric => {
             item[metric] = {
               value: formatSize(resp.data[generation][metric]),
-              bad: this.badValue(resp.data[generation], metric, generation, heapCapacity)
+              hint: this.getValueHint(generation, metric),
+              ...this.badValueCheck(resp.data[generation], metric, generation, heapCapacity)
             }
           })
           item.generation = generation
@@ -110,24 +115,30 @@ export default {
       }
       return ''
     },
-    badValue(row, metric, generation, heapCapacity) {
+    badValueCheck(row, metric, generation, heapCapacity) {
       if (metric === 'usedAvgAfterFullGC' || metric === 'usedAvgAfterOldGC') {
         // check leak
         if (row[metric] < 0 || row.capacityAvg < 0) {
-          return false;
+          return {bad: false}
         }
         const percentage = row[metric] / row.capacityAvg * 100
-        return (generation === "old" && percentage >= this.analysisConfig.highOldUsageThreshold) ||
-            (generation === "humongous" && percentage >= this.analysisConfig.highHumongousUsageThreshold) ||
-            (generation === "heap" && percentage >= this.analysisConfig.highHeapUsageThreshold) ||
-            (generation === "metaspace" && percentage >= this.analysisConfig.highMetaspaceUsageThreshold)
+        return {
+          bad: (generation === "old" && percentage >= this.analysisConfig.highOldUsageThreshold) ||
+              (generation === "humongous" && percentage >= this.analysisConfig.highHumongousUsageThreshold) ||
+              (generation === "heap" && percentage >= this.analysisConfig.highHeapUsageThreshold) ||
+              (generation === "metaspace" && percentage >= this.analysisConfig.highMetaspaceUsageThreshold),
+          badHint: this.$t('jifa.gclog.badHint.badUsageAfterGC')
+        }
       } else if (metric === 'capacityAvg' && (generation === 'young' || generation === 'old')) {
         // check small generation
         if (row[metric] < 0 || heapCapacity < 0) {
-          return false;
+          return {bad: false}
         }
         const percentage = row[metric] / heapCapacity * 100
-        return percentage < this.analysisConfig.smallGenerationThreshold
+        return {
+          bad: percentage < this.analysisConfig.smallGenerationThreshold,
+          badHint: this.$t(`jifa.gclog.badHint.${generation}TooSmall`)
+        }
       }
     },
     getMetricHint(metric) {

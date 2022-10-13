@@ -28,7 +28,9 @@
               <Hint :info="getColumnHint(column)"></Hint>
             </template>
             <template slot-scope="scope">
-              <span :class="scope.row[column].bad ? 'bad-metric' : ''">{{ scope.row[column].value }}</span>
+              <ValueWithBadHint :value="scope.row[column].value"
+                                :bad="scope.row[column].bad"
+                                :badHint="scope.row[column].badHint"/>
             </template>
           </el-table-column>
         </el-table>
@@ -46,6 +48,7 @@ import axios from "axios";
 import * as echarts from 'echarts';
 import Hint from "@/components/gclog/Hint";
 import {formatPercentage, formatTimePeriod} from "@/components/gclog/GCLogUtil";
+import ValueWithBadHint from "@/components/gclog/ValueWithBadHint";
 
 export default {
   props: ["file", "metadata", "analysisConfig"],
@@ -72,7 +75,8 @@ export default {
     }
   },
   components: {
-    Hint
+    Hint,
+    ValueWithBadHint
   },
   methods: {
     loadStats() {
@@ -82,27 +86,33 @@ export default {
         this.tableData = [{
           throughput: {
             value: formatPercentage(resp.data.throughput),
-            bad: resp.data.throughput >= 0 && resp.data.throughput <= this.analysisConfig.badThroughputThreshold / 100
+            bad: resp.data.throughput >= 0 && resp.data.throughput <= this.analysisConfig.badThroughputThreshold / 100,
+            badHint: this.$t('jifa.gclog.badHint.badThroughput')
           },
           pauseAvg: {
             value: formatTimePeriod(resp.data.pauseAvg),
-            bad: resp.data.pauseAvg >= this.analysisConfig.longPauseThreshold
+            bad: resp.data.pauseAvg >= this.analysisConfig.longPauseThreshold,
+            badHint: this.$t('jifa.gclog.badHint.badPause')
           },
           pauseMedian: {
             value: formatTimePeriod(resp.data.pauseMedian),
-            bad: resp.data.pauseMedian >= this.analysisConfig.longPauseThreshold
+            bad: resp.data.pauseMedian >= this.analysisConfig.longPauseThreshold,
+            badHint: this.$t('jifa.gclog.badHint.badPause')
           },
           pauseP99: {
             value: formatTimePeriod(resp.data.pauseP99),
-            bad: resp.data.pauseP99 >= this.analysisConfig.longPauseThreshold
+            bad: resp.data.pauseP99 >= this.analysisConfig.longPauseThreshold,
+            badHint: this.$t('jifa.gclog.badHint.badPause')
           },
           pauseP999: {
             value: formatTimePeriod(resp.data.pauseP999),
-            bad: resp.data.pauseP999 >= this.analysisConfig.longPauseThreshold
+            bad: resp.data.pauseP999 >= this.analysisConfig.longPauseThreshold,
+            badHint: this.$t('jifa.gclog.badHint.badPause')
           },
           pauseMax: {
             value: formatTimePeriod(resp.data.pauseMax),
-            bad: resp.data.pauseMax >= this.analysisConfig.longPauseThreshold
+            bad: resp.data.pauseMax >= this.analysisConfig.longPauseThreshold,
+            badHint: this.$t('jifa.gclog.badHint.badPause')
           },
         }]
         this.loadingStats = false;

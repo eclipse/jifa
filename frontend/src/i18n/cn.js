@@ -323,6 +323,34 @@ exports.default = {
         g1Preventive: 'JVM会根据当前的内存使用和分配情况，提前触发gc来防止出现To-space exhausted',
       },
 
+      phase: {
+        fullGC: 'Full GC会对整个堆进行内存回收，通常暂停时间较长',
+        concMarkAbort: 'Concurrent Mark Abort表示在Concurrent Cycle过程中发生了Full GC，本次Concurrent Cycle中止，通常需关注Full GC的发生原因',
+        concModeFailure: 'Concurrent Mode Failure表示在CMS GC过程中发生了Full GC，本次CMS GC中止，通常需关注Full GC的发生原因',
+        concModeInterrupt: 'Concurrent Mode Interrupted表示在CMS GC过程中发生了System.gc()导致的Full GC，本次CMS GC中止，通常需关注Full GC的发生原因',
+        allocationStall: 'Allocation Stall表示当前线程无法继续分配对象，被迫等待直至GC完成',
+        cmReset: 'Concurrent Mark Reset For Overflow表示全局标记栈已满，将重新开始标记，可能导致Concurrent Cycle时间超长。如果出现了这种情况则建议调大-XX:MarkStackSize参数(默认值4M)',
+        oom: 'Out of memory表示堆内已经彻底无法分配对象，会抛出OutOfMemoryError',
+      },
+
+      badHint: {
+        badThroughput: "当前应用的吞吐偏低，通常GC吞吐不应低于90%",
+        badPause: "当前暂停时间偏长",
+        badUsageAfterGC: "在GC后使用率仍然较高，可能容量设置得过低或者存在内存泄露的情况",
+        youngTooSmall: "年轻代容量过小，可能会导致Young GC过于频繁影响吞吐",
+        oldTooSmall: "老年代容量过小，可能会导致Full GC",
+        badObjectAllocSpeed: "当前对象分配速度偏快",
+        badPromotionSpeed: "当前对象晋升速度偏快",
+        badSinglePromotion: "单次晋升的对象偏多，可能会导致Young GC长暂停和Full GC",
+        badInterval: "当前{name}发生得较为频繁",
+        badDuration: "当前{name}执行的时间偏长",
+        badCauseCount: "当前{name}发生的次数偏多",
+        badPhaseCount: "当前{name}发生的次数偏多",
+        badCause: "应尽量避免{name}出现",
+        badCauseFull: "应尽量避免{name}导致的Full GC",
+        badPhase: "应尽量避免{name}出现",
+      },
+
       diagnose: {
         diagnose: "问题诊断",
         noProblem: "暂无发现问题",

@@ -26,7 +26,9 @@
             <span>{{ $t('jifa.gclog.' + column) }}</span>
           </template>
           <template slot-scope="scope">
-            <span :class="scope.row[column].bad ? 'bad-metric' : ''">{{ scope.row[column].value }}</span>
+            <ValueWithBadHint :value="scope.row[column].value"
+                              :bad="scope.row[column].bad"
+                              :badHint="scope.row[column].badHint"/>
           </template>
         </el-table-column>
       </el-table>
@@ -38,8 +40,10 @@
 import {gclogService} from '@/util'
 import axios from "axios";
 import {formatSize, formatSizeSpeed} from "@/components/gclog/GCLogUtil";
+import ValueWithBadHint from "@/components/gclog/ValueWithBadHint";
 
 export default {
+  components: {ValueWithBadHint},
   props: ["file", "metadata", "analysisConfig", "sharedInfo"],
   data() {
     return {
@@ -73,19 +77,23 @@ export default {
             value: formatSizeSpeed(this.originalData.objectCreationSpeed),
             bad: this.metadata.generational ?
                 (youngCapacity >= 0 && youngCapacity / this.originalData.objectCreationSpeed < this.analysisConfig.youngGCFrequentIntervalThreshold) :
-                (heapCapacity >= 0 && heapCapacity / this.originalData.objectCreationSpeed < this.analysisConfig.fullGCFrequentIntervalThreshold)
+                (heapCapacity >= 0 && heapCapacity / this.originalData.objectCreationSpeed < this.analysisConfig.fullGCFrequentIntervalThreshold),
+            badHint: this.$t('jifa.gclog.badHint.badObjectAllocSpeed')
           },
           objectPromotionSpeed: {
             value: formatSizeSpeed(this.originalData.objectPromotionSpeed),
-            bad: oldCapacity > 0 && this.originalData.objectPromotionSpeed > oldCapacity * highPromotionThresholdPercent / this.analysisConfig.youngGCFrequentIntervalThreshold
+            bad: oldCapacity > 0 && this.originalData.objectPromotionSpeed > oldCapacity * highPromotionThresholdPercent / this.analysisConfig.youngGCFrequentIntervalThreshold,
+            badHint: this.$t('jifa.gclog.badHint.badPromotionSpeed')
           },
           objectPromotionAvg: {
             value: formatSize(this.originalData.objectPromotionAvg),
-            bad: oldCapacity > 0 && this.originalData.objectPromotionAvg > oldCapacity * highPromotionThresholdPercent
+            bad: oldCapacity > 0 && this.originalData.objectPromotionAvg > oldCapacity * highPromotionThresholdPercent,
+            badHint: this.$t('jifa.gclog.badHint.badPromotionSpeed')
           },
           objectPromotionMax: {
             value: formatSize(this.originalData.objectPromotionMax),
-            bad: oldCapacity > 0 && this.originalData.objectPromotionMax > oldCapacity * highPromotionThresholdPercent * 2
+            bad: oldCapacity > 0 && this.originalData.objectPromotionMax > oldCapacity * highPromotionThresholdPercent * 2,
+            badHint: this.$t('jifa.gclog.badHint.badSinglePromotion')
           },
         }]
     },

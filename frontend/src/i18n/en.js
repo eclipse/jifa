@@ -325,6 +325,34 @@ exports.default = {
         g1Preventive: 'Triggered to prevent "to-space exhausted".',
       },
 
+      phase: {
+        fullGC: 'Full GC collects memory from the entire heap and usually pause the application for long time.',
+        concMarkAbort: 'Concurrent Mark Abort means a Full GC happened in the process of Concurrent Cycle and Concurrent Cycle was aborted. Attention should be paid to the cause of Full GC.',
+        concModeFailure: 'Concurrent Mode Failure means a Full GC happened in the process of CMS GC and CMS GC was aborted. Attention should be paid to the cause of Full GC',
+        concModeInterrupt: 'Concurrent Mode Interrupted means a Full GC of System.gc() happened in the process of CMS GC and CMS GC was aborted. Attention should be paid to the cause of Full GC',
+        allocationStall: 'Allocation Stall means the current thread can not allocate more objects and is stalled until the end of GC.',
+        cmReset: 'Concurrent Mark Reset For Overflow means the global mark stack is full and concurrent mark has to be restarted. This may lead to extremely long Concurrent Cycle time. It is recommended to increase -XX:MarkStackSize(default: 4M).',
+        oom: 'Out of memory means no more objects can be allocated in the heap even after gc. An OutOfMemoryError will be thrown.',
+      },
+
+      badHint: {
+        badThroughput: "Current throughput is low. Throughput of a health application should be at least 90%.",
+        badPause: "Current pause time is long.",
+        badUsageAfterGC: "Usage is still high after an GC. This may indicate capacity is set too low or there is a memory leak.",
+        youngTooSmall: "Young Gen Capacity is too small. This may lead to frequent Young GC and affect throughput.",
+        oldTooSmall: "Old Gen Capacity is too small. This may lead to Full GC.",
+        badObjectAllocSpeed: "Object allocation speed is fast.",
+        badPromotionSpeed: "Object promotion speed is fast.",
+        badSinglePromotion: "Too many objects promoted in one GC. This may lead to long Young GC or Full GC.",
+        badInterval: "{name} happens frequently.",
+        badDuration: "The duration of {name} is long.",
+        badCauseCount: "{name} happens too many times.",
+        badPhaseCount: "{name} happens too many times.",
+        badCause: "We should try to avoid {name}.",
+        badCauseFull: "We should try to avoid Full GC led by {name}.",
+        badPhase: "We should try to avoid {name}",
+      },
+
       diagnose: {
         diagnose: "Diagnose",
         noProblem: "No problem detected",
