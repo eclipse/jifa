@@ -15,8 +15,25 @@
 import {formatTime, toReadableSizeWithUnit} from "@/util";
 
 export function getPhaseHint(phase) {
-  // todo
-  return ""
+  switch (phase) {
+    case 'Full GC':
+      return 'jifa.gclog.phase.fullGC'
+    case 'Concurrent Mark Abort':
+      return 'jifa.gclog.phase.concMarkAbort'
+    case 'Concurrent Mode Interrupted':
+      return 'jifa.gclog.phase.concModeInterrupt'
+    case 'Concurrent Mode Failure':
+      return 'jifa.gclog.phase.cmFailure'
+    case "Allocation Stall":
+      return 'jifa.gclog.phase.allocationStall'
+    case "Concurrent Mark Reset For Overflow":
+      return 'jifa.gclog.phase.cmReset'
+    case "Out Of Memory":
+      return 'jifa.gclog.phase.oom'
+    // todo: add more phases
+    default:
+      return ""
+  }
 }
 
 export function getCauseHint(cause) {
@@ -99,21 +116,31 @@ export function getCauseHint(cause) {
   }
 }
 
-export function badPhase(phase) {
-  return ['Full GC', 'Concurrent Mark Abort', 'Concurrent Mode Failure',
-    "Allocation Stall", "Concurrent Mark Reset For Overflow"].indexOf(phase) >= 0
+export function badPhase(phase, component) {
+  const bad = ['Full GC', 'Concurrent Mark Abort', 'Concurrent Mode Failure', "Concurrent Mode Interrupted",
+    "Allocation Stall", "Concurrent Mark Reset For Overflow", "Out Of Memory"].indexOf(phase) >= 0
+  return {
+    bad: bad,
+    badHint: component.$t('jifa.gclog.badHint.badPhase', {name: phase})
+  }
 }
 
-export function badCause(phase, cause) {
+export function badCause(phase, cause, component) {
   if (["To-space Exhausted", "Allocation Stall"].indexOf(cause) >= 0) {
-    return true
+    return {
+      bad: true,
+      badHint: component.$t('jifa.gclog.badHint.badCause', {name: cause})
+    }
   }
   if (phase === "Full GC" && ["Allocation Failure", "Metadata GC Threshold", "Ergonomics", "Last ditch collection",
     "Promotion failed", "Metadata GC Clear Soft References", "System.gc()", "G1 Humongous Allocation",
     "GCLocker Initiated GC"].indexOf(cause) >= 0) {
-    return true;
+    return {
+      bad: true,
+      badHint: component.$t('jifa.gclog.badHint.badCauseFull', {name: cause})
+    }
   }
-  return false
+  return {bad: false}
 }
 
 export function isYoungGC(phase) {

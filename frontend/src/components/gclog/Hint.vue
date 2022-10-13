@@ -13,7 +13,7 @@
 
 <template>
   <span>
-    <el-tooltip v-if="info"
+    <el-tooltip v-if="show()"
                 effect="dark"
                 placement="top-start">
       <div slot="content" style="max-width: 600px">
@@ -37,6 +37,17 @@ export default {
       return (typeof this.info === "string" ? [this.info] : this.info)
           .filter(s => s)
           .map(s => s.startsWith("jifa.") ? this.$t(s) : s);
+    },
+    show() {
+      if (this.info === undefined) {
+        return false;
+      } else if (typeof this.info === "string") {
+        return this.info !== ''
+      } else if (Array.isArray(this.info)) {
+        return this.info.filter(s => s).length > 0
+      } else {
+        return false;
+      }
     }
   },
   mounted() {
