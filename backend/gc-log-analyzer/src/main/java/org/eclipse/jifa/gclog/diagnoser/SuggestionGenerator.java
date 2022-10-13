@@ -42,11 +42,24 @@ public abstract class SuggestionGenerator {
         result.add(new I18nStringView(SuggestionType.I18N_PREFIX + type.toString(), params));
     }
 
+    protected void suggestExpandYoungGen() {
+        if (model.getCollectorType() == GCCollectorType.G1) {
+            addSuggestion(EXPAND_YOUNG_GEN_G1);
+        } else {
+            addSuggestion(EXPAND_YOUNG_GEN);
+        }
+    }
     protected void suggestShrinkYoungGen() {
         if (model.getCollectorType() == GCCollectorType.G1) {
             addSuggestion(SHRINK_YOUNG_GEN_G1);
         } else {
             addSuggestion(SHRINK_YOUNG_GEN);
+        }
+    }
+
+    protected void suggestUseMoreDetailedLogging() {
+        if (model.getLogStyle() == GCLogStyle.UNIFIED) {
+            addSuggestion(USE_MORE_DETAILED_LOGGING_UNIFIED);
         }
     }
 

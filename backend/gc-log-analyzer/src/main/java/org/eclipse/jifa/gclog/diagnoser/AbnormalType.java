@@ -29,8 +29,11 @@ public class AbnormalType {
     public static AbnormalType HEAP_MEMORY_FULL_GC = new AbnormalType("heapMemoryFullGC");
 
     //High
+    public static AbnormalType FREQUENT_YOUNG_GC = new AbnormalType("frequentYoungGC");
     public static AbnormalType LONG_YOUNG_GC_PAUSE = new AbnormalType("longYoungGCPause");
     public static AbnormalType SYSTEM_GC = new AbnormalType("systemGC");
+    public static AbnormalType LONG_G1_REMARK = new AbnormalType("longG1Remark");
+    public static AbnormalType LONG_CMS_REMARK = new AbnormalType("longCMSRemark");
 
     public static AbnormalType LAST_TYPE = new AbnormalType("lastType");
 

@@ -19,12 +19,13 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.eclipse.jifa.common.JifaException;
 import org.eclipse.jifa.common.util.ErrorUtil;
-import org.eclipse.jifa.gclog.event.GCEvent;
-import org.eclipse.jifa.gclog.event.OutOfMemory;
+import org.eclipse.jifa.gclog.event.TimedEvent;
 import org.eclipse.jifa.gclog.event.evnetInfo.GCCause;
+import org.eclipse.jifa.gclog.model.GCEventType;
 import org.eclipse.jifa.gclog.model.GCModel;
 import org.eclipse.jifa.gclog.model.ZGCModel;
 import org.eclipse.jifa.gclog.model.modeInfo.GCCollectorType;
+import org.eclipse.jifa.gclog.util.DoubleData;
 import org.eclipse.jifa.gclog.util.I18nStringView;
 import org.eclipse.jifa.gclog.util.Key2ValueListMap;
 import org.eclipse.jifa.gclog.vo.TimeRange;
@@ -44,9 +45,9 @@ import java.util.stream.Collectors;
 import static org.eclipse.jifa.gclog.diagnoser.AbnormalSeverity.HIGH;
 import static org.eclipse.jifa.gclog.diagnoser.AbnormalSeverity.ULTRA;
 import static org.eclipse.jifa.gclog.diagnoser.AbnormalType.*;
+import static org.eclipse.jifa.gclog.model.GCEventType.*;
 import static org.eclipse.jifa.gclog.util.Constant.UNKNOWN_DOUBLE;
 import static org.eclipse.jifa.gclog.event.TimedEvent.newByStartEnd;
-import static org.eclipse.jifa.gclog.model.GCEventType.FULL_GC;
 
 /**
  * To diagnose abnormal in gclog, we mainly try to analyze 3 things:
@@ -136,8 +137,8 @@ public class GlobalDiagnoser {
                             .limit(3)
                             .sorted(Comparator.comparingDouble(ab -> ab.getSite().getStartTime()))
                             .map(ab -> new TimeRange(
-                                    Math.max(ab.getSite().getStartTime() - EXTEND_TIME, model.getStartTime()),
-                                    Math.min(ab.getSite().getEndTime() + EXTEND_TIME, model.getEndTime())
+                                    Math.max(ab.getSite().getStartTime() - EXTEND_TIME, config.getTimeRange().getStart()),
+                                    Math.min(ab.getSite().getEndTime() + EXTEND_TIME, config.getTimeRange().getEnd())
                             ))
                             .collect(Collectors.toList()),
                     new I18nStringView(AbnormalType.I18N_PREFIX + first.getType().getName()),
@@ -188,15 +189,40 @@ public class GlobalDiagnoser {
             return;
         }
         ZGCModel zModel = (ZGCModel) model;
-        for (GCEvent stall : zModel.getAllocationStalls()) {
+        model.iterateEventsWithinTimeRange(zModel.getAllocationStalls(), config.getTimeRange(), stall -> {
             addAbnormalPoint(new AbnormalPoint(ALLOCATION_STALL, stall, ULTRA));
-        }
+        });
     }
 
     @GlobalDiagnoseRule
     protected void outOfMemory() {
-        for (OutOfMemory oom : model.getOoms()) {
+        model.iterateEventsWithinTimeRange(model.getOoms(), config.getTimeRange(), oom -> {
             addAbnormalPoint(new AbnormalPoint(AbnormalType.OUT_OF_MEMORY, oom, ULTRA));
+        });
+    }
+
+    @GlobalDiagnoseRule
+    protected void longRemark() {
+        model.iterateEventsWithinTimeRange(model.getAllEvents(), config.getTimeRange(), remark -> {
+            GCEventType type = remark.getEventType();
+            if (type == CMS_FINAL_REMARK) {
+                addAbnormalPoint(new AbnormalPoint(LONG_CMS_REMARK, remark, HIGH));
+            } else if (type == G1_REMARK) {
+                addAbnormalPoint(new AbnormalPoint(LONG_G1_REMARK, remark, HIGH));
+            }
+        });
+    }
+
+    @GlobalDiagnoseRule
+    protected void frequentYoungGC() {
+        DoubleData interval = new DoubleData();
+        model.iterateEventsWithinTimeRange(model.getGcEvents(), config.getTimeRange(), event -> {
+            if (event.isYoungGC() && event.getInterval() != UNKNOWN_DOUBLE) {
+                interval.add(event.getInterval());
+            }
+        });
+        if (interval.getN() > 0 && interval.average() < config.getYoungGCFrequentIntervalThreshold()) {
+            addAbnormalPoint(new AbnormalPoint(FREQUENT_YOUNG_GC, TimedEvent.fromTimeRange(config.getTimeRange()), HIGH));
         }
     }
 
