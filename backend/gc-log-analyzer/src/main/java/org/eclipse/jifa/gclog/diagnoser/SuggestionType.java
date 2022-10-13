@@ -13,6 +13,8 @@
 package org.eclipse.jifa.gclog.diagnoser;
 
 public enum SuggestionType {
+    // The order of enums doesn't matter
+    // Whenever a new suggestion is added here, add its text to the frontend
     UPGRADE_TO_11_G1_FULL_GC("upgradeTo11G1FullGC"),
     CHECK_SYSTEM_GC("checkSystemGC"),
     DISABLE_SYSTEM_GC("disableSystemGC"),
@@ -31,6 +33,13 @@ public enum SuggestionType {
     SHRINK_YOUNG_GEN_G1("shrinkYoungGenG1"),
     CHECK_EVACUATION_FAILURE("checkEvacuationFailure"),
     CHECK_FAST_PROMOTION("checkFastPromotion"),
+    CHECK_RESCAN("checkRescan"),
+    CHECK_CLASS_UNLOADING("checkClassUnloading"),
+    EXPAND_YOUNG_GEN("expandYoungGen"),
+    EXPAND_YOUNG_GEN_G1("expandYoungGenG1"),
+    CHECK_FAST_OBJECT_ALLOCATION("checkFastObjectAllocation"),
+    USE_MORE_DETAILED_LOGGING_PREUNIFIED("useMoreDetailedLoggingPreunified"),
+    USE_MORE_DETAILED_LOGGING_UNIFIED("useMoreDetailedLoggingUnified"),
     CHECK_MEMORY_LEAK("checkMemoryLeak");
 
     public static final String I18N_PREFIX = "jifa.gclog.diagnose.suggestion.";

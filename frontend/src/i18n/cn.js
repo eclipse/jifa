@@ -363,6 +363,9 @@ exports.default = {
           heapMemoryFullGC: "堆内存导致的Full GC",
           longYoungGCPause: "Young GC长暂停",
           systemGC: "调用System.gc()导致的Full GC",
+          frequentYoungGC: "Young GC频繁",
+          longG1Remark: "Remark长暂停",
+          longCMSRemark: "Final Remark长暂停",
         },
         suggestion: {
           upgradeTo11G1FullGC: "如果实在没办法消除Full GC或者认为Full GC是可以接受的，可以考虑到升级到JDK11的G1 GC，JDK11中G1的Full GC改成了多线程进行，能有效减少暂停时间",
@@ -384,6 +387,12 @@ exports.default = {
           checkEvacuationFailure: "如果GC出现了To-space exhausted的情况，会大幅拉长GC暂停，解决方法一方面是G1尽量不要设Xmn参数，另一方面考虑排查是否存在大对象分配过多或者内存泄露或者晋升过快等情况",
           checkMemoryLeak: "通过Heap Dump等方式排查是否存在内存泄露的情况",
           checkFastPromotion: "如果这次Full GC前老年代增长地较快，考虑通过做Full GC前的Heap Dump来分析是否存在长生命周期对象引起的过早晋升",
+          checkRescan: "如果是Rescan的时间长，可以添加-XX:+CMSScavengeBeforeRemark来优化",
+          checkClassUnloading: "如果是Class Unloading的时间长，有可能需要优化下代码，减小class loader的数量",
+          expandYoungGen: "适当增加参数-Xmn，来增大年轻代大小",
+          expandYoungGenG1: "考虑增大年轻代大小。G1的年轻代大小比较复杂，是根据应用暂停时间来动态调整的，以尽量满足暂停目标。如果当前暂停时间较长，则先考虑优化暂停时间，或者提高暂停时间目标(即增大参数-XX:MaxGCPauseMillis,默认值200 ms)。也可以考虑提高年轻代大小的下限（即打开-XX:+UnlockExperimentalVMOptions，提高-XX:G1NewSizePercent,默认值5，表示年轻代最小是整堆的5%）",
+          checkFastObjectAllocation: "排查一下代码中是否存在对象分配速度过快的情况，优化代码",
+          useMoreDetailedLoggingUnified: "如果当前的信息还没法确定具体的原因，可以考虑打开debug级GC日志以获取更多信息(把-Xlog参数中的gc*改成gc*=debug，debug级日志内容过多，不建议长期开启)",
         }
       },
 

@@ -61,6 +61,10 @@ public class TimedEvent {
     public TimedEvent() {
     }
 
+    public static TimedEvent fromTimeRange(TimeRange range) {
+        return new TimedEvent(range.getStart(), range.length());
+    }
+
     public TimeRange toTimeRange() {
         if (duration != UNKNOWN_DOUBLE) {
             return new TimeRange(getStartTime(), getEndTime());

@@ -103,6 +103,28 @@ public class DefaultSuggestionGenerator extends SuggestionGenerator {
         addSuggestion(CHECK_REFERENCE_GC);
         suggestCheckEvacuationFailure();
         suggestShrinkYoungGen();
+        suggestUseMoreDetailedLogging();
+    }
+
+    @GeneratorRule("frequentYoungGC")
+    private void frequentYoungGC() {
+        suggestExpandYoungGen();
+        addSuggestion(CHECK_FAST_OBJECT_ALLOCATION);
+    }
+
+    @GeneratorRule("longG1Remark")
+    private void longG1Remark() {
+        addSuggestion(CHECK_REFERENCE_GC);
+        addSuggestion(CHECK_CLASS_UNLOADING);
+        suggestUseMoreDetailedLogging();
+    }
+
+    @GeneratorRule("longCMSRemark")
+    private void longCMSRemark() {
+        addSuggestion(CHECK_RESCAN);
+        addSuggestion(CHECK_REFERENCE_GC);
+        addSuggestion(CHECK_CLASS_UNLOADING);
+        suggestUseMoreDetailedLogging();
     }
 
     public List<I18nStringView> generate() {
