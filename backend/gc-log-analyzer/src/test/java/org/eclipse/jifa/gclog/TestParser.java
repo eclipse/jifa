@@ -28,6 +28,7 @@ import org.junit.Test;
 
 import java.util.List;
 
+import static org.eclipse.jifa.gclog.event.evnetInfo.GCEventBooleanType.YOUNG_GC_BECOME_FULL_GC;
 import static org.eclipse.jifa.gclog.util.Constant.UNKNOWN_DOUBLE;
 import static org.eclipse.jifa.gclog.event.evnetInfo.GCCause.*;
 import static org.eclipse.jifa.gclog.event.evnetInfo.GCEventBooleanType.TO_SPACE_EXHAUSTED;
@@ -1078,6 +1079,7 @@ public class TestParser {
         }
         Assert.assertEquals(fullGC.getLastPhaseOfType(GCEventType.SERIAL_COMPUTE_NEW_OBJECT_ADDRESSES).getDuration(), 24.314, DELTA);
         Assert.assertEquals(fullGC.getLastPhaseOfType(GCEventType.SERIAL_MOVE_OBJECTS).getDuration(), 17.974, DELTA);
+        Assert.assertTrue(fullGC.isTrue(YOUNG_GC_BECOME_FULL_GC));
     }
 
     @Test
@@ -1218,6 +1220,25 @@ public class TestParser {
         Assert.assertEquals(model.getGcEvents().get(1).getPhases().get(0).getEventType(), GCEventType.G1_CONCURRENT_SCAN_ROOT_REGIONS);
         Assert.assertEquals(model.getGcEvents().get(1).getPhases().get(0).getStartTime(), 725081, DELTA);
         Assert.assertEquals(model.getGcEvents().get(2).getEventType(), GCEventType.YOUNG_GC);
+    }
+
+    @Test
+    public void TestJDK8CMSPromotionFailed() throws Exception {
+        String log = "2021-09-24T22:54:19.430+0800: 23501.549: [GC (Allocation Failure) 2021-09-24T22:54:19.430+0800: 23501.550: [ParNew (promotion failed): 7689600K->7689600K(7689600K), 5.2751800 secs]2021-09-24T22:54:24.705+0800: 23506.825: [CMS: 9258265K->5393434K(12582912K), 14.5693099 secs] 16878013K->5393434K(20272512K), [Metaspace: 208055K->203568K(1253376K)], 19.8476364 secs] [Times: user=19.95 sys=0.05, real=19.85 secs]";
+        GCLogParser parser = new GCLogParserFactory().getParser(stringToBufferedReader(log));
+        CMSGCModel model = (CMSGCModel) parser.parse(stringToBufferedReader(log));
+        model.calculateDerivedInfo(new DefaultProgressListener());
+
+        Assert.assertEquals(model.getGcEvents().size(), 1);
+        GCEvent fullGC = model.getGcEvents().get(0);
+        Assert.assertEquals(fullGC.getEventType(), GCEventType.FULL_GC);
+        Assert.assertEquals(fullGC.getMemoryItem(YOUNG), new GCMemoryItem(YOUNG, 7689600L * 1024, 0,  7689600L * 1024));
+        Assert.assertEquals(fullGC.getMemoryItem(OLD), new GCMemoryItem(OLD, 9258265L * 1024, 5393434L * 1024, 12582912L * 1024));
+        Assert.assertEquals(fullGC.getMemoryItem(HEAP), new GCMemoryItem(HEAP, 16878013L * 1024, 5393434L * 1024,  20272512L * 1024));
+        Assert.assertEquals(fullGC.getMemoryItem(METASPACE), new GCMemoryItem(METASPACE, 208055 * 1024, 203568 * 1024, 1253376 * 1024));
+        Assert.assertEquals(fullGC.getCause(), PROMOTION_FAILED);
+        Assert.assertTrue(fullGC.isTrue(YOUNG_GC_BECOME_FULL_GC));
+
     }
 
 }

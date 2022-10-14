@@ -77,7 +77,7 @@ public class JDK8GenerationalGCLogParser extends AbstractJDK8GCLogParser {
         fullSentenceRules.add(cpuTimeRule);
         fullSentenceRules.add(new PrefixAndValueParseRule(" (concurrent mode interrupted)", JDK8GenerationalGCLogParser::parseCMSPhase));
         fullSentenceRules.add(new PrefixAndValueParseRule(" (concurrent mode failure)", JDK8GenerationalGCLogParser::parseCMSPhase));
-        fullSentenceRules.add(new PrefixAndValueParseRule("(promotion failed", JDK8GenerationalGCLogParser::parsePromotionFailed));
+        fullSentenceRules.add(new PrefixAndValueParseRule(" (promotion failed", JDK8GenerationalGCLogParser::parsePromotionFailed));
 
         gcTraceTimeRules = new ArrayList<>();
         gcTraceTimeRules.add(JDK8GenerationalGCLogParser::parseGenerationCollection);
@@ -163,10 +163,6 @@ public class JDK8GenerationalGCLogParser extends AbstractJDK8GCLogParser {
     private static void parseYoungFullGC(AbstractGCLogParser parser, ParseRuleContext context, String prefix, String cause) {
         GCEventType eventType = prefix.equals("GC") ? YOUNG_GC : FULL_GC;
         GCEvent event = context.get(EVENT);
-        if (event.getMemoryItem(METASPACE) != null) {
-            // if metaspace is printed, it must be a full gc no matter full gc is printed in prefix
-            eventType = FULL_GC;
-        }
         event.setEventType(eventType);
         String[] causes = GCLogUtil.splitByBracket(cause);
         if (causes.length > 0) {
