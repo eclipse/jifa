@@ -14,9 +14,9 @@
 package org.eclipse.jifa.gclog.model;
 
 import org.eclipse.jifa.gclog.event.GCEvent;
+import org.eclipse.jifa.gclog.event.evnetInfo.GCCause;
 import org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea;
-import org.eclipse.jifa.gclog.event.evnetInfo.GCMemoryItem;
-import org.eclipse.jifa.gclog.event.evnetInfo.GCSpecialSituation;
+import org.eclipse.jifa.gclog.event.evnetInfo.GCEventBooleanType;
 import org.eclipse.jifa.gclog.model.modeInfo.GCCollectorType;
 import org.eclipse.jifa.gclog.model.modeInfo.GCLogStyle;
 
@@ -58,11 +58,10 @@ public abstract class GenerationalGCModel extends GCModel {
 
     private void fixYoungGCPromotionFail() {
         for (GCEvent event : getGcEvents()) {
-            if (event.getEventType() == YOUNG_GC && event.hasSpecialSituation(GCSpecialSituation.PROMOTION_FAILED)) {
+            if (event.getEventType() == YOUNG_GC && event.isTrue(GCEventBooleanType.PROMOTION_FAILED)) {
                 // when there is promotion fail, overwrite its original gccause with promotion failed
                 event.setEventType(FULL_GC);
-                event.setCause(GCSpecialSituation.PROMOTION_FAILED.getName());
-                event.getSpecialSituations().remove(GCSpecialSituation.PROMOTION_FAILED);
+                event.setCause(GCCause.PROMOTION_FAILED);
             }
         }
     }

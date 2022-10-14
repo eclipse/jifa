@@ -18,7 +18,7 @@ import org.eclipse.jifa.gclog.event.GCEvent;
 import org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea;
 import org.eclipse.jifa.gclog.event.evnetInfo.CpuTime;
 import org.eclipse.jifa.gclog.event.evnetInfo.GCMemoryItem;
-import org.eclipse.jifa.gclog.event.evnetInfo.GCSpecialSituation;
+import org.eclipse.jifa.gclog.event.evnetInfo.GCEventBooleanType;
 import org.eclipse.jifa.gclog.model.GCEventType;
 import org.eclipse.jifa.gclog.model.GCModel;
 import org.eclipse.jifa.gclog.model.modeInfo.GCCollectorType;
@@ -115,14 +115,14 @@ public abstract class JDK11G1OrGenerationalGCLogParser extends AbstractJDK11GCLo
         String[] parts = GCLogUtil.splitByBracket(text);
         int causeIndex = 0;
         GCEventType eventType = title.endsWith("Young") ? YOUNG_GC : FULL_GC;
-        GCSpecialSituation specialSituation = null;
+        GCEventBooleanType specialSituation = null;
         if (parser.getMetadata().getCollector() == GCCollectorType.G1 && eventType == YOUNG_GC) {
             switch (parts[0]) {
                 case "Concurrent Start":
-                    specialSituation = GCSpecialSituation.INITIAL_MARK;
+                    specialSituation = GCEventBooleanType.INITIAL_MARK;
                     break;
                 case "Prepare Mixed":
-                    specialSituation = GCSpecialSituation.PREPARE_MIXED;
+                    specialSituation = GCEventBooleanType.PREPARE_MIXED;
                     break;
                 case "Mixed":
                     eventType = G1_MIXED_GC;
@@ -138,7 +138,9 @@ public abstract class JDK11G1OrGenerationalGCLogParser extends AbstractJDK11GCLo
             event.setStartTime(context.get(UPTIME));
             event.setEventType(eventType);
             event.setCause(cause);
-            event.addSpecialSituation(specialSituation);
+            if (specialSituation != null) {
+                event.setTrue(specialSituation);
+            }
             event.setGcid(context.get(GCID));
             model.putEvent(event);
         }

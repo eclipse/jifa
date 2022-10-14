@@ -15,7 +15,7 @@ package org.eclipse.jifa.gclog.parser;
 
 import org.eclipse.jifa.common.util.ErrorUtil;
 import org.eclipse.jifa.gclog.event.GCEvent;
-import org.eclipse.jifa.gclog.event.evnetInfo.GCSpecialSituation;
+import org.eclipse.jifa.gclog.event.evnetInfo.GCEventBooleanType;
 import org.eclipse.jifa.gclog.model.G1GCModel;
 import org.eclipse.jifa.gclog.model.GCEventType;
 import org.eclipse.jifa.gclog.model.GCModel;
@@ -175,7 +175,7 @@ public class JDK11G1GCLogParser extends JDK11G1OrGenerationalGCLogParser {
             // log may be incomplete
             return;
         }
-        event.addSpecialSituation(GCSpecialSituation.TO_SPACE_EXHAUSTED);
+        event.setTrue(GCEventBooleanType.TO_SPACE_EXHAUSTED);
     }
 
     @Override

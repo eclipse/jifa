@@ -29,9 +29,8 @@ import org.junit.Test;
 import java.util.List;
 
 import static org.eclipse.jifa.gclog.util.Constant.UNKNOWN_DOUBLE;
-import static org.eclipse.jifa.gclog.util.Constant.UNKNOWN_INT;
 import static org.eclipse.jifa.gclog.event.evnetInfo.GCCause.*;
-import static org.eclipse.jifa.gclog.event.evnetInfo.GCSpecialSituation.TO_SPACE_EXHAUSTED;
+import static org.eclipse.jifa.gclog.event.evnetInfo.GCEventBooleanType.TO_SPACE_EXHAUSTED;
 import static org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea.*;
 import static org.eclipse.jifa.gclog.TestUtil.stringToBufferedReader;
 
@@ -135,7 +134,7 @@ public class TestParser {
         List<GCEvent> event = model.getGcEvents();
         GCEvent youngGC = event.get(0);
         Assert.assertEquals(youngGC.getGcid(), 0);
-        Assert.assertEquals(youngGC.getSpecialSituations().get(0), TO_SPACE_EXHAUSTED);
+        Assert.assertTrue(youngGC.isTrue(TO_SPACE_EXHAUSTED));
         Assert.assertEquals(youngGC.getEventType(), GCEventType.YOUNG_GC);
         Assert.assertEquals(youngGC.getStartTime(), 1.0 * 1000, DELTA);
         Assert.assertEquals(youngGC.getPause(), 10.709, DELTA);
@@ -151,6 +150,7 @@ public class TestParser {
                 , new GCMemoryItem(METASPACE, 20679 * 1024, 20679 * 1024, 45056 * 1024));
         Assert.assertEquals(youngGC.getMemoryItem(HEAP)
                 , new GCMemoryItem(HEAP, 19 * 1024 * 1024, 4 * 1024 * 1024, 64 * 1024 * 1024));
+        Assert.assertTrue(youngGC.toString().contains("To-space Exhausted"));
 
         GCEvent concurrentMark = event.get(1);
         Assert.assertEquals(concurrentMark.getGcid(), 1);
@@ -613,7 +613,7 @@ public class TestParser {
         Assert.assertEquals(mixedGC.getDuration(), 26.4971, DELTA);
         Assert.assertEquals(mixedGC.getEventType(), GCEventType.G1_MIXED_GC);
         Assert.assertEquals(mixedGC.getCause(), G1_EVACUATION_PAUSE);
-        Assert.assertTrue(mixedGC.hasSpecialSituation(TO_SPACE_EXHAUSTED));
+        Assert.assertTrue(mixedGC.isTrue(TO_SPACE_EXHAUSTED));
         Assert.assertEquals(mixedGC.getMemoryItem(HEAP).getTotal(), (long) (19.8 * 1024 * 1024 * 1024));
         Assert.assertEquals(mixedGC.getMemoryItem(EDEN).getPreUsed(), 2304L * 1024 * 1024);
         Assert.assertNotNull(mixedGC.getPhases());
