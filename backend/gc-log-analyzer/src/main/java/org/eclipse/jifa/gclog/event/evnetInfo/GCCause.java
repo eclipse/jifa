@@ -47,7 +47,7 @@ public class GCCause {
     public static GCCause G1_HUMONGOUS_ALLOCATION = new GCCause("G1 Humongous Allocation");
     public static GCCause LAST_DITCH_COLLECTION = new GCCause("Last ditch collection");
     public static GCCause LAST_GC_CAUSE = new GCCause("ILLEGAL VALUE - last gc cause - ILLEGAL VALUE");
-    public static GCCause PROMOTION_FAILED = new GCCause("promotion failed");
+    public static GCCause PROMOTION_FAILED = new GCCause("Promotion Failed");
     public static GCCause UPDATE_ALLOCATION_CONTEXT_STATS = new GCCause("Update Allocation Context Stats");
     public static GCCause WHITEBOX_YOUNG = new GCCause("WhiteBox Initiated Young GC");
     public static GCCause WHITEBOX_CONCURRENT_MARK = new GCCause("WhiteBox Initiated Concurrent Mark");

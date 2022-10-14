@@ -60,7 +60,7 @@ export function getCauseHint(cause) {
       return ['jifa.gclog.cause.humongous', 'jifa.gclog.generation.humongousHint']
     case "Last ditch collection":
       return 'jifa.gclog.cause.lastDitch'
-    case "Promotion failed":
+    case "Promotion Failed":
       return 'jifa.gclog.cause.promotionFail'
     case "To-space Exhausted":
       return 'jifa.gclog.cause.toSpaceExhausted'
@@ -133,7 +133,7 @@ export function badCause(phase, cause, component) {
     }
   }
   if (phase === "Full GC" && ["Allocation Failure", "Metadata GC Threshold", "Ergonomics", "Last ditch collection",
-    "Promotion failed", "Metadata GC Clear Soft References", "System.gc()", "G1 Humongous Allocation",
+    "Promotion Failed", "Metadata GC Clear Soft References", "System.gc()", "G1 Humongous Allocation",
     "GCLocker Initiated GC"].indexOf(cause) >= 0) {
     return {
       bad: true,

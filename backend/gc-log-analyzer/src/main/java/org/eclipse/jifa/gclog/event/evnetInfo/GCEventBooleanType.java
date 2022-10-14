@@ -21,6 +21,7 @@ public enum GCEventBooleanType {
 
     PROMOTION_FAILED,
     TO_SPACE_EXHAUSTED,
+    YOUNG_GC_BECOME_FULL_GC,
     INITIAL_MARK,
     PREPARE_MIXED;
 }

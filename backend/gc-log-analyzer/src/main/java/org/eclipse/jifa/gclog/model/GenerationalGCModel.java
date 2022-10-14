@@ -31,10 +31,7 @@ public abstract class GenerationalGCModel extends GCModel {
         super(type);
     }
 
-    private void removeYoungGCThatBecomeFullGC() {
-        if (getLogStyle() != GCLogStyle.UNIFIED) {
-            return;
-        }
+    private void dealYoungGCThatBecomeFullGCUnified() {
         List<GCEvent> newEvents = new ArrayList<>();
         List<GCEvent> oldEvents = getGcEvents();
         boolean remove = false;
@@ -45,8 +42,12 @@ public abstract class GenerationalGCModel extends GCModel {
                     event.getStartTime() <= nextEvent.getStartTime() && event.getEndTime() >= nextEvent.getEndTime();
             if (remove) {
                 event.setEventType(FULL_GC);
+                event.setTrue(GCEventBooleanType.YOUNG_GC_BECOME_FULL_GC);
                 event.setPhases(nextEvent.getPhases());
                 i++; // remove the full gc
+            }
+            if (event.getEventType() == FULL_GC && event.isTrue(GCEventBooleanType.PROMOTION_FAILED)) {
+                event.setCause(GCCause.PROMOTION_FAILED);
             }
             newEvents.add(event);
         }
@@ -56,11 +57,14 @@ public abstract class GenerationalGCModel extends GCModel {
         setGcEvents(newEvents);
     }
 
-    private void fixYoungGCPromotionFail() {
+    private void dealYoungGCThatBecomeFullGCPreUnified() {
         for (GCEvent event : getGcEvents()) {
-            if (event.getEventType() == YOUNG_GC && event.isTrue(GCEventBooleanType.PROMOTION_FAILED)) {
-                // when there is promotion fail, overwrite its original gccause with promotion failed
+            // if metaspace is printed, it must be a full gc
+            if (event.getEventType() == YOUNG_GC && event.getMemoryItem(MemoryArea.METASPACE) != null) {
                 event.setEventType(FULL_GC);
+                event.setTrue(GCEventBooleanType.YOUNG_GC_BECOME_FULL_GC);
+            }
+            if (event.getEventType() == FULL_GC && event.isTrue(GCEventBooleanType.PROMOTION_FAILED)) {
                 event.setCause(GCCause.PROMOTION_FAILED);
             }
         }
@@ -79,8 +83,11 @@ public abstract class GenerationalGCModel extends GCModel {
 
     @Override
     protected void doBeforeCalculatingDerivedInfo() {
-        removeYoungGCThatBecomeFullGC();
-        fixYoungGCPromotionFail();
+        if (getLogStyle() == GCLogStyle.UNIFIED) {
+            dealYoungGCThatBecomeFullGCUnified();
+        } else if (getLogStyle() == GCLogStyle.PRE_UNIFIED) {
+            dealYoungGCThatBecomeFullGCPreUnified();
+        }
         youngGenUsedShouldBeZeroAfterFullGC();
     }
 }
