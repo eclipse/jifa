@@ -388,6 +388,7 @@
         this.compareConfigVisible = true
       },
       showAnalysisConfig() {
+        this.analysisConfigModel = {...this.analysisConfig}
         this.analysisConfigVisible = true;
       },
       setSharedInfo(info) {
