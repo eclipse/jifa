@@ -13,24 +13,14 @@
 
 package org.eclipse.jifa.gclog.event.evnetInfo;
 
-public enum GCSpecialSituation {
-    PROMOTION_FAILED("Promotion failed"),
-    TO_SPACE_EXHAUSTED("To-space Exhausted"),
-    INITIAL_MARK("Initial Mark"),
-    PREPARE_MIXED("Prepare Mixed");
+/*
+ * This class records some boolean types related to a GCEvent. They will be saved in a BitSet of GCEvent,
+ * Each boolean should have the default value false.
+ */
+public enum GCEventBooleanType {
 
-    private String name;
-
-    GCSpecialSituation(String name) {
-        this.name = name;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public String toString() {
-        return name;
-    }
+    PROMOTION_FAILED,
+    TO_SPACE_EXHAUSTED,
+    INITIAL_MARK,
+    PREPARE_MIXED;
 }

@@ -15,7 +15,7 @@ package org.eclipse.jifa.gclog.parser;
 
 import org.eclipse.jifa.common.util.ErrorUtil;
 import org.eclipse.jifa.gclog.event.GCEvent;
-import org.eclipse.jifa.gclog.event.evnetInfo.GCSpecialSituation;
+import org.eclipse.jifa.gclog.event.evnetInfo.GCEventBooleanType;
 import org.eclipse.jifa.gclog.model.GCEventType;
 import org.eclipse.jifa.gclog.model.GCModel;
 
@@ -161,7 +161,7 @@ public class JDK11GenerationalGCLogParser extends JDK11G1OrGenerationalGCLogPars
         if (event == null) {
             return;
         }
-        event.addSpecialSituation(GCSpecialSituation.PROMOTION_FAILED);
+        event.setTrue(GCEventBooleanType.PROMOTION_FAILED);
     }
 
     @Override

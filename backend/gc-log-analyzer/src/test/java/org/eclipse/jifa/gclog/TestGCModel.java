@@ -17,7 +17,7 @@ import org.eclipse.jifa.common.listener.DefaultProgressListener;
 import org.eclipse.jifa.gclog.event.*;
 import org.eclipse.jifa.gclog.event.evnetInfo.GCCause;
 import org.eclipse.jifa.gclog.event.evnetInfo.GCMemoryItem;
-import org.eclipse.jifa.gclog.event.evnetInfo.GCSpecialSituation;
+import org.eclipse.jifa.gclog.event.evnetInfo.GCEventBooleanType;
 import org.eclipse.jifa.gclog.model.*;
 import org.eclipse.jifa.gclog.model.modeInfo.GCCollectorType;
 import org.eclipse.jifa.gclog.model.modeInfo.GCLogStyle;
@@ -70,7 +70,7 @@ public class TestGCModel {
         events[0].setMemoryItem(new GCMemoryItem(HUMONGOUS, 10 * 1024 * 1024, 10 * 1024 * 1024, Constant.UNKNOWN_INT));
         events[0].setMemoryItem(new GCMemoryItem(METASPACE, 15 * 1024 * 1024, 15 * 1024 * 1024, 20 * 1024 * 1024));
         events[0].setMemoryItem(new GCMemoryItem(OLD, 10 * 1024 * 1024, 12 * 1024 * 1024, 100 * 1024 * 1024));
-        events[0].addSpecialSituation(GCSpecialSituation.TO_SPACE_EXHAUSTED);
+        events[0].setTrue(GCEventBooleanType.TO_SPACE_EXHAUSTED);
 //      expected result:  collectionResult.addItem(new GCCollectionResultItem(TOTAL,40*1024,32*1024,300*1024));
 
         events[1].setEventType(GCEventType.FULL_GC);

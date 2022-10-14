@@ -17,7 +17,7 @@ import org.eclipse.jifa.common.util.ErrorUtil;
 import org.eclipse.jifa.gclog.event.GCEvent;
 import org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea;
 import org.eclipse.jifa.gclog.event.evnetInfo.GCMemoryItem;
-import org.eclipse.jifa.gclog.event.evnetInfo.GCSpecialSituation;
+import org.eclipse.jifa.gclog.event.evnetInfo.GCEventBooleanType;
 import org.eclipse.jifa.gclog.model.GCEventType;
 import org.eclipse.jifa.gclog.model.GCModel;
 import org.eclipse.jifa.gclog.util.GCLogUtil;
@@ -104,7 +104,7 @@ public class JDK8GenerationalGCLogParser extends AbstractJDK8GCLogParser {
         if (event == null) {
             return;
         }
-        event.addSpecialSituation(GCSpecialSituation.PROMOTION_FAILED);
+        event.setTrue(GCEventBooleanType.PROMOTION_FAILED);
     }
 
     private static void parseCMSPhase(AbstractGCLogParser parser, ParseRuleContext context, String phaseName, String value) {

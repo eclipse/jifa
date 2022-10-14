@@ -20,6 +20,7 @@ import org.eclipse.jifa.gclog.util.Constant;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -45,7 +46,7 @@ public class GCEvent extends TimedEvent {
     // a direct child in phases field rather than child of child. Use level field of EventType to check
     // if an event type should be a subphase.
     private List<GCEvent> phases;
-    private List<GCSpecialSituation> specialSituations;
+    private BitSet booleans;
 
     private double pause = Constant.UNKNOWN_DOUBLE;
     private double interval = Constant.UNKNOWN_DOUBLE; // interval from last event with same type
@@ -123,6 +124,21 @@ public class GCEvent extends TimedEvent {
         return null;
     }
 
+    public void setBoolean(GCEventBooleanType type, boolean value) {
+        if (booleans == null) {
+            booleans = new BitSet();
+        }
+        booleans.set(type.ordinal(), value);
+    }
+
+    public void setTrue(GCEventBooleanType type) {
+        setBoolean(type, true);
+    }
+
+    public boolean isTrue(GCEventBooleanType type) {
+        return booleans != null && booleans.get(type.ordinal());
+    }
+
     public ReferenceGC getReferenceGC() {
         return referenceGC;
     }
@@ -149,24 +165,6 @@ public class GCEvent extends TimedEvent {
 
     public boolean isFullGC() {
         return this.eventType != null && this.eventType.isFullGC();
-    }
-
-    public List<GCSpecialSituation> getSpecialSituations() {
-        return specialSituations;
-    }
-
-    public void setSpecialSituations(List<GCSpecialSituation> specialSituations) {
-        this.specialSituations = specialSituations;
-    }
-
-    public void addSpecialSituation(GCSpecialSituation specialSituation) {
-        if (specialSituation == null) {
-            return;
-        }
-        if (specialSituations == null) {
-            specialSituations = new ArrayList<>(2);
-        }
-        specialSituations.add(specialSituation);
     }
 
     public GCCause getCause() {
@@ -212,6 +210,10 @@ public class GCEvent extends TimedEvent {
 
     public void setCause(String cause) {
         this.cause = GCCause.getCause(cause);
+    }
+
+    public void setCause(GCCause cause) {
+        this.cause = cause;
     }
 
     public void setCpuTime(CpuTime cpuTime) {
@@ -313,19 +315,6 @@ public class GCEvent extends TimedEvent {
         return promotion;
     }
 
-    public boolean hasSpecialSituation(GCSpecialSituation situation) {
-        if (specialSituations == null) {
-            return false;
-        }
-        for (GCSpecialSituation specialSituation : specialSituations) {
-            if (specialSituation == situation) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-
     /*
      * This function is mainly used in diagnose, displays only one of timestamp or uptime
      */
@@ -360,6 +349,31 @@ public class GCEvent extends TimedEvent {
         }
     }
 
+    private void appendGCSpecialSituation(StringBuilder sb) {
+        List<String> parts = new ArrayList<>();
+        if (isTrue(GCEventBooleanType.INITIAL_MARK)) {
+            parts.add("Initial Mark");
+        }
+        if (isTrue(GCEventBooleanType.PREPARE_MIXED)) {
+            parts.add("Prepare Mixed");
+        }
+        if (isTrue(GCEventBooleanType.TO_SPACE_EXHAUSTED)) {
+            parts.add("To-space Exhausted");
+        }
+
+        if (parts.isEmpty()) {
+            return;
+        }
+        sb.append(" (");
+        for (int i = 0; i < parts.size(); i++) {
+            if (i != 0) {
+                sb.append(", ");
+            }
+            sb.append(parts.get(i));
+        }
+        sb.append(")");
+    }
+
     @Override
     public String toString() {
         // reference format: (1)14.244: [Full GC (Ergonomics), 0.001s] [Young: 2548K->0K(18944K)] [Old: 33595K->11813K(44032K)] [Total: 36143K->11813K(62976K)] [Metaspace: 19355K->19355K(1067008K)] [promotion 3000 K, interval 30s]
@@ -376,16 +390,9 @@ public class GCEvent extends TimedEvent {
         if (cause != null) {
             sb.append(" (").append(cause).append(")");
         }
-        if (specialSituations != null && specialSituations.size() > 0) {
-            sb.append(" (");
-            for (int i = 0; i < specialSituations.size(); i++) {
-                if (i != 0) {
-                    sb.append(", ");
-                }
-                sb.append(specialSituations.get(i));
-            }
-            sb.append(')');
-        }
+
+        appendGCSpecialSituation(sb);
+
         if (getDuration() != Constant.UNKNOWN_DOUBLE) {
             sb.append(", ").append(String.format("%.3f", getDuration() / 1000)).append("s");
         }
