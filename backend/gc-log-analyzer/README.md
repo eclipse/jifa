@@ -13,12 +13,16 @@ Analyzing GC log can help troubleshoot long pause problems and optimize overall 
 
 The supported features are as follows:
 
-- Overview
-- Key Performance Indicators
-- Problem suggestion
-- GC Cause
-- Graphs over time
+- Basic Information
+- Diagnose
+- Time Graph
+- Pause Info
+- Heap And Metaspace
+- Phase And Cause
+- Object Statistics
+- JVM Options
 - GC Details
+- GC Log Compare
 - Other features
 
 ### Implementation Overview
@@ -27,7 +31,7 @@ Then main entrance of the feature is in GCLogAnalyzer.parse. There are 3 main st
 
 1. GCLogParser will parse the original GC log file into GCEvents, recording direct information from the file. This is done by first recognizing the format and collector of the log, then parse each line using corresponding parsing rules.
 
-2. GCModel.calculateDerivedInfo will calculate more metrics we can get from original info, such as promotion of single event and max pause time of the whole process. All these data are saved in GCModel.
+2. GCModel.calculateDerivedInfo will calculate more metrics we can get from original info, such as promotion of single event. All these data are saved in GCModel.
 
 3. Frontend pages displays information through gclog backend apis.
 
