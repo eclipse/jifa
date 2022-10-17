@@ -68,13 +68,13 @@ public class Worker extends AbstractVerticle {
     }
 
     private static JsonObject readConfig(String key, String def) throws IOException {
+        // Read default config first
         JsonObject config = new JsonObject(FileUtil.content(Worker.class.getClassLoader().getResourceAsStream(def)));
+        // Merge the config items if customized config file is set.
         String v = System.getProperty(key);
         if (!Strings.isNullOrEmpty(v)) {
-            JsonObject override = new JsonObject(FileUtils.readFileToString(new File(v), Charset.defaultCharset()));
-            for (String k : override.fieldNames()) {
-                config.put(k, override.getValue(k));
-            }
+            JsonObject customConfig = new JsonObject(FileUtils.readFileToString(new File(v), Charset.defaultCharset()));
+            config.mergeIn(customConfig);
         }
         return config;
     }
