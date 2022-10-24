@@ -15,6 +15,7 @@ package org.eclipse.jifa.gclog.parser;
 
 import org.eclipse.jifa.common.util.ErrorUtil;
 import org.eclipse.jifa.gclog.event.GCEvent;
+import org.eclipse.jifa.gclog.event.evnetInfo.GCCause;
 import org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea;
 import org.eclipse.jifa.gclog.event.evnetInfo.GCMemoryItem;
 import org.eclipse.jifa.gclog.event.evnetInfo.GCEventBooleanType;
@@ -120,6 +121,7 @@ public class JDK8GenerationalGCLogParser extends AbstractJDK8GCLogParser {
 
         GCEvent phase = context.get(EVENT);
         if (phase == null) {
+            // " (concurrent mode interrupted)"
             phase = new GCEvent();
             phase.setEventType(phaseType);
             GCEvent gc = model.getLastEventOfType(YOUNG_FULL_GC);
@@ -146,6 +148,17 @@ public class JDK8GenerationalGCLogParser extends AbstractJDK8GCLogParser {
             if (parent == null) {
                 return;
             }
+        }
+
+        if (phaseType == CMS_FINAL_REMARK && parent.getLastPhaseOfType(CMS_FINAL_REMARK) != null) {
+            // When we see the second cms final remark, this is actually the CMSScavengeBeforeRemark.
+            // In current implementation, young gc must be put at the first level of event structure
+            // otherwise it can not be correctly aggregated
+            phase.setEventType(YOUNG_GC);
+            phase.setCause(GCCause.CMS_FINAL_REMARK);
+            phase.setTrue(GCEventBooleanType.IGNORE_PAUSE);
+            model.putEvent(phase);
+            return;
         }
 
         GCEvent phaseStart = parent.getLastPhaseOfType(phaseType);

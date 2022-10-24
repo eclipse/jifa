@@ -15,10 +15,7 @@ package org.eclipse.jifa.gclog.parser;
 
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.jifa.gclog.event.GCEvent;
-import org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea;
-import org.eclipse.jifa.gclog.event.evnetInfo.CpuTime;
-import org.eclipse.jifa.gclog.event.evnetInfo.GCMemoryItem;
-import org.eclipse.jifa.gclog.event.evnetInfo.GCEventBooleanType;
+import org.eclipse.jifa.gclog.event.evnetInfo.*;
 import org.eclipse.jifa.gclog.model.GCEventType;
 import org.eclipse.jifa.gclog.model.GCModel;
 import org.eclipse.jifa.gclog.model.modeInfo.GCCollectorType;
@@ -130,7 +127,7 @@ public abstract class JDK11G1OrGenerationalGCLogParser extends AbstractJDK11GCLo
             }
             causeIndex++;
         }
-        String cause = parts[causeIndex];
+        GCCause cause = GCCause.getCause(parts[causeIndex]);
         boolean end = text.endsWith("ms");
         GCEvent event;
         if (!end || (event = model.getLastEventOfGCID(context.get(GCID))) == null) {
@@ -138,6 +135,9 @@ public abstract class JDK11G1OrGenerationalGCLogParser extends AbstractJDK11GCLo
             event.setStartTime(context.get(UPTIME));
             event.setEventType(eventType);
             event.setCause(cause);
+            if (cause == GCCause.CMS_FINAL_REMARK) {
+                event.setTrue(GCEventBooleanType.IGNORE_PAUSE);
+            }
             if (specialSituation != null) {
                 event.setTrue(specialSituation);
             }
