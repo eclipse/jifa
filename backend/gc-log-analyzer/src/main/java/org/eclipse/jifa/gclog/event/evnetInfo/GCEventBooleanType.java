@@ -20,6 +20,7 @@ package org.eclipse.jifa.gclog.event.evnetInfo;
 public enum GCEventBooleanType {
 
     PROMOTION_FAILED,
+    IGNORE_PAUSE, // pause of this event should not be included in statistics
     TO_SPACE_EXHAUSTED,
     YOUNG_GC_BECOME_FULL_GC,
     INITIAL_MARK,

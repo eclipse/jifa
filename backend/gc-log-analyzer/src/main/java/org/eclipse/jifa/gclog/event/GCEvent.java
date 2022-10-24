@@ -446,7 +446,7 @@ public class GCEvent extends TimedEvent {
     }
 
     public void pauseEventOrPhasesDo(Consumer<GCEvent> consumer) {
-        if (getEventLevel() != EVENT) {
+        if (getEventLevel() != EVENT || isTrue(GCEventBooleanType.IGNORE_PAUSE)) {
             return;
         }
         switch (getEventType().getPause()) {

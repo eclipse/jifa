@@ -38,6 +38,8 @@ export function getPhaseHint(phase) {
 
 export function getCauseHint(cause) {
   switch (cause) {
+    case "CMS Final Remark":
+      return 'jifa.gclog.cause.cmsFinalRemark'
     case "System.gc()":
       return 'jifa.gclog.cause.systemgc'
     case "JvmtiEnv ForceGarbageCollection":
@@ -104,7 +106,6 @@ export function getCauseHint(cause) {
     // case "Tenured Generation Full":
     // case "CMS Generation Full":
     // case "CMS Initial Mark":
-    // case "CMS Final Remark":
     // case "CMS Concurrent Mark":
     // case "Old Generation Expanded On Last Scavenge":
     // case "Old Generation Too Full To Scavenge":

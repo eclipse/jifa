@@ -299,6 +299,7 @@ exports.default = {
       },
 
       cause: {
+        cmsFinalRemark: 'If -XX:+CMSScavengeBeforeRemark option is set，a Young GC will be triggered at the beginning of CMS Final Remark phase. This option may help reduce longest pause time of remark.',
         systemgc: 'Triggered when System.gc() or Runtime.getRuntime().gc() is called.',
         jvmti: "Triggered whenForceGarbageCollection is called using JVMTI.",
         gclocker: 'When a thread is in JNI critical section and a gc is triggered，GC Locker will prevent this gc from executing and prevent other threads from entering critical section.  When the last thread exits the critical section, GCLocker Initiated GC is triggered. Heavy use of GC Locker may prevent gcs from occurring timely, lead to long pause or even Full GC.',

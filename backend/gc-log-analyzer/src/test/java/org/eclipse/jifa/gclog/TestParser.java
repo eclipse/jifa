@@ -23,6 +23,8 @@ import org.eclipse.jifa.gclog.event.evnetInfo.GCMemoryItem;
 import org.eclipse.jifa.gclog.model.modeInfo.GCCollectorType;
 import org.eclipse.jifa.gclog.parser.GCLogParsingMetadata;
 import org.eclipse.jifa.gclog.model.modeInfo.GCLogStyle;
+import org.eclipse.jifa.gclog.vo.PauseStatistics;
+import org.eclipse.jifa.gclog.vo.TimeRange;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -1232,13 +1234,104 @@ public class TestParser {
         Assert.assertEquals(model.getGcEvents().size(), 1);
         GCEvent fullGC = model.getGcEvents().get(0);
         Assert.assertEquals(fullGC.getEventType(), GCEventType.FULL_GC);
-        Assert.assertEquals(fullGC.getMemoryItem(YOUNG), new GCMemoryItem(YOUNG, 7689600L * 1024, 0,  7689600L * 1024));
+        Assert.assertEquals(fullGC.getMemoryItem(YOUNG), new GCMemoryItem(YOUNG, 7689600L * 1024, 0, 7689600L * 1024));
         Assert.assertEquals(fullGC.getMemoryItem(OLD), new GCMemoryItem(OLD, 9258265L * 1024, 5393434L * 1024, 12582912L * 1024));
-        Assert.assertEquals(fullGC.getMemoryItem(HEAP), new GCMemoryItem(HEAP, 16878013L * 1024, 5393434L * 1024,  20272512L * 1024));
+        Assert.assertEquals(fullGC.getMemoryItem(HEAP), new GCMemoryItem(HEAP, 16878013L * 1024, 5393434L * 1024, 20272512L * 1024));
         Assert.assertEquals(fullGC.getMemoryItem(METASPACE), new GCMemoryItem(METASPACE, 208055 * 1024, 203568 * 1024, 1253376 * 1024));
         Assert.assertEquals(fullGC.getCause(), PROMOTION_FAILED);
         Assert.assertTrue(fullGC.isTrue(YOUNG_GC_BECOME_FULL_GC));
 
     }
 
+    @Test
+    public void TestJDK8CMSScavengeBeforeRemark() throws Exception {
+        String log = "2022-10-14T14:28:44.426+0800: 165.382: [GC (CMS Initial Mark) [1 CMS-initial-mark: 1308232K(2097152K)] 2715777K(4019584K), 0.2266431 secs] [Times: user=0.85 sys=0.03, real=0.23 secs] \n" +
+                "2022-10-14T14:28:44.653+0800: 165.609: [CMS-concurrent-mark-start]\n" +
+                "2022-10-14T14:28:46.815+0800: 167.771: [CMS-concurrent-mark: 2.082/2.161 secs] [Times: user=4.22 sys=0.58, real=2.16 secs] \n" +
+                "2022-10-14T14:28:46.815+0800: 167.771: [CMS-concurrent-preclean-start]\n" +
+                "2022-10-14T14:28:46.854+0800: 167.810: [CMS-concurrent-preclean: 0.038/0.039 secs] [Times: user=0.12 sys=0.01, real=0.04 secs] \n" +
+                "2022-10-14T14:28:46.855+0800: 167.811: [CMS-concurrent-abortable-preclean-start]\n" +
+                "2022-10-14T14:28:47.937+0800: 168.893: [GC (Allocation Failure) 2022-10-14T14:28:47.937+0800: 168.893: [ParNew: 1922431K->174720K(1922432K), 0.2928759 secs] 3230664K->1560308K(4019584K), 0.2931600 secs] [Times: user=0.83 sys=0.06, real=0.29 secs] \n" +
+                "2022-10-14T14:28:50.764+0800: 171.720: [CMS-concurrent-abortable-preclean: 3.498/3.909 secs] [Times: user=10.64 sys=1.14, real=3.91 secs] \n" +
+                "2022-10-14T14:28:50.765+0800: 171.721: [GC (CMS Final Remark) [YG occupancy: 1056998 K (1922432 K)]2022-10-14T14:28:50.765+0800: 171.721: [GC (CMS Final Remark) 2022-10-14T14:28:50.765+0800: 171.721: [ParNew: 1056998K->151245K(1922432K), 0.1588173 secs] 2442587K->1615175K(4019584K), 0.1590607 secs] [Times: user=0.49 sys=0.05, real=0.16 secs] \n" +
+                "2022-10-14T14:28:50.924+0800: 171.880: [Rescan (parallel) , 0.0482726 secs]2022-10-14T14:28:50.973+0800: 171.929: [weak refs processing, 0.0000506 secs]2022-10-14T14:28:50.973+0800: 171.929: [class unloading, 0.0809186 secs]2022-10-14T14:28:51.054+0800: 172.010: [scrub symbol table, 0.0649216 secs]2022-10-14T14:28:51.118+0800: 172.075: [scrub string table, 0.0045311 secs][1 CMS-remark: 1463930K(2097152K)] 1615175K(4019584K), 0.3629243 secs] [Times: user=0.83 sys=0.06, real=0.36 secs] \n" +
+                "2022-10-14T14:28:51.129+0800: 172.085: [CMS-concurrent-sweep-start]\n" +
+                "2022-10-14T14:28:51.881+0800: 172.837: [CMS-concurrent-sweep: 0.727/0.752 secs] [Times: user=1.41 sys=0.20, real=0.75 secs] \n" +
+                "2022-10-14T14:28:51.881+0800: 172.837: [CMS-concurrent-reset-start]\n" +
+                "2022-10-14T14:28:51.895+0800: 172.851: [CMS-concurrent-reset: 0.014/0.014 secs] [Times: user=0.03 sys=0.01, real=0.02 secs] ";
+        GCLogParser parser = new GCLogParserFactory().getParser(stringToBufferedReader(log));
+        CMSGCModel model = (CMSGCModel) parser.parse(stringToBufferedReader(log));
+        model.calculateDerivedInfo(new DefaultProgressListener());
+
+        Assert.assertEquals(model.getGcEvents().size(), 3);
+        Assert.assertEquals(model.getLastEventOfType(GCEventType.CMS_FINAL_REMARK).getCpuTime().getUser(), 830, DELTA);
+
+        GCEvent youngGC = model.getGcEvents().get(1);
+        Assert.assertEquals(youngGC.getMemoryItem(YOUNG), new GCMemoryItem(YOUNG, 1922431L * 1024L, 174720L * 1024L, 1922432L * 1024L));
+
+        youngGC = model.getGcEvents().get(2);
+        Assert.assertEquals(youngGC.getEventType(), GCEventType.YOUNG_GC);
+        Assert.assertEquals(youngGC.getMemoryItem(YOUNG), new GCMemoryItem(YOUNG, 1056998L * 1024L, 151245L * 1024L, 1922432L * 1024L));
+        Assert.assertEquals(youngGC.getCpuTime().getUser(), 490, DELTA);
+        Assert.assertEquals(youngGC.getCause(), CMS_FINAL_REMARK);
+
+        PauseStatistics pause = model.getPauseStatistics(new TimeRange(0, 99999999));
+        Assert.assertEquals(pause.getPauseAvg(), (226.6431 + 362.9243 + 293.1600) / 3.0, DELTA);
+    }
+
+    @Test
+    public void TestJDK11CMSScavengeBeforeRemark() throws Exception {
+        String log = "[0.600s][info][gc,start     ] GC(1) Pause Young (Allocation Failure)\n" +
+                "[0.600s][info][gc,task      ] GC(1) Using 2 workers of 8 for evacuation\n" +
+                "[0.632s][info][gc,heap      ] GC(1) ParNew: 46079K->5120K(46080K)\n" +
+                "[0.632s][info][gc,heap      ] GC(1) CMS: 14224K->48865K(51200K)\n" +
+                "[0.632s][info][gc,metaspace ] GC(1) Metaspace: 6590K->6590K(1056768K)\n" +
+                "[0.632s][info][gc           ] GC(1) Pause Young (Allocation Failure) 58M->52M(95M) 32.662ms\n" +
+                "[0.632s][info][gc,cpu       ] GC(1) User=0.05s Sys=0.01s Real=0.03s\n" +
+                "[0.632s][info][gc,start     ] GC(2) Pause Initial Mark\n" +
+                "[0.635s][info][gc           ] GC(2) Pause Initial Mark 53M->53M(95M) 2.784ms\n" +
+                "[0.635s][info][gc,cpu       ] GC(2) User=0.03s Sys=0.00s Real=0.00s\n" +
+                "[0.635s][info][gc           ] GC(2) Concurrent Mark\n" +
+                "[0.635s][info][gc,task      ] GC(2) Using 2 workers of 2 for marking\n" +
+                "[0.642s][info][gc           ] GC(2) Concurrent Mark 6.796ms\n" +
+                "[0.642s][info][gc,cpu       ] GC(2) User=0.02s Sys=0.00s Real=0.01s\n" +
+                "[0.642s][info][gc           ] GC(2) Concurrent Preclean\n" +
+                "[0.642s][info][gc           ] GC(2) Concurrent Preclean 0.110ms\n" +
+                "[0.642s][info][gc,cpu       ] GC(2) User=0.02s Sys=0.00s Real=0.00s\n" +
+                "[0.642s][info][gc,start     ] GC(2) Pause Remark\n" +
+                "[0.642s][info][gc,start     ] GC(3) Pause Young (CMS Final Remark)\n" +
+                "[0.642s][info][gc,task      ] GC(3) Using 2 workers of 8 for evacuation\n" +
+                "[0.642s][info][gc,heap      ] GC(3) ParNew: 5923K->5921K(46080K)\n" +
+                "[0.642s][info][gc,heap      ] GC(3) CMS: 48865K->48865K(51200K)\n" +
+                "[0.642s][info][gc,metaspace ] GC(3) Metaspace: 6590K->6590K(1056768K)\n" +
+                "[0.642s][info][gc           ] GC(3) Pause Young (CMS Final Remark) 53M->53M(95M) 0.040ms\n" +
+                "[0.642s][info][gc,cpu       ] GC(3) User=0.07s Sys=0.00s Real=0.00s\n" +
+                "[0.646s][info][gc           ] GC(2) Pause Remark 53M->53M(95M) 3.259ms\n" +
+                "[0.646s][info][gc,cpu       ] GC(2) User=0.09s Sys=0.00s Real=0.00s\n" +
+                "[0.646s][info][gc           ] GC(2) Concurrent Sweep\n" +
+                "[0.654s][info][gc           ] GC(2) Concurrent Sweep 8.299ms\n" +
+                "[0.654s][info][gc,cpu       ] GC(2) User=0.01s Sys=0.00s Real=0.01s\n" +
+                "[0.654s][info][gc           ] GC(2) Concurrent Reset\n" +
+                "[0.654s][info][gc           ] GC(2) Concurrent Reset 0.046ms\n" +
+                "[0.654s][info][gc,cpu       ] GC(2) User=0.04s Sys=0.00s Real=0.00s\n" +
+                "[0.654s][info][gc,heap      ] GC(2) Old: 48865K->34645K(51200K)";
+        GCLogParser parser = new GCLogParserFactory().getParser(stringToBufferedReader(log));
+        CMSGCModel model = (CMSGCModel) parser.parse(stringToBufferedReader(log));
+        model.calculateDerivedInfo(new DefaultProgressListener());
+
+        Assert.assertEquals(model.getGcEvents().size(), 3);
+        Assert.assertEquals(model.getLastEventOfType(GCEventType.CMS_FINAL_REMARK).getCpuTime().getUser(), 90, DELTA);
+
+        GCEvent youngGC = model.getGcEvents().get(0);
+        Assert.assertEquals(youngGC.getMemoryItem(YOUNG), new GCMemoryItem(YOUNG, 46079 * 1024L, 5120 * 1024L, 46080 * 1024L));
+
+        youngGC = model.getGcEvents().get(2);
+        Assert.assertEquals(youngGC.getEventType(), GCEventType.YOUNG_GC);
+        Assert.assertEquals(youngGC.getMemoryItem(YOUNG), new GCMemoryItem(YOUNG, 5923 * 1024L, 5921 * 1024L, 46080 * 1024L));
+        Assert.assertEquals(youngGC.getCpuTime().getUser(), 70, DELTA);
+        Assert.assertEquals(youngGC.getCause(), CMS_FINAL_REMARK);
+
+        PauseStatistics pause = model.getPauseStatistics(new TimeRange(0, 99999999));
+        Assert.assertEquals(pause.getPauseAvg(), (32.662 + 3.259 + 2.784) / 3.0, DELTA);
+    }
 }

@@ -297,6 +297,7 @@ exports.default = {
       },
 
       cause: {
+        cmsFinalRemark: '如果设置了-XX:+CMSScavengeBeforeRemark参数，那么会在CMS Final Remark时先做一次Young GC，通常开启此参数可以减少Remark的最大暂停时间',
         systemgc: '调用System.gc()或Runtime.getRuntime().gc()时触发',
         jvmti: '使用Jvmti时调用ForceGarbageCollection触发',
         gclocker: '如果线程执行在JNI临界区时，刚好需要进行GC，此时GC Locker会阻止GC的发生，同时阻止其他线程进入JNI临界区，直到最后一个线程退出临界区时触发这种GC。过于频繁使用GCLocker可能会使得gc无法及时进行，可能导致长时间暂停甚至可能导致Full GC',
