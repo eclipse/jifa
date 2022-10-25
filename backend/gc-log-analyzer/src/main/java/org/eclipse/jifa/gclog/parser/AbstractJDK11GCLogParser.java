@@ -60,10 +60,7 @@ public abstract class AbstractJDK11GCLogParser extends AbstractGCLogParser {
     @Override
     protected final void doParseLine(String line) {
         JDK11LogLine logLine = parseJDK11LogLine(line);
-        if (logLine == null) {
-            return;
-        }
-        if (!isLogLineValid(logLine)) {
+        if (logLine == null || !logLine.isValid()) {
             return;
         }
         doBeforeParsingLine(logLine);
@@ -79,31 +76,20 @@ public abstract class AbstractJDK11GCLogParser extends AbstractGCLogParser {
 
     protected abstract void doParseLineWithoutGCID(String detail, double uptime);
 
-    private boolean isLogLineValid(JDK11LogLine logLine) {
-        if (logLine.getTimestamp() == Constant.UNKNOWN_LONG && logLine.getUptime() == Constant.UNKNOWN_DOUBLE) { // need at least one
-            return false;
-        }
-        if (logLine.getLoglevel() != null && !"info".equals(logLine.getLoglevel())) { // parse info level only now
-            return false;
-        }
-        if (logLine.getTags() != null && !logLine.getTags().contains("gc")) { // need gc tag
-            return false;
-        }
-        return true;
-    }
-
     private void doBeforeParsingLine(JDK11LogLine logLine) {
-        // decide begin and end time of log
         double uptime = logLine.getUptime();
-        long timestamp = logLine.getTimestamp();
         GCModel model = getModel();
-        if (model.getReferenceTimestamp() == Constant.UNKNOWN_LONG && timestamp != Constant.UNKNOWN_LONG) {
-            double startTimestamp = uptime == Constant.UNKNOWN_DOUBLE ? timestamp : timestamp - uptime;
+        // set model reference timestamp
+        if (model.getReferenceTimestamp() == Constant.UNKNOWN_LONG && logLine.getTimestamp() != Constant.UNKNOWN_LONG) {
+            double startTimestamp = uptime == Constant.UNKNOWN_DOUBLE ? logLine.getTimestamp()
+                    : logLine.getTimestamp() - uptime;
             model.setReferenceTimestamp(startTimestamp);
         }
+        // set event start time
         if (logLine.getUptime() == Constant.UNKNOWN_DOUBLE) {
-            logLine.setUptime(timestamp - model.getReferenceTimestamp());
+            logLine.setUptime(logLine.getTimestamp() - model.getReferenceTimestamp());
         }
+        // set model start and end time
         if (model.getStartTime() == Constant.UNKNOWN_DOUBLE) {
             model.setStartTime(uptime);
         }
@@ -114,12 +100,35 @@ public abstract class AbstractJDK11GCLogParser extends AbstractGCLogParser {
     @AllArgsConstructor
     @NoArgsConstructor
     private static class JDK11LogLine {
+        private String timestampString = null;
         private long timestamp = Constant.UNKNOWN_LONG;
         private double uptime = Constant.UNKNOWN_DOUBLE;
         private String loglevel;
         private List<String> tags;
         private int gcid = Constant.UNKNOWN_INT;
         private String detail;
+
+        // parsing timestamp is expensive, do it lazily
+        public long getTimestamp() {
+            if (timestamp == Constant.UNKNOWN_LONG && timestampString != null) {
+                timestamp = GCLogUtil.parseDateStamp(timestampString);
+            }
+            return timestamp;
+        }
+
+        public boolean isValid() {
+            if (timestamp == Constant.UNKNOWN_LONG && timestampString == null
+                    && getUptime() == Constant.UNKNOWN_DOUBLE) { // need at least one
+                return false;
+            }
+            if (getLoglevel() != null && !"info".equals(getLoglevel())) { // parse info level only now
+                return false;
+            }
+            if (getTags() != null && !getTags().contains("gc")) { // need gc tag
+                return false;
+            }
+            return true;
+        }
     }
 
     /**
@@ -164,7 +173,7 @@ public abstract class AbstractJDK11GCLogParser extends AbstractGCLogParser {
 
     private void parseDecoration(JDK11LogLine logLine, String decoration) {
         if (GCLogUtil.isDatestamp(decoration)) {
-            logLine.setTimestamp(GCLogUtil.parseDateStamp(decoration));
+            logLine.setTimestampString(decoration);
         } else if (Character.isDigit(decoration.charAt(0)) && decoration.endsWith("s")) {
             double period = GCLogUtil.toMillisecond(decoration);
             // this may be either a timestamp or an uptime. we have no way to know which.

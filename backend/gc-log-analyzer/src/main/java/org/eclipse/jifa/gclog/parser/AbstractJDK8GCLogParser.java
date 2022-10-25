@@ -31,9 +31,7 @@ import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static org.eclipse.jifa.gclog.util.Constant.UNKNOWN_DOUBLE;
-import static org.eclipse.jifa.gclog.util.Constant.KB2MB;
-import static org.eclipse.jifa.gclog.util.Constant.MS2S;
+import static org.eclipse.jifa.gclog.util.Constant.*;
 
 /*
  * We mainly consider -XX:+PrintGCDetails. -XX:+PrintReferenceGC and -XX:+PrintApplicationStopTime  are also considered
@@ -230,12 +228,13 @@ public abstract class AbstractJDK8GCLogParser extends AbstractGCLogParser {
             GCEvent event = new GCEvent();
             String title = null;
             String referenceGC = null;
+            String datestamp = null;
             for (GCLogToken token : line) {
                 if (token.getType() == TOKEN_LINE_FULL_SENTENCE || token.getType() == TOKEN_EMBEDDED_SENTENCE) {
                     doParseFullSentence(token.getValue());
                     return;
                 } else if (token.getType() == TOKEN_DATESTAMP) {
-                    event.setStartTimestamp(GCLogUtil.parseDateStamp(token.getValue()));
+                    datestamp = token.getValue();
                 } else if (token.getType() == TOKEN_UPTIME) {
                     event.setStartTime(MS2S * Double.parseDouble(token.getValue()));
                 } else if (token.getType() == TOKEN_GCID) {
@@ -245,7 +244,7 @@ public abstract class AbstractJDK8GCLogParser extends AbstractGCLogParser {
                     // let subclass parse it
                     title = token.getValue();
                 } else if (token.getType() == TOKEN_SAFEPOINT) {
-                    if (doBeforeParsingGCTraceTime(event)) {
+                    if (doBeforeParsingGCTraceTime(event, datestamp)) {
                         doParseSafePoint(event, token.getValue());
                     }
                     return;
@@ -268,13 +267,12 @@ public abstract class AbstractJDK8GCLogParser extends AbstractGCLogParser {
                 }
             }
             // jni weak does not print reference count
-
             if (referenceGC != null || "JNI Weak Reference".equals(title)) {
-                if (doBeforeParsingGCTraceTime(event)) {
+                if (doBeforeParsingGCTraceTime(event, datestamp)) {
                     doParseReferenceGC(event, title, referenceGC);
                 }
             } else if (title != null) {
-                if (doBeforeParsingGCTraceTime(event)) {
+                if (doBeforeParsingGCTraceTime(event, datestamp)) {
                     doParseGCTraceTime(event, title);
                 }
             }
@@ -354,16 +352,23 @@ public abstract class AbstractJDK8GCLogParser extends AbstractGCLogParser {
 
     private double lastUptime = UNKNOWN_DOUBLE;
 
-    private boolean doBeforeParsingGCTraceTime(GCEvent event) {
-        double timestamp = event.getStartTimestamp();
+    private boolean doBeforeParsingGCTraceTime(GCEvent event, String datestampString) {
+        double timestamp = UNKNOWN_DOUBLE;
         double uptime = event.getStartTime();
         GCModel model = getModel();
-        if (model.getReferenceTimestamp() == UNKNOWN_DOUBLE && timestamp != UNKNOWN_DOUBLE) {
+        // set model reference timestamp
+        if (model.getReferenceTimestamp() == UNKNOWN_DOUBLE && datestampString != null) {
+            // parsing timestamp is expensive, do it lazily
+            timestamp = GCLogUtil.parseDateStamp(datestampString);
             double startTimestamp = uptime == UNKNOWN_DOUBLE ? timestamp : timestamp - uptime;
             model.setReferenceTimestamp(startTimestamp);
         }
+        // set event start time
         if (event.getStartTime() == UNKNOWN_DOUBLE) {
-            if (timestamp != UNKNOWN_DOUBLE && model.getReferenceTimestamp() != UNKNOWN_DOUBLE) {
+            if (datestampString != null && model.getReferenceTimestamp() != UNKNOWN_DOUBLE) {
+                if (timestamp == UNKNOWN_DOUBLE) {
+                    timestamp = GCLogUtil.parseDateStamp(datestampString);
+                }
                 uptime = timestamp - model.getReferenceTimestamp();
             } else {
                 // HACK: There may be rare concurrency issue in printing uptime and datestamp when two threads
@@ -379,6 +384,7 @@ public abstract class AbstractJDK8GCLogParser extends AbstractGCLogParser {
         } else {
             lastUptime = event.getStartTime();
         }
+        // set model start and end time
         if (model.getStartTime() == UNKNOWN_DOUBLE) {
             model.setStartTime(uptime);
         }

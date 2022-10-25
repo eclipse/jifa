@@ -102,17 +102,35 @@ public class GCLogUtil {
     /**
      * e.g. "user=0.15s sys=0.01s real=0.02s","user=0.04 sys=0.00, real=0.01 secs"
      */
-    private final static Pattern CPU_TIME_PATTERN = Pattern.compile("user=(.*?)s? sys=(.*?)[s,] real=(.*?)[s ]");
-
     public static CpuTime parseCPUTime(String s) {
-        Matcher matcher = CPU_TIME_PATTERN.matcher(s.toLowerCase());
-        if (matcher.find()) {
-            double user = Double.parseDouble(matcher.group(1)) * 1000;
-            double sys = Double.parseDouble(matcher.group(2)) * 1000;
-            double real = Double.parseDouble(matcher.group(3)) * 1000;
-            return new CpuTime(user, sys, real);
+        CpuTime cpuTime = null;
+        int start = 0;
+        for (int i = 0; /* we will return */ ; i++) {
+            start = s.indexOf("=", start);
+            if (start < 0) {
+                return null;
+            }
+            start++;
+            int end = start;
+            while (end < s.length()) {
+                char c = s.charAt(end);
+                if (c == ' ' || c == 's' || c == ',') {
+                    break;
+                }
+                end++;
+            }
+            double time = Double.parseDouble(s.substring(start, end)) * MS2S;
+            if (i == 0) {
+                cpuTime = new CpuTime();
+                cpuTime.setUser(time);
+            } else if (i == 1) {
+                cpuTime.setSys(time);
+            } else if (i == 2) {
+                cpuTime.setReal(time);
+                return cpuTime;
+            }
+            start = end;
         }
-        return null;
     }
 
     /**
