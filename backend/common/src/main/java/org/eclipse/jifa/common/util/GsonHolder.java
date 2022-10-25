@@ -13,9 +13,12 @@
 package org.eclipse.jifa.common.util;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 public class GsonHolder {
 
-    public static final Gson GSON = new Gson();
+    public static final Gson GSON = new GsonBuilder().registerTypeAdapterFactory(new TypeFactory())
+                                                     .serializeSpecialFloatingPointValues()
+                                                     .create();
 
 }

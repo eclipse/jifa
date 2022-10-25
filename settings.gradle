@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -12,7 +12,23 @@
  ********************************************************************************/
 rootProject.name = 'Jifa'
 
-include ':frontend'
 include ':backend'
 include ':backend:common'
+include ':backend:master'
 include ':backend:worker'
+include ':backend:heap-dump-analyzer:api'
+include ':backend:heap-dump-analyzer:impl'
+include ':backend:heap-dump-analyzer:eclipse-mat-deps'
+include ':backend:heap-dump-analyzer:provider'
+include ':backend:heap-dump-analyzer:hook'
+include ':backend:gc-log-analyzer'
+include ':backend:thread-dump-analyzer'
+include ':frontend'
+include ':docker'
+
+def mapGradleBuildFile(p) {
+    p.buildFileName = "${p.name}.gradle".toLowerCase()
+    p.children.each { c -> mapGradleBuildFile(c) }
+}
+
+mapGradleBuildFile(rootProject)

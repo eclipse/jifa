@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -16,6 +16,10 @@ import static org.eclipse.jifa.common.util.ErrorUtil.shouldNotReachHere;
 
 public enum FileType {
     HEAP_DUMP("heap-dump"),
+
+    GC_LOG("gc-log"),
+
+    THREAD_DUMP("thread-dump")
     ;
 
     private String tag;

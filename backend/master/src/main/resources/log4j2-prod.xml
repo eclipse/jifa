@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Copyright (c) 2020 Contributors to the Eclipse Foundation
+
+    See the NOTICE file(s) distributed with this work for additional
+    information regarding copyright ownership.
+
+    This program and the accompanying materials are made available under the
+    terms of the Eclipse Public License 2.0 which is available at
+    http://www.eclipse.org/legal/epl-2.0
+
+    SPDX-License-Identifier: EPL-2.0
+ -->
+<Configuration status="WARN">
+    <Properties>
+        <Property name="baseDir">${sys:user.home}/logs/jifa-master</Property>
+    </Properties>
+    <Appenders>
+        <RollingFile name="STDOUT" append="false"
+                     fileName="${baseDir}/stdout.log"
+                     filePattern="${baseDir}/stdout-%d{yyyy-MM-dd}.log"
+        >
+            <ThresholdFilter level="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] [%level] %m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+            </Policies>
+        </RollingFile>
+
+        <RollingFile name="STDERR" append="false"
+                     fileName="${baseDir}/stderr.log"
+                     filePattern="${baseDir}/stderr-%d{yyyy-MM-dd}.log"
+        >
+            <ThresholdFilter level="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] [%level] %m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+            </Policies>
+        </RollingFile>
+
+
+        <RollingFile name="HTTP" append="false"
+                     fileName="${baseDir}/http.log"
+                     filePattern="${baseDir}/http-%d{yyyy-MM-dd}.log"
+        >
+            <ThresholdFilter level="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] [%level] %m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+            </Policies>
+        </RollingFile>
+
+        <RollingFile name="SERVICE" append="false"
+                     fileName="${baseDir}/service.log"
+                     filePattern="${baseDir}/service-%d{yyyy-MM-dd}.log"
+        >
+            <ThresholdFilter level="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] [%level] %m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+            </Policies>
+        </RollingFile>
+    </Appenders>
+
+    <Loggers>
+        <Root level="info">
+            <AppenderRef ref="STDOUT"/>
+            <AppenderRef ref="STDERR"/>
+        </Root>
+
+        <Logger name="org.eclipse.jifa.master" level="info" additivity="false">
+            <AppenderRef ref="STDOUT"/>
+            <AppenderRef ref="STDERR"/>
+        </Logger>
+
+        <Logger name="org.eclipse.jifa.master.http" level="info" additivity="false">
+            <AppenderRef ref="HTTP"/>
+        </Logger>
+
+        <Logger name="org.eclipse.jifa.master.service" level="info" additivity="false">
+            <AppenderRef ref="SERVICE"/>
+        </Logger>
+    </Loggers>
+</Configuration>

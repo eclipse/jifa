@@ -14,7 +14,9 @@ export const OBJECT_TYPE = {
   CLASS: 1,
   CLASSLOADER: 2,
   ARRAY: 3,
-  NORMAL: 4
+  NORMAL: 4,
+  SUPERCLASS: 5,
+  PACKAGE: 6,
 }
 
 export const CLASS_TYPE = {

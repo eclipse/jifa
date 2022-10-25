@@ -1,5 +1,5 @@
 <!--
-    Copyright (c) 2020 Contributors to the Eclipse Foundation
+    Copyright (c) 2020, 2021 Contributors to the Eclipse Foundation
 
     See the NOTICE file(s) distributed with this work for additional
     information regarding copyright ownership.
@@ -38,6 +38,10 @@
               @click="$emit('pathToGCRootsOfObj', contextMenuTargetObjectId, contextMenuTargetObjectLabel)">
         {{$t('jifa.heap.pathToGCRoots')}}
       </v-contextmenu-item>
+      <v-contextmenu-item
+              @click="$emit('mergePathToGCRootsFromHistogram', contextMenuTargetObjectId, contextMenuTargetObjectLabel)">
+        {{$t('jifa.heap.mergePathToGCRoots')}}
+      </v-contextmenu-item>
     </v-contextmenu>
 
     <el-tabs v-model="editableTabsValue" type="card" closable @tab-remove="removeTab" style="height: 100%">
@@ -73,10 +77,10 @@
                 </span>
               </span>
 
-              <span v-if="scope.row.isBoundsSummary">
+              <span v-if="scope.row.isBoundsSummary || scope.row.isHistogramObjsSummary">
                 <img :src="ICONS.misc.sumIcon" v-if="scope.row.currentSize >= scope.row.totalSize"/>
                 <img :src="ICONS.misc.sumPlusIcon"
-                     @dblclick="fetchObjBounds(scope.row.parentRowKey, scope.row.objectId, scope.row.nextPage, scope.row.resolve)"
+                     @dblclick="scope.row.isBoundsSummary ? fetchObjBounds(scope.row.parentRowKey, scope.row.objectId, scope.row.nextPage, scope.row.resolve) : loadHistogramObjs()"
                      style="cursor: pointer"
                      v-else/>
                 {{ scope.row.currentSize }} <strong> / </strong> {{ scope.row.totalSize }}
@@ -129,7 +133,7 @@
           </el-table-column>
         </el-table>
 
-        <div v-if="item.isPathToGCRootsTab" style="height: 100%; overflow: scroll">
+        <div v-if="item.isPathToGCRootsTab" style="height: 100%; overflow: auto">
           <el-tree ref="resultContainer"
                    v-loading="item.loading"
                    :data="item.treeData"
@@ -159,6 +163,52 @@
                          style="font-size: 25px; cursor: pointer"
                          @dblclick="loadMorePathToGCRootsOfObj(item)"></i></el-divider>
         </div>
+
+        <el-table v-if="item.isMergePathToGCRootsTab"
+                  ref='resultContainer'
+                  :data="item.tableData"
+                  :highlight-current-row="true"
+                  stripe
+                  :header-cell-style="headerCellStyle"
+                  :cell-style='cellStyle'
+                  row-key="rowKey"
+                  v-loading="item.loading"
+                  :load="item.load"
+                  height="100%"
+                  :span-method="spanMethod"
+                  :indent=8
+                  lazy
+                  fit>
+          <el-table-column label="Class Name" show-overflow-tooltip>
+            <template slot-scope="scope">
+              <img :src="scope.row.icon" style="margin-right: 5px"/>
+              {{ scope.row.label }}
+              <span style="font-weight: bold; color: #909399">
+                {{ scope.row.suffix }}
+              </span>
+              <span v-if="scope.row.isSummaryItem">
+                <img :src="ICONS.misc.sumIcon" v-if="item.records.length >= item.totalSize"/>
+                <img :src="ICONS.misc.sumPlusIcon" @dblclick="fetchMergePathToGCRootsNextPageData" style="cursor: pointer" v-else/>
+                {{ item.records.length }} <strong> / </strong> {{item.totalSize}}
+              </span>
+              <span v-if="scope.row.isChildrenSummary">
+                <img :src="ICONS.misc.sumIcon" v-if="scope.row.currentSize >= scope.row.totalSize"/>
+                <img :src="ICONS.misc.sumPlusIcon" @dblclick="fetchMergePathToGCRootsChildren(scope.row, scope.row.nextPage, scope.row.parentRowKey, scope.row.resolve)" style="cursor: pointer" v-else/>
+                        {{ scope.row.currentSize }} <strong> / </strong> {{ scope.row.totalSize }}
+              </span>
+            </template>
+          </el-table-column>
+          <el-table-column/>
+          <el-table-column/>
+          <el-table-column/>
+          <el-table-column/>
+          <el-table-column/>
+
+          <el-table-column label="Ref. Objects" prop="refObjects"></el-table-column>
+          <el-table-column label="Shallow Heap" prop="shallowHeap"></el-table-column>
+          <el-table-column label="Ref. Shallow Heap" prop="refShallowHeap"></el-table-column>
+          <el-table-column label="Retained Heap" prop="retainedHeap"></el-table-column>
+        </el-table>
       </el-tab-pane>
     </el-tabs>
   </div>
@@ -312,6 +362,62 @@
         )
       },
 
+      outgoingRefsOfHistogramObjs(objectId, label) {
+        this.boundsOfHistogramObjs(objectId, label, true)
+      },
+
+      incomingRefsOfHistogramObjs(objectId, label) {
+        this.boundsOfHistogramObjs(objectId, label, false)
+      },
+
+      boundsOfHistogramObjs(objectId, label, outbound) {
+        let newTabName = ++this.tabIndex + '';
+        let newTab = this.addObjRefsTab(this.buildTitle(this.$t(outbound ?
+                'jifa.heap.ref.object.outgoing' : 'jifa.heap.ref.object.incoming'), label),
+            newTabName, this.loadObjBounds, outbound)
+        newTab.nextPage = 1;
+        newTab.records = [];
+        newTab.classId = objectId;
+        this.loadHistogramObjs();
+      },
+
+      loadHistogramObjs() {
+        let index = this.currentIndex()
+        let tab = this.editableTabs[index]
+        tab.loading = true
+        axios.get(heapDumpService(this.file, 'histogram/objects'), {
+          params: {
+            classId: tab.classId,
+            page: tab.nextPage,
+            pageSize: this.pageSize
+          }
+        }).then((resp) => {
+              let records = resp.data.data
+              records.forEach(item => tab.records.push({
+                rowKey: rowKey++,
+                icon: tab.outbound ? getOutboundIcon(item.gCRoot, item.objectType) : getIcon(item.gCRoot, item.objectType),
+                label: item.label,
+                suffix: item.suffix,
+                shallowHeap: item.shallowSize,
+                retainedHeap: item.retainedSize,
+                hasChildren: true,
+                objectId: item.objectId,
+                isResult: true,
+              }))
+
+              tab.topItems = tab.records.concat({
+                rowKey: rowKey++,
+                currentSize: tab.records.length,
+                totalSize: resp.data.totalSize,
+                isHistogramObjsSummary: true
+              })
+
+              tab.nextPage++
+              tab.loading = false
+            }
+        )
+      },
+
       addObjRefsTab(title, name, load, outbound) {
         this.tabIndex++;
         let newTab = {
@@ -359,16 +465,16 @@
           }
 
           let res = resp.data.data
-          res.forEach(record => {
+          res.forEach(item => {
             loaded.push({
               rowKey: rowKey++,
-              label: record.label,
+              label: item.label,
               hasChildren: true,
-              objectId: record.objectId,
-              objectIds: record.objectIds,
-              objects: record.objects,
-              shallowHeap: record.shallowSize,
-              icon: outbound ? getClassRefOutboundIcon(record.type) : getClassRefInboundIcon(record.type),
+              objectId: item.objectId,
+              objectIds: item.objectIds,
+              objects: item.objects,
+              shallowHeap: item.shallowSize,
+              icon: outbound ? getClassRefOutboundIcon(item.type) : getClassRefInboundIcon(item.type),
               isResult: true
             })
           })
@@ -411,17 +517,17 @@
           }
         }).then((resp) => {
               let topItems = [];
-              let record = resp.data
+              let item = resp.data
               topItems.push(
                   {
                     rowKey: rowKey++,
-                    label: record.label,
+                    label: item.label,
                     hasChildren: true,
-                    objectId: record.objectId,
-                    objectIds: record.objectIds,
-                    objects: record.objects,
-                    shallowHeap: record.shallowSize,
-                    icon: outbound ? getClassRefOutboundIcon(record.type) : ICONS.objects.class,
+                    objectId: item.objectId,
+                    objectIds: item.objectIds,
+                    objects: item.objects,
+                    shallowHeap: item.shallowSize,
+                    icon: outbound ? getClassRefOutboundIcon(item.type) : ICONS.objects.class,
                     isResult: true
                   }
               )
@@ -526,8 +632,174 @@
 
         this.editableTabsValue = activeName;
         this.editableTabs = tabs.filter(tab => tab.name !== targetName);
-      }
+      },
+
+      //  ============ mergePathToGCRootS methods ====================
+      spanMethod(row) {
+        let index = row.columnIndex;
+        if (index === 0) {
+          return [1, 6]
+        } else if (index >= 1 && index <= 5) {
+          return [0, 0]
+        }
+        return [1, 1]
+      },
+
+      getIconWrapper(gCRoot, objectType) {
+        if (this.grouping === 'BY_CLASS') {
+          return ICONS.objects.class
+        }
+        return getIcon(gCRoot, objectType)
+      },
+
+      mergePathToGCRootsFromHistogram(classId, label) {
+        let newTabName = ++this.tabIndex + '';
+        let newTab = this.addPathToGCRootsFromHistogramTab(
+                this.buildTitle(this.$t('jifa.heap.mergePathToGCRoots'), label), newTabName, this.loadMergePathToGCChildren, classId);
+        this.fetchMergePathToGCRootsNextPageData(newTab);
+      },
+
+      addPathToGCRootsFromHistogramTab(title, name, load, classId) {
+        this.tabIndex++;
+        let newTab = {
+          fromHistogram: true,
+          title: title,
+          name: name,
+          loading: false,
+          isMergePathToGCRootsTab: true,
+          classId: classId,
+          tableData: [],
+          load: load,
+          grouping: 'FROM_GC_ROOTS',
+          nextPage: 1,
+          pageSize: 25,
+          totalSize: 0,
+          records: [],
+        };
+        this.editableTabs.push(newTab);
+        this.editableTabsValue = name;
+        return newTab;
+      },
+
+      fetchMergePathToGCRootsNextPageData(mergePathToGCRootsTab) {
+        mergePathToGCRootsTab.loading = true;
+        let api = "";
+        let params = {};
+        if (mergePathToGCRootsTab.fromHistogram) {
+          api = 'mergePathToGCRoots/roots/byClassId';
+          params = {
+            classId: mergePathToGCRootsTab.classId,
+            page: mergePathToGCRootsTab.nextPage,
+            pageSize: mergePathToGCRootsTab.pageSize,
+            grouping: mergePathToGCRootsTab.grouping
+          }
+        }
+        axios.get(heapDumpService(this.file, api), {params: params}).then(resp => {
+          mergePathToGCRootsTab.totalSize = resp.data.totalSize;
+          let data = resp.data.data;
+          data.forEach(d => {
+            mergePathToGCRootsTab.records.push({
+              rowKey: rowKey++,
+              objectId: d.objectId,
+              icon: this.getIconWrapper(d.gCRoot, d.objectType),
+              label: d.className,
+              suffix: d.suffix,
+              refObjects: d.refObjects,
+              shallowHeap: d.shallowHeap,
+              refShallowHeap: d.refShallowHeap,
+              retainedHeap: d.retainedHeap,
+              hasChildren: true,
+              isResult: true,
+              objectIdPathInGCPathTree: [d.objectId],
+            })
+          });
+          mergePathToGCRootsTab.tableData = mergePathToGCRootsTab.records.concat({
+            rowKey: rowKey++,
+            isSummaryItem: true,
+          });
+          mergePathToGCRootsTab.nextPage++;
+          mergePathToGCRootsTab.loading = false;
+        })
+      },
+
+      loadMergePathToGCChildren(tree, treeNode, resolve) {
+        this.fetchMergePathToGCRootsChildren(tree, 1, tree.rowKey, resolve);
+      },
+
+      fetchMergePathToGCRootsChildren(row, page, parentRowKey, resolve) {
+        let index = this.currentIndex();
+        let tab = this.editableTabs[index];
+        let table = this.$refs.resultContainer[index];
+        tab.loading = true;
+
+        let api = "";
+        let params = {};
+        if (tab.fromHistogram) {
+          api = 'mergePathToGCRoots/children/byClassId';
+          params = {
+            classId: tab.classId,
+            objectIdPathInGCPathTree: JSON.stringify(row.objectIdPathInGCPathTree),
+            page: page,
+            pageSize: tab.pageSize,
+            grouping: tab.grouping
+          };
+        }
+
+        axios.get(heapDumpService(this.file, api), {params: params}).then(resp => {
+          let loadedLen = 0;
+          let loaded = table.store.states.lazyTreeNodeMap[parentRowKey];
+          let callResolve = false;
+          if (loaded) {
+            loadedLen = loaded.length;
+            if (loadedLen > 0) {
+              loaded.splice(--loadedLen, 1)
+            }
+          } else {
+            loaded = [];
+            callResolve = true;
+          }
+
+          let res = resp.data.data;
+          res.forEach(d => {
+            let objectIdPathInGCPathTreeCopy = Array.from(row.objectIdPathInGCPathTree);
+            objectIdPathInGCPathTreeCopy.push(d.objectId);
+            loaded.push({
+              rowKey: rowKey++,
+              objectId: d.objectId,
+              icon: this.getIconWrapper(d.gCRoot, d.objectType),
+              label: d.className,
+              suffix: d.suffix,
+              refObjects: d.refObjects,
+              shallowHeap: d.shallowHeap,
+              refShallowHeap: d.refShallowHeap,
+              retainedHeap: d.retainedHeap,
+              hasChildren: true,
+              isResult: true,
+              objectIdPathInGCPathTree: objectIdPathInGCPathTreeCopy,
+            });
+          });
+
+          loaded.push({
+            rowKey: rowKey++,
+            objectId: row.objectId,
+            parentRowKey: parentRowKey,
+            isChildrenSummary: true,
+            nextPage: page + 1,
+            currentSize: loadedLen + res.length,
+            totalSize: resp.data.totalSize,
+            resolve: resolve,
+            objectIdPathInGCPathTree: row.objectIdPathInGCPathTree,
+          });
+
+          if (callResolve) {
+            resolve(loaded)
+          }
+
+          tab.loading = false
+        })
+      },
     },
+
     watch: {
       editableTabs() {
         if (this.editableTabs.length === 0) {

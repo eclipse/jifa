@@ -12,113 +12,106 @@
  -->
 
 # Eclipse Jifa
+
 [![License](https://img.shields.io/badge/License-EPL%202.0-green.svg)](https://opensource.org/licenses/EPL-2.0)
 
-[Eclipse Jifa](https://eclipse.org/jifa) is a web application based on the Eclipse Memory Analyser Tooling (MAT)
-that provides HTTP services so that users can view the heap dump files analysis through a browser.
-Users can deploy Jifa to their production environments, and share the same analysis result to different users
-via their browsers, we believe it's a more convenient way to troubleshoot Java heap issues.
+[Eclipse Jifa](https://eclipse.org/jifa) is open-source software for better troubleshooting common problems that occurred in Java applications.
 
-## Introduction
-Eclipse Jifa uses Vert.x as the main backend framework, and uses Vue 2.0 as the frontend framework.
+Many of the useful tools are client-based. When faced with problems in the production environment or the cloud environment, such tools cannot be used directly due to network or resource problems. Jifa provides a web solution, allowing developers to use the browser to troubleshoot.
 
-Currently, supported features:
+The following features are supported:
 
-Heap dump Analysis:
-- Overview
-- Leak Suspects
-- GC Roots
-- Dominator Tree
-- Thread Overview
-- OQL
-- Other features
+- [Heap Dump Analysis](backend/heap-dump-analyzer/README.md)
 
-![Jifa Sample](https://raw.githubusercontent.com/wiki/eclipse/jifa/resources/jifa-sample.jpg)
+- [GC Log Analysis](backend/gc-log-analyzer/README.md)
 
+- [Thread Dump Analysis](backend/thread-dump-analyzer/README.md)
 
-## What's the goal?
-We believe that many companies have encountered problems when troubleshooting Java problems
-in their production environments, and we hope that Jifa will grow into a popular product to
-help developers quickly resolve production problems.
+The backend of Jifa uses Vert.x as the main framework and consists of two modules:
 
-Looking forward to more users and contributors :-)
+- Master
+    - manage workers and route the requests from browser to the workers
+- Worker
+    - do the real analysis work
+  
+The frontend of Jifa uses Vue as the main framework.
 
-## How do I interact with the community?
+## Getting Started
+
+### Build
+
+- Prerequisites
+  - JDK 8, and make sure $JAVA_HOME is set properly
+
+    ```
+    Jifa uses the plugin 'com.diffplug.p2.asmaven' to get MAT's dependencies.
+    Thisplugin can only run on JRE 8 now, so we need to set $JAVA_HOME to JDK8.
+    While other modules depend on JDK11+, Gradle handles this for us correctly.
+    ```
+  - npm
+
+- Build All
+  
+  ```bash
+  $ ./gradlew buildJifa
+  ```
+
+- Build Worker Only
+
+  ```bash
+  $ ./gradlew buildWorker
+  ```
+
+### Run & Deploy
+
+- Master & Worker
+
+  - Default pattern
+    ```bash
+    $ cd deploy/default_pattern
+    $ ./deploy_jifa.sh
+    ```
+
+  - K8S pattern, workers are scheduled by K8S
+    ```bash
+    $ cd deploy/k8s_pattern
+    $ ./deploy.sh
+    ```
+    
+- Worker Only
+  ```bash
+  $ cd deploy
+  $ ./depoy_worker.sh
+  ```
+
+See [deployment document](deploy/README.md) for more details.
+
+## Quick Demo
+
+```bash
+$ docker pull jifadocker/jifa-worker:demo
+$ docker run -p 8102:8102 jifadocker/jifa-worker:demo
+```
+
+**Note:**  if running Apple's M1 Max chip, include the `--platform linux/amd64` switch after the `run` command.
+
+Then, you can visit Jifa at `http://localhost:8102`
+
+## Documents
+
+- [Jifa Customization](CUSTOMIZATION.md)
+- [Contribution Guide](CONTRIBUTING.md)
+    
+## Links
+
 - Join the Eclipse Jifa developer community [mailing list](https://accounts.eclipse.org/mailing-list/jifa-dev).
   The community primarily uses this list for project announcements and administrative discussions amongst committers.
   Questions are welcome here as well.
-- Ask a question or start a discussion via a [GitHub issue](https://github.com/eclipse/jifa/issues).
+- **Ask a question or start a discussion via the [GitHub issue](https://github.com/eclipse/jifa/issues).(Recommend)**
 - Slack channel: [Eclipse Jifa](https://eclipsejifa.slack.com)
+- 钉钉中文交流群
 
-## Quick start
-```
-./gradlew build
+  <div>
+    <img src=https://user-images.githubusercontent.com/33491035/188837171-7e49b620-fcb0-49b6-9e66-71391d58eca1.JPG width=25%/>
+  </div>
 
-cd build/distributions && unzip jifa-0.1.zip && cd jifa-0.1
-
-./bin/worker
-
-Jifa will now be reachable at http://localhost:8102.
-```
-
-## Customizing JIFA
-
-Some options are provided to configure JIFA without modification to the source code.
-
-### Frontend configuration
-
-Frontend can be configured by modifying the `config.js` file provided in the application webroot, in the same
-location as the `index.html` file.
-
-A [sample config.js file](frontend/public/config.js) is provided with JIFA which you can edit.
-
-### Backend customization
-
-#### Configuration options
-
-A configuration file can be specified as an environment variable.
-
-```
-export WORKER_OPTS=-Djifa.worker.config=/path/to/worker-config.json
-./bin/worker
-...
-```
-
-A sample configuration file is here:
-```
-{
-  "server.host": "0.0.0.0",
-  "server.port": 7101,
-  "server.uploadDir": "/mnt/data/uploads",
-  "api.prefix": "/jifa-api",
-  "hooks.className": "com.yourco.JifaHooksImplementation"
-}
-```
-
-If you choose to provide a configuration file, the `api.prefix` is the only required value. Otherwise,
-defaults will apply. If you do not provide a configuration, defaults will apply. For more specific
-customization, see next section.
-
-#### Overriding HTTP server, route, and file mapping
-
-The backend can be configured; JIFA has a number of hook points where it will call some code that you provide.
-
-With hooks you can:
-- Customize the HTTP server options
-- Configure HTTP server routes to add authentication, error handling, health check URLs, etc.
-- Customize the layout of heap files on the local file system.
-
-To do so, you need to set configuration to refer to a new class which provides your custom implementations.
-You can [provide the implementations by implementing this class](backend/common/src/main/java/org/eclipse/jifa/common/JifaHooks.java)
-and then updating configuration file.
-
-In the configuration file, provide a hooks class name to use it and it will be loaded at service startup. See
-the `hooks.className` key. The JAR containing your class needs to be present on the classpath. You can use
-`export WORKER_OPTS="-Djifa.worker.config=/path/to/config.json -cp /path/to/hook.jar"`.
-
-You will need to extract the `common.jar` from the build process to get access to the JifaHooks interface.
-
-## Contributing
-If you would like to contribute to Jifa, please check out the [contributing guide][contrib] for more information.
-
-[contrib]: CONTRIBUTING.md

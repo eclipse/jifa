@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2021 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -19,7 +19,7 @@ module.exports = {
     port: 8089,
     proxy: {
       '/jifa-api': {
-        target: 'http://127.0.0.1:8102'
+        target: 'http://127.0.0.1:' + (process.env.JIFA_API_PORT || 8102)
       },
     }
   },

@@ -1,5 +1,5 @@
 <!--
-    Copyright (c) 2020 Contributors to the Eclipse Foundation
+    Copyright (c) 2020, 2021 Contributors to the Eclipse Foundation
 
     See the NOTICE file(s) distributed with this work for additional
     information regarding copyright ownership.
@@ -29,11 +29,11 @@
                              v-if="this.selectedBigObject && this.selectedBigObject.objectId >=0">
         <v-contextmenu-submenu :title="$t('jifa.heap.ref.type.label')">
           <v-contextmenu-item
-                  @click="$emit('outgoingRefsOfClass', contextMenuTargetObjectId, contextMenuTargetObjectLabel)">
+                  @click="$emit('outgoingRefsOfClass', selectedBigObject.objectId, selectedBigObject.label)">
             {{$t('jifa.heap.ref.type.outgoing')}}
           </v-contextmenu-item>
           <v-contextmenu-item
-                  @click="$emit('incomingRefsOfClass', selectedBigObject.objectId, selectedBigObject.label())">
+                  @click="$emit('incomingRefsOfClass', selectedBigObject.objectId, selectedBigObject.label)">
             {{$t('jifa.heap.ref.type.incoming')}}
           </v-contextmenu-item>
         </v-contextmenu-submenu>
@@ -69,7 +69,7 @@
         <doughnut-chart :chart-data="chartData" :options="chartOptions" v-contextmenu:contextmenu></doughnut-chart>
         <p style='margin-top: 20px; margin-bottom: -20px; font-size: 13px; font-weight: 500; color: #606266;'>
           {{selectedBigObject ? buildSelectedBigObjectInfo() : $t("jifa.heap.usedHeapSize") + ': '
-          +toSizeString(totalSize)}}
+          +toReadableSizeWithUnit(totalSize)}}
         </p>
       </el-collapse-item>
     </el-collapse>
@@ -78,7 +78,7 @@
 <script>
   import DoughnutChart from '../charts/DoughnutChart'
   import axios from 'axios'
-  import {heapDumpService, toCountString, toSizeString} from '../../util'
+  import {heapDumpService, toReadableCountWithUnit, toReadableSizeWithUnit} from '../../util'
   import {formatDate} from 'element-ui/src/utils/date-util'
   import {a2rgb, PIE_COLORS, REMAINDER_COLOR} from "./ColorHelper";
 
@@ -88,7 +88,7 @@
       DoughnutChart
     },
     methods: {
-      toSizeString,
+      toReadableSizeWithUnit,
       selectBigObject(event, elements) {
         if (elements.length > 0) {
           let index = elements[0]._index
@@ -100,7 +100,7 @@
       },
       buildSelectedBigObjectInfo() {
         let obj = this.selectedBigObject
-        return obj.label + ' [' + toSizeString(obj.value) + ', '
+        return obj.label + ' [' + toReadableSizeWithUnit(obj.value) + ', '
             + ((obj.value) / this.totalSize * 100).toPrecision(3) + '%]'
       }
     },
@@ -142,23 +142,23 @@
         this.details = [
           {
             key: this.$t("jifa.heap.usedHeapSize"),
-            value: toSizeString(resp.data.usedHeapSize)
+            value: toReadableSizeWithUnit(resp.data.usedHeapSize)
           },
           {
             key: this.$t("jifa.heap.numberOfClasses"),
-            value: toCountString(resp.data.numberOfClasses)
+            value: toReadableCountWithUnit(resp.data.numberOfClasses)
           },
           {
             key: this.$t("jifa.heap.numberOfObjects"),
-            value: toCountString(resp.data.numberOfObjects)
+            value: toReadableCountWithUnit(resp.data.numberOfObjects)
           },
           {
             key: this.$t("jifa.heap.numberOfClassLoaders"),
-            value: toCountString(resp.data.numberOfClassLoaders)
+            value: toReadableCountWithUnit(resp.data.numberOfClassLoaders)
           },
           {
             key: this.$t("jifa.heap.numberOfGCRoots"),
-            value: toCountString(resp.data.numberOfGCRoots)
+            value: toReadableCountWithUnit(resp.data.numberOfGCRoots)
           },
           {
             key: this.$t("jifa.heap.heapCreationDate"),

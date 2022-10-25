@@ -1,5 +1,5 @@
 <!--
-    Copyright (c) 2020 Contributors to the Eclipse Foundation
+    Copyright (c) 2020, 2022 Contributors to the Eclipse Foundation
 
     See the NOTICE file(s) distributed with this work for additional
     information regarding copyright ownership.
@@ -26,34 +26,79 @@
 
       <el-dialog
               :title="$t('jifa.options')"
-              width="30%"
+              width="20%"
               :visible.sync="optionViewVisible"
               :close-on-press-escape=false :close-on-click-modal=false :show-close=false
               append-to-body
               modal>
-        <div>
-          <div>
-            <el-checkbox v-model="options.keepUnreachableObjects">Keep unreachable objects</el-checkbox>
-          </div>
-        </div>
+
+        <el-form label-position="top" size="mini">
+          <el-popover
+              placement="left"
+              trigger="hover"
+              width="500">
+            <el-alert
+                type="info"
+                style="word-break: keep-all"
+                :closable="false"
+                :description="$t('jifa.heap.descOfKeepUnreachableObjects')">
+            </el-alert>
+            <el-form-item label="Keep unreachable objects" slot="reference">
+              <el-switch v-model="options.keepUnreachableObjects"></el-switch>
+            </el-form-item>
+          </el-popover>
+
+          <el-popover
+              placement="left"
+              trigger="hover"
+              width="500">
+            <el-alert
+                type="info"
+                style="word-break: keep-all"
+                :closable="false"
+                :title="$t('jifa.heap.descOfStrictness')">
+              <div slot="default">
+                <br/>
+                <span>stop - {{ $t('jifa.heap.descOfStopStrictness') }}</span>
+                <br/>
+                <br/>
+                <span>warn - {{ $t('jifa.heap.descOfWarnStrictness') }}</span>
+                <br/>
+                <br/>
+                <span>permissive - {{ $t('jifa.heap.descOfPermissiveStrictness') }}</span>
+              </div>
+            </el-alert>
+            <el-form-item label="Strictness" slot="reference">
+              <el-radio-group v-model="options.strictness">
+                <el-radio label="stop">stop</el-radio>
+                <el-radio label="warn">warn</el-radio>
+                <el-radio label="permissive">permissive</el-radio>
+              </el-radio-group>
+            </el-form-item>
+          </el-popover>
+        </el-form>
 
         <span slot="footer" class="dialog-footer">
           <el-button @click="analyzeHeapDump" round>{{$t('jifa.confirm')}}</el-button>
         </span>
       </el-dialog>
 
-      <div style="padding-top: 20px" v-if="analysisState === 'IN_PROGRESS' || analysisState === 'ERROR'">
-        <b-progress height="2rem" show-progress :precision="2"
-                    :value="progress"
-                    :variant="progressState"
-                    striped
-                    :animated="progress < 100"/>
-        <b-card class="mt-3" bg-variant="dark" text-variant="white" v-if="message">
-          <b-card-text style="white-space: pre-line;">{{message}}</b-card-text>
-          <div class="d-flex justify-content-center mb-3" v-if="progressState === 'info'">
-            <b-spinner/>
-          </div>
-        </b-card>
+      <div style="padding-top: 20px; height: 100%; display: flex; flex-direction: column" v-if="analysisState === 'IN_PROGRESS' || analysisState === 'ERROR'">
+        <div>
+          <b-progress height="2rem" show-progress :precision="2"
+                      :value="progress"
+                      :variant="progressState"
+                      striped
+                      :animated="progress < 100"/>
+        </div>
+        <div style="flex-grow: 1; overflow: auto; margin-top: 20px">
+          <b-card bg-variant="dark" text-variant="white" v-if="message">
+            <b-card-text style="white-space: pre-line;">{{ message }}</b-card-text>
+            <div class="d-flex justify-content-center mb-3" v-if="progressState === 'info'">
+              <b-spinner/>
+            </div>
+          </b-card>
+        </div>
       </div>
 
       <el-container v-if="analysisState === 'SUCCESS'" style="height: 100%">
@@ -114,9 +159,12 @@
                     <histogram :file="file" :generationInfoAvailable="generationInfoAvailable"
                                @outgoingRefsOfObj="outgoingRefsOfObj"
                                @incomingRefsOfObj="incomingRefsOfObj"
+                               @outgoingRefsOfHistogramObjs="outgoingRefsOfHistogramObj"
+                               @incomingRefsOfHistogramObjs="incomingRefsOfHistogramObj"
                                @outgoingRefsOfClass="outgoingRefsOfClass"
                                @incomingRefsOfClass="incomingRefsOfClass"
                                @pathToGCRootsOfObj="pathToGCRootsOfObj"
+                               @mergePathToGCRootsFromHistogram="mergePathToGCRootsFromHistogram"
                                @setSelectedObjectId="setSelectedObjectId"/>
                   </div>
                 </el-tab-pane>
@@ -172,10 +220,11 @@
                   </div>
                 </el-tab-pane>
 
-                <el-tab-pane name="OQL" lazy>
-                  <span slot="label"> OQL </span>
+                <el-tab-pane name="queryEngine" lazy>
+                  <span slot="label"> Query (OQL/Calcite) </span>
                   <div v-bind:style="{ 'height': '100%', 'width': resultDivWidth}">
-                    <OQL :file="file"
+                    <Query :file="file"
+                         queryType="oql"
                          @outgoingRefsOfObj="outgoingRefsOfObj"
                          @incomingRefsOfObj="incomingRefsOfObj"
                          @outgoingRefsOfClass="outgoingRefsOfClass"
@@ -200,7 +249,8 @@
                                          @incomingRefsOfObj="incomingRefsOfObj"
                                          @outgoingRefsOfClass="outgoingRefsOfClass"
                                          @incomingRefsOfClass="incomingRefsOfClass"
-                                         @pathToGCRootsOfObj="pathToGCRootsOfObj"/>
+                                         @pathToGCRootsOfObj="pathToGCRootsOfObj"
+                                         @mergePathToGCRootsFromHistogram="mergePathToGCRootsFromHistogram"/>
                   </div>
                 </el-tab-pane>
               </el-tabs>
@@ -217,35 +267,32 @@
         </el-main>
       </el-container>
     </el-main>
-    <el-footer>
-      <Footer/>
-    </el-footer>
   </el-container>
 </template>
 
 <script>
-  import axios from 'axios'
-  import {heapDumpService} from '../../util'
-  import Footer from "../footer"
+import axios from 'axios'
+import {heapDumpService} from '../../util'
 
-  import Overview from './Overview'
-  import Inspector from './Inspector'
-  import LeakSuspects from './LeakSuspects'
-  import ViewMenu from "../menu/ViewMenu"
-  import SystemProperty from "./SystemProperty"
-  import Thread from "./Thread";
-  import Histogram from "./Histogram"
-  import DuplicatedClasses from "./DuplicatedClasses"
-  import OQL from "./OQL"
-  import DynamicResultSlot from "./DynamicResultSlot"
-  import DominatorTree from "./DominatorTree"
-  import GCRoots from "./GCRoots"
-  import UnreachableObjects from './UnreachableObjects'
-  import ClassLoaders from './ClassLoaders'
-  import DirectByteBuffer from './DirectByteBuffer'
-  import HeapFileCompare from './HeapFileCompare'
+import Overview from './Overview'
+import Inspector from './Inspector'
+import LeakSuspects from './LeakSuspects'
+import ViewMenu from "../menu/ViewMenu"
+import SystemProperty from "./SystemProperty"
+import Thread from "./Thread";
+import Histogram from "./Histogram"
+import DuplicatedClasses from "./DuplicatedClasses"
+import Query from "./Query"
+import DynamicResultSlot from "./DynamicResultSlot"
+import DominatorTree from "./DominatorTree"
+import GCRoots from "./GCRoots"
+import UnreachableObjects from './UnreachableObjects'
+import ClassLoaders from './ClassLoaders'
+import DirectByteBuffer from './DirectByteBuffer'
+import HeapFileCompare from './HeapFileCompare'
+import {Loading} from "element-ui";
 
-  export default {
+export default {
     props: ['file'],
     data() {
       return {
@@ -253,6 +300,7 @@
         optionViewVisible: false,
         options: {
           keepUnreachableObjects: true,
+          strictness: 'stop'
         },
         progress: 0,
         progressState: 'info',
@@ -283,13 +331,12 @@
       Histogram,
       Thread,
       SystemProperty,
-      OQL,
+      Query,
       DynamicResultSlot,
       UnreachableObjects,
       ClassLoaders,
       DirectByteBuffer,
       HeapFileCompare,
-      Footer
     },
     methods: {
       expandResultDivWidth() {
@@ -360,6 +407,16 @@
         this.enableShowDynamicResultSlot();
       },
 
+      outgoingRefsOfHistogramObj(id, label) {
+        this.$refs['dynamicResultSlot'].outgoingRefsOfHistogramObjs(id, label);
+        this.enableShowDynamicResultSlot();
+      },
+
+      incomingRefsOfHistogramObj(id, label) {
+        this.$refs['dynamicResultSlot'].incomingRefsOfHistogramObjs(id, label);
+        this.enableShowDynamicResultSlot();
+      },
+
       outgoingRefsOfClass(id, label) {
         this.$refs['dynamicResultSlot'].outgoingRefsOfClass(id, label);
         this.enableShowDynamicResultSlot();
@@ -372,6 +429,11 @@
 
       pathToGCRootsOfObj(id, label) {
         this.$refs['dynamicResultSlot'].pathToGCRootsOfObj(id, label);
+        this.enableShowDynamicResultSlot();
+      },
+
+      mergePathToGCRootsFromHistogram(id, label) {
+        this.$refs['dynamicResultSlot'].mergePathToGCRootsFromHistogram(id, label);
         this.enableShowDynamicResultSlot();
       },
 
@@ -419,6 +481,7 @@
         this.optionViewVisible = false;
         let params = new FormData();
         params.append('keep_unreachable_objects', this.options.keepUnreachableObjects);
+        params.append('strictness', this.options.strictness);
         this.doAnalyzeHeapDump(params);
       },
 
@@ -430,12 +493,14 @@
       },
     },
     mounted() {
+      let loadingInstance = Loading.service({fullscreen: true})
       axios.get(heapDumpService(this.file, 'isFirstAnalysis')).then(resp => {
         if (resp.data.result) {
           this.optionViewVisible = true
         } else {
           this.doAnalyzeHeapDump(new FormData())
         }
+        loadingInstance.close()
       })
     }
   }
@@ -448,12 +513,12 @@
 
   .mainTabs /deep/ .el-tabs__content {
     height: 100%;
-    overflow: scroll;
+    overflow: auto;
   }
 
   .mainTabs /deep/ .el-tab-pane {
     height: 100%;
-    overflow: scroll;
+    overflow: auto;
   }
 
   .mainTabs .dynamicTab /deep/ .el-tabs__content {
@@ -463,7 +528,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    overflow: scroll;
+    overflow: auto;
   }
 
   .mainTabs .dynamicTab /deep/ .el-tab-pane {
@@ -473,6 +538,6 @@
     left: 0;
     right: 0;
     bottom: 0;
-    overflow: scroll;
+    overflow: auto;
   }
 </style>

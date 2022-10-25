@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -12,38 +12,67 @@
  ********************************************************************************/
 package org.eclipse.jifa.worker.support;
 
+import org.eclipse.jifa.gclog.model.GCModel;
+import org.eclipse.jifa.gclog.parser.GCLogAnalyzer;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import io.vertx.core.Future;
-import org.eclipse.jifa.common.aux.JifaException;
+import io.vertx.core.Promise;
+import org.eclipse.jifa.common.JifaException;
 import org.eclipse.jifa.common.enums.FileType;
 import org.eclipse.jifa.common.enums.ProgressState;
 import org.eclipse.jifa.common.util.ErrorUtil;
 import org.eclipse.jifa.common.util.FileUtil;
-import org.eclipse.jifa.worker.support.heapdump.SnapshotContext;
-import org.eclipse.mat.snapshot.SnapshotFactory;
-import org.eclipse.mat.util.IProgressListener;
+import org.eclipse.jifa.common.listener.DefaultProgressListener;
+import org.eclipse.jifa.hda.api.HeapDumpAnalyzer;
+import org.eclipse.jifa.common.listener.ProgressListener;
+import org.eclipse.jifa.tda.ThreadDumpAnalyzer;
+import org.eclipse.jifa.worker.Worker;
+import org.eclipse.jifa.worker.WorkerGlobal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.ServiceLoader;
+import java.util.concurrent.TimeUnit;
 
-import static org.eclipse.jifa.common.enums.FileType.HEAP_DUMP;
+import static org.eclipse.jifa.common.enums.FileType.*;
 import static org.eclipse.jifa.common.util.Assertion.ASSERT;
-import static org.eclipse.jifa.worker.support.heapdump.HeapDumpSupport.VOID_LISTENER;
+import static org.eclipse.jifa.worker.Constant.CacheConfig.*;
 
 public class Analyzer {
+
+    public static final HeapDumpAnalyzer.Provider HEAP_DUMP_ANALYZER_PROVIDER;
     private static final Logger LOGGER = LoggerFactory.getLogger(Analyzer.class);
 
-    private Map<String, AnalysisProgressListener> listeners;
-    private Cache<String, Object> cache;
+    static {
+        try {
+            Iterator<HeapDumpAnalyzer.Provider> iterator =
+                ServiceLoader.load(HeapDumpAnalyzer.Provider.class, Worker.class.getClassLoader()).iterator();
+            ASSERT.isTrue(iterator.hasNext());
+            HEAP_DUMP_ANALYZER_PROVIDER = iterator.next();
+        } catch (Throwable t) {
+            LOGGER.error("Init analyzer failed", t);
+            throw new Error(t);
+        }
+    }
+
+    private final Map<String, ProgressListener> listeners;
+    private final Cache<String, Object> cache;
 
     private Analyzer() {
         listeners = new HashMap<>();
-        cache = CacheBuilder.newBuilder().build();
+        cache = CacheBuilder
+                .newBuilder()
+                .softValues()
+                .recordStats()
+                .expireAfterWrite(
+                        WorkerGlobal.intConfig(CACHE_CONFIG, EXPIRE_AFTER_ACCESS),
+                        TimeUnit.valueOf(WorkerGlobal.stringConfig(CACHE_CONFIG, EXPIRE_AFTER_ACCESS_TIME_UNIT))
+                )
+                .build();
     }
 
     private static <T> T getOrBuild(String key, Builder<T> builder) {
@@ -67,15 +96,10 @@ public class Analyzer {
         }
     }
 
-    private static SnapshotContext getOrOpenSnapshotContext(String heapFile,
-                                                            Map<String, String> option, IProgressListener listener) {
-        return getOrBuild(heapFile, key -> new SnapshotContext(
-            SnapshotFactory.openSnapshot(new File(FileSupport.filePath(HEAP_DUMP, heapFile)), option,
-                                         listener)));
-    }
-
-    public static SnapshotContext getOrOpenSnapshotContext(String heapFile) {
-        return getOrOpenSnapshotContext(heapFile, Collections.emptyMap(), VOID_LISTENER);
+    public static HeapDumpAnalyzer getOrBuildHeapDumpAnalyzer(String dump, Map<String, String> options,
+                                                              ProgressListener listener) {
+        return getOrBuild(dump, key -> HEAP_DUMP_ANALYZER_PROVIDER
+            .provide(new File(FileSupport.filePath(HEAP_DUMP, dump)).toPath(), options, listener));
     }
 
     public static Analyzer getInstance() {
@@ -93,29 +117,37 @@ public class Analyzer {
         }
     }
 
-    public void analyze(Future<Void> future, FileType fileType, String fileName, Map<String, String> options) {
-        AnalysisProgressListener progressListener;
+    public void analyze(Promise<Void> promise, FileType fileType, String fileName, Map<String, String> options) {
+        ProgressListener progressListener;
 
         if (getCacheValueIfPresent(fileName) != null ||
             new File(FileSupport.errorLogPath(fileType, fileName)).exists()) {
-            future.complete();
+            promise.complete();
             return;
         }
 
-        progressListener = new AnalysisProgressListener();
+        progressListener = new DefaultProgressListener();
         boolean success = putFileListener(fileName, progressListener);
-        future.complete();
+        promise.complete();
 
         if (success) {
             try {
                 switch (fileType) {
                     case HEAP_DUMP:
-                        getOrOpenSnapshotContext(fileName, options, progressListener);
+                        getOrBuildHeapDumpAnalyzer(fileName, options, progressListener);
+                        break;
+                    case GC_LOG:
+                        getOrOpenGCLogModel(fileName,progressListener);
+                        break;
+                    case THREAD_DUMP:
+                        threadDumpAnalyzerOf(fileName, progressListener);
                         break;
                     default:
                         break;
                 }
             } catch (Exception e) {
+                LOGGER.error("task failed due to {}", ErrorUtil.toString(e));
+                LOGGER.error(progressListener.log());
                 File log = new File(FileSupport.errorLogPath(fileType, fileName));
                 FileUtil.write(log, progressListener.log(), false);
                 FileUtil.write(log, ErrorUtil.toString(e), true);
@@ -141,6 +173,11 @@ public class Analyzer {
         if (index.exists()) {
             ASSERT.isTrue(index.delete(), "Delete index file failed");
         }
+
+        File kryo = new File(FileSupport.filePath(fileType, fileName, fileName + ".kryo"));
+        if (kryo.exists()) {
+            ASSERT.isTrue(kryo.delete(), "Delete kryo file failed");
+        }
     }
 
     public void release(String fileName) {
@@ -148,11 +185,10 @@ public class Analyzer {
     }
 
     public org.eclipse.jifa.common.vo.Progress pollProgress(FileType fileType, String fileName) {
-        AnalysisProgressListener progressListener = getFileListener(fileName);
+        ProgressListener progressListener = getFileListener(fileName);
 
         if (progressListener == null) {
             org.eclipse.jifa.common.vo.Progress progress = buildProgressIfFinished(fileType, fileName);
-            ASSERT.notNull(progress);
             return progress;
         } else {
             org.eclipse.jifa.common.vo.Progress progress = new org.eclipse.jifa.common.vo.Progress();
@@ -175,18 +211,18 @@ public class Analyzer {
 
     private synchronized void clearCacheValue(String key) {
         Object value = cache.getIfPresent(key);
-        if (value instanceof SnapshotContext) {
-            SnapshotFactory.dispose(((SnapshotContext) value).getSnapshot());
+        if (value instanceof HeapDumpAnalyzer) {
+            ((HeapDumpAnalyzer) value).dispose();
         }
         cache.invalidate(key);
         LOGGER.info("Clear cache: {}", key);
     }
 
-    private synchronized AnalysisProgressListener getFileListener(String fileName) {
+    private synchronized ProgressListener getFileListener(String fileName) {
         return listeners.get(fileName);
     }
 
-    private synchronized boolean putFileListener(String fileName, AnalysisProgressListener listener) {
+    private synchronized boolean putFileListener(String fileName, ProgressListener listener) {
         if (listeners.containsKey(fileName)) {
             return false;
         }
@@ -213,7 +249,10 @@ public class Analyzer {
             result.setMessage(FileUtil.content(failed));
             return result;
         }
-        return null;
+
+        org.eclipse.jifa.common.vo.Progress result = new org.eclipse.jifa.common.vo.Progress();
+        result.setState(ProgressState.NOT_STARTED);
+        return result;
     }
 
     interface Builder<T> {
@@ -222,5 +261,26 @@ public class Analyzer {
 
     private static class Singleton {
         static Analyzer INSTANCE = new Analyzer();
+    }
+
+    public static GCModel getOrOpenGCLogModel(String info) {
+        return getOrOpenGCLogModel(info, ProgressListener.NoOpProgressListener);
+    }
+
+    private static GCModel getOrOpenGCLogModel(String gclogFile, ProgressListener listener) {
+        return getOrBuild(gclogFile,
+                key -> new GCLogAnalyzer(new File(FileSupport.filePath(GC_LOG,  gclogFile)),
+                        listener).parse());
+    }
+
+    public static ThreadDumpAnalyzer threadDumpAnalyzerOf(String threadDumpFile) {
+        return threadDumpAnalyzerOf(threadDumpFile, ProgressListener.NoOpProgressListener);
+    }
+
+    public static ThreadDumpAnalyzer threadDumpAnalyzerOf(String threadDumpFile,
+                                                          ProgressListener listener) {
+        return getOrBuild(threadDumpFile,
+                          key -> ThreadDumpAnalyzer
+                              .build(new File(FileSupport.filePath(THREAD_DUMP, threadDumpFile)).toPath(), listener));
     }
 }

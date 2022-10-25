@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,11 +18,55 @@ import finder from "./components/finder"
 
 import heapDump from "./components/heapdump/HeapDump"
 
-import axios from "axios";
+import GCLog from "./components/gclog/GCLog"
+
+import GCLogCompare from "@/components/gclog/GCLogCompare";
+
+import threadDump from "./components/threaddump/ThreadDump"
+
+import auth from "./components/auth/Auth"
+
+import axios from "axios"
 
 import notFound from "./components/404"
 
 import VueInsatence from "./main"
+
+import JifaGlobal from "./Jifa"
+
+import axiosRetry from "axios-retry"
+
+axiosRetry(axios, {
+  retries: 60,
+  retryDelay: (retryCount) => {
+    return 2000;
+  },
+  retryCondition: (error) => {
+    let resp = error.response
+    if (resp) {
+      // Retry original request when rresponded something like
+      // {errorCode: "RETRY", "ServiceException: target_file_name"}
+      let status = resp.status
+      let data = resp.data
+      if (status === 500 || status === 400 || status === 401 || status === 403) {
+        if (data && data.hasOwnProperty('errorCode')) {
+          if (data.errorCode === 'RETRY' && data.message !== undefined) {
+            let [, targetName] = data.message.split(": ");
+            if (error.config.data !== undefined) {
+              if (error.config.data.indexOf("&retry=") === -1) {
+                error.config.data = error.config.data + "&retry=" + targetName
+              }
+            } else {
+              error.config.data = "retry=" + targetName
+            }
+            return true;
+          }
+        }
+      }
+    }
+    return false;
+  }
+});
 
 Vue.use(VueRouter)
 
@@ -33,9 +77,32 @@ const routes = [
     component: finder
   },
   {
+    name: 'auth',
+    path: "/auth",
+    component: auth
+  },
+  {
     name: 'heapDump',
     path: "/heapDump",
     component: heapDump,
+    props: (route) => ({file: route.query.file})
+  },
+  {
+    name: 'gcLog',
+    path: "/gcLog",
+    component: GCLog,
+    props: (route) => ({...route.query})
+  },
+  {
+    name: 'gcLogCompare',
+    path: "/gcLogCompare",
+    component: GCLogCompare,
+    props: (route) => ({...route.query})
+  },
+  {
+    name: 'threadDump',
+    path: "/threadDump",
+    component: threadDump,
     props: (route) => ({file: route.query.file})
   },
   {path: '*', component: notFound}
@@ -66,6 +133,9 @@ axios.interceptors.response.use(function (response) {
             showClose: true
           });
         }
+      } else if (status === 401) {
+        JifaGlobal.save_back_url(window.location.href)
+        window.location.href = window.location.protocol + "//" +window.location.host + "/auth"
       }
     }
   }

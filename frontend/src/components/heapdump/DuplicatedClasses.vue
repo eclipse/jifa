@@ -12,21 +12,43 @@
  -->
 <template>
   <div style="height: 100%">
+    <el-row>
+      <el-col :offset="15" :span="9">
+        <el-tooltip :content="$t('jifa.searchTip')" placement="bottom" effect="light">
+          <el-input size="mini"
+                    :placeholder="$t('jifa.searchPlaceholder')"
+                    class="input-with-select"
+                    v-model="searchText"
+                    @keyup.enter.native="doSearch"
+                    clearable>
+            <el-select slot="prepend" style="width: 100px" v-model="searchType" default-first-option>
+              <el-option label="By name" value="by_name"></el-option>
+              <el-option label="By classloader count" value="by_classloader_count"></el-option>
+            </el-select>
+
+            <el-button slot="append" :icon="inSearching ? 'el-icon-loading' : 'el-icon-search'"
+                       :disabled="inSearching"
+                       @click="doSearch"/>
+          </el-input>
+        </el-tooltip>
+      </el-col>
+    </el-row>
+
     <el-table
-            ref="table"
-            :data="records"
-            :highlight-current-row="false"
-            stripe
-            :header-cell-style="headerCellStyle"
-            :cell-style='cellStyle'
-            row-key="rowKey"
-            height="100%"
-            :indent=8
-            lazy
-            v-loading="loading"
-            :load="fetchClassLoaders"
-            :span-method="tableSpanMethod">
-      <el-table-column label="Class Name / Class Loader" show-overflow-tooltip>
+        ref="table"
+        :data="records"
+        :highlight-current-row="false"
+        stripe
+        :header-cell-style="headerCellStyle"
+        :cell-style='cellStyle'
+        row-key="rowKey"
+        height="100%"
+        :indent=8
+        lazy
+        v-loading="loading"
+        :load="fetchClassLoaders"
+        :span-method="tableSpanMethod">
+      <el-table-column label="Class Name/Class Loader" show-overflow-tooltip>
         <template slot-scope="scope">
           <span v-if="scope.row.isClassItem">
             <img :src="ICONS.objects.class"/> {{scope.row.label}}
@@ -43,13 +65,13 @@
 
             <img :src="ICONS.misc.sumPlusIcon" @dblclick="fetchMoreClassLoaders(scope.row)" style="cursor: pointer"
                  v-else/>
-            {{ scope.row.currentSize }} <strong> / </strong> {{ scope.row.totalSize }}
+            {{ toReadableCount(scope.row.currentSize) }} <strong> / </strong> {{ toReadableCount(scope.row.totalSize) }}
           </span>
 
           <span v-if="scope.row.isSummaryItem">
             <img :src="ICONS.misc.sumIcon" v-if="currentSize >= totalSize"/>
             <img :src="ICONS.misc.sumPlusIcon" @dblclick="fetchDuplicatedClasses" style="cursor: pointer" v-else/>
-            {{ currentSize }} <strong> / </strong> {{totalSize}}
+            {{ toReadableCount(currentSize) }} <strong> / </strong> {{ toReadableCount(totalSize) }}
           </span>
         </template>
       </el-table-column>
@@ -58,13 +80,13 @@
       <el-table-column/>
       <el-table-column/>
 
-      <el-table-column label="ClassLoader Counts" prop="classLoaderCount">
+      <el-table-column label="ClassLoader Counts" prop="classLoaderCount" :formatter="toReadableCountFormatter">
       </el-table-column>
 
-      <el-table-column label="Defined Classes" prop="definedClassesCount">
+      <el-table-column label="Defined Classes" prop="definedClassesCount" :formatter="toReadableCountFormatter">
       </el-table-column>
 
-      <el-table-column label="Num of Instances" prop="instantiatedObjectsCount">
+      <el-table-column label="Num of Instances" prop="instantiatedObjectsCount" :formatter="toReadableCountFormatter">
       </el-table-column>
     </el-table>
 
@@ -74,7 +96,7 @@
 <script>
 
   import axios from 'axios'
-  import {heapDumpService} from '../../util'
+  import {heapDumpService, toReadableCount, toReadableCountFormatter} from '../../util'
   import {getIcon, ICONS} from "./IconHealper";
   import {OBJECT_TYPE} from './CommonType'
 
@@ -82,6 +104,8 @@
   export default {
     props: ['file'],
     methods: {
+      toReadableCount,
+      toReadableCountFormatter,
       tableSpanMethod(row) {
         let index = row.columnIndex
         if (index === 0) {
@@ -90,6 +114,13 @@
           return [0, 0]
         }
         return [1, 1]
+      },
+      doSearch() {
+        this.currentSize = 0
+        this.nextPage = 1
+        this.totalSize = 0
+        this.records = []
+        this.fetchDuplicatedClasses()
       },
       doFetchClassLoaders(parentRowKey, index, page, resolve) {
         this.loading = true
@@ -157,6 +188,8 @@
           params: {
             page: this.nextPage,
             pageSize: this.pageSize,
+            searchText: this.searchText,
+            searchType: this.searchType,
           }
         }).then(resp => {
           this.totalSize = resp.data.totalSize
@@ -200,6 +233,11 @@
         totalSize: 0,
         cellStyle: {padding: '4px', fontSize: '12px'},
         headerCellStyle: {padding: 0, 'font-size': '12px', 'font-weight': 'normal'},
+
+        // query support
+        searchText: '',
+        inSearching: false,
+        searchType: 'by_name'
       }
     },
     created() {

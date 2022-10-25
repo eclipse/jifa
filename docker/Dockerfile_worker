@@ -1,0 +1,25 @@
+# Copyright (c) 2021 Contributors to the Eclipse Foundation
+#
+# See the NOTICE file(s) distributed with this work for additional
+# information regarding copyright ownership.
+#
+# This program and the accompanying materials are made available under the
+# terms of the Eclipse Public License 2.0 which is available at
+# http://www.eclipse.org/legal/epl-2.0
+#
+# SPDX-License-Identifier: EPL-2.0
+
+FROM openjdk:11
+
+ARG VERSION
+
+WORKDIR /wd
+
+COPY ./artifacts/worker-$VERSION.zip .
+COPY ./artifacts/frontend-$VERSION.zip .
+
+RUN unzip worker-$VERSION.zip && mv worker-$VERSION worker && mkdir webroot && unzip frontend-$VERSION.zip -d webroot && rm worker-$VERSION.zip frontend-$VERSION.zip
+
+ENV WORKER_OPTS="-Djifa.webroot=/wd/webroot"
+
+CMD ["/wd/worker/bin/worker"]

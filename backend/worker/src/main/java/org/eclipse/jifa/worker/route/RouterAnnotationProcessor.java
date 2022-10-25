@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2021 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -13,14 +13,15 @@
 package org.eclipse.jifa.worker.route;
 
 import com.google.gson.Gson;
-import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.RoutingContext;
-import org.eclipse.jifa.common.aux.ErrorCode;
-import org.eclipse.jifa.common.aux.JifaException;
+import org.eclipse.jifa.common.ErrorCode;
+import org.eclipse.jifa.common.JifaException;
 import org.eclipse.jifa.common.request.PagingRequest;
 import org.eclipse.jifa.common.util.HTTPRespGuarder;
+import org.eclipse.jifa.gclog.diagnoser.AnalysisConfig;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -47,6 +48,8 @@ class RouterAnnotationProcessor {
         converter.put(Boolean.class, Boolean::parseBoolean);
         converter.put(boolean.class, Boolean::parseBoolean);
         converter.put(int[].class, s -> new Gson().fromJson(s, int[].class));
+        converter.put(String[].class, s -> new Gson().fromJson(s, String[].class));
+        converter.put(AnalysisConfig.class, s -> new Gson().fromJson(s, AnalysisConfig.class));
     }
 
     static boolean processParamKey(List<Object> arguments, RoutingContext context, Method method, Parameter param) {
@@ -121,15 +124,16 @@ class RouterAnnotationProcessor {
         return false;
     }
 
-    static boolean processFuture(List<Object> arguments, RoutingContext context, Method method, Parameter param) {
-        if (param.getType().equals(Future.class)) {
-            arguments.add(newFuture(context));
+    static boolean processPromise(List<Object> arguments, RoutingContext context, Method method, Parameter param) {
+        if (param.getType().equals(Promise.class)) {
+            arguments.add(newPromise(context));
             return true;
         }
         return false;
     }
 
-    static boolean processRoutingContext(List<Object> arguments, RoutingContext context, Method method, Parameter param) {
+    static boolean processRoutingContext(List<Object> arguments, RoutingContext context, Method method,
+                                         Parameter param) {
         if (param.getType().equals(RoutingContext.class)) {
             arguments.add(context);
             return true;
@@ -157,15 +161,18 @@ class RouterAnnotationProcessor {
         return f.apply(value);
     }
 
-    private static <T> Future<T> newFuture(io.vertx.ext.web.RoutingContext rc) {
-        Future<T> future = Future.future();
-        future.setHandler(event -> {
-            if (event.succeeded()) {
-                HTTPRespGuarder.ok(rc, event.result());
-            } else {
-                HTTPRespGuarder.fail(rc, event.cause());
+
+    private static <T> Promise<T> newPromise(io.vertx.ext.web.RoutingContext rc) {
+        Promise<T> promise = Promise.promise();
+        promise.future().onComplete(
+            event -> {
+                if (event.succeeded()) {
+                    HTTPRespGuarder.ok(rc, event.result());
+                } else {
+                    HTTPRespGuarder.fail(rc, event.cause());
+                }
             }
-        });
-        return future;
+        );
+        return promise;
     }
 }

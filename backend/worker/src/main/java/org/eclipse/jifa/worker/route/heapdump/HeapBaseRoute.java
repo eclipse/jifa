@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -12,16 +12,20 @@
  ********************************************************************************/
 package org.eclipse.jifa.worker.route.heapdump;
 
+import org.eclipse.jifa.hda.api.HeapDumpAnalyzer;
+import org.eclipse.jifa.common.listener.ProgressListener;
 import org.eclipse.jifa.worker.route.BaseRoute;
 import org.eclipse.jifa.worker.route.MappingPrefix;
+import org.eclipse.jifa.worker.support.Analyzer;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @MappingPrefix("/heap-dump/:file")
 public class HeapBaseRoute extends BaseRoute {
 
-    private static List<Class<? extends HeapBaseRoute>> ROUTES = new ArrayList<>();
+    private static final List<Class<? extends HeapBaseRoute>> ROUTES = new ArrayList<>();
 
     static {
         ROUTES.add(OverviewRoute.class);
@@ -37,14 +41,21 @@ public class HeapBaseRoute extends BaseRoute {
         ROUTES.add(ObjectListRoute.class);
         ROUTES.add(ClassReferenceRoute.class);
         ROUTES.add(OQLRoute.class);
+        ROUTES.add(CalciteSQLRoute.class);
         ROUTES.add(DirectByteBufferRoute.class);
         ROUTES.add(GCRootRoute.class);
         ROUTES.add(PathToGCRootsRoute.class);
         ROUTES.add(CompareRoute.class);
         ROUTES.add(LeakRoute.class);
+        ROUTES.add(MergePathToGCRootsRoute.class);
     }
+
 
     public static List<Class<? extends HeapBaseRoute>> routes() {
         return ROUTES;
+    }
+
+    public static HeapDumpAnalyzer analyzerOf(String dump) {
+        return Analyzer.getOrBuildHeapDumpAnalyzer(dump, Collections.emptyMap(), ProgressListener.NoOpProgressListener);
     }
 }

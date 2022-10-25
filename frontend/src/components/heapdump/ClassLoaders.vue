@@ -1,5 +1,5 @@
 <!--
-    Copyright (c) 2020 Contributors to the Eclipse Foundation
+    Copyright (c) 2020, 2021 Contributors to the Eclipse Foundation
 
     See the NOTICE file(s) distributed with this work for additional
     information regarding copyright ownership.
@@ -68,7 +68,7 @@
           <span v-if="scope.row.isSummary">
             <img :src="sumIcon" v-if="records.length >= totalSize"/>
             <img :src="sumPlusIcon" @dblclick="fetchClassLoaders" style="cursor: pointer" v-else/>
-            {{ records.length }} <strong> / </strong> {{totalSize}}
+            {{ toReadableCount(records.length) }} <strong> / </strong> {{ toReadableCount(totalSize) }}
           </span>
 
           <span v-if="scope.row.isChildrenSummary">
@@ -77,7 +77,7 @@
                    @dblclick="fetchChildren(scope.row.parentRowKey, scope.row.objectId, scope.row.nextPage, scope.row.resolve)"
                    style="cursor: pointer"
                    v-else/>
-              {{ scope.row.currentSize }} <strong> / </strong> {{ scope.row.totalSize }}
+              {{ toReadableCount(scope.row.currentSize) }} <strong> / </strong> {{ toReadableCount(scope.row.totalSize) }}
             </span>
         </template>
       </el-table-column>
@@ -88,10 +88,10 @@
       <el-table-column/>
       <el-table-column/>
 
-      <el-table-column label="Defined Classes" prop="definedClasses">
+      <el-table-column label="Defined Classes" prop="definedClasses" :formatter="toReadableCountFormatter">
       </el-table-column>
 
-      <el-table-column label="No. of Instances" prop="numberOfInstances">
+      <el-table-column label="No. of Instances" prop="numberOfInstances" :formatter="toReadableCountFormatter">
       </el-table-column>
     </el-table>
   </div>
@@ -99,13 +99,15 @@
 
 <script>
   import axios from 'axios'
-  import {heapDumpService} from '../../util'
+  import {heapDumpService, toReadableCount, toReadableCountFormatter } from '../../util'
   import {ICONS} from "./IconHealper";
 
   let rowKey = 1
   export default {
     props: ['file'],
     methods: {
+      toReadableCount,
+      toReadableCountFormatter,
       spanMethod(row) {
         let index = row.columnIndex
         if (index === 0) {
@@ -135,18 +137,18 @@
           }
         }).then(resp => {
           let records = resp.data.data
-          records.forEach(record => this.records.push({
+          records.forEach(item => this.records.push({
             rowKey: rowKey++,
 
-            objectId: record.objectId,
-            prefix: record.prefix,
-            label: record.label,
-            classLoader: record.classLoader,
-            hasParent: record.hasParent,
-            definedClasses: record.definedClasses,
-            numberOfInstances: record.numberOfInstances,
+            objectId: item.objectId,
+            prefix: item.prefix,
+            label: item.label,
+            classLoader: item.classLoader,
+            hasParent: item.hasParent,
+            definedClasses: item.definedClasses,
+            numberOfInstances: item.numberOfInstances,
 
-            hasChildren: record.classLoader,
+            hasChildren: item.classLoader,
             isRecord: true,
           }))
 
@@ -189,19 +191,19 @@
           }
 
           let res = resp.data.data
-          res.forEach(record => {
+          res.forEach(item => {
             loaded.push({
               rowKey: rowKey++,
 
-              objectId: record.objectId,
-              prefix: record.prefix,
-              label: record.label,
-              classLoader: record.classLoader,
-              hasParent: record.hasParent,
-              definedClasses: record.classLoader ? record.definedClasses : null,
-              numberOfInstances: record.numberOfInstances,
+              objectId: item.objectId,
+              prefix: item.prefix,
+              label: item.label,
+              classLoader: item.classLoader,
+              hasParent: item.hasParent,
+              definedClasses: item.classLoader ? item.definedClasses : null,
+              numberOfInstances: item.numberOfInstances,
 
-              hasChildren: record.classLoader,
+              hasChildren: item.classLoader,
 
               isRecord: true,
             })

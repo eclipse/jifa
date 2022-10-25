@@ -60,10 +60,11 @@
         <div align="center">
           <el-upload ref="uploadComp"
                      drag
+                     :headers="authHeader"
                      :limit=1
-                     :data="{type: fileType}"
+                     :data="{uploadName:'upload', type: fileType}"
                      :action="service('/file/upload')"
-                     :multiple=false
+                     :multiple=true
                      :on-success="onSuccess">
             <i class="el-icon-upload"></i>
             <div class="el-upload__text">{{ $t('jifa.uploadPrompt') }}</div>
@@ -124,7 +125,7 @@
         </el-form>
       </el-tab-pane>
 
-      <el-tab-pane label="File System" name="fileSystem">
+      <el-tab-pane label="File System" name="fileSystem" v-if="false">
         <el-form ref="fileSystemForm" :model="fileSystem" :rules="fileSystemRules" label-width="150px" size="medium"
                  label-position="right"
                  style="margin-top: 10px" :show-message=false status-icon>
@@ -175,6 +176,56 @@
         </el-form>
        </el-tab-pane>
 
+      <el-tab-pane label="S3" name="s3">
+        <el-form ref="s3Form" :model="s3" :rules="s3Rules" label-width="150px" size="medium" label-position="right"
+                 style="margin-top: 10px" status-icon :show-message=false>
+          <el-form-item label="Endpoint" prop="endpoint">
+            <el-input v-model="s3.endpoint" placeholder="Endpoint" style="width: 80%" clearable></el-input>
+          </el-form-item>
+
+          <el-form-item label="Access Key" prop="accessKey">
+            <el-input v-model="s3.accessKey" placeholder="Access Key" style="width: 80%" clearable
+                      show-password=""></el-input>
+          </el-form-item>
+
+          <el-form-item label="Access Key Secret" prop="accessKeySecret">
+            <el-input v-model="s3.secretKey" placeholder="Access Key Secret" style="width: 80%" clearable
+                      show-password=""></el-input>
+          </el-form-item>
+
+          <el-form-item label="Bucket Name" prop="bucketName">
+            <el-input v-model="s3.bucketName" placeholder="Bucket Name" style="width: 80%" clearable></el-input>
+          </el-form-item>
+
+          <el-form-item label="Object Name" prop="objectName">
+            <el-input v-model="s3.objectName" placeholder="Object Name" style="width: 80%" clearable></el-input>
+          </el-form-item>
+
+          <el-form-item>
+            <el-button type="primary" @click="s3Confirm" :disabled="inTransferring">{{$t('jifa.confirm')}}</el-button>
+          </el-form-item>
+        </el-form>
+      </el-tab-pane>
+
+      <el-tab-pane label="Raw Text" name="rawText" v-if="rawTextUploadSupported()">
+        <el-form ref="rawTextForm" :model="rawText" :rules="rawTextRules" label-width="150px" size="medium" label-position="right"
+                 style="margin-top: 10px" status-icon :show-message=false>
+          <el-form-item label="File Name" prop="originalName">
+            <el-input v-model="rawText.originalName" placeholder="File Name" style="width: 80%" clearable></el-input>
+          </el-form-item>
+
+          <el-form-item label="Content" prop="content">
+            <el-input v-model="rawText.content" placeholder="Content" style="width: 80% " clearable
+                      type="textarea" resize="none" rows="10"
+            ></el-input>
+          </el-form-item>
+
+          <el-form-item>
+            <el-button type="primary" @click="rawTextConfirm" :loading="inTransferring">{{$t('jifa.confirm')}}</el-button>
+          </el-form-item>
+        </el-form>
+      </el-tab-pane>
+
     </el-tabs>
 
     
@@ -183,12 +234,13 @@
 
 <script>
   import axios from 'axios'
-  import {service, toSizeString} from '../util'
+  import {service, toReadableSizeWithUnit} from '../util'
 
   export default {
     props: ['fileType', 'transferViewVisible'],
     data() {
       return {
+        authHeader:{ Authorization: this.$jifa.get_authorization_header()},
         url: {
           url: '',
         },
@@ -251,6 +303,46 @@
             {required: true, trigger: 'blur'}
           ],
         },
+        s3: {
+          endpoint: '',
+          accessKey: '',
+          secretKey: '',
+          bucketName: '',
+          objectName: ''
+        },
+        s3Rules: {
+          endpoint: [
+            {required: true, trigger: 'blur'}
+          ],
+          accessKey: [
+            {required: true, trigger: 'blur'}
+          ],
+          secretKey: [
+            {required: true, trigger: 'blur'}
+          ],
+          bucketName: [
+            {required: true, trigger: 'blur'}
+          ],
+          objectName: [
+            {required: true, trigger: 'blur'}
+          ],
+        },
+        rawTextFileDefaultName: {
+          GC_LOG: "gc.log",
+          THREAD_DUMP: "jstack.log"
+        },
+        rawText: {
+          originalName: '',
+          content: ''
+        },
+        rawTextRules: {
+          originalName: [
+            {required: true, trigger: 'blur'}
+          ],
+          content: [
+            {required: true, trigger: 'blur'}
+          ],
+        },
 
         publicKeyViewVisible: false,
         publicKey: '',
@@ -270,8 +362,19 @@
         inTransferring: false,
       }
     },
+    watch: {
+      fileType: function (newValue, oldValue) {
+        this.rawText.originalName = this.rawTextFileDefaultName[newValue]
+      }
+    },
+    mounted() {
+      this.rawText.originalName = this.rawTextFileDefaultName[this.fileType]
+    },
     methods: {
       service,
+      rawTextUploadSupported() {
+        return this.rawTextFileDefaultName[this.fileType] !== undefined
+      },
       changeAuthType(authType) {
         this.$refs['scpForm'].clearValidate()
         this.scpRules.password[0].required = authType === 'password'
@@ -339,13 +442,36 @@
           }
         })
       },
-      jmxConfirm() {
-        this.$refs['jmxForm'].validate((valid) => {
+      s3Confirm() {
+        this.$refs['s3Form'].validate((valid) => {
           if (valid) {
-            let formData = new FormData();
-            formData.append('host', this.jmx.host);
-            formData.append('port', this.jmx.port);
-            this.doTransfer('/file/createJmxConn', formData)
+            let formData = new FormData()
+            formData.append('endpoint', this.s3.endpoint)
+            formData.append('accessKey', this.s3.accessKey)
+            formData.append('keySecret', this.s3.secretKey)
+            formData.append('bucketName', this.s3.bucketName)
+            formData.append('objectName', this.s3.objectName)
+            this.doTransfer('/file/transferByS3', formData)
+          }
+        })
+      },
+      rawTextConfirm() {
+        this.$refs['rawTextForm'].validate((valid) => {
+          if (valid) {
+            let formData = new FormData()
+            const blob = new Blob([this.rawText.content])
+            const file = new File([blob], this.rawText.originalName)
+            formData.append('file', file)
+            formData.append('type', this.fileType)
+            const config = {
+              headers: {
+                'content-type': 'multipart/form-data'
+              },
+            }
+            this.inTransferring = true
+            axios.post(service('/file/upload'), formData, config).then(resp => {
+              this.onSuccess(resp.data)
+            })
           }
         })
       },
@@ -391,10 +517,10 @@
           this.totalSize = progress.totalSize
           this.lastTransferredSize = this.transferredSize
           this.transferredSize = progress.transferredSize
-          this.currentProgress = toSizeString((this.transferredSize - this.lastTransferredSize) / (this.pollingInternal / 1000))
+          this.currentProgress = toReadableSizeWithUnit((this.transferredSize - this.lastTransferredSize) / (this.pollingInternal / 1000))
               + '/s '
-              + "[" + toSizeString(this.transferredSize)
-              + ", " + (this.totalSize > 0 ? toSizeString(this.totalSize) : " ? ") + "]"
+              + "[" + toReadableSizeWithUnit(this.transferredSize)
+              + ", " + (this.totalSize > 0 ? toReadableSizeWithUnit(this.totalSize) : " ? ") + "]"
           if (progress.percent <= 1) {
             this.transferProgress = parseFloat((progress.percent * 100).toPrecision(3))
           } else {

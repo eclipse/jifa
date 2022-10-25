@@ -1,0 +1,104 @@
+/********************************************************************************
+ * Copyright (c) 2020, 2021 Contributors to the Eclipse Foundation
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ ********************************************************************************/
+allprojects {
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+        mavenCentral()
+    }
+}
+
+subprojects {
+    apply plugin: 'idea'
+    version = '1.0'
+}
+
+task deleteSSHConfig(type: Delete) {
+    delete "${rootProject.rootDir}/backend/config/jifa-ssh-key", "${rootProject.rootDir}/backend/config/jifa-ssh-key.pub"
+}
+
+task generateSSHConfig(dependsOn: deleteSSHConfig, type: Exec) {
+    commandLine "ssh-keygen", "-b", "2048", "-t", "rsa", "-f", "${rootProject.rootDir}/backend/config/jifa-ssh-key", "-q"
+}
+
+task copySSHConfig(dependsOn: generateSSHConfig, type: Copy) {
+    from "${rootProject.rootDir}/backend/config/jifa-ssh-key" as Object,
+            "${rootProject.rootDir}/backend/config/jifa-ssh-key.pub" as Object
+    into "${rootProject.rootDir}/artifacts/config" as Object
+}
+
+task copyMasterDist(type: Copy, dependsOn: ':backend:master:build') {
+    from "${rootProject.rootDir}/backend/master/build/distributions/master-1.0.zip" as Object
+    into "${rootProject.rootDir}/artifacts" as Object
+}
+
+task copyWorkerDist(type: Copy, dependsOn: ':backend:worker:build') {
+    from "${rootProject.rootDir}/backend/worker/build/distributions/worker-1.0.zip" as Object
+    into "${rootProject.rootDir}/artifacts" as Object
+}
+
+task compressFrontendDist(type: Zip) {
+    from "${rootProject.rootDir}/frontend/build"
+    destinationDirectory = file("${rootProject.rootDir}/artifacts")
+    archiveBaseName.set('frontend')
+    archiveVersion.set('1.0')
+    archiveExtension.set('zip')
+}
+
+task buildWorker {
+    group 'Build Jifa'
+    description 'Build worker and frontend only.'
+    doFirst {
+        ant.replaceregexp(match:'workerOnly.*?,', replace:'workerOnly: true,', flags:'g', byline:true) {
+            fileset(dir: "${rootProject.rootDir}/frontend/src", includes: 'config.js')
+        }
+    }
+    dependsOn ':frontend:build'
+    dependsOn ':backend:worker:build'
+    dependsOn copySSHConfig, copyWorkerDist, compressFrontendDist
+}
+
+task buildJifa{
+    group 'Build Jifa'
+    description 'Build all components: master, worker, and frontend.'
+    dependsOn ':frontend:build'
+    dependsOn ':backend:master:build'
+    dependsOn ':backend:worker:build'
+    dependsOn copySSHConfig, copyMasterDist, copyWorkerDist, compressFrontendDist
+}
+
+task clean {
+    doFirst {
+        delete files("${projectDir}/artifacts")
+    }
+}
+
+class TaskListener implements TaskExecutionListener{
+
+    @Override
+    void beforeExecute(Task task) {
+        println "===== " + task.name + " Start ====="
+    }
+
+    @Override
+    void afterExecute(Task task, TaskState state) {
+        println "===== " + task.name + " End ====="
+    }
+}
+
+if (project.properties.containsKey("verbose")) {
+    gradle.addListener(new TaskListener())
+}
+
+defaultTasks 'buildJifa'

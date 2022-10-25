@@ -1,0 +1,23 @@
+{
+  "database": {
+    "url": "jdbc:mysql://database:3306/jifa?useUnicode=true&characterEncoding=utf8&enabledTLSProtocols=TLSv1.2",
+    "username": "root",
+    "password": "123456",
+    "driver-class-name": "com.mysql.jdbc.Driver"
+  },
+  "http-verticle-config": {
+    "port": 9102
+  },
+  "worker-config": {
+    "username": "jifa",
+    "password": "IamMaster",
+    "port": 8102
+  },
+  "k8s-config": {
+    "namespace": "jifa-test",
+    "worker-pvc-name": "worker-pvc",
+    "worker-image": "docker.io/jifadocker/jifa-worker-open",
+    "minimal-mem-req": 512,
+    "master-pod-name": "jifa-master"
+  }
+}

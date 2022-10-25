@@ -12,8 +12,8 @@
  ********************************************************************************/
 package org.eclipse.jifa.common.util;
 
-import org.eclipse.jifa.common.aux.ErrorCode;
-import org.eclipse.jifa.common.aux.JifaException;
+import org.eclipse.jifa.common.ErrorCode;
+import org.eclipse.jifa.common.JifaException;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -32,5 +32,9 @@ public class ErrorUtil {
 
     public static <T> T shouldNotReachHere() {
         throw new JifaException(ErrorCode.SHOULD_NOT_REACH_HERE);
+    }
+
+    public static void errorWith(ErrorCode code, String detail) {
+        throw new JifaException(code, detail);
     }
 }

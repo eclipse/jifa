@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -14,12 +14,14 @@ package org.eclipse.jifa.worker.route;
 
 import io.vertx.ext.web.Route;
 import io.vertx.ext.web.Router;
-import org.eclipse.jifa.common.aux.ErrorCode;
-import org.eclipse.jifa.common.aux.JifaException;
+import org.eclipse.jifa.common.ErrorCode;
+import org.eclipse.jifa.common.JifaException;
 import org.eclipse.jifa.common.util.HTTPRespGuarder;
+import org.eclipse.jifa.worker.route.gclog.GCLogBaseRoute;
 import org.eclipse.jifa.worker.Constant;
-import org.eclipse.jifa.worker.Global;
+import org.eclipse.jifa.worker.WorkerGlobal;
 import org.eclipse.jifa.worker.route.heapdump.HeapBaseRoute;
+import org.eclipse.jifa.worker.route.threaddump.ThreadDumpBaseRoute;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,8 +46,15 @@ public class RouteFiller {
         try {
             register(FileRoute.class);
             register(AnalysisRoute.class);
+            register(SystemRoute.class);
 
             for (Class<? extends HeapBaseRoute> route : HeapBaseRoute.routes()) {
+                register(route);
+            }
+            for (Class<? extends GCLogBaseRoute> route: GCLogBaseRoute.routes()){
+                register(route);
+            }
+            for (Class<? extends ThreadDumpBaseRoute> route: ThreadDumpBaseRoute.routes()){
                 register(route);
             }
         } catch (Exception e) {
@@ -61,7 +70,7 @@ public class RouteFiller {
 
     private void buildPrefix(ArrayList<String> prefixes, String prevPrefix, Class<?> clazz) {
         if (clazz == null) {
-            String rootPrefix = Global.stringConfig(Constant.ConfigKey.API_PREFIX);
+            String rootPrefix = WorkerGlobal.stringConfig(Constant.ConfigKey.API_PREFIX);
             prefixes.add(rootPrefix + prevPrefix);
             return;
         }
@@ -97,7 +106,7 @@ public class RouteFiller {
         }
 
         String fullPath = prefix + meta.path();
-        Route route = router.route(meta.method(), fullPath);
+        Route route = router.route(meta.method().toVertx(), fullPath);
         Arrays.stream(meta.contentType()).forEach(route::produces);
         method.setAccessible(true);
 
@@ -118,7 +127,7 @@ public class RouteFiller {
                         !RouterAnnotationProcessor.processPagingRequest(arguments, rc, method, param) &&
                         !RouterAnnotationProcessor.processHttpServletRequest(arguments, rc, method, param) &&
                         !RouterAnnotationProcessor.processHttpServletResponse(arguments, rc, method, param) &&
-                        !RouterAnnotationProcessor.processFuture(arguments, rc, method, param) &&
+                        !RouterAnnotationProcessor.processPromise(arguments, rc, method, param) &&
                         !RouterAnnotationProcessor.processRoutingContext(arguments, rc, method, param)
                     ) {
                         throw new JifaException(ErrorCode.ILLEGAL_ARGUMENT,

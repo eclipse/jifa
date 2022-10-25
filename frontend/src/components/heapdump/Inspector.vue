@@ -92,7 +92,7 @@
 <script>
 
   import axios from 'axios'
-  import {heapDumpService} from '../../util'
+  import {heapDumpService, toReadableSizeWithUnit} from '../../util'
   import {getIcon, ICONS} from './IconHealper';
   import {OBJECT_TYPE} from './CommonType';
   import Fields from './Fields'
@@ -170,7 +170,7 @@
             name = name.substring(dotPos + 1)
           }
           tmpView.push({data: name, icon: getIcon(ov.gCRoot, ov.objectType)})
-          tmpView.push({data: p, icon: ICONS.objects.class_package})
+          tmpView.push({data: p, icon: ICONS.objects.package})
 
           tmpView.push({
             data: ov.classLabel,
@@ -183,8 +183,8 @@
             data: ov.classLoaderLabel,
             icon: getIcon(ov.classLoaderGCRoot, OBJECT_TYPE.CLASSLOADER)
           })
-          tmpView.push({data: ov.shallowSize + ' (shallow size)', icon: ICONS.size})
-          tmpView.push({data: ov.retainedSize + ' (retained size)', icon: ICONS.size})
+          tmpView.push({data: toReadableSizeWithUnit(ov.shallowSize) + ' (shallow size)', icon: ICONS.size})
+          tmpView.push({data: toReadableSizeWithUnit(ov.retainedSize) + ' (retained size)', icon: ICONS.size})
           tmpView.push({data: ov.gcRootInfo, icon: ICONS.decorations.gc_root})
           this.objectOverview = tmpView
           let maxContent = ''
@@ -244,7 +244,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    overflow: scroll;
+    overflow: auto;
   }
 
   .firstTabs /deep/ .el-tab-pane {
@@ -253,7 +253,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    overflow: scroll;
+    overflow: auto;
   }
 
   .bottomTabs /deep/ .el-tabs__content {
@@ -262,7 +262,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    overflow: scroll;
+    overflow: auto;
   }
 
   .bottomTabs /deep/ .el-tab-pane {
@@ -271,6 +271,6 @@
     left: 0;
     right: 0;
     bottom: 0;
-    overflow: scroll;
+    overflow: auto;
   }
 </style>

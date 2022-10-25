@@ -1,5 +1,5 @@
 <!--
-    Copyright (c) 2020 Contributors to the Eclipse Foundation
+    Copyright (c) 2020, 2022 Contributors to the Eclipse Foundation
 
     See the NOTICE file(s) distributed with this work for additional
     information regarding copyright ownership.
@@ -48,64 +48,84 @@
         <el-col :span="6" v-for="col in (row < rows ? cols : colsOfLastRow)" :key="col">
           <el-card class="box-card" shadow="hover" style="margin: 20px">
             <div>
+              <el-row style="margin: -15px -8px 8px -8px">
+                <el-col align="right" class="icons-col">
+                  <el-tooltip class="item" effect="light" :content="$t('jifa.tip.copyName')" placement="top-start">
+                    <span>
+                      <el-link icon="el-icon-document-copy" v-clipboard:copy="file(row, col).name"
+                               :underline="false" target="_blank"/>
+                    </span>
+                  </el-tooltip>
+
+                  <el-tooltip class="item" effect="light" :content="$t('jifa.tip.rename')" placement="top-start"
+                              v-if="file(row,col).hasOwnProperty('displayName')">
+                    <span>
+                      <el-divider direction="vertical"></el-divider>
+                      <el-link icon="el-icon-edit" :underline="false" @click="updateFile(file(row,col))"/>
+                    </span>
+                  </el-tooltip>
+
+                  <el-tooltip class="item" effect="light" :content="$t('jifa.tip.setShare')" placement="top-start"
+                              v-if="file(row,col).hasOwnProperty('shared')">
+                    <span>
+                      <el-divider direction="vertical"></el-divider>
+                      <el-link :icon="file(row, col).shared ? 'el-icon-unlock' : 'el-icon-lock'"
+                               v-on:click="toggleSharedState(file(row, col))"
+                               :underline="false"
+                               target="_blank"/>
+                    </span>
+                  </el-tooltip>
+
+                  <el-tooltip class="item" effect="light" :content="$t('jifa.tip.downloadFile')" placement="top-start"
+                              v-if="transferIsSuccess(file(row,col))">
+                    <span>
+                      <el-divider direction="vertical"></el-divider>
+                      <el-link icon="el-icon-download" :underline="false"
+                               target="_blank"
+                               download
+                               :href="`/jifa-api/file/download?name=${file(row,col).name}&type=${currentMenuItem}`"
+                      />
+                    </span>
+                  </el-tooltip>
+
+                  <el-tooltip class="item" effect="light" :content="$t('jifa.tip.deleteFile')" placement="top-start"
+                              v-if="canDelete(file(row,col))">
+                    <span>
+                      <el-divider direction="vertical"></el-divider>
+                      <el-link icon="el-icon-delete" :underline="false"
+                               v-on:click="fileToDelete =  file(row, col).name"/>
+                    </span>
+                  </el-tooltip>
+                </el-col>
+              </el-row>
+
               <el-row type="flex">
-                <el-col :span="16">
+                <el-col>
                   <p style='font-size: 15px; margin:0 auto; white-space: nowrap; text-overflow:ellipsis; overflow:hidden;
                             color: #606266;'>
                     <i class="el-icon-document"></i>
                     {{file(row, col).displayName ? file(row, col).displayName : file(row, col).name}}
                   </p>
                 </el-col>
-
-                <el-col :span="8" align="right">
-                  <span>
-                    <el-link icon="el-icon-document-copy" v-clipboard:copy="file(row, col).name"
-                             :underline="false" target="_blank"/>
-                  </span>
-
-                  <span v-if="file(row,col).hasOwnProperty('displayName')">
-                    <el-divider direction="vertical"></el-divider>
-                    <el-link icon="el-icon-edit" :underline="false" @click="updateFile(file(row,col))"/>
-                  </span>
-
-                  <span v-if="file(row,col).hasOwnProperty('shared')">
-                    <el-divider direction="vertical"></el-divider>
-                    <el-link :icon="file(row, col).shared ? 'el-icon-unlock' : 'el-icon-lock'"
-                             v-on:click="toggleSharedState(file(row, col))"
-                             :underline="false"
-                             target="_blank"/>
-                  </span>
-
-                  <span v-if="downloadable(file(row,col))">
-                    <el-divider direction="vertical"></el-divider>
-                    <el-link icon="el-icon-download" :underline="false"
-                             :href="service('/file/download/' + currentMenuItem + '/' + file(row, col).name)"
-                             target="_blank"/>
-                  </span>
-
-                  <span v-if="canDelete(file(row,col))">
-                    <el-divider direction="vertical"></el-divider>
-                    <el-link icon="el-icon-delete" :underline="false"
-                             v-on:click="fileToDelete =  file(row, col).name"/>
-                  </span>
-                </el-col>
               </el-row>
+
               <el-row :align='"middle"' type="flex">
                 <el-col :span="12">
                   <p style="font-size: 12px; margin: 10px auto 7px; white-space: nowrap; color: #606266;" align="left">
-                    {{toSizeString(file(row, col).size)}}</p>
+                    {{toReadableSizeWithUnit(file(row, col).size)}}</p>
                 </el-col>
+
                 <el-col :span="12">
                   <p style="font-size: 12px; margin:10px auto 7px; white-space: nowrap; color: #606266;" align="right">
                     {{formatDate(new Date(file(row, col).creationTime), "yyyy-MM-dd HH:mm:ss")}}</p>
                 </el-col>
               </el-row>
+
               <el-row>
-                <hr style="margin: 0 auto 7px;"/>
+                <hr style="margin: 0 -8px 7px -8px;"/>
               </el-row>
 
               <el-row type="flex" justify="space-around" style="margin-bottom: -15px">
-
                 <el-col :span="8" align="middle"
                         v-if="file(row, col).transferState === 'NOT_STARTED' || file(row, col).transferState ==='IN_PROGRESS'">
                   <el-button type="text"><i class="el-icon-loading"></i> {{$t('jifa.transferring')}}</el-button>
@@ -144,26 +164,21 @@
         </el-col>
       </el-row>
     </el-main>
-    <el-footer>
-      <Footer/>
-    </el-footer>
   </el-container>
 </template>
 
 <script>
-  import axios from 'axios'
-  import Footer from "./footer"
+import axios from 'axios'
 
+import {formatDate} from 'element-ui/src/utils/date-util'
+import {service, toReadableSizeWithUnit} from '../util'
+import TransferFile from './transferFile'
+import ViewMenu from './menu/ViewMenu'
 
-  import {formatDate} from 'element-ui/src/utils/date-util'
-  import {service, toSizeString} from '../util'
-  import TransferFile from './transferFile'
-  import ViewMenu from './menu/ViewMenu'
-
-  const defaultMenuItem = 'HEAP_DUMP'
+const defaultMenuItem = 'HEAP_DUMP'
 
   export default {
-    components: {TransferFile, ViewMenu, Footer},
+    components: {TransferFile, ViewMenu},
     data() {
       return {
         files: [],
@@ -189,6 +204,10 @@
         switch (this.currentMenuItem) {
           case "HEAP_DUMP":
             return this.$i18n.t('jifa.addHeapDumpFile');
+          case "GC_LOG":
+            return this.$i18n.t('jifa.addGCLogFile');
+          case "THREAD_DUMP":
+            return this.$i18n.t('jifa.threadDump.addFile');
           default:
             return this.$i18n.t('jifa.addFile');
         }
@@ -200,7 +219,7 @@
 
       service,
       formatDate,
-      toSizeString,
+      toReadableSizeWithUnit,
 
       handleCurrentPageChange(page) {
         this.go(page)
@@ -240,10 +259,6 @@
             new URLSearchParams(formData)).then(() => {
           file.shared = !file.shared
         })
-      },
-
-      downloadable(file) {
-        return file.downloadble && this.transferIsSuccess(file)
       },
 
       transferIsSuccess(file) {
@@ -345,3 +360,11 @@
     }
   }
 </script>
+
+<style scoped>
+
+.icons-col .el-divider {
+  margin-left: 4px;
+  margin-right: 4px;
+}
+</style>

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2021 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -12,13 +12,21 @@
  ********************************************************************************/
 package org.eclipse.jifa.common.vo;
 
-import org.eclipse.jifa.common.request.PagingRequest;
 import lombok.Data;
+import org.eclipse.jifa.common.request.PagingRequest;
 
+import java.util.Collections;
 import java.util.List;
 
 @Data
 public class PageView<T> {
+
+    public static final PageView<?> EMPTY = new PageView<>(null, 0, Collections.emptyList());
+
+    @SuppressWarnings("unchecked")
+    public static <T> PageView<T> empty() {
+        return (PageView<T>) EMPTY;
+    }
 
     private List<T> data;
 
@@ -32,12 +40,12 @@ public class PageView<T> {
 
     public PageView(PagingRequest request, int totalSize, List<T> data) {
         this.data = data;
-        this.page = request.getPage();
-        this.pageSize = request.getPageSize();
+        this.page = request != null ? request.getPage() : 0;
+        this.pageSize = request != null ? request.getPageSize() : 0;
         this.totalSize = totalSize;
     }
 
     public PageView() {
-
     }
+
 }

@@ -23,10 +23,8 @@ import org.eclipse.jifa.common.enums.ProgressState;
 import org.eclipse.jifa.common.vo.PageView;
 import org.eclipse.jifa.common.vo.Progress;
 import org.eclipse.jifa.common.vo.Result;
-import org.eclipse.jifa.worker.Global;
-import org.eclipse.jifa.worker.vo.heapdump.classloader.Record;
-import org.eclipse.jifa.worker.vo.heapdump.inspector.ObjectView;
-import org.eclipse.jifa.worker.vo.heapdump.thread.Info;
+import org.eclipse.jifa.hda.api.Model;
+import org.eclipse.jifa.worker.WorkerGlobal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,8 +37,9 @@ import static org.eclipse.jifa.common.util.GsonHolder.GSON;
 
 public class HeapDumpRouteSuite extends Base {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(HeapDumpRouteSuite.class);
+
     static TestContext context;
-    private static Logger LOGGER = LoggerFactory.getLogger(HeapDumpRouteSuite.class);
 
     public static void test(TestContext c) throws Exception {
         context = c;
@@ -63,7 +62,8 @@ public class HeapDumpRouteSuite extends Base {
                     (PostProcessor) resp -> {
                         Progress progress = GSON.fromJson(resp.bodyAsString(), Progress.class);
                         ProgressState state = progress.getState();
-                        context.assertTrue(state == ProgressState.IN_PROGRESS || state == ProgressState.SUCCESS, resp.bodyAsString());
+                        context.assertTrue(state == ProgressState.IN_PROGRESS || state == ProgressState.SUCCESS,
+                                resp.bodyAsString());
                         if (state == ProgressState.SUCCESS) {
                             success.set(true);
                         }
@@ -79,17 +79,17 @@ public class HeapDumpRouteSuite extends Base {
         testGet("/classLoaderExplorer/summary");
         testGet("/classLoaderExplorer/classLoader",
                 req -> req.addQueryParam("page", "1")
-                          .addQueryParam("pageSize", "10"),
+                        .addQueryParam("pageSize", "10"),
                 resp -> {
-                    Type type = new TypeToken<PageView<Record>>() {
+                    Type type = new TypeToken<PageView<Model.ClassLoader.Item>>() {
                     }.getType();
-                    PageView<Record> result = GSON.fromJson(resp.bodyAsString(), type);
+                    PageView<Model.ClassLoader.Item> result = GSON.fromJson(resp.bodyAsString(), type);
                     holder.id = result.getData().get(0).getObjectId();
                 });
         testGet("/classLoaderExplorer/children",
                 (PreProcessor) req -> req.addQueryParam("classLoaderId", String.valueOf(holder.id))
-                                         .addQueryParam("page", "1")
-                                         .addQueryParam("pageSize", "10"));
+                        .addQueryParam("page", "1")
+                        .addQueryParam("pageSize", "10"));
 
         // class reference
         testGet("/classReference/inbounds/class",
@@ -101,43 +101,50 @@ public class HeapDumpRouteSuite extends Base {
         testGet("/directByteBuffer/summary");
         testGet("/directByteBuffer/records",
                 (PreProcessor) req -> req.addQueryParam("page", "1")
-                                         .addQueryParam("pageSize", "10"));
+                        .addQueryParam("pageSize", "10"));
 
         // dominator tree
         testGet("/dominatorTree/roots",
                 (PreProcessor) req -> req.addQueryParam("page", "1")
-                                         .addQueryParam("pageSize", "10")
-                                         .addQueryParam("grouping", "NONE"));
+                        .addQueryParam("pageSize", "10")
+                        .addQueryParam("sortBy", "id")
+                        .addQueryParam("ascendingOrder", "true")
+                        .addQueryParam("grouping", "NONE"));
         testGet("/dominatorTree/children",
                 (PreProcessor) req -> req.addQueryParam("page", "1")
-                                         .addQueryParam("pageSize", "10")
-                                         .addQueryParam("grouping", "NONE")
-                                         .addQueryParam("parentObjectId", String.valueOf(holder.id)));
+                        .addQueryParam("sortBy", "id")
+                        .addQueryParam("ascendingOrder", "true")
+                        .addQueryParam("pageSize", "10")
+                        .addQueryParam("grouping", "NONE")
+                        .addQueryParam("idPathInResultTree", "[" + holder.id + "]")
+                        .addQueryParam("parentObjectId", String.valueOf(holder.id)));
 
         // gc root
         testGet("/GCRoots");
         testGet("/GCRoots/classes",
                 (PreProcessor) req -> req.addQueryParam("page", "1")
-                                         .addQueryParam("pageSize", "10")
-                                         .addQueryParam("rootTypeIndex", "1"));
+                        .addQueryParam("pageSize", "10")
+                        .addQueryParam("rootTypeIndex", "1"));
         testGet("/GCRoots/class/objects",
                 (PreProcessor) req -> req.addQueryParam("page", "1")
-                                         .addQueryParam("pageSize", "10")
-                                         .addQueryParam("rootTypeIndex", "1")
-                                         .addQueryParam("classIndex", "1"));
+                        .addQueryParam("pageSize", "10")
+                        .addQueryParam("rootTypeIndex", "1")
+                        .addQueryParam("classIndex", "1"));
 
         // histogram
         testGet("/histogram",
                 (PreProcessor) req -> req.addQueryParam("page", "1")
-                                         .addQueryParam("pageSize", "10")
-                                         .addQueryParam("groupingBy", "BY_CLASS"));
+                        .addQueryParam("pageSize", "10")
+                        .addQueryParam("sortBy", "id")
+                        .addQueryParam("ascendingOrder", "true")
+                        .addQueryParam("groupingBy", "BY_CLASS"));
 
         // inspector
         testGet("/inspector/objectView",
                 req -> req.addQueryParam("objectId", String.valueOf(holder.id)),
                 resp -> {
-                    ObjectView objectView = GSON.fromJson(resp.bodyAsString(), ObjectView.class);
-                    holder.objectAddress = objectView.getObjectAddress();
+                    Model.InspectorView view = GSON.fromJson(resp.bodyAsString(), Model.InspectorView.class);
+                    holder.objectAddress = view.getObjectAddress();
                 });
         testGet("/inspector/addressToId",
                 (PreProcessor) req -> req.addQueryParam("objectAddress", String.valueOf(holder.objectAddress)));
@@ -145,12 +152,12 @@ public class HeapDumpRouteSuite extends Base {
                 (PreProcessor) req -> req.addQueryParam("objectId", String.valueOf(holder.id)));
         testGet("/inspector/fields",
                 (PreProcessor) req -> req.addQueryParam("objectId", String.valueOf(holder.id))
-                                         .addQueryParam("page", "1")
-                                         .addQueryParam("pageSize", "10"));
+                        .addQueryParam("page", "1")
+                        .addQueryParam("pageSize", "10"));
         testGet("/inspector/staticFields",
                 (PreProcessor) req -> req.addQueryParam("objectId", String.valueOf(holder.id))
-                                         .addQueryParam("page", "1")
-                                         .addQueryParam("pageSize", "10"));
+                        .addQueryParam("page", "1")
+                        .addQueryParam("pageSize", "10"));
 
         // leak report
         testGet("/leak/report");
@@ -158,12 +165,12 @@ public class HeapDumpRouteSuite extends Base {
         // object list
         testGet("/outbounds",
                 (PreProcessor) req -> req.addQueryParam("objectId", String.valueOf(holder.id))
-                                         .addQueryParam("page", "1")
-                                         .addQueryParam("pageSize", "10"));
+                        .addQueryParam("page", "1")
+                        .addQueryParam("pageSize", "10"));
         testGet("/inbounds",
                 (PreProcessor) req -> req.addQueryParam("objectId", String.valueOf(holder.id))
-                                         .addQueryParam("page", "1")
-                                         .addQueryParam("pageSize", "10"));
+                        .addQueryParam("page", "1")
+                        .addQueryParam("pageSize", "10"));
 
         // object
         testGet("/object",
@@ -172,14 +179,24 @@ public class HeapDumpRouteSuite extends Base {
         // oql
         testGet("/oql",
                 (PreProcessor) req -> req.addQueryParam("oql", "select * from java.lang.String")
-                                         .addQueryParam("page", "1")
-                                         .addQueryParam("pageSize", "10"));
+                        .addQueryParam("page", "1")
+                        .addQueryParam("sortBy", "id")
+                        .addQueryParam("ascendingOrder", "true")
+                        .addQueryParam("pageSize", "10"));
+
+        // oql
+        testGet("/sql",
+                (PreProcessor) req -> req.addQueryParam("sql", "select * from java.lang.String")
+                        .addQueryParam("page", "1")
+                        .addQueryParam("sortBy", "id")
+                        .addQueryParam("ascendingOrder", "true")
+                        .addQueryParam("pageSize", "10"));
 
         // path to gc roots
         testGet("/pathToGCRoots",
                 (PreProcessor) req -> req.addQueryParam("origin", String.valueOf(holder.id))
-                                         .addQueryParam("skip", "0")
-                                         .addQueryParam("count", "10"));
+                        .addQueryParam("skip", "0")
+                        .addQueryParam("count", "10"));
 
         // system property
         testGet("/systemProperties");
@@ -188,11 +205,13 @@ public class HeapDumpRouteSuite extends Base {
         testGet("/threadsSummary");
         testGet("/threads",
                 req -> req.addQueryParam("page", "1")
-                          .addQueryParam("pageSize", "10"),
+                        .addQueryParam("sortBy", "id")
+                        .addQueryParam("ascendingOrder", "true")
+                        .addQueryParam("pageSize", "10"),
                 resp -> {
-                    Type type = new TypeToken<PageView<Info>>() {
+                    Type type = new TypeToken<PageView<Model.Thread.Item>>() {
                     }.getType();
-                    PageView<Info> result = GSON.fromJson(resp.bodyAsString(), type);
+                    PageView<Model.Thread.Item> result = GSON.fromJson(resp.bodyAsString(), type);
                     holder.id = result.getData().get(0).getObjectId();
                 }
         );
@@ -200,15 +219,15 @@ public class HeapDumpRouteSuite extends Base {
                 (PreProcessor) req -> req.addQueryParam("objectId", String.valueOf(holder.id)));
         testGet("/locals",
                 (PreProcessor) req -> req.addQueryParam("objectId", String.valueOf(holder.id))
-                                         .addQueryParam("depth", "1")
-                                         .addQueryParam("firstNonNativeFrame", "false"));
+                        .addQueryParam("depth", "1")
+                        .addQueryParam("firstNonNativeFrame", "false"));
 
 
         // unreachable objects
         testGet("/unreachableObjects/summary");
         testGet("/unreachableObjects/records",
                 (PreProcessor) req -> req.addQueryParam("page", "1")
-                                         .addQueryParam("pageSize", "10"));
+                        .addQueryParam("pageSize", "10"));
     }
 
     static void testGet(String uri) {
@@ -234,26 +253,28 @@ public class HeapDumpRouteSuite extends Base {
     static void test(String uri, HttpMethod method, PreProcessor processor, PostProcessor postProcessor) {
         LOGGER.info("test {}", uri);
         Async async = context.async();
-        LOGGER.info("method = {}, port = {}, host = {}, uri = {}", method, Global.PORT, Global.HOST, uri("/heap-dump/" + TEST_HEAP_DUMP_FILENAME + uri));
+        LOGGER.info("method = {}, port = {}, host = {}, uri = {}", method, WorkerGlobal.PORT, WorkerGlobal.HOST,
+                uri("/heap-dump/" + TEST_HEAP_DUMP_FILENAME + uri));
         HttpRequest<Buffer> request =
-            CLIENT.request(method, Global.PORT, Global.HOST, uri("/heap-dump/" + TEST_HEAP_DUMP_FILENAME + uri));
+                CLIENT.request(method, WorkerGlobal.PORT, WorkerGlobal.HOST,
+                        uri("/heap-dump/" + TEST_HEAP_DUMP_FILENAME + uri));
         if (processor != null) {
             processor.process(request);
         }
         request.send(
-            ar -> {
-                context.assertTrue(ar.succeeded(), ar.cause() != null ? ar.cause().getMessage() : "");
-                LOGGER.debug("{}: {} - {}", uri, ar.result().statusCode(), ar.result().bodyAsString());
-                context.assertEquals(ar.result().statusCode(),
-                                     method == HttpMethod.GET ? HTTP_GET_OK_STATUS_CODE : HTTP_POST_CREATED_STATUS_CODE,
-                                     ar.result().bodyAsString());
+                ar -> {
+                    context.assertTrue(ar.succeeded(), ar.cause() != null ? ar.cause().getMessage() : "");
+                    LOGGER.debug("{}: {} - {}", uri, ar.result().statusCode(), ar.result().bodyAsString());
+                    context.assertEquals(ar.result().statusCode(),
+                            method == HttpMethod.GET ? HTTP_GET_OK_STATUS_CODE : HTTP_POST_CREATED_STATUS_CODE,
+                            ar.result().bodyAsString());
 
-                if (postProcessor != null) {
-                    postProcessor.process(ar.result());
+                    if (postProcessor != null) {
+                        postProcessor.process(ar.result());
+                    }
+                    LOGGER.info("{}: {}", uri, ar.result().bodyAsString());
+                    async.complete();
                 }
-                LOGGER.info("{}: {}", uri, ar.result().bodyAsString());
-                async.complete();
-            }
         );
         async.awaitSuccess();
     }

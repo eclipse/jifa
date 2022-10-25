@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2021 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -12,13 +12,14 @@
  ********************************************************************************/
 package org.eclipse.jifa.worker.route;
 
-import io.vertx.core.Future;
-import io.vertx.core.file.FileSystem;
-import io.vertx.core.http.HttpMethod;
+import io.vertx.core.Promise;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.ext.web.RoutingContext;
 import org.apache.logging.log4j.util.Strings;
+import org.eclipse.jifa.common.ErrorCode;
+import org.eclipse.jifa.common.JifaException;
+import org.eclipse.jifa.common.enums.FileTransferState;
 import org.eclipse.jifa.common.enums.FileType;
 import org.eclipse.jifa.common.enums.ProgressState;
 import org.eclipse.jifa.common.request.PagingRequest;
@@ -28,47 +29,49 @@ import org.eclipse.jifa.common.vo.FileInfo;
 import org.eclipse.jifa.common.vo.PageView;
 import org.eclipse.jifa.common.vo.TransferProgress;
 import org.eclipse.jifa.common.vo.TransferringFile;
-import org.eclipse.jifa.worker.Global;
+import org.eclipse.jifa.worker.WorkerGlobal;
 import org.eclipse.jifa.worker.support.FileSupport;
-import org.eclipse.jifa.worker.support.heapdump.TransferListener;
+import org.eclipse.jifa.worker.support.TransferListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.List;
-import java.util.Set;
 
-import static org.eclipse.jifa.common.Constant.EMPTY_STRING;
+import static org.eclipse.jifa.common.Constant.*;
 import static org.eclipse.jifa.common.util.Assertion.ASSERT;
+import static org.eclipse.jifa.common.util.GsonHolder.GSON;
 
 class FileRoute extends BaseRoute {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FileRoute.class);
 
     @RouteMeta(path = "/files")
-    void list(Future<PageView<FileInfo>> future, @ParamKey("type") FileType type, PagingRequest paging) {
+    void list(Promise<PageView<FileInfo>> promise, @ParamKey("type") FileType type, PagingRequest paging) {
         List<FileInfo> info = FileSupport.info(type);
         info.sort((i1, i2) -> Long.compare(i2.getCreationTime(), i1.getCreationTime()));
-        future.complete(PageViewBuilder.build(info, paging));
+        promise.complete(PageViewBuilder.build(info, paging));
     }
 
     @RouteMeta(path = "/file")
-    void file(Future<FileInfo> future, @ParamKey("type") FileType type, @ParamKey("name") String name) {
-        future.complete(FileSupport.info(type, name));
+    void file(Promise<FileInfo> promise, @ParamKey("type") FileType type, @ParamKey("name") String name) {
+        promise.complete(FileSupport.info(type, name));
     }
 
     @RouteMeta(path = "/file/delete", method = HttpMethod.POST)
-    void delete(Future<Void> future, @ParamKey("type") FileType type, @ParamKey("name") String name) {
+    void delete(Promise<Void> promise, @ParamKey("type") FileType type, @ParamKey("name") String name) {
         FileSupport.delete(type, name);
-        future.complete();
+        promise.complete();
     }
 
     @RouteMeta(path = "/publicKey")
-    void publicKeys(Future<String> future) {
+    void publicKeys(Promise<String> promise) {
         if (FileSupport.PUB_KEYS.size() > 0) {
-            future.complete(FileSupport.PUB_KEYS.get(0));
+            promise.complete(FileSupport.PUB_KEYS.get(0));
         } else {
-            future.complete(EMPTY_STRING);
+            promise.complete(EMPTY_STRING);
         }
     }
 
@@ -81,20 +84,26 @@ class FileRoute extends BaseRoute {
     }
 
     @RouteMeta(path = "/file/transferByURL", method = HttpMethod.POST)
-    void transferByURL(Future<TransferringFile> future, @ParamKey("type") FileType fileType,
+    void transferByURL(Promise<TransferringFile> promise, @ParamKey("type") FileType fileType,
                        @ParamKey("url") String url, @ParamKey(value = "fileName", mandatory = false) String fileName) {
 
-        String originalName = extractFileName(url);
+        String originalName;
+        try {
+            originalName = extractFileName(new URL(url).getPath());
+        } catch (MalformedURLException e) {
+            LOGGER.warn("invalid url: {}", url);
+            throw new JifaException(ErrorCode.ILLEGAL_ARGUMENT, e);
+        }
 
         fileName = Strings.isNotBlank(fileName) ? fileName : decorateFileName(originalName);
 
         TransferListener listener = FileSupport.createTransferListener(fileType, originalName, fileName);
 
-        FileSupport.transferByURL(url, fileType, fileName, listener, future);
+        FileSupport.transferByURL(url, fileType, fileName, listener, promise);
     }
 
     @RouteMeta(path = "/file/transferByOSS", method = HttpMethod.POST)
-    void transferByOSS(Future<TransferringFile> future, @ParamKey("type") FileType fileType,
+    void transferByOSS(Promise<TransferringFile> promise, @ParamKey("type") FileType fileType,
                        @ParamKey("endpoint") String endpoint, @ParamKey("accessKeyId") String accessKeyId,
                        @ParamKey("accessKeySecret") String accessKeySecret, @ParamKey("bucketName") String bucketName,
                        @ParamKey("objectName") String objectName,
@@ -106,11 +115,26 @@ class FileRoute extends BaseRoute {
         TransferListener listener = FileSupport.createTransferListener(fileType, originalName, fileName);
 
         FileSupport.transferByOSS(endpoint, accessKeyId, accessKeySecret, bucketName, objectName,
-                                  fileType, fileName, listener, future);
+                                  fileType, fileName, listener, promise);
+    }
+
+    @RouteMeta(path = "/file/transferByS3", method = HttpMethod.POST)
+    void transferByS3(Promise<TransferringFile> promise, @ParamKey("type") FileType fileType,
+                      @ParamKey("endpoint") String endpoint, @ParamKey("accessKey") String accessKey,
+                      @ParamKey("keySecret") String keySecret, @ParamKey("bucketName") String bucketName,
+                      @ParamKey("objectName") String objectName,
+                      @ParamKey(value = "fileName", mandatory = false) String fileName) {
+        String originalName = extractFileName(objectName);
+        fileName = Strings.isNotBlank(fileName) ? fileName : decorateFileName(originalName);
+
+        TransferListener listener = FileSupport.createTransferListener(fileType, originalName, fileName);
+
+        FileSupport.transferByS3(endpoint, accessKey, keySecret, bucketName, objectName,
+                                 fileType, fileName, listener, promise);
     }
 
     @RouteMeta(path = "/file/transferBySCP", method = HttpMethod.POST)
-    void transferBySCP(Future<TransferringFile> future, @ParamKey("type") FileType fileType,
+    void transferBySCP(Promise<TransferringFile> promise, @ParamKey("type") FileType fileType,
                        @ParamKey("hostname") String hostname, @ParamKey("path") String path,
                        @ParamKey("user") String user, @ParamKey("usePublicKey") boolean usePublicKey,
                        @ParamKey(value = "password", mandatory = false) String password,
@@ -126,14 +150,14 @@ class FileRoute extends BaseRoute {
         TransferListener listener = FileSupport.createTransferListener(fileType, originalName, fileName);
         // do transfer
         if (usePublicKey) {
-            FileSupport.transferBySCP(user, hostname, path, fileType, fileName, listener, future);
+            FileSupport.transferBySCP(user, hostname, path, fileType, fileName, listener, promise);
         } else {
-            FileSupport.transferBySCP(user, password, hostname, path, fileType, fileName, listener, future);
+            FileSupport.transferBySCP(user, password, hostname, path, fileType, fileName, listener, promise);
         }
     }
 
     @RouteMeta(path = "/file/transferByFileSystem", method = HttpMethod.POST)
-    void transferByFileSystem(Future<TransferringFile> future, @ParamKey("type") FileType fileType,
+    void transferByFileSystem(Promise<TransferringFile> promise, @ParamKey("type") FileType fileType,
                               @ParamKey("path") String path, @ParamKey("move") boolean move) {
         File src = new File(path);
         ASSERT.isTrue(src.exists() && !src.isDirectory(), "Illegal path");
@@ -141,22 +165,22 @@ class FileRoute extends BaseRoute {
         String originalName = extractFileName(path);
         String fileName = decorateFileName(originalName);
 
-        future.complete(new TransferringFile(fileName));
+        promise.complete(new TransferringFile(fileName));
         TransferListener listener = FileSupport.createTransferListener(fileType, originalName, fileName);
 
         listener.setTotalSize(src.length());
         listener.updateState(ProgressState.IN_PROGRESS);
         if (move) {
-            Global.VERTX.fileSystem().moveBlocking(path, FileSupport.filePath(fileType, fileName));
+            WorkerGlobal.VERTX.fileSystem().moveBlocking(path, FileSupport.filePath(fileType, fileName));
         } else {
-            Global.VERTX.fileSystem().copyBlocking(path, FileSupport.filePath(fileType, fileName));
+            WorkerGlobal.VERTX.fileSystem().copyBlocking(path, FileSupport.filePath(fileType, fileName));
         }
         listener.setTransferredSize(listener.getTotalSize());
         listener.updateState(ProgressState.SUCCESS);
     }
 
     @RouteMeta(path = "/file/transferProgress")
-    void transferProgress(Future<TransferProgress> future, @ParamKey("type") FileType type,
+    void transferProgress(Promise<TransferProgress> promise, @ParamKey("type") FileType type,
                           @ParamKey("name") String name) {
         TransferListener listener = FileSupport.getTransferListener(name);
         if (listener != null) {
@@ -172,45 +196,76 @@ class FileRoute extends BaseRoute {
             if (progress.getState() == ProgressState.SUCCESS || progress.getState() == ProgressState.ERROR) {
                 FileSupport.removeTransferListener(name);
             }
-            future.complete(progress);
+            promise.complete(progress);
         } else {
-            FileInfo info = FileSupport.info(type, name);
-            ASSERT.notNull(info);
-            if (info.getTransferState() == ProgressState.IN_PROGRESS
-                || info.getTransferState() == ProgressState.NOT_STARTED) {
+            FileInfo info = FileSupport.infoOrNull(type, name);
+            if (info == null) {
+                TransferProgress progress = new TransferProgress();
+                progress.setState(ProgressState.ERROR);
+                promise.complete(progress);
+                return;
+            }
+
+            if (info.getTransferState() == FileTransferState.IN_PROGRESS
+                || info.getTransferState() == FileTransferState.NOT_STARTED) {
                 LOGGER.warn("Illegal file {} state", name);
-                info.setTransferState(ProgressState.ERROR);
+                info.setTransferState(FileTransferState.ERROR);
                 FileSupport.save(info);
             }
             TransferProgress progress = new TransferProgress();
-            progress.setState(info.getTransferState());
+            progress.setState(info.getTransferState().toProgressState());
             if (progress.getState() == ProgressState.SUCCESS) {
                 progress.setPercent(1.0);
                 progress.setTotalSize(info.getSize());
                 progress.setTransferredSize(info.getSize());
             }
-            future.complete(progress);
+            promise.complete(progress);
         }
+    }
+
+    @RouteMeta(path = "/file/sync", method = HttpMethod.POST)
+    void sync(Promise<Void> promise, @ParamKey("files") String files, @ParamKey("cleanStale") boolean cleanStale) {
+        promise.complete();
+        FileInfo[] fileInfos = GSON.fromJson(files, FileInfo[].class);
+        FileSupport.sync(fileInfos, cleanStale);
     }
 
     @RouteMeta(path = "/file/upload", method = HttpMethod.POST)
-    void upload(RoutingContext context, @ParamKey("type") FileType type) {
-        Set<FileUpload> fileUploads = context.fileUploads();
-        for (FileUpload upload : fileUploads) {
-            String fileName = decorateFileName(upload.fileName());
-            FileSupport.initInfoFile(type, upload.fileName(), fileName);
-            FileSystem fileSystem = context.vertx().fileSystem();
-            fileSystem.moveBlocking(upload.uploadedFileName(), FileSupport.filePath(type, fileName));
-            FileSupport.updateTransferState(type, fileName, ProgressState.SUCCESS);
+    void upload(RoutingContext context, @ParamKey("type") FileType type,
+                @ParamKey(value = "fileName", mandatory = false) String fileName) {
+        FileUpload[] uploads = context.fileUploads().toArray(new FileUpload[0]);
+        try {
+            if (uploads.length > 0) {
+                // only process the first file
+                FileUpload file = uploads[0];
+                if (fileName == null || fileName.isBlank()) {
+                    fileName = decorateFileName(file.fileName());
+                }
+                TransferListener listener = FileSupport.createTransferListener(type, file.fileName(), fileName);
+                listener.updateState(ProgressState.IN_PROGRESS);
+                try {
+                    context.vertx().fileSystem()
+                           .moveBlocking(file.uploadedFileName(), FileSupport.filePath(type, fileName));
+                    FileSupport.updateTransferState(type, fileName, FileTransferState.SUCCESS);
+                } finally {
+                    FileSupport.removeTransferListener(fileName);
+                }
+            }
+            HTTPRespGuarder.ok(context);
+        } finally {
+            // remove other files
+            for (int i = 1; i < uploads.length; i++) {
+                context.vertx().fileSystem().deleteBlocking(uploads[i].uploadedFileName());
+            }
         }
-        HTTPRespGuarder.ok(context);
     }
 
-    @RouteMeta(path = "/file/download/:fileType/:filename", contentType = {} /* keep content-type empty */)
-    void download(RoutingContext context, @ParamKey("fileType") FileType fileType, @ParamKey("filename") String name) {
+    @RouteMeta(path = "/file/download", contentType = {CONTENT_TYPE_FILE_FORM})
+    void download(RoutingContext context, @ParamKey("type") FileType fileType, @ParamKey("name") String name) {
         File file = new File(FileSupport.filePath(fileType, name));
         ASSERT.isTrue(file.exists(), "File doesn't exist!");
         HttpServerResponse response = context.response();
+        response.putHeader(HEADER_CONTENT_DISPOSITION, "attachment;filename=" + file.getName());
         response.sendFile(file.getAbsolutePath(), event -> {
             if (!response.ended()) {
                 response.end();
@@ -219,8 +274,15 @@ class FileRoute extends BaseRoute {
     }
 
     @RouteMeta(path = "/file/getOrGenInfo", method = HttpMethod.POST)
-    void getOrGenInfo(Future<FileInfo> future, @ParamKey("fileType") FileType fileType,
+    void getOrGenInfo(Promise<FileInfo> promise, @ParamKey("fileType") FileType fileType,
                       @ParamKey("filename") String name) {
-        future.complete(FileSupport.getOrGenInfo(fileType, name));
+        promise.complete(FileSupport.getOrGenInfo(fileType, name));
+    }
+
+    @RouteMeta(path = "/file/batchDelete", method = HttpMethod.POST)
+    void batchDelete(Promise<Void> promise, @ParamKey("files") String files) {
+        promise.complete();
+        FileInfo[] fileInfos = GSON.fromJson(files, FileInfo[].class);
+        FileSupport.delete(fileInfos);
     }
 }

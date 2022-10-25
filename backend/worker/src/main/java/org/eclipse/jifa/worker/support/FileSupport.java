@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -16,22 +16,34 @@ import com.aliyun.oss.OSSClient;
 import com.aliyun.oss.event.ProgressEventType;
 import com.aliyun.oss.model.DownloadFileRequest;
 import com.aliyun.oss.model.ObjectMetadata;
-import io.vertx.core.Future;
+import com.amazonaws.ClientConfiguration;
+import com.amazonaws.Protocol;
+import com.amazonaws.auth.AWSCredentials;
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
+import com.amazonaws.regions.Regions;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3ClientBuilder;
+import com.amazonaws.services.s3.model.GetObjectRequest;
+
+import io.vertx.core.Promise;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.common.StreamCopier;
 import net.schmizz.sshj.xfer.FileSystemFile;
 import net.schmizz.sshj.xfer.scp.SCPDownloadClient;
 import net.schmizz.sshj.xfer.scp.SCPFileTransfer;
 import org.apache.commons.io.FileUtils;
-import org.eclipse.jifa.common.aux.ErrorCode;
-import org.eclipse.jifa.common.aux.JifaException;
+import org.eclipse.jifa.common.Constant;
+import org.eclipse.jifa.common.ErrorCode;
+import org.eclipse.jifa.common.JifaException;
+import org.eclipse.jifa.common.enums.FileTransferState;
 import org.eclipse.jifa.common.enums.FileType;
 import org.eclipse.jifa.common.enums.ProgressState;
 import org.eclipse.jifa.common.util.FileUtil;
 import org.eclipse.jifa.common.vo.FileInfo;
 import org.eclipse.jifa.common.vo.TransferringFile;
-import org.eclipse.jifa.worker.Global;
-import org.eclipse.jifa.worker.support.heapdump.TransferListener;
+import org.eclipse.jifa.worker.WorkerGlobal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,6 +52,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -70,7 +83,7 @@ public class FileSupport {
 
     public static void init() {
         for (FileType type : FileType.values()) {
-            File file = new File(Global.workspace() + File.separator + type.getTag());
+            File file = new File(WorkerGlobal.workspace() + File.separator + type.getTag());
             if (file.exists()) {
                 ASSERT.isTrue(file.isDirectory(), String.format("%s must be directory", file.getAbsolutePath()));
             } else {
@@ -104,7 +117,7 @@ public class FileSupport {
         info.setName(name);
         info.setSize(0);
         info.setType(type);
-        info.setTransferState(ProgressState.NOT_STARTED);
+        info.setTransferState(FileTransferState.NOT_STARTED);
         info.setDownloadable(false);
         info.setCreationTime(System.currentTimeMillis());
         return info;
@@ -160,7 +173,7 @@ public class FileSupport {
 
         FileInfo fileInfo = buildInitFileInfo(type, name, name);
         fileInfo.setCreationTime(file.lastModified());
-        fileInfo.setTransferState(ProgressState.SUCCESS);
+        fileInfo.setTransferState(FileTransferState.SUCCESS);
         fileInfo.setSize(file.length());
         save(fileInfo);
         return fileInfo;
@@ -177,6 +190,14 @@ public class FileSupport {
             throw new JifaException(e);
         }
         return fileInfo;
+    }
+
+    public static FileInfo infoOrNull(FileType type, String name) {
+        try {
+            return info(type, name);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public static void save(FileInfo info) {
@@ -198,10 +219,52 @@ public class FileSupport {
         }
     }
 
-    public static void updateTransferState(FileType type, String name, ProgressState state) {
+    public static void delete(FileInfo[] fileInfos) {
+        for (FileInfo fileInfo : fileInfos) {
+            try {
+                delete(fileInfo.getType(), fileInfo.getName());
+            } catch (Throwable t) {
+                LOGGER.error("Delete file failed", t);
+            }
+        }
+    }
+
+    public static void sync(FileInfo[] fileInfos, boolean cleanStale) {
+        Map<FileType, List<String>> files = new HashMap<>(){{
+            for (FileType ft : FileType.values()) {
+                // In case no files returned
+                this.put(ft, new ArrayList<>());
+            }
+        }};
+
+        for (FileInfo fi : fileInfos) {
+            files.get(fi.getType()).add(fi.getName());
+        }
+
+        long lastModified = System.currentTimeMillis() - Constant.STALE_THRESHOLD;
+        for (FileType ft : files.keySet()) {
+            List<String> names = files.get(ft);
+            File[] listFiles = new File(dirPath(ft)).listFiles();
+            if (listFiles == null) {
+                continue;
+            }
+            for (File lf : listFiles) {
+                if (names.contains(lf.getName())) {
+                    continue;
+                }
+                LOGGER.info("{} is not synchronized", lf.getName());
+                if (cleanStale && lf.lastModified() < lastModified) {
+                    LOGGER.info("Delete stale file {}", lf.getName());
+                    delete(ft, lf.getName());
+                }
+            }
+        }
+    }
+
+    public static void updateTransferState(FileType type, String name, FileTransferState state) {
         FileInfo info = info(type, name);
         info.setTransferState(state);
-        if (state == ProgressState.SUCCESS) {
+        if (state == FileTransferState.SUCCESS) {
             // for worker, file is downloadable after transferred
             info.setSize(new File(FileSupport.filePath(type, name)).length());
             info.setDownloadable(true);
@@ -210,12 +273,12 @@ public class FileSupport {
     }
 
     private static String dirPath(FileType type) {
-        return Global.workspace() + File.separator + type.getTag();
+        return WorkerGlobal.workspace() + File.separator + type.getTag();
     }
 
     public static String dirPath(FileType type, String name) {
         String defaultDirPath = dirPath(type) + File.separator + name;
-        return Global.hooks().mapDirPath(type, name, defaultDirPath);
+        return WorkerGlobal.hooks().mapDirPath(type, name, defaultDirPath);
     }
 
     private static String infoFilePath(FileType type, String name) {
@@ -230,9 +293,9 @@ public class FileSupport {
         return filePath(type, name, name);
     }
 
-    private static String filePath(FileType type, String name, String childrenName) {
+    public static String filePath(FileType type, String name, String childrenName) {
         String defaultFilePath = dirPath(type, name) + File.separator + childrenName;
-        return Global.hooks().mapFilePath(type, name, childrenName, defaultFilePath);
+        return WorkerGlobal.hooks().mapFilePath(type, name, childrenName, defaultFilePath);
     }
 
     public static String errorLogPath(FileType fileType, String file) {
@@ -248,7 +311,7 @@ public class FileSupport {
             indexFileNamePrefix = file + '.';
         }
         String defaultIndexPath = FileSupport.filePath(fileType, file, indexFileNamePrefix + "index");
-        return Global.hooks().mapIndexPath(fileType, file, defaultIndexPath);
+        return WorkerGlobal.hooks().mapIndexPath(fileType, file, defaultIndexPath);
     }
 
     public static TransferListener createTransferListener(FileType fileType, String originalName, String fileName) {
@@ -266,13 +329,13 @@ public class FileSupport {
     }
 
     public static void transferBySCP(String user, String hostname, String src, FileType fileType, String fileName,
-                                     TransferListener transferProgressListener, Future<TransferringFile> future) {
-        transferBySCP(user, null, hostname, src, fileType, fileName, transferProgressListener, future);
+                                     TransferListener transferProgressListener, Promise<TransferringFile> promise) {
+        transferBySCP(user, null, hostname, src, fileType, fileName, transferProgressListener, promise);
     }
 
     public static void transferBySCP(String user, String pwd, String hostname, String src, FileType fileType,
                                      String fileName, TransferListener transferProgressListener,
-                                     Future<TransferringFile> future) {
+                                     Promise<TransferringFile> promise) {
         transferProgressListener.updateState(ProgressState.IN_PROGRESS);
         SSHClient ssh = new SSHClient();
         ssh.addHostKeyVerifier((h, port, key) -> true);
@@ -297,14 +360,14 @@ public class FileSupport {
                 }
             });
             SCPDownloadClient downloadClient = transfer.newSCPDownloadClient();
-            future.complete(new TransferringFile(fileName));
+            promise.complete(new TransferringFile(fileName));
             // do not copy dir now
             downloadClient.setRecursiveMode(false);
             downloadClient.copy(src, new FileSystemFile(FileSupport.filePath(fileType, fileName)));
             transferProgressListener.updateState(ProgressState.SUCCESS);
         } catch (Exception e) {
             LOGGER.error("SSH transfer failed");
-            handleTransferError(fileName, transferProgressListener, future, e);
+            handleTransferError(fileName, transferProgressListener, promise, e);
         } finally {
             try {
                 ssh.disconnect();
@@ -315,15 +378,15 @@ public class FileSupport {
     }
 
     public static void transferByURL(String url, FileType fileType, String fileName, TransferListener listener,
-                                     Future<TransferringFile> future) {
+                                     Promise<TransferringFile> promise) {
         InputStream in = null;
         OutputStream out = null;
         String filePath = FileSupport.filePath(fileType, fileName);
         try {
             URLConnection conn = new URL(url).openConnection();
             listener.updateState(ProgressState.IN_PROGRESS);
-            future.complete(new TransferringFile(fileName));
-            listener.setTotalSize(conn.getContentLength());
+            promise.complete(new TransferringFile(fileName));
+            listener.setTotalSize(Math.max(conn.getContentLength(), 0));
             in = conn.getInputStream();
             out = new FileOutputStream(filePath);
             byte[] buffer = new byte[8192];
@@ -335,7 +398,7 @@ public class FileSupport {
             listener.updateState(ProgressState.SUCCESS);
         } catch (Exception e) {
             LOGGER.error("URL transfer failed");
-            handleTransferError(fileName, listener, future, e);
+            handleTransferError(fileName, listener, promise, e);
         } finally {
             try {
                 if (in != null) {
@@ -353,14 +416,14 @@ public class FileSupport {
     public static void transferByOSS(String endpoint, String accessKeyId, String accessKeySecret, String bucketName,
                                      String objectName, FileType fileType, String fileName,
                                      TransferListener transferProgressListener,
-                                     Future<TransferringFile> future) {
+                                     Promise<TransferringFile> promise) {
         OSSClient ossClient = null;
         try {
             ossClient = new OSSClient(endpoint, accessKeyId, accessKeySecret);
 
             ObjectMetadata meta = ossClient.getObjectMetadata(bucketName, objectName);
             transferProgressListener.setTotalSize(meta.getContentLength());
-            future.complete(new TransferringFile(fileName));
+            promise.complete(new TransferringFile(fileName));
 
             DownloadFileRequest downloadFileRequest = new DownloadFileRequest(bucketName, objectName);
             downloadFileRequest.setDownloadFile(new File(FileSupport.filePath(fileType, fileName)).getAbsolutePath());
@@ -389,7 +452,7 @@ public class FileSupport {
             transferProgressListener.updateState(ProgressState.SUCCESS);
         } catch (Throwable t) {
             LOGGER.error("OSS transfer failed");
-            handleTransferError(fileName, transferProgressListener, future, t);
+            handleTransferError(fileName, transferProgressListener, promise, t);
         } finally {
             if (ossClient != null) {
                 ossClient.shutdown();
@@ -397,9 +460,60 @@ public class FileSupport {
         }
     }
 
+    public static void transferByS3(String endpoint, String accessKey, String secretKey, String bucketName,
+                                    String objectName, FileType fileType, String fileName,
+                                    TransferListener transferProgressListener,
+                                    Promise<TransferringFile> promise) {
+        AmazonS3 s3Client = null;
+        try {
+            AWSCredentials credentials = new BasicAWSCredentials(accessKey, secretKey);
+            ClientConfiguration clientConfig = new ClientConfiguration();
+            clientConfig.setProtocol(Protocol.HTTPS);
+            s3Client = AmazonS3ClientBuilder.standard()
+                                            .withCredentials(new AWSStaticCredentialsProvider(credentials))
+                                            .withClientConfiguration(clientConfig)
+                                            .withEndpointConfiguration(
+                                                new EndpointConfiguration(endpoint, Regions.DEFAULT_REGION.getName()))
+                                            .withPathStyleAccessEnabled(true)
+                                            .build();
+
+            GetObjectRequest getObjectRequest = new GetObjectRequest(bucketName, objectName)
+                .withGeneralProgressListener(progressEvent -> {
+                    long bytes = progressEvent.getBytes();
+                    switch (progressEvent.getEventType()) {
+                        case TRANSFER_STARTED_EVENT:
+                            transferProgressListener.updateState(ProgressState.IN_PROGRESS);
+                            break;
+                        case RESPONSE_BYTE_TRANSFER_EVENT:
+                            transferProgressListener.addTransferredSize(bytes);
+                            break;
+                        case TRANSFER_FAILED_EVENT:
+                            transferProgressListener.updateState(ProgressState.ERROR);
+                            break;
+                        default:
+                            break;
+                    }
+                });
+
+            com.amazonaws.services.s3.model.ObjectMetadata objectMetadata =
+                s3Client.getObjectMetadata(bucketName, objectName);
+            transferProgressListener.setTotalSize(objectMetadata.getContentLength());
+            promise.complete(new TransferringFile(fileName));
+            s3Client.getObject(getObjectRequest, new File(FileSupport.filePath(fileType, fileName)));
+            transferProgressListener.updateState(ProgressState.SUCCESS);
+        } catch (Throwable t) {
+            LOGGER.error("S3 transfer failed");
+            handleTransferError(fileName, transferProgressListener, promise, t);
+        } finally {
+            if (s3Client != null) {
+                s3Client.shutdown();
+            }
+        }
+    }
+
     private static void handleTransferError(String fileName, TransferListener transferProgressListener,
-                                            Future<TransferringFile> future, Throwable t) {
-        if (future.isComplete()) {
+                                            Promise<TransferringFile> promise, Throwable t) {
+        if (promise.future().isComplete()) {
             transferProgressListener.updateState(ProgressState.ERROR);
             Throwable cause = t;
             while (cause.getCause() != null) {
@@ -412,4 +526,13 @@ public class FileSupport {
         }
         throw new JifaException(ErrorCode.TRANSFER_ERROR, t);
     }
+
+    public static long getTotalDiskSpace() {
+        return new File(System.getProperty("user.home")).getTotalSpace() >> 20;
+    }
+
+    public static long getUsedDiskSpace() {
+        return FileUtils.sizeOfDirectory(new File(System.getProperty("user.home"))) >> 20;
+    }
+
 }

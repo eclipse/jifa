@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2021 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -12,90 +12,49 @@
  ********************************************************************************/
 package org.eclipse.jifa.worker.route.heapdump;
 
-import org.eclipse.jifa.common.aux.JifaException;
+import io.vertx.core.Promise;
 import org.eclipse.jifa.common.request.PagingRequest;
-import org.eclipse.jifa.common.util.PageViewBuilder;
 import org.eclipse.jifa.common.vo.PageView;
-import org.eclipse.jifa.worker.support.Analyzer;
-import org.eclipse.jifa.worker.support.heapdump.HeapDumpSupport;
+import org.eclipse.jifa.common.vo.support.SearchType;
+import org.eclipse.jifa.hda.api.Model;
 import org.eclipse.jifa.worker.route.ParamKey;
 import org.eclipse.jifa.worker.route.RouteMeta;
-import org.eclipse.jifa.worker.vo.heapdump.histogram.Record;
-import io.vertx.core.Future;
-import org.eclipse.mat.SnapshotException;
-import org.eclipse.mat.inspections.HistogramQuery;
-import org.eclipse.mat.query.IResult;
-import org.eclipse.mat.snapshot.ClassHistogramRecord;
-import org.eclipse.mat.snapshot.Histogram;
-import org.eclipse.mat.snapshot.ISnapshot;
-
-import java.util.List;
 
 class HistogramRoute extends HeapBaseRoute {
 
     @RouteMeta(path = "/histogram")
-    void histogram(Future<PageView<Record>> future, @ParamKey("file") String file,
-                   @ParamKey("groupingBy") Grouping groupingBy, @ParamKey(value = "ids", mandatory = false) int[] ids,
-                   PagingRequest pagingRequest) throws Exception {
-        try {
-            ISnapshot snapshot = Analyzer.getOrOpenSnapshotContext(file).getSnapshot();
-            HistogramQuery query = new HistogramQuery();
-            query.snapshot = snapshot;
-            if (ids != null) {
-                query.objects = HeapDumpSupport.buildHeapObjectArgument(ids);
-            }
-
-            query.groupBy = groupingBy.gb;
-
-            IResult result;
-            result = query.execute(HeapDumpSupport.VOID_LISTENER);
-
-            if (groupingBy.gb == HistogramQuery.Grouping.BY_CLASS) {
-
-                Histogram histogram = (Histogram) result;
-                List<ClassHistogramRecord> records = (List) histogram.getClassHistogramRecords();
-                records.forEach(record -> {
-                    try {
-                        record.calculateRetainedSize(snapshot, true, true, HeapDumpSupport.VOID_LISTENER);
-                    } catch (SnapshotException e) {
-                        throw new JifaException(e);
-                    }
-                });
-                records.sort((o1, o2) -> (int) (o2.getUsedHeapSize() - o1.getUsedHeapSize()));
-                future.complete(PageViewBuilder.build(records, pagingRequest,
-                                                      record -> new Record(record.getClassId(), record.getLabel(),
-                                                                           Record.Type.CLASS,
-                                                                           record.getNumberOfObjects(),
-                                                                           record.getUsedHeapSize(),
-                                                                           record.getRetainedHeapSize(),
-                                                                           record.getNumberOfYoungObjects(),
-                                                                           record.getUsedHeapSizeOfYoung(),
-                                                                           record.getNumberOfOldObjects(),
-                                                                           record.getUsedHeapSizeOfOld())));
-            } else {
-                // unsupported now.
-                throw new IllegalArgumentException();
-            }
-        } catch (Exception e) {
-            throw new JifaException(e);
-        }
+    void histogram(Promise<PageView<Model.Histogram.Item>> promise, @ParamKey("file") String file,
+                   @ParamKey("groupingBy") Model.Histogram.Grouping groupingBy,
+                   @ParamKey(value = "ids", mandatory = false) int[] ids,
+                   @ParamKey(value = "sortBy", mandatory = false) String sortBy,
+                   @ParamKey(value = "ascendingOrder", mandatory = false) boolean ascendingOrder,
+                   @ParamKey(value = "searchText", mandatory = false) String searchText,
+                   @ParamKey(value = "searchType", mandatory = false) SearchType searchType,
+                   PagingRequest pagingRequest) {
+        promise.complete(analyzerOf(file).getHistogram(groupingBy,
+                                                       ids, sortBy, ascendingOrder, searchText,
+                                                       searchType, pagingRequest.getPage(),
+                                                       pagingRequest.getPageSize()));
     }
 
-    public enum Grouping {
-
-        BY_CLASS(HistogramQuery.Grouping.BY_CLASS),
-
-        BY_SUPERCLASS(HistogramQuery.Grouping.BY_SUPERCLASS),
-
-        BY_CLASSLOADER(HistogramQuery.Grouping.BY_CLASSLOADER),
-
-        BY_PACKAGE(HistogramQuery.Grouping.BY_PACKAGE);
-
-        HistogramQuery.Grouping gb;
-
-        Grouping(HistogramQuery.Grouping groupingBy) {
-            this.gb = groupingBy;
-        }
+    @RouteMeta(path = "/histogram/children")
+    void children(Promise<PageView<Model.Histogram.Item>> promise, @ParamKey("file") String file,
+                  @ParamKey("groupingBy") Model.Histogram.Grouping groupingBy,
+                  @ParamKey(value = "ids", mandatory = false) int[] ids,
+                  @ParamKey(value = "sortBy", mandatory = false) String sortBy,
+                  @ParamKey(value = "ascendingOrder", mandatory = false) boolean ascendingOrder,
+                  @ParamKey("parentObjectId") int parentObjectId,
+                  PagingRequest pagingRequest) {
+        promise.complete(analyzerOf(file).getChildrenOfHistogram(groupingBy, ids,
+                                                                 sortBy, ascendingOrder, parentObjectId,
+                                                                 pagingRequest.getPage(), pagingRequest.getPageSize()));
     }
 
+    @RouteMeta(path = "/histogram/objects")
+    void objects(Promise<PageView<Model.JavaObject>> promise, @ParamKey("file") String file,
+                   @ParamKey("classId") int classId, PagingRequest pagingRequest) {
+        promise.complete(analyzerOf(file).getHistogramObjects(classId,
+                                                              pagingRequest.getPage(),
+                                                              pagingRequest.getPageSize()));
+    }
 }

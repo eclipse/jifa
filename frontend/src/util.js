@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -10,22 +10,41 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-export function toSizeString(bytes) {
-  if (bytes <= 1024) return bytes + " B"
-  let k = 1024,
-      suffix = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'],
-      i = Math.floor(Math.log(bytes) / Math.log(k))
-
-  return (bytes / Math.pow(k, i)).toPrecision(3) + ' ' + suffix[i]
+function nullOrUndefined(v) {
+  return v === null || v === undefined;
 }
 
-export function toCountString(counts) {
-  if (counts <= 1000) return counts + " "
+export function toReadableSizeWithUnit(bytes) {
+  if (nullOrUndefined(bytes)) return ''
+  if (bytes <= 1024) return bytes.toLocaleString() + "B"
+  let k = 1024,
+      suffix = ['B', 'K', 'M', 'G'],
+      i = Math.floor(Math.log(bytes) / Math.log(k))
+
+  return (bytes / Math.pow(k, i)).toPrecision(3).toLocaleString() + suffix[i]
+}
+
+export function toReadableSizeWithUnitFormatter(r, c, cellValue) {
+  return toReadableSizeWithUnit(cellValue)
+}
+
+export function toReadableCountWithUnit(counts) {
+  if (nullOrUndefined(counts)) return ''
+  if (counts <= 1000) return counts.toLocaleString()
   let k = 1000,
-      suffix = [' ', 'k', 'm', 'g', 't', 'p', 'e', 'z', 'y'],
+      suffix = ['', 'k', 'm', 'g', 't', 'p', 'e', 'z', 'y'],
       i = Math.floor(Math.log(counts) / Math.log(k))
 
-  return (counts / Math.pow(k, i)).toPrecision(4) + ' ' + suffix[i]
+  return (counts / Math.pow(k, i)).toPrecision(4).toLocaleString() + suffix[i]
+}
+
+export function toReadableCount(counts) {
+  if (nullOrUndefined(counts)) return ''
+  return counts.toLocaleString();
+}
+
+export function toReadableCountFormatter(r, c, cellValue) {
+  return toReadableCount(cellValue)
 }
 
 const SERVICE_PREFIX = '/jifa-api'
@@ -36,6 +55,14 @@ export function service(suffix) {
 
 export function heapDumpService(file, api) {
   return SERVICE_PREFIX + '/heap-dump/' + file + '/' + api;
+}
+
+export function gclogService(file, api) {
+  return SERVICE_PREFIX + '/gc-log/' + file + '/' + api;
+}
+
+export function threadDumpService(file, api) {
+  return SERVICE_PREFIX + '/thread-dump/' + file + '/' + api;
 }
 
 export function matchSearch(data,val){
