@@ -67,9 +67,13 @@
         </v-contextmenu-item>
       </v-contextmenu-submenu>
       <v-contextmenu-item divider></v-contextmenu-item>
-      <v-contextmenu-item
+      <v-contextmenu-item v-if="grouping==='NONE'"
           @click="$emit('pathToGCRootsOfObj', contextMenuTargetObjectId, contextMenuTargetObjectLabel)">
         {{$t('jifa.heap.pathToGCRoots')}}
+      </v-contextmenu-item>
+      <v-contextmenu-item
+          @click="$emit('mergePathToGCRootsFromDominatorTree', contextMenuTargetObjectIds == null ? [contextMenuTargetObjectId] : contextMenuTargetObjectIds, contextMenuTargetObjectLabel)">
+        {{$t('jifa.heap.mergePathToGCRoots')}}
       </v-contextmenu-item>
     </v-contextmenu>
 
@@ -94,7 +98,7 @@
           <span v-if="scope.row.isResult"
                 @click="scope.row.isObjType ? $emit('setSelectedObjectId', scope.row.objectId) : {}"
                 style="cursor: pointer"
-                @contextmenu="contextMenuTargetObjectId = scope.row.objectId; idPathInResultTree = scope.row.idPathInResultTree; contextMenuTargetObjectLabel = scope.row.label"
+                @contextmenu="contextMenuTargetObjectId = scope.row.objectId; idPathInResultTree = scope.row.idPathInResultTree; contextMenuTargetObjectLabel = scope.row.label; contextMenuTargetObjectIds = scope.row.objectIds;"
                 v-contextmenu:contextmenu>
             <img :src="scope.row.icon" style="margin-right: 5px"/>
               {{ scope.row.label }}
@@ -167,6 +171,7 @@
         tableData: [],
         contextMenuTargetObjectId: null,
         contextMenuTargetObjectLabel: null,
+        contextMenuTargetObjectIds: null,
 
         // grouping support
         grouping: 'NONE',
@@ -263,6 +268,7 @@
               label: d.label,
               suffix: d.suffix,
               objects: d.objects,
+              objectIds: d.objectIds,
               shallowHeap: d.shallowSize,
               retainedHeap: d.retainedSize,
               percent: (d.percent * 100).toFixed(2) + '%',
@@ -315,6 +321,7 @@
               label: d.label,
               suffix: d.suffix,
               objects: d.objects,
+              objectIds: d.objectIds,
               shallowHeap: d.shallowSize,
               retainedHeap: d.retainedSize,
               percent: (d.percent * 100).toFixed(2) + '%',

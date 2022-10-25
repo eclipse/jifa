@@ -86,10 +86,19 @@ public interface HeapDumpAnalyzer {
                                                                                           GCRootPath.Grouping grouping,
                                                                                           int page, int pageSize);
 
+    PageView<GCRootPath.MergePathToGCRootsTreeNode> getRootsOfMergePathToGCRootsByObjectIds(int[] objectIds,
+                                                                                            GCRootPath.Grouping grouping,
+                                                                                            int page, int pageSize);
+
     PageView<GCRootPath.MergePathToGCRootsTreeNode> getChildrenOfMergePathToGCRootsByClassId(int classId,
                                                                                              int[] objectIdPathInGCPathTree,
                                                                                              GCRootPath.Grouping grouping,
                                                                                              int page, int pageSize);
+
+    PageView<GCRootPath.MergePathToGCRootsTreeNode> getChildrenOfMergePathToGCRootsByObjectIds(int[] objectIds,
+                                                                                               int[] objectIdPathInGCPathTree,
+                                                                                               GCRootPath.Grouping grouping,
+                                                                                               int page, int pageSize);
 
     GCRootPath.Item getPathToGCRoots(int originId, int skip, int count);
 

@@ -12,9 +12,12 @@
  ********************************************************************************/
 package org.eclipse.jifa.worker.route.heapdump;
 
+import com.google.gson.Gson;
 import io.vertx.core.Promise;
+import io.vertx.ext.web.RoutingContext;
 import org.eclipse.jifa.common.request.PagingRequest;
 import org.eclipse.jifa.common.vo.PageView;
+import org.eclipse.jifa.worker.route.HttpMethod;
 import org.eclipse.jifa.worker.route.ParamKey;
 import org.eclipse.jifa.worker.route.RouteMeta;
 
@@ -46,5 +49,33 @@ class MergePathToGCRootsRoute extends HeapBaseRoute {
                                                                        objectIdPathInGCPathTree,
                                                                        grouping, pagingRequest.getPage(),
                                                                        pagingRequest.getPageSize()));
+    }
+
+    @RouteMeta(path = "/mergePathToGCRoots/roots/byObjectIds", method = HttpMethod.POST)
+    void rootsByObjectId(Promise<PageView<GCRootPath.MergePathToGCRootsTreeNode>> promise,
+                         @ParamKey("file") String file,
+                         @ParamKey("grouping") GCRootPath.Grouping grouping,
+                         RoutingContext context,
+                         PagingRequest pagingRequest) {
+        int[] objectIds = new Gson().fromJson(context.getBodyAsString(), int[].class);
+        promise.complete(analyzerOf(file)
+                .getRootsOfMergePathToGCRootsByObjectIds(objectIds,
+                        grouping, pagingRequest.getPage(),
+                        pagingRequest.getPageSize()));
+    }
+
+    @RouteMeta(path = "/mergePathToGCRoots/children/byObjectIds", method = HttpMethod.POST)
+    void childrenByObjectId(Promise<PageView<GCRootPath.MergePathToGCRootsTreeNode>> promise,
+                            @ParamKey("file") String file,
+                            @ParamKey("grouping") GCRootPath.Grouping grouping,
+                            PagingRequest pagingRequest,
+                            RoutingContext context,
+                            @ParamKey("objectIdPathInGCPathTree") int[] objectIdPathInGCPathTree) {
+        int[] objectIds = new Gson().fromJson(context.getBodyAsString(), int[].class);
+        promise.complete(analyzerOf(file)
+                .getChildrenOfMergePathToGCRootsByObjectIds(objectIds,
+                        objectIdPathInGCPathTree,
+                        grouping, pagingRequest.getPage(),
+                        pagingRequest.getPageSize()));
     }
 }

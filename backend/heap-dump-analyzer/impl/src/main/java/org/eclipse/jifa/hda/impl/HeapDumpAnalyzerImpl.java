@@ -839,13 +839,19 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer {
     private IResultTree queryMultiplePath2GCRootsTreeByClassId(AnalysisContext context, int classId,
                                                                GCRootPath.Grouping grouping)
     throws Exception {
+        ClassImpl clazz = (ClassImpl) context.snapshot.getObject(classId);
+        return queryMultiplePath2GCRootsTreeByObjectIds(context, clazz.getObjectIds(), grouping);
+    }
+
+    private IResultTree queryMultiplePath2GCRootsTreeByObjectIds(AnalysisContext context, int[] objectIds,
+                                                                 GCRootPath.Grouping grouping)
+            throws Exception {
         if (grouping != GCRootPath.Grouping.FROM_GC_ROOTS) {
             throw new JifaException("Unsupported grouping now");
         }
 
-        ClassImpl clazz = (ClassImpl) context.snapshot.getObject(classId);
         Map<String, Object> args = new HashMap<>();
-        args.put("objects", Helper.buildHeapObjectArgument(clazz.getObjectIds()));
+        args.put("objects", Helper.buildHeapObjectArgument(objectIds));
 
         return queryByCommand(context, "merge_shortest_paths", args);
     }
@@ -882,11 +888,32 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer {
     }
 
     @Override
+    public PageView<GCRootPath.MergePathToGCRootsTreeNode> getRootsOfMergePathToGCRootsByObjectIds(
+            int[] objectIds, GCRootPath.Grouping grouping, int page, int pageSize) {
+        return $(() -> {
+            IResultTree tree = queryMultiplePath2GCRootsTreeByObjectIds(context, objectIds, grouping);
+            return buildMergePathRootsNode(context, tree, tree.getElements(), page, pageSize);
+        });
+    }
+
+    @Override
     public PageView<GCRootPath.MergePathToGCRootsTreeNode> getChildrenOfMergePathToGCRootsByClassId(
         int classId, int[] objectIdPathInGCPathTree, GCRootPath.Grouping grouping,
         int page, int pageSize) {
         return $(() -> {
             IResultTree tree = queryMultiplePath2GCRootsTreeByClassId(context, classId, grouping);
+            Object object = Helper.fetchObjectInResultTree(tree, objectIdPathInGCPathTree);
+            List<?> elements = object == null ? Collections.emptyList() : tree.getChildren(object);
+            return buildMergePathRootsNode(context, tree, elements, page, pageSize);
+        });
+    }
+
+    @Override
+    public PageView<GCRootPath.MergePathToGCRootsTreeNode> getChildrenOfMergePathToGCRootsByObjectIds(
+            int[] objectIds, int[] objectIdPathInGCPathTree, GCRootPath.Grouping grouping,
+            int page, int pageSize) {
+        return $(() -> {
+            IResultTree tree = queryMultiplePath2GCRootsTreeByObjectIds(context, objectIds, grouping);
             Object object = Helper.fetchObjectInResultTree(tree, objectIdPathInGCPathTree);
             List<?> elements = object == null ? Collections.emptyList() : tree.getChildren(object);
             return buildMergePathRootsNode(context, tree, elements, page, pageSize);

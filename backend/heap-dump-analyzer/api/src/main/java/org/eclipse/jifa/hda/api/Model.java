@@ -83,6 +83,7 @@ public interface Model {
                     .build();
 
             public long objects;
+            private int[] objectIds;
 
             public static Comparator<ClassLoaderItem> sortBy(String field, boolean ascendingOrder) {
                 return ascendingOrder ? sortTable.get(field) : sortTable.get(field).reversed();
@@ -119,6 +120,7 @@ public interface Model {
                 .add("Objects", ClassItem::getObjects)
                 .build();
             private int objects;
+            private int[] objectIds;
 
             public static Comparator<ClassItem> sortBy(String field, boolean ascendingOrder) {
                 return ascendingOrder ? sortTable.get(field) : sortTable.get(field).reversed();
@@ -189,6 +191,7 @@ public interface Model {
                 .add("Objects", PackageItem::getObjects)
                 .build();
             private long objects;
+            private int[] objectIds;
 
             public static Comparator<PackageItem> sortBy(String field, boolean ascendingOrder) {
                 return ascendingOrder ? sortTable.get(field) : sortTable.get(field).reversed();
