@@ -12,13 +12,13 @@
  -->
 <template>
   <div id="gc-detail-parent">
-    <el-col :span="22" :offset="1" >
+    <el-col :span="22" :offset="1">
       <el-card>
         <div slot="header" class="filter">
-          <div>{{ $t("jifa.gclog.detail.filters")}}</div>
+          <div>{{ $t("jifa.gclog.detail.filters") }}</div>
 
           <div style="margin-left: 40px" class="filter-item">
-            <span>{{$t('jifa.gclog.detail.eventType')+": "}}</span>
+            <span>{{ $t('jifa.gclog.detail.eventType') + ": " }}</span>
             <el-select
                 v-model="gcEventTypeSelect"
                 clearable
@@ -26,7 +26,7 @@
                 @change="filterChange"
             >
               <el-option
-                  v-for="option of gcEventTypeOptions"
+                  v-for="option of metadata.parentEventTypes"
                   :key="option"
                   :label="option"
                   :value="option"
@@ -35,27 +35,27 @@
           </div>
 
           <div style="margin-left: 40px" class="filter-item">
-            <span>{{$t('jifa.gclog.gcCause')+": "}}</span>
+            <span>{{ $t('jifa.gclog.gcCause') + ": " }}</span>
             <el-select
-              v-model="gcCauseSelect"
-              clearable
-              style="margin-left: 10px"
-              @change="filterChange"
+                v-model="gcCauseSelect"
+                clearable
+                style="margin-left: 10px"
+                @change="filterChange"
             >
               <el-option
-                v-for="option of gcCauseOptions"
-                :key="option"
-                :label="option"
-                :value="option"
+                  v-for="option of metadata.causes"
+                  :key="option"
+                  :label="option"
+                  :value="option"
               ></el-option>
             </el-select>
           </div>
 
           <div style="margin-left: 40px" class="filter-item">
-            <span>{{$t('jifa.gclog.detail.logTime')+": "}}</span>
+            <span>{{ $t('jifa.gclog.detail.logTime') + ": " }}</span>
 
             <el-date-picker
-                v-if="referenceTimestamp>=0"
+                v-if="metadata.timestamp>=0"
                 v-model="timeRange"
                 type="datetimerange"
                 @change="filterChange"
@@ -63,35 +63,47 @@
             >
             </el-date-picker>
 
-            <span class="gc-detail-number-parent" v-if="referenceTimestamp < 0">
-              <el-tooltip v-if="referenceTimestamp < 0" effect="dark" :content="this.$t('jifa.gclog.noDatestamp')" placement="top-start">
+            <span class="gc-detail-number-parent" v-if="metadata.timestamp < 0">
+              <el-tooltip v-if="metadata.timestamp < 0" effect="dark" :content="this.$t('jifa.gclog.noDatestamp')"
+                          placement="top-start">
                 <i class="el-icon-warning"></i>
               </el-tooltip>
 
               <el-input-number :controls="false" v-model="startTimeLow"
-                               :min="Math.floor(this.startTime/1000)" :max="Math.ceil(this.endTime/1000)" @change="filterChange"/>
+                               :min="Math.floor(this.metadata.startTime/1000)"
+                               :max="Math.ceil(this.metadata.endTime/1000)" @change="filterChange"/>
               <span style="margin-left: 10px; margin-right: 10px">~</span>
               <el-input-number :controls="false" v-model="startTimeHigh"
-                               :min="Math.floor(this.startTime/1000)" :max="Math.ceil(this.endTime/1000)" @change="filterChange"/>
+                               :min="Math.floor(this.metadata.startTime/1000)"
+                               :max="Math.ceil(this.metadata.endTime/1000)" @change="filterChange"/>
             </span>
           </div>
 
           <div style="margin-left: 40px" class="filter-item gc-detail-number-parent">
-            <span>{{$t('jifa.gclog.detail.pauseTime')+" > "}}</span>
-            <el-input-number :controls="false" v-model="pauseTimeLow" :min="0" @change="filterChange"/> ms
+            <span>{{ $t('jifa.gclog.detail.pauseTime') + " > " }}</span>
+            <el-input-number :controls="false" v-model="pauseTimeLow" :min="0" @change="filterChange"/>
+            ms
           </div>
         </div>
 
-        <div v-loading="loading" >
+        <div v-loading="loading">
           <el-row v-loading="this.loading">
             <el-table
                 ref='recordTable'
                 :data="tableData"
                 stripe
+                lazy
+                :load="expandEvent"
                 size="small"
+                row-key="key"
+                :tree-props="{children: 'children', hasChildren: 'hasChildren'}"
                 :cell-style="cellStyle"
                 :show-header="false">
-              <el-table-column prop="detail">
+              <el-table-column prop="info">
+                <template slot-scope="scope">
+                  <GCEventView :metadata="metadata"
+                               :gcEvent="scope.row.info"/>
+                </template>
               </el-table-column>
             </el-table>
           </el-row>
@@ -114,11 +126,13 @@
 </template>
 
 <script>
-  import axios from 'axios'
+import axios from 'axios'
 import {gclogService} from "@/util";
+import GCEventView from "@/components/gclog/GCEventView";
 
   export default {
-    props: ['file'],
+    components: {GCEventView},
+    props: ['file', "metadata", "analysisConfig"],
     data() {
       return {
         loading: false,
@@ -132,24 +146,19 @@ import {gclogService} from "@/util";
         oneDayMilli: 1000 * 60 * 60 * 24,
         pickerOptions: {
           disabledDate: time => {
-            if (this.referenceTimestamp < 0) {
+            if (this.metadata.timestamp < 0) {
               return false;
             }
-            const uptime = time.getTime() - this.referenceTimestamp;
-            return !(this.startTime - this.oneDayMilli < uptime && uptime < this.endTime);
+            const uptime = time.getTime() - this.metadata.timestamp;
+            return !(this.metadata.startTime - this.oneDayMilli < uptime && uptime < this.metadata.endTime);
           }
         },
 
-        gcEventTypeOptions: [],
         gcEventTypeSelect: "",
-        gcCauseOptions: [],
         gcCauseSelect: "",
         logTimeRange: undefined,
         pauseTimeLow: undefined,
-        referenceTimestamp: -1,
         timeRange: undefined,
-        startTime: undefined,
-        endTime: undefined,
         startTimeLow: undefined,
         startTimeHigh: undefined
       }
@@ -169,21 +178,23 @@ import {gclogService} from "@/util";
         }
         this.loading = true;
         axios.get(gclogService(this.file, 'gcDetails'), this.getDetailRequestParams()).then(resp => {
-          this.tableData = resp.data.data.map(e => {
-            return {detail: e}
-          });
+          this.tableData = resp.data.data.map(e => this.dealGCEvent(e))
           this.totalSize = resp.data.totalSize;
           this.loading = false;
         });
       },
-      fetchMetadata() {
-        axios.get(gclogService(this.file, 'metadata')).then(resp => {
-          this.gcEventTypeOptions = resp.data.parentEventTypes;
-          this.gcCauseOptions = resp.data.causes;
-          this.referenceTimestamp = resp.data.timestamp;
-          this.startTime = resp.data.startTime
-          this.endTime = resp.data.endTime
-        })
+      dealGCEvent(gcEvent) {
+        const result = {
+          ...gcEvent,
+          key: gcEvent.info.id + 1
+        }
+        if (gcEvent.phases.length > 0) {
+          result.hasChildren = true;
+        }
+        return result
+      },
+      expandEvent(row, treeNode, resolve) {
+        resolve(row.phases.map(e => this.dealGCEvent(e)))
       },
       getDetailRequestParams() {
         let params = {
@@ -196,10 +207,10 @@ import {gclogService} from "@/util";
         if (typeof this.gcCauseSelect != 'undefined' && this.gcCauseSelect !== "") {
           params.gcCause = this.gcCauseSelect
         }
-        if (this.referenceTimestamp >= 0) {
+        if (this.metadata.timestamp >= 0) {
           if (this.timeRange !== undefined && this.timeRange !== null && this.timeRange.length === 2) {
-            params.logTimeLow = this.timeRange[0].getTime() - this.referenceTimestamp
-            params.logTimeHigh = this.timeRange[1].getTime() - this.referenceTimestamp
+            params.logTimeLow = this.timeRange[0].getTime() - this.metadata.timestamp
+            params.logTimeHigh = this.timeRange[1].getTime() - this.metadata.timestamp
           }
         } else {
           if (typeof this.startTimeLow != 'undefined') {
@@ -212,12 +223,12 @@ import {gclogService} from "@/util";
         if (typeof this.pauseTimeLow != 'undefined') {
           params.pauseTimeLow = this.pauseTimeLow
         }
+        params.config = this.analysisConfig
         return {params: params}
       }
     },
     created() {
       this.fetchData();
-      this.fetchMetadata();
     }
   }
 </script>

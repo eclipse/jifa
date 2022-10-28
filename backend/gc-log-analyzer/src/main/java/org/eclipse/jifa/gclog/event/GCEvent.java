@@ -14,26 +14,27 @@
 package org.eclipse.jifa.gclog.event;
 
 import org.eclipse.jifa.common.util.ErrorUtil;
+import org.eclipse.jifa.gclog.diagnoser.AnalysisConfig;
 import org.eclipse.jifa.gclog.event.evnetInfo.*;
 import org.eclipse.jifa.gclog.model.GCEventType;
+import org.eclipse.jifa.gclog.model.GCModel;
 import org.eclipse.jifa.gclog.util.Constant;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.BitSet;
-import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
 
 import static org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea.*;
 import static org.eclipse.jifa.gclog.event.evnetInfo.GCEventLevel.EVENT;
 import static org.eclipse.jifa.gclog.event.evnetInfo.GCEventLevel.PHASE;
 import static org.eclipse.jifa.gclog.util.Constant.KB2MB;
+import static org.eclipse.jifa.gclog.util.Constant.UNKNOWN_INT;
 
 public class GCEvent extends TimedEvent {
 
+    private int id = UNKNOWN_INT; // id is used to identify events, should not be showed to user
     private int gcid = Constant.UNKNOWN_INT;
 
-    private double startTimestamp = Constant.UNKNOWN_DOUBLE;
     private CpuTime cpuTime;
     private ReferenceGC referenceGC;
 
@@ -85,7 +86,7 @@ public class GCEvent extends TimedEvent {
             return;
         }
         if (memory == null) {
-            memory = new GCMemoryItem[MEMORY_AREA_COUNT.ordinal()];
+            memory = new GCMemoryItem[values().length];
         }
         if (force || getMemoryItem(item.getArea()) == null) {
             memory[item.getArea().ordinal()] = item;
@@ -103,12 +104,16 @@ public class GCEvent extends TimedEvent {
     public GCEvent() {
     }
 
-    public GCEvent(int gcid) {
+    public void setGcid(int gcid) {
         this.gcid = gcid;
     }
 
-    public void setGcid(int gcid) {
-        this.gcid = gcid;
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public GCEvent getLastPhaseOfType(GCEventType type) {
@@ -255,22 +260,6 @@ public class GCEvent extends TimedEvent {
         this.causeInterval = causeInterval;
     }
 
-    public double getEndTimestamp() {
-        if (getStartTimestamp() == Constant.UNKNOWN_DOUBLE || getDuration() == Constant.UNKNOWN_DOUBLE) {
-            return Constant.UNKNOWN_DOUBLE;
-        } else {
-            return getStartTimestamp() + getDuration();
-        }
-    }
-
-    public void setStartTimestamp(double startTimestamp) {
-        this.startTimestamp = startTimestamp;
-    }
-
-    public double getStartTimestamp() {
-        return startTimestamp;
-    }
-
     private static final double GCTRACETIME_TRACECPUTIME_CLOSE_THRESHOLD = 10.0;
 
     public double getPause() {
@@ -315,35 +304,15 @@ public class GCEvent extends TimedEvent {
         return promotion;
     }
 
-    /*
-     * This function is mainly used in diagnose, displays only one of timestamp or uptime
-     */
-    public String getStartTimeString() {
-        if (startTimestamp != Constant.UNKNOWN_DOUBLE) {
-            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-            return format.format((long) getStartTimestamp());
-        }
+    private static final SimpleDateFormat TIMESTAMP_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 
-        if (startTime != Constant.UNKNOWN_DOUBLE) {
-            return String.format("%.3f", getStartTime() / 1000);
+    protected void appendStartTimestamp(StringBuilder sb, double referenceTimestamp) {
+        if (referenceTimestamp != Constant.UNKNOWN_DOUBLE && startTime != Constant.UNKNOWN_DOUBLE) {
+            sb.append(TIMESTAMP_FORMAT.format((long) (referenceTimestamp + startTime))).append(" ");
         }
-
-        // should not reach here
-        return "";
     }
 
-    private static final MemoryArea[] TO_STRING_GENERATION_ORDER = {YOUNG, OLD, HUMONGOUS, HEAP, METASPACE};
-
-    /*
-     * This function is mainly used in toString, that displays both timestamp and uptime,
-     * just like the format in preunified gclogs
-     */
     protected void appendStartTime(StringBuilder sb) {
-        if (startTimestamp != Constant.UNKNOWN_DOUBLE) {
-            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-            sb.append(format.format((long) getStartTimestamp())).append(" ");
-        }
-
         if (startTime != Constant.UNKNOWN_DOUBLE) {
             sb.append(String.format("%.3f: ", getStartTime() / 1000));
         }
@@ -364,54 +333,42 @@ public class GCEvent extends TimedEvent {
         if (parts.isEmpty()) {
             return;
         }
-        sb.append(" (");
+        sb.append("(");
         for (int i = 0; i < parts.size(); i++) {
             if (i != 0) {
                 sb.append(", ");
             }
             sb.append(parts.get(i));
         }
-        sb.append(")");
+        sb.append(") ");
     }
 
-    @Override
-    public String toString() {
-        // reference format: (1)14.244: [Full GC (Ergonomics), 0.001s] [Young: 2548K->0K(18944K)] [Old: 33595K->11813K(44032K)] [Total: 36143K->11813K(62976K)] [Metaspace: 19355K->19355K(1067008K)] [promotion 3000 K, interval 30s]
-        StringBuilder sb = new StringBuilder();
+    private void appendEventType(StringBuilder sb) {
+        sb.append(eventType).append(" ");
+    }
+
+    protected void appendClassSpecificInfo(StringBuilder sb) {
         if (gcid != Constant.UNKNOWN_INT) {
-            sb.append('(').append(gcid).append(')');
+            sb.append('(').append(gcid).append(") ");
         }
 
-        appendStartTime(sb);
-        sb.append("[");
-        if (eventType != null) {
-            sb.append(eventType);
-        }
         if (cause != null) {
-            sb.append(" (").append(cause).append(")");
+            sb.append("(").append(cause).append(") ");
         }
 
         appendGCSpecialSituation(sb);
 
         if (getDuration() != Constant.UNKNOWN_DOUBLE) {
-            sb.append(", ").append(String.format("%.3f", getDuration() / 1000)).append("s");
+            sb.append(String.format("%.3f", getDuration() / 1000)).append("s ");
         }
-        sb.append("]");
-        boolean memoryInfoAvailable = memory != null;
-        if (memoryInfoAvailable) {
-            for (MemoryArea generation : TO_STRING_GENERATION_ORDER) {
-                GCMemoryItem item = getMemoryItem(generation);
-                if (item != null && !item.isEmpty()) {
-                    sb.append(" [").append(item).append(']');
-                }
-            }
-        }
+
+        memoryItemDo(item -> sb.append("[").append(item).append("] "));
 
         boolean moreInfoAvailable = getEventLevel() == EVENT
                 && (getPromotion() != Constant.UNKNOWN_INT || getInterval() != Constant.UNKNOWN_DOUBLE);
         if (moreInfoAvailable) {
             boolean first = true;
-            sb.append(" [");
+            sb.append("[");
             if (getPromotion() != Constant.UNKNOWN_INT) {
                 sb.append("promotion ").append(getPromotion() / (long) KB2MB).append(" K");
                 first = false;
@@ -420,24 +377,34 @@ public class GCEvent extends TimedEvent {
                 if (!first) {
                     sb.append(", ");
                 }
-                sb.append("interval ").append(String.format("%.3f", getInterval() / 1000)).append("s");
+                sb.append("interval ").append(String.format("%.3f", getInterval() / 1000)).append(" s");
             }
-            sb.append("]");
+            sb.append("] ");
         }
         if (cpuTime != null) {
-            sb.append(" [").append(cpuTime).append("]");
+            sb.append("[").append(cpuTime).append("] ");
         }
-        if (getEventType().getPause() == GCPause.PARTIAL && getPhases() != null) {
-            for (GCEvent phase : getPhases()) {
-                if (phase.getEventLevel() != GCEventLevel.SUBPHASE && phase.getEventType().getPause() == GCPause.PAUSE) {
-                    sb.append(" [")
-                            .append(phase.getEventType().getName())
-                            .append(" ")
-                            .append(String.format("%.3f", phase.getPause() / 1000))
-                            .append("s]");
-                }
-            }
-        }
+    }
+
+    // this function is used for printing while debugging. The result is never showed to user
+    // reference format: 14.244: Full GC (1) (Ergonomics) 0.001s [Young: 2548K->0K(18944K)] [Old: 33595K->11813K(44032K)] [Total: 36143K->11813K(62976K)] [Metaspace: 19355K->19355K(1067008K)] [promotion 3000 K, interval 30 s]
+    public String toDebugString(GCModel model) {
+        StringBuilder sb = new StringBuilder();
+        appendStartTimestamp(sb, model.getReferenceTimestamp());
+        appendStartTime(sb);
+        appendEventType(sb);
+        appendClassSpecificInfo(sb);
+        return sb.toString();
+    }
+
+    // This function is used for printing while debugging(mainly used in IDE). The result is nover showed to user.
+    // toDebugString shows more info than this function
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        appendStartTime(sb);
+        appendEventType(sb);
+        appendClassSpecificInfo(sb);
         return sb.toString();
     }
 
@@ -454,15 +421,62 @@ public class GCEvent extends TimedEvent {
                 consumer.accept(this);
                 break;
             case PARTIAL:
-                if (phases != null) {
-                    for (GCEvent phase : phases) {
-                        if (phase.getEventType().getPause() == GCPause.PAUSE && phase.getEventType().getLevel() == PHASE) {
-                            consumer.accept(phase);
-                        }
+                phasesDoDFS(phase -> {
+                    if (phase.getEventType().getPause() == GCPause.PAUSE && phase.getEventType().getLevel() == PHASE) {
+                        consumer.accept(phase);
                     }
-                }
-                break;
+                });
+        }
+    }
 
+    public void memoryItemDo(Consumer<GCMemoryItem> consumer) {
+        if (memory == null) {
+            return;
+        }
+        for (GCMemoryItem item : memory) {
+            if (item != null && !item.isEmpty()) {
+                consumer.accept(item);
+            }
+        }
+    }
+
+    public void phasesDoDFS(Consumer<GCEvent> consumer) {
+        if (phases != null) {
+            for (GCEvent phase : phases) {
+                consumer.accept(phase);
+            }
+        }
+    }
+
+    private Map<String, GCMemoryItem> memoryToVO() {
+        Map<String, GCMemoryItem> result = new HashMap<>();
+        memoryItemDo(item -> result.put(item.getArea().getName(), item));
+        return result;
+    }
+
+    @Override
+    protected void fillInfoToVO(GCModel model, AnalysisConfig config, GCEventVO vo) {
+        super.fillInfoToVO(model, config, vo);
+        vo.saveInfo("eventType", eventType.getName());
+        vo.saveInfo("gcid", gcid);
+        vo.saveInfo("cputime", cpuTime);
+        vo.saveInfo("referenceGC", referenceGC);
+        vo.saveInfo("memory", memoryToVO());
+        vo.saveInfo("pause", pause);
+        vo.saveInfo("interval", interval);
+        vo.saveInfo("causeInterval", causeInterval);
+        vo.saveInfo("promotion", promotion);
+        vo.saveInfo("reclamation", reclamation);
+        vo.saveInfo("allocation", allocation);
+        vo.saveInfo("id", id);
+        phasesDoDFS(phase -> vo.addPhase(phase.toEventVO(model, config)));
+        for (GCEventBooleanType type : GCEventBooleanType.values()) {
+            if (isTrue(type)) {
+                vo.saveInfo(type.name(), true);
+            }
+        }
+        if (cause != null) {
+            vo.saveInfo("cause", cause.getName());
         }
     }
 }

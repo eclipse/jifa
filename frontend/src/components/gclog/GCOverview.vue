@@ -20,7 +20,10 @@
       <div>
         <div class="row">
           <i class="el-icon-document icon"/>
-          <span class="content">{{ file }}</span>
+          <span class="content"
+                style="overflow: hidden; display:block; text-overflow: ellipsis; max-width: 900px; white-space: nowrap">
+            {{file }}
+          </span>
         </div>
         <div class="row">
           <i class="el-icon-brush icon"/>

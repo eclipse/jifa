@@ -12,13 +12,13 @@
  ********************************************************************************/
 package org.eclipse.jifa.gclog.event;
 
-import org.eclipse.jifa.gclog.model.GCEventType;
+import org.eclipse.jifa.gclog.diagnoser.AnalysisConfig;
+import org.eclipse.jifa.gclog.model.GCModel;
 
-public class OutOfMemory extends GCEvent {
+public class ThreadEvent extends GCEvent {
     private String threadName;
 
-    public OutOfMemory() {
-        this.setEventType(GCEventType.OUT_OF_MEMORY);
+    public ThreadEvent() {
     }
 
     public String getThreadName() {
@@ -30,10 +30,13 @@ public class OutOfMemory extends GCEvent {
     }
 
     @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        appendStartTime(sb);
+    protected void appendClassSpecificInfo(StringBuilder sb) {
         sb.append(threadName);
-        return sb.toString();
+    }
+
+    @Override
+    protected void fillInfoToVO(GCModel model, AnalysisConfig config, GCEventVO vo) {
+        super.fillInfoToVO(model, config, vo);
+        vo.saveInfo("threadName", threadName);
     }
 }

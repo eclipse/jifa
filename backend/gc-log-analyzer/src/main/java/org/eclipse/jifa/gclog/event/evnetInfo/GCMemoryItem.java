@@ -128,14 +128,14 @@ public class GCMemoryItem {
         if (x == UNKNOWN_INT || y == UNKNOWN_INT) {
             return UNKNOWN_INT;
         }
-        return x - y;
+        return x >= y ? x - y : 0;
     }
 
     private static long minusIfPresent(long x, long y) {
         if (x == UNKNOWN_INT || y == UNKNOWN_INT) {
             return x;
         }
-        return x - y;
+        return x >= y ? x - y : 0;
     }
 
     public void multiply(long x) {

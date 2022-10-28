@@ -99,7 +99,8 @@ public class TestGCModel {
         GCEventType[] concurrentCyclePhases = {G1_REMARK, G1_PAUSE_CLEANUP, G1_CONCURRENT_CLEAR_CLAIMED_MARKS};
         double[] begins = {16.0, 16.2, 16.6};
         for (int i = 0; i < concurrentCyclePhases.length; i++) {
-            GCEvent phase = new GCEvent(4);
+            GCEvent phase = new GCEvent();
+            phase.setGcid(4);
             model.addPhase(events[3], phase);
             phase.setEventType(concurrentCyclePhases[i]);
             phase.setDuration(0.2 * (i + 1) * 1000);
@@ -114,7 +115,8 @@ public class TestGCModel {
         concurrentCyclePhases = new GCEventType[]{G1_REMARK, G1_PAUSE_CLEANUP, G1_CONCURRENT_CLEAR_CLAIMED_MARKS};
         begins = new double[]{24.0, 24.1, 24.3};
         for (int i = 0; i < concurrentCyclePhases.length; i++) {
-            GCEvent phase = new GCEvent(5);
+            GCEvent phase = new GCEvent();
+            phase.setGcid(5);
             model.addPhase(events[4], phase);
             phase.setEventType(concurrentCyclePhases[i]);
             phase.setDuration(0.1 * (i + 1) * 1000);
@@ -159,8 +161,6 @@ public class TestGCModel {
                 new GCMemoryItem(HEAP, 40 * 1024 * 1024, 32 * 1024 * 1024, 300 * 1024 * 1024));
         Assert.assertEquals(model.getGcEvents().get(5).getMemoryItem(OLD),
                 new GCMemoryItem(OLD, 10 * 1024 * 1024, 12 * 1024 * 1024, 100 * 1024 * 1024));
-        Assert.assertEquals(model.getGcEvents().get(0).getStartTimestamp(), 2.0 * 1000, DELTA);
-        Assert.assertEquals(model.getGcEvents().get(5).getEndTimestamp(), 33.3 * 1000, DELTA);
         Assert.assertEquals(model.getGcEvents().get(4).getInterval(), 6.8 * 1000, DELTA);
 
         // object statistics
@@ -197,12 +197,6 @@ public class TestGCModel {
         Assert.assertEquals(parents.get(1).getPhases().size(), 3);
         Assert.assertEquals(parents.get(1).getPhases().get(1), new PhaseStatistics.PhaseStatisticItem(
                 G1_REMARK.getName(), 2, 7800, 7800, 150, 200, 300));
-
-        // event toString
-        Assert.assertEquals(model.getGcEvents().get(0).toString(),
-                "(0)1970-01-01 08:00:02.000 1.000: [Young GC (G1 Evacuation Pause) (To-space Exhausted), 0.500s] [Young: 20M->10M(200M)] [Old: 10M->12M(100M)] [Humongous: 10M->10M] [Heap: 40M->32M(300M)] [Metaspace: 15M->15M(20M)] [promotion 2048 K]");
-        Assert.assertEquals(model.getGcEvents().get(4).toString(),
-                "(4)1970-01-01 08:00:25.000 24.000: [Concurrent Cycle, 0.600s] [interval 6.800s] [Pause Remark 0.100s] [Pause Cleanup 0.200s]");
 
         Map<String, List<Object[]>> graphData = model.getTimeGraphData(new String[]{"youngCapacity", "heapUsed", "reclamation", "promotion", G1_REMARK.getName()});
         Assert.assertEquals(graphData.size(), 5);

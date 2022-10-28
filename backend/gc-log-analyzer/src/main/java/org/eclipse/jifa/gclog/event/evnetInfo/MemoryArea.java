@@ -14,14 +14,13 @@
 package org.eclipse.jifa.gclog.event.evnetInfo;
 
 public enum MemoryArea {
-    EDEN,
-    SURVIVOR,
-    YOUNG,
-    OLD,
-    HUMONGOUS,
-    HEAP, //young + old + humongous
-    METASPACE, // also represents perm
-    MEMORY_AREA_COUNT;
+    EDEN("eden"),
+    SURVIVOR("survivor"),
+    YOUNG("young"),
+    OLD("old"),
+    HUMONGOUS("humongous"),
+    HEAP("heap"), //young + old + humongous
+    METASPACE("metaspace"); // also represents perm
 
     public static MemoryArea getMemoryArea(String name) {
         if (name == null) {
@@ -58,4 +57,13 @@ public enum MemoryArea {
         }
     }
 
+    private final String name;
+
+    MemoryArea(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
 }
