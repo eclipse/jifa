@@ -61,7 +61,7 @@
             size="90%"
             :visible.sync="detailVisible"
             direction="rtl">
-          <GCDetail :file="file"/>
+          <GCDetail :file="file" :metadata="metadata" :analysisConfig="analysisConfig"/>
         </el-drawer>
         <el-dialog
             :title="$t('jifa.gclog.analysisConfig')"
@@ -404,7 +404,7 @@
       changeConfigModelAndOpen(params) {
         this.analysisConfigModel = {...this.analysisConfig}
         Object.assign(this.analysisConfigModel, params)
-        this.showAnalysisConfig()
+        this.analysisConfigVisible = true;
       },
       getCompareLabel(i) {
         return i === 1 ? this.$t('jifa.gclog.baselineFile') : this.$t('jifa.gclog.targetFile')

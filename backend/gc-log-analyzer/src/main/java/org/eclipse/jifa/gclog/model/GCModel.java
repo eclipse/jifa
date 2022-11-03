@@ -62,7 +62,7 @@ public abstract class GCModel {
     private List<GCEvent> gcCollectionEvents = new ArrayList<>(); // store events that contain collection info
 
     private List<Safepoint> safepoints = new ArrayList<>();
-    private List<OutOfMemory> ooms = new ArrayList<>();
+    private List<ThreadEvent> ooms = new ArrayList<>();
     // time from beginning of program
     private double startTime = Constant.UNKNOWN_DOUBLE;
     private double endTime = Constant.UNKNOWN_DOUBLE;
@@ -76,11 +76,9 @@ public abstract class GCModel {
     //shared basic info among different collectors
     private VmOptions vmOptions;
 
-    //data prepared for api
     private GCCollectorType collectorType;
     private GCLogStyle logStyle;
     private GCLogMetadata metadata;
-    private List<String> gcEventsDetailCache;
 
     public GCModel() {
     }
@@ -159,7 +157,7 @@ public abstract class GCModel {
     }
 
     public GCEvent createAndGetEvent() {
-        GCEvent event = new GCEvent(gcEvents.size());
+        GCEvent event = new GCEvent();
         gcEvents.add(event);
         return event;
     }
@@ -214,11 +212,11 @@ public abstract class GCModel {
         safepoints.add(safepoint);
     }
 
-    public List<OutOfMemory> getOoms() {
+    public List<ThreadEvent> getOoms() {
         return ooms;
     }
 
-    public void addOom(OutOfMemory oom) {
+    public void addOom(ThreadEvent oom) {
         ooms.add(oom);
     }
 
@@ -268,11 +266,8 @@ public abstract class GCModel {
             if (event.getCause() != null) {
                 putPhaseStatisticData(event, event.getCause().getName(), causeData.get(index), false);
             }
-            if (event.getPhases() != null) {
-                for (GCEvent phase : event.getPhases()) {
-                    putPhaseStatisticData(phase, phase.getEventType().getName(), phaseData.get(index), true);
-                }
-            }
+            event.phasesDoDFS(phase -> putPhaseStatisticData(phase, phase.getEventType().getName(),
+                    phaseData.get(index), true));
         });
         List<ParentStatisticsInfo> result = new ArrayList<>();
         for (int i = 0; i < parents.size(); i++) {
@@ -517,13 +512,11 @@ public abstract class GCModel {
         rebuildEventLists();
 
         // calculate derived data for events themselves
-        calculateEventTimestamps();
         calculateEventsInterval();
         calculateEventsMemoryInfo();
 
         // data in events should not change after this line
         // calculate specific data prepared for route api, order of these calls doesn't matter
-        calculateGCEventDetails();
         calculateGcModelMetadata();
     }
 
@@ -539,6 +532,9 @@ public abstract class GCModel {
             }
         }
         allEvents.sort(Comparator.comparingDouble(GCEvent::getStartTime));
+        for (int i = 0; i < allEvents.size(); i++) {
+            allEvents.get(i).setId(i);
+        }
     }
 
     private void decideAndFixEventInfo() {
@@ -557,30 +553,6 @@ public abstract class GCModel {
             if (event.getDuration() == Constant.UNKNOWN_DOUBLE && getStartTime() != Constant.UNKNOWN_DOUBLE) {
                 event.setDuration(phases.get(phases.size() - 1).getEndTime() - event.getStartTime());
             }
-        }
-    }
-
-
-    private void calculateEventTimestamps() {
-        double referenceTimestamp = getReferenceTimestamp();
-        if (referenceTimestamp == Constant.UNKNOWN_DOUBLE) {
-            return;
-        }
-        for (GCEvent event : getGcEvents()) {
-            event.setStartTimestamp(referenceTimestamp + event.getStartTime());
-            if (event.hasPhases()) {
-                for (GCEvent phase : event.getPhases()) {
-                    phase.setStartTimestamp(referenceTimestamp + phase.getStartTime());
-                }
-            }
-        }
-    }
-
-    private void calculateGCEventDetails() {
-        // toString of events will not change in the future, cache them
-        gcEventsDetailCache = new ArrayList<>();
-        for (GCEvent event : gcEvents) {
-            gcEventsDetailCache.add(event.toString());
         }
     }
 
@@ -636,12 +608,7 @@ public abstract class GCModel {
     }
 
     private void calculateEventMemoryItems(GCEvent event) {
-        if (event.hasPhases()) {
-            for (GCEvent phase : event.getPhases()) {
-                calculateEventMemoryItems(phase);
-            }
-        }
-
+        event.phasesDoDFS(this::calculateEventMemoryItems);
         if (event.getMemoryItems() == null) {
             return;
         }
@@ -799,12 +766,8 @@ public abstract class GCModel {
     public String toDebugString() {
         StringBuilder sb = new StringBuilder();
         for (GCEvent event : gcEvents) {
-            sb.append(event).append("\n");
-            if (event.hasPhases()) {
-                for (GCEvent phase : event.getPhases()) {
-                    sb.append("         ").append(phase).append("\n");
-                }
-            }
+            sb.append(event.toDebugString(this)).append("\n");
+            event.phasesDoDFS(phase -> sb.append("    ").append(phase.toDebugString(this)).append("\n"));
         }
         return sb.toString();
     }
@@ -813,25 +776,20 @@ public abstract class GCModel {
         return collectorType != SERIAL && collectorType != PARALLEL && collectorType != UNKNOWN;
     }
 
-    public List<String> getGCDetails() {
-        return gcEventsDetailCache;
-    }
+    public PageView<GCEventVO> getGCDetails(PagingRequest pagingRequest, GCDetailFilter filter, AnalysisConfig config) {
+        int firstIndex = (pagingRequest.getPage() - 1) * pagingRequest.getPageSize();
+        int total = 0;
+        List<GCEventVO> result = new ArrayList<>();
 
-    public PageView<String> getGCDetails(PagingRequest pagingRequest, GCDetailFilter filter) {
-        List<String> details = getGCDetails();
-        List<String> filtered = new ArrayList<>();
-        for (int i = 0; i < details.size(); i++) {
-            if (!filter.isFiltered(gcEvents.get(i))) {
-                filtered.add(details.get(i));
+        for (GCEvent event : gcEvents) {
+            if (!filter.isFiltered(event)) {
+                if (total >= firstIndex && result.size() < pagingRequest.getPageSize()) {
+                    result.add(event.toEventVO(this, config));
+                }
+                total++;
             }
         }
-        List<String> result = new ArrayList<>();
-        int firstIndex = (pagingRequest.getPage() - 1) * pagingRequest.getPageSize();
-        int lastIndex = Math.min(firstIndex + pagingRequest.getPageSize(), filtered.size());
-        for (int i = firstIndex; i < lastIndex; i++) {
-            result.add(filtered.get(i));
-        }
-        return new PageView<>(pagingRequest, filtered.size(), result);
+        return new PageView<>(pagingRequest, total, result);
     }
 
     public GCLogMetadata getGcModelMetadata() {

@@ -30,6 +30,10 @@ export function getPhaseHint(phase) {
       return 'jifa.gclog.phase.cmReset'
     case "Out Of Memory":
       return 'jifa.gclog.phase.oom'
+    case "Initial Mark Situation":
+      return 'jifa.gclog.phase.initialMarkSituation'
+    case "Prepare Mixed Situation":
+      return 'jifa.gclog.phase.prepareMixedSituation'
     // todo: add more phases
     default:
       return ""

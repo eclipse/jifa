@@ -15,7 +15,7 @@ package org.eclipse.jifa.gclog;
 
 import org.eclipse.jifa.common.listener.DefaultProgressListener;
 import org.eclipse.jifa.gclog.event.GCEvent;
-import org.eclipse.jifa.gclog.event.OutOfMemory;
+import org.eclipse.jifa.gclog.event.ThreadEvent;
 import org.eclipse.jifa.gclog.event.Safepoint;
 import org.eclipse.jifa.gclog.model.*;
 import org.eclipse.jifa.gclog.parser.*;
@@ -365,9 +365,10 @@ public class TestParser {
         Assert.assertEquals(allocationStalls.size(), 2);
         Assert.assertEquals(allocationStalls.get(1).getEndTime(), 7888, DELTA);
         Assert.assertEquals(allocationStalls.get(1).getDuration(), 0.391, DELTA);
+        Assert.assertEquals(((ThreadEvent)(allocationStalls.get(1))).getThreadName(), "NioProcessor-2");
 
         Assert.assertEquals(model.getOoms().size(), 1);
-        OutOfMemory oom = model.getOoms().get(0);
+        ThreadEvent oom = model.getOoms().get(0);
         Assert.assertEquals(oom.getStartTime(), 7889, DELTA);
         Assert.assertEquals(oom.getThreadName(), "thread 8");
     }

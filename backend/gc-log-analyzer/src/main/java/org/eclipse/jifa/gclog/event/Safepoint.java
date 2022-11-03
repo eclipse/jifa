@@ -13,6 +13,7 @@
 package org.eclipse.jifa.gclog.event;
 
 import org.eclipse.jifa.gclog.model.GCEventType;
+import org.eclipse.jifa.gclog.model.GCModel;
 import org.eclipse.jifa.gclog.util.Constant;
 
 public class Safepoint extends GCEvent {
@@ -31,11 +32,25 @@ public class Safepoint extends GCEvent {
     }
 
     @Override
+    protected void appendClassSpecificInfo(StringBuilder sb) {
+        sb.append(String.format("Total time for which application threads were stopped: " +
+                "%.3f seconds, Stopping threads took: %.3f seconds", getDuration(), getTimeToEnter()));
+    }
+
+    @Override
+    public String toDebugString(GCModel model) {
+        StringBuilder sb = new StringBuilder();
+        appendStartTimestamp(sb, model.getStartTime());
+        appendStartTime(sb);
+        appendClassSpecificInfo(sb);
+        return sb.toString();
+    }
+
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         appendStartTime(sb);
-        sb.append(String.format("Total time for which application threads were stopped: " +
-                "%.3f seconds, Stopping threads took: %.3f seconds", getDuration(), getTimeToEnter()));
+        appendClassSpecificInfo(sb);
         return sb.toString();
     }
 }

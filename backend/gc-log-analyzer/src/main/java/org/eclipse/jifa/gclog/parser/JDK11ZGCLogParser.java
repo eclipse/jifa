@@ -15,7 +15,7 @@ package org.eclipse.jifa.gclog.parser;
 
 import org.eclipse.jifa.common.util.ErrorUtil;
 import org.eclipse.jifa.gclog.event.GCEvent;
-import org.eclipse.jifa.gclog.event.OutOfMemory;
+import org.eclipse.jifa.gclog.event.ThreadEvent;
 import org.eclipse.jifa.gclog.event.evnetInfo.GCMemoryItem;
 import org.eclipse.jifa.gclog.model.GCEventType;
 import org.eclipse.jifa.gclog.model.GCModel;
@@ -215,7 +215,7 @@ public class JDK11ZGCLogParser extends AbstractJDK11GCLogParser {
     // [2021-08-31T11:29:12.825+0800] Out Of Memory (thread 8)
     private static void pauseOutOfMemory(AbstractGCLogParser parser, ParseRule.ParseRuleContext context, String prefix, String value) {
         GCModel model = parser.getModel();
-        OutOfMemory event = new OutOfMemory();
+        ThreadEvent event = new ThreadEvent();
         event.setThreadName(value.substring(1, value.length() - 1));
         event.setStartTime(context.get(UPTIME));
         model.addOom(event);
@@ -294,12 +294,13 @@ public class JDK11ZGCLogParser extends AbstractJDK11GCLogParser {
     private static void parseAllocationStall(AbstractGCLogParser parser, ParseRule.ParseRuleContext context, String prefix, String value) {
         GCModel model = parser.getModel();
         String[] parts = GCLogUtil.splitByBracket(value);
-        GCEvent event = new GCEvent();
+        ThreadEvent event = new ThreadEvent();
         double endTime = context.get(UPTIME);
         double duration = GCLogUtil.toMillisecond(parts[1]);
         event.setStartTime(endTime - duration);
         event.setDuration(duration);
         event.setEventType(ZGC_ALLOCATION_STALL);
+        event.setThreadName(parts[0]);
         ((ZGCModel) model).addAllocationStalls(event);
     }
 
@@ -323,9 +324,10 @@ public class JDK11ZGCLogParser extends AbstractJDK11GCLogParser {
             // log may be incomplete
             return;
         }
-        GCEvent phase = new GCEvent(event.getGcid());
+        GCEvent phase = new GCEvent();
         double endTime = context.get(UPTIME);
         double duration = GCLogUtil.toMillisecond(value);
+        phase.setGcid(event.getGcid());
         phase.setStartTime(endTime - duration);
         phase.setDuration(duration);
         phase.setEventType(eventType);

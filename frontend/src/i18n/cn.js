@@ -332,6 +332,8 @@ exports.default = {
         allocationStall: 'Allocation Stall表示当前线程无法继续分配对象，被迫等待直至GC完成',
         cmReset: 'Concurrent Mark Reset For Overflow表示全局标记栈已满，将重新开始标记，可能导致Concurrent Cycle时间超长。如果出现了这种情况则建议调大-XX:MarkStackSize参数(默认值4M)',
         oom: 'Out of memory表示堆内已经彻底无法分配对象，会抛出OutOfMemoryError',
+        initialMarkSituation: 'Initial Mark表示此次Young GC同时会对老年代进行初始标记，Young GC结束后会开始执行Concurrent Cycle',
+        prepareMixedSituation: 'Prepare Mixed表示此次Young GC完成后就会开始执行Mixed GC',
       },
 
       badHint: {
@@ -382,7 +384,7 @@ exports.default = {
           increaseZAllocationSpikeTolerance: "适当增大参数 -XX:ZAllocationSpikeTolerance，使得GC更早发生",
           checkLiveObjects: "如果Young GC时的活对象多导致活对象拷贝时间长或者引发跨代引用，那么考虑排查一下应用逻辑，为什么会有那么多活对象",
           checkReferenceGC: "如果是Reference Processing时间长，考虑开启-XX:+ParallelRefProcEnabled多线程优化(JDK11后默认开启)，或者排查为何有这么多Weak/Soft/Phantom Reference",
-          checkCPUTime: "检查GC的CPU Time，如果real时间长而usr，sys时间短，可能是磁盘IO或者同一宿主机上不同进程或容器互相干扰导致的",
+          checkCPUTime: "检查GC的CPU时间，如果real时间长而usr，sys时间短，可能是磁盘IO或者同一宿主机上不同进程或容器互相干扰导致的",
           shrinkYoungGen: "适当减小参数-Xmn，来减少年轻代大小",
           shrinkYoungGenG1: "适当减小参数-XX:G1MaxNewSizePercent，来减少年轻代大小",
           checkEvacuationFailure: "如果GC出现了To-space exhausted的情况，会大幅拉长GC暂停，解决方法一方面是G1尽量不要设Xmn参数，另一方面考虑排查是否存在大对象分配过多或者内存泄露或者晋升过快等情况",
@@ -402,6 +404,9 @@ exports.default = {
         eventType: "GC 事件类型",
         logTime: "日志时间",
         pauseTime: "暂停时间",
+        cputime: "CPU时间",
+        interval: "发生间隔",
+        memory: "内存信息",
       },
     },
 

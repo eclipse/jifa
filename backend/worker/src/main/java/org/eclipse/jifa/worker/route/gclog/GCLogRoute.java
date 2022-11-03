@@ -15,6 +15,7 @@ package org.eclipse.jifa.worker.route.gclog;
 
 import org.eclipse.jifa.gclog.diagnoser.AnalysisConfig;
 import org.eclipse.jifa.gclog.diagnoser.GlobalDiagnoser;
+import org.eclipse.jifa.gclog.event.GCEventVO;
 import org.eclipse.jifa.gclog.model.modeInfo.GCLogMetadata;
 import org.eclipse.jifa.gclog.model.GCModel;
 import io.vertx.core.Promise;
@@ -79,16 +80,18 @@ public class GCLogRoute extends org.eclipse.jifa.worker.route.gclog.GCLogBaseRou
     }
 
     @RouteMeta(path = "/gcDetails")
-    void detail(Promise<PageView<String>> promise, @ParamKey("file") String file,
+    void detail(Promise<PageView<GCEventVO>> promise, @ParamKey("file") String file,
                 @ParamKey(value = "eventType", mandatory = false) String eventType,
                 @ParamKey(value = "gcCause", mandatory = false) String gcCause,
                 @ParamKey(value = "logTimeLow", mandatory = false) Double logTimeLow,
                 @ParamKey(value = "logTimeHigh", mandatory = false) Double logTimeHigh,
                 @ParamKey(value = "pauseTimeLow", mandatory = false) Double pauseTimeLow,
+                // time range of config is ignored for the time being
+                @ParamKey("config") AnalysisConfig config,
                 PagingRequest pagingRequest) {
         final GCModel model = Analyzer.getOrOpenGCLogModel(file);
         GCModel.GCDetailFilter filter = new GCModel.GCDetailFilter(eventType, gcCause, logTimeLow, logTimeHigh, pauseTimeLow);
-        promise.complete(model.getGCDetails(pagingRequest, filter));
+        promise.complete(model.getGCDetails(pagingRequest, filter, config));
     }
 
     @RouteMeta(path = "/vmOptions", method = HttpMethod.GET)

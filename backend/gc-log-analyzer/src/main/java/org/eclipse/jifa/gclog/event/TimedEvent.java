@@ -13,6 +13,8 @@
 
 package org.eclipse.jifa.gclog.event;
 
+import org.eclipse.jifa.gclog.diagnoser.AnalysisConfig;
+import org.eclipse.jifa.gclog.model.GCModel;
 import org.eclipse.jifa.gclog.vo.TimeRange;
 
 import static org.eclipse.jifa.gclog.util.Constant.UNKNOWN_DOUBLE;
@@ -75,5 +77,16 @@ public class TimedEvent {
 
     public static TimedEvent newByStartEnd(double start, double end) {
         return new TimedEvent(start, end - start);
+    }
+
+    protected void fillInfoToVO(GCModel model, AnalysisConfig config, GCEventVO vo) {
+        vo.saveInfo("startTime", getStartTime());
+        vo.saveInfo("duration", getDuration());
+    }
+
+    public GCEventVO toEventVO(GCModel model, AnalysisConfig config) {
+        GCEventVO vo = new GCEventVO();
+        fillInfoToVO(model, config, vo);
+        return vo;
     }
 }

@@ -334,6 +334,8 @@ exports.default = {
         allocationStall: 'Allocation Stall means the current thread can not allocate more objects and is stalled until the end of GC.',
         cmReset: 'Concurrent Mark Reset For Overflow means the global mark stack is full and concurrent mark has to be restarted. This may lead to extremely long Concurrent Cycle time. It is recommended to increase -XX:MarkStackSize(default: 4M).',
         oom: 'Out of memory means no more objects can be allocated in the heap even after gc. An OutOfMemoryError will be thrown.',
+        initialMarkSituation: 'Initial Mark means this Young GC starts the marking process in addition to performing a normal young-only collection.',
+        prepareMixedSituation: 'Prepare Mixed means Mixed GC will start after this Young GC.',
       },
 
       badHint: {
@@ -404,6 +406,9 @@ exports.default = {
         eventType: "GC Event Type",
         logTime: "Log Time",
         pauseTime: "Pause Time",
+        cputime: "CPU Time",
+        interval: "Interval",
+        memory: "Memory",
       },
     },
 
