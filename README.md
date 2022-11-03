@@ -45,7 +45,7 @@ The frontend of Jifa uses Vue as the main framework.
 
     ```
     Jifa uses the plugin 'com.diffplug.p2.asmaven' to get MAT's dependencies.
-    Thisplugin can only run on JRE 8 now, so we need to set $JAVA_HOME to JDK8.
+    This plugin can only run on JRE 8 now, so we need to set $JAVA_HOME to JDK8.
     While other modules depend on JDK11+, Gradle handles this for us correctly.
     ```
   - npm
