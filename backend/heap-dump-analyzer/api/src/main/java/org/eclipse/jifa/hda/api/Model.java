@@ -654,6 +654,16 @@ public interface Model {
         }
     }
 
+    interface TheString {
+        @Data
+        class Item {
+            public int objectId;
+            public String label;
+            public long shallowSize;
+            public long retainedSize;
+        }
+    }
+
     interface GCRoot {
         @Data
         class Item {

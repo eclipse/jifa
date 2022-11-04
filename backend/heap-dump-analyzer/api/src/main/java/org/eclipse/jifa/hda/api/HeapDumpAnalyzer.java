@@ -66,6 +66,8 @@ public interface HeapDumpAnalyzer {
 
     List<GCRoot.Item> getGCRoots();
 
+    PageView<TheString.Item> getStrings(String pattern, int page, int pageSize);
+
     PageView<GCRoot.Item> getClassesOfGCRoot(int rootTypeIndex, int page, int pageSize);
 
     PageView<JavaObject> getObjectsOfGCRoot(int rootTypeIndex, int classIndex, int page, int pageSize);
