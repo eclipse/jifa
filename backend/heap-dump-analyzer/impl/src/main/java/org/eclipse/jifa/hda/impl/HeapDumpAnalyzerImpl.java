@@ -682,6 +682,25 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer {
     }
 
     @Override
+    public PageView<TheString.Item> getStrings(String pattern, int page, int pageSize) {
+        return $(() -> {
+            IResultTree tree = queryByCommand(context, "find_strings java.lang.String -pattern " +
+                (pattern == null || pattern.equals("") ? ".*" : ".*" + pattern + ".*"));
+            List<?> strings = tree.getElements();
+            return PageViewBuilder.build(strings, new PagingRequest(page, pageSize), node -> {
+                TheString.Item item = new TheString.Item();
+                int id = tree.getContext(node).getObjectId();
+                item.setObjectId(id);
+                item.setLabel((String)tree.getColumnValue(node,0));
+                item.setShallowSize(((Bytes) tree.getColumnValue(node, 1)).getValue());
+                item.setRetainedSize(((Bytes) tree.getColumnValue(node, 2)).getValue());
+                return item;
+            });
+        });
+    }
+
+
+    @Override
     public PageView<GCRoot.Item> getClassesOfGCRoot(int rootTypeIndex, int page, int pageSize) {
         return $(() -> {
             IResultTree tree = queryByCommand(context, "gc_roots");
