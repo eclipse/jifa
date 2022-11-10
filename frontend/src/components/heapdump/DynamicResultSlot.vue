@@ -652,6 +652,13 @@
         return getIcon(gCRoot, objectType)
       },
 
+      mergePathToGCRootsFromDominatorTree(objectIds, label) {
+        let newTabName = ++this.tabIndex + '';
+        let newTab = this.addPathToGCRootsFromDominatorTreeTab(
+            this.buildTitle(this.$t('jifa.heap.mergePathToGCRoots'), label), newTabName, this.loadMergePathToGCChildren, objectIds);
+        this.fetchMergePathToGCRootsNextPageData(newTab);
+      },
+
       mergePathToGCRootsFromHistogram(classId, label) {
         let newTabName = ++this.tabIndex + '';
         let newTab = this.addPathToGCRootsFromHistogramTab(
@@ -660,14 +667,24 @@
       },
 
       addPathToGCRootsFromHistogramTab(title, name, load, classId) {
+        return this.addPathToGCRoots({title: title, name: name, load: load, classId: classId, fromHistogram: true});
+      },
+
+      addPathToGCRootsFromDominatorTreeTab(title, name, load, objectIds) {
+        return this.addPathToGCRoots({title: title, name: name, load: load, objectIds: objectIds, fromDominatorTree: true});
+      },
+
+      addPathToGCRoots({title, name, load, classId = null, objectIds = null, fromHistogram = false, fromDominatorTree = false} = { }) {
         this.tabIndex++;
         let newTab = {
-          fromHistogram: true,
+          fromHistogram: fromHistogram,
+          fromDominatorTree: fromDominatorTree,
           title: title,
           name: name,
           loading: false,
           isMergePathToGCRootsTab: true,
           classId: classId,
+          objectIds: objectIds,
           tableData: [],
           load: load,
           grouping: 'FROM_GC_ROOTS',
@@ -685,16 +702,28 @@
         mergePathToGCRootsTab.loading = true;
         let api = "";
         let params = {};
+        let method = "";
+        let data = null;
         if (mergePathToGCRootsTab.fromHistogram) {
           api = 'mergePathToGCRoots/roots/byClassId';
+          method = 'get';
           params = {
             classId: mergePathToGCRootsTab.classId,
             page: mergePathToGCRootsTab.nextPage,
             pageSize: mergePathToGCRootsTab.pageSize,
             grouping: mergePathToGCRootsTab.grouping
           }
+        } else if (mergePathToGCRootsTab.fromDominatorTree) {
+          api = 'mergePathToGCRoots/roots/byObjectIds';
+          method = 'post';
+          data = JSON.stringify(mergePathToGCRootsTab.objectIds);
+          params = {
+            page: mergePathToGCRootsTab.nextPage,
+            pageSize: mergePathToGCRootsTab.pageSize,
+            grouping: mergePathToGCRootsTab.grouping
+          }
         }
-        axios.get(heapDumpService(this.file, api), {params: params}).then(resp => {
+        axios(heapDumpService(this.file, api), {method: method, data: data, params: params}).then(resp => {
           mergePathToGCRootsTab.totalSize = resp.data.totalSize;
           let data = resp.data.data;
           data.forEach(d => {
@@ -734,8 +763,11 @@
 
         let api = "";
         let params = {};
+        let method = "";
+        let data = null;
         if (tab.fromHistogram) {
           api = 'mergePathToGCRoots/children/byClassId';
+          method = 'get';
           params = {
             classId: tab.classId,
             objectIdPathInGCPathTree: JSON.stringify(row.objectIdPathInGCPathTree),
@@ -743,9 +775,19 @@
             pageSize: tab.pageSize,
             grouping: tab.grouping
           };
+        } else if (tab.fromDominatorTree) {
+          api = 'mergePathToGCRoots/children/byObjectIds';
+          method = 'post';
+          data = JSON.stringify(tab.objectIds);
+          params = {
+            objectIdPathInGCPathTree: JSON.stringify(row.objectIdPathInGCPathTree),
+            page: page,
+            pageSize: tab.pageSize,
+            grouping: tab.grouping
+          };
         }
 
-        axios.get(heapDumpService(this.file, api), {params: params}).then(resp => {
+        axios(heapDumpService(this.file, api), {method: method, data: data, params: params}).then(resp => {
           let loadedLen = 0;
           let loaded = table.store.states.lazyTreeNodeMap[parentRowKey];
           let callResolve = false;

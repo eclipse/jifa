@@ -15,6 +15,7 @@ package org.eclipse.jifa.hda.impl;
 
 import org.eclipse.jifa.common.util.EscapeUtil;
 import org.eclipse.mat.query.Bytes;
+import org.eclipse.mat.query.IContextObjectSet;
 import org.eclipse.mat.query.IStructuredResult;
 import org.eclipse.mat.snapshot.ISnapshot;
 import org.eclipse.jifa.common.util.ReflectionUtil;
@@ -81,6 +82,11 @@ public class VirtualPackageItem extends DominatorTree.PackageItem {
         } else {
             return 0;
         }
+    }
+
+    @Override
+    public int[] getObjectIds() {
+        return ((IContextObjectSet) results.getContext(e)).getObjectIds();
     }
 
     @Override

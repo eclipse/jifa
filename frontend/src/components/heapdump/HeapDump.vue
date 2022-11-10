@@ -149,6 +149,7 @@
                                     @outgoingRefsOfClass="outgoingRefsOfClass"
                                     @incomingRefsOfClass="incomingRefsOfClass"
                                     @pathToGCRootsOfObj="pathToGCRootsOfObj"
+                                    @mergePathToGCRootsFromDominatorTree="mergePathToGCRootsFromDominatorTree"
                                     @setSelectedObjectId="setSelectedObjectId"/>
                   </div>
                 </el-tab-pane>
@@ -429,6 +430,11 @@ export default {
 
       pathToGCRootsOfObj(id, label) {
         this.$refs['dynamicResultSlot'].pathToGCRootsOfObj(id, label);
+        this.enableShowDynamicResultSlot();
+      },
+
+      mergePathToGCRootsFromDominatorTree(ids, label) {
+        this.$refs['dynamicResultSlot'].mergePathToGCRootsFromDominatorTree(ids, label);
         this.enableShowDynamicResultSlot();
       },
 
