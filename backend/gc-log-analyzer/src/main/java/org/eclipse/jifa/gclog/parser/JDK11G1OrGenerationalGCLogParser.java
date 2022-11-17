@@ -51,6 +51,7 @@ public abstract class JDK11G1OrGenerationalGCLogParser extends AbstractJDK11GCLo
         withoutGCIDRules = new ArrayList<>(AbstractJDK11GCLogParser.getSharedWithoutGCIDRules());
 
         withGCIDRules = new ArrayList<>(AbstractJDK11GCLogParser.getSharedWithGCIDRules());
+        withGCIDRules.add(new PrefixAndValueParseRule("Metaspace:", JDK11G1OrGenerationalGCLogParser::parseMetaspace));
         withGCIDRules.add(JDK11G1OrGenerationalGCLogParser::parseHeap);
         withGCIDRules.add(new PrefixAndValueParseRule("Pause Young", JDK11G1OrGenerationalGCLogParser::parseYoungFullGC));
         withGCIDRules.add(new PrefixAndValueParseRule("Pause Full", JDK11G1OrGenerationalGCLogParser::parseYoungFullGC));
@@ -182,17 +183,17 @@ public abstract class JDK11G1OrGenerationalGCLogParser extends AbstractJDK11GCLo
      * [2.285s][info ][gc,heap      ] GC(2) Old: 23127K->2019K(43712K)
      * [0.160s][info ][gc,heap      ] GC(0) ParNew: 17393K->2175K(19648K)
      * [0.160s][info ][gc,heap      ] GC(0) CMS: 0K->130K(43712K)
-     * [0.160s][info ][gc,metaspace ] GC(0) Metaspace: 5147K->5147K(1056768K)
+     * [0.194s][info][gc,heap     ] GC(0) DefNew: 40960K(46080K)->5120K(46080K) Eden: 40960K(40960K)->0K(40960K) From: 0K(5120K)->5120K(5120K)"
      */
     private static boolean parseHeap(AbstractGCLogParser parser, ParseRuleContext context, String s) {
         GCModel model = parser.getModel();
-        String[] parts = s.split(": ");
-        if (parts.length != 2) {
+        String[] parts = GCLogUtil.splitBySpace(s);
+        if (parts.length != 2 && parts.length != 3 && parts.length != 6) {
             return false;
         }
         String generationName = parts[0];
-        if (generationName.endsWith(" regions")) {
-            generationName = generationName.substring(0, generationName.length() - " regions".length());
+        if (generationName.endsWith(":")) {
+            generationName = generationName.substring(0, generationName.length() - 1);
         }
         MemoryArea generation = MemoryArea.getMemoryArea(generationName);
         if (generation == null) {
@@ -211,11 +212,37 @@ public abstract class JDK11G1OrGenerationalGCLogParser extends AbstractJDK11GCLo
                 return true;
             }
         }
-        long[] memories = GCLogUtil.parseMemorySizeFromTo(parts[1], 1);
+        long[] memories = GCLogUtil.parseMemorySizeFromTo(parts.length == 3 ? parts[2] :parts[1], 1);
         // will multiply region size before calculating derived info for g1
         GCMemoryItem item = new GCMemoryItem(generation, memories);
         event.setMemoryItem(item);
+
+        if (parts.length == 6) {
+            event.setMemoryItem(new GCMemoryItem(MemoryArea.EDEN, GCLogUtil.parseMemorySizeFromTo(parts[3])));
+            event.setMemoryItem(new GCMemoryItem(MemoryArea.SURVIVOR, GCLogUtil.parseMemorySizeFromTo(parts[5])));
+        }
         return true;
+    }
+
+
+    /*
+     * [0.160s][info ][gc,metaspace ] GC(0) Metaspace: 5147K->5147K(1056768K)
+     * [0.194s][info][gc,metaspace] GC(0) Metaspace: 137K(384K)->138K(384K) NonClass: 133K(256K)->133K(256K) Class: 4K(128K)->4K(128K)
+     */
+    private static void parseMetaspace(AbstractGCLogParser parser, ParseRuleContext context, String title, String text) {
+        GCModel model = parser.getModel();
+        GCEvent event = model.getLastEventOfGCID(context.get(GCID));
+        if (event == null) {
+            // log may be incomplete
+            return;
+        }
+        String[] parts = GCLogUtil.splitBySpace(text);
+        event.setMemoryItem(new GCMemoryItem(MemoryArea.METASPACE, GCLogUtil.parseMemorySizeFromTo(parts[0])));
+        if (parts.length == 5) {
+            model.setMetaspaceCapacityReliable(true);
+            event.setMemoryItem(new GCMemoryItem(MemoryArea.NONCLASS, GCLogUtil.parseMemorySizeFromTo(parts[2])));
+            event.setMemoryItem(new GCMemoryItem(MemoryArea.CLASS, GCLogUtil.parseMemorySizeFromTo(parts[4])));
+        }
     }
 
     /**

@@ -80,6 +80,8 @@ public abstract class GCModel {
     private GCLogStyle logStyle;
     private GCLogMetadata metadata;
 
+    private boolean metaspaceCapacityReliable = false;
+
     public GCModel() {
     }
 
@@ -344,7 +346,7 @@ public abstract class GCModel {
                 MemoryArea generation = generations[genIndex];
                 GCMemoryItem memory = event.getMemoryItem(generation);
                 if (memory != null) {
-                    data[genIndex][0].add(memory.getTotal());
+                    data[genIndex][0].add(memory.getPostCapacity());
                     data[genIndex][1].add(Math.max(memory.getPreUsed(), memory.getPostUsed()));
                     if (event.isFullGC() && generation != YOUNG) {
                         data[genIndex][2].add(memory.getPostUsed());
@@ -438,8 +440,8 @@ public abstract class GCModel {
                     result.add(new Object[]{(long) event.getEndTime(), memory.getPostUsed()});
                 }
             } else {
-                if (memory.getTotal() != Constant.UNKNOWN_LONG) {
-                    result.add(new Object[]{(long) event.getEndTime(), memory.getTotal()});
+                if (memory.getPostCapacity() != Constant.UNKNOWN_LONG) {
+                    result.add(new Object[]{(long) event.getEndTime(), memory.getPostCapacity()});
                 }
             }
         }
@@ -617,8 +619,8 @@ public abstract class GCModel {
         // hack: Survivor capacity of g1 is not printed in jdk8. Make it equal to pre used so that
         // we can calculate young and old capacity
         if (event.getMemoryItem(SURVIVOR) != null &&
-                event.getMemoryItem(SURVIVOR).getTotal() == Constant.UNKNOWN_INT) {
-            event.getMemoryItem(SURVIVOR).setTotal(event.getMemoryItem(SURVIVOR).getPreUsed());
+                event.getMemoryItem(SURVIVOR).getPostCapacity() == Constant.UNKNOWN_INT) {
+            event.getMemoryItem(SURVIVOR).setPostCapacity(event.getMemoryItem(SURVIVOR).getPreUsed());
         }
 
         //case 1: know eden and survivor, calculate young
@@ -651,6 +653,9 @@ public abstract class GCModel {
         old.setArea(OLD);
         event.setMemoryItem(event.getMemoryItemOrEmptyObject(OLD)
                 .updateIfAbsent(old), true);
+
+        // Although we can calculate metaspace = class + non class, there is no need to do
+        // so because when class and non class are known, metaspace must have been known
     }
 
     private void filterInvalidEvents() {
@@ -822,7 +827,11 @@ public abstract class GCModel {
     }
 
     protected boolean isMetaspaceCapacityReliable() {
-        return collectorType == ZGC;
+        return metaspaceCapacityReliable;
+    }
+
+    public void setMetaspaceCapacityReliable(boolean metaspaceCapacityReliable) {
+        this.metaspaceCapacityReliable = metaspaceCapacityReliable;
     }
 
     public void setParallelThread(int parallelThread) {

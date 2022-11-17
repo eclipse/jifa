@@ -43,6 +43,7 @@ public class ZGCModel extends GCModel {
 
     public ZGCModel() {
         super(collector);
+        this.setMetaspaceCapacityReliable(true);
     }
 
     private static List<GCEventType> allEventTypes = GCModel.calcAllEventTypes(collector);

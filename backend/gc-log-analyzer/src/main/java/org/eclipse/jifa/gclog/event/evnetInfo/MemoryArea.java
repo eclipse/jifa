@@ -20,7 +20,9 @@ public enum MemoryArea {
     OLD("old"),
     HUMONGOUS("humongous"),
     HEAP("heap"), //young + old + humongous
-    METASPACE("metaspace"); // also represents perm
+    METASPACE("metaspace"), // also represents perm
+    CLASS("class"),
+    NONCLASS("nonclass");
 
     public static MemoryArea getMemoryArea(String name) {
         if (name == null) {
@@ -47,6 +49,10 @@ public enum MemoryArea {
             case "metaspace":
             case "perm":
                 return METASPACE;
+            case "class":
+                return CLASS;
+            case "nonclass":
+                return NONCLASS;
             case "humongous":
                 return HUMONGOUS;
             case "total":

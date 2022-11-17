@@ -160,7 +160,13 @@ public class GCLogUtil {
      */
     public static String[] parseFromToString(String s) {
         String[] result = new String[4];
-        String[] parts = s.split("->");
+        int arrow = s.indexOf("->");
+        String[] parts;
+        if (arrow >= 0) {
+            parts = new String[]{s.substring(0, arrow), s.substring(arrow + 2)};
+        } else {
+            parts = new String[]{s};
+        }
         int base = parts.length == 1 ? 2 : 0;
         for (String part : parts) {
             int indexLeftBracket = part.indexOf('(');
@@ -176,18 +182,18 @@ public class GCLogUtil {
     }
 
     /**
-     * e.g. "3604K->3608K(262144K)" -> [3604, 3608, 262144]
-     * "3604K->3608K" -> [3604, 3608, -1]
-     * "3604K(262144K)->3608K(262144K)" -> [3604, 3608, 262144] do not record size before change
-     * "608K(262144K)" -> [-1, 3608, 262144]
+     * e.g. "3604K->3608K(262144K)" -> [3604, -1, 3608, 262144]
+     * "3604K->3608K" -> [3604, -1, 3608, -1]
+     * "3604K(262144K)->3608K(262144K)" -> [3604, -1, 3608, 262144]
+     * "608K(262144K)" -> [-1, -1, 3608, 262144]
      * do not check format
      */
     public static long[] parseMemorySizeFromTo(String s, long divideIfNoUnit) {
-        long[] result = new long[3];
+        long[] result = new long[4];
         String[] parts = parseFromToString(s);
-        result[0] = parts[0] == null ? UNKNOWN_INT : toByte(parts[0], divideIfNoUnit);
-        result[1] = parts[2] == null ? UNKNOWN_INT : toByte(parts[2], divideIfNoUnit);
-        result[2] = parts[3] == null ? UNKNOWN_INT : toByte(parts[3], divideIfNoUnit);
+        for (int i = 0; i < 4; i++) {
+            result[i] = parts[i] == null ? UNKNOWN_INT : toByte(parts[i], divideIfNoUnit);
+        }
         return result;
     }
 

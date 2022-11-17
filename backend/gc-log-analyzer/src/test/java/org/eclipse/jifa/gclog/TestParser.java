@@ -349,7 +349,7 @@ public class TestParser {
         Assert.assertEquals(gc.getCause(), PROACTIVE);
         Assert.assertEquals(gc.getLastPhaseOfType(GCEventType.ZGC_PAUSE_MARK_START).getEndTime(), 7006, DELTA);
         Assert.assertEquals(gc.getLastPhaseOfType(GCEventType.ZGC_PAUSE_MARK_START).getDuration(), 4.459, DELTA);
-        Assert.assertEquals(gc.getMemoryItem(METASPACE).getTotal(), 128 * 1024 * 1024);
+        Assert.assertEquals(gc.getMemoryItem(METASPACE).getPostCapacity(), 128 * 1024 * 1024);
         Assert.assertEquals(gc.getMemoryItem(METASPACE).getPostUsed(), 125 * 1024 * 1024);
         Assert.assertEquals(gc.getMemoryItem(HEAP), new GCMemoryItem(HEAP, 5614L * 1024 * 1024, 1454 * 1024 * 1024, 40960L * 1024 * 1024));
         Assert.assertEquals(gc.getAllocation(), 202 * 1024 * 1024);
@@ -569,8 +569,8 @@ public class TestParser {
         Assert.assertEquals(youngGC.getDuration(), 56.3085, DELTA);
         Assert.assertEquals(youngGC.getEventType(), GCEventType.YOUNG_GC);
         Assert.assertEquals(youngGC.getCause(), G1_EVACUATION_PAUSE);
-        Assert.assertEquals(youngGC.getMemoryItem(HEAP), new GCMemoryItem(HEAP, 184 * 1024 * 1024, (int) (19.3 * 1024 * 1024), 3800L * 1024 * 1024));
-        Assert.assertEquals(youngGC.getMemoryItem(EDEN), new GCMemoryItem(EDEN, 184 * 1024 * 1024, 0, 160 * 1024 * 1024));
+        Assert.assertEquals(youngGC.getMemoryItem(HEAP), new GCMemoryItem(HEAP, 184 * 1024 * 1024, 3800L * 1024 * 1024, (int) (19.3 * 1024 * 1024), 3800L * 1024 * 1024));
+        Assert.assertEquals(youngGC.getMemoryItem(EDEN), new GCMemoryItem(EDEN, 184 * 1024 * 1024, 184 * 1024 * 1024, 0, 160 * 1024 * 1024));
         Assert.assertNotNull(youngGC.getPhases());
         for (GCEvent phase : youngGC.getPhases()) {
             Assert.assertTrue(phase.getDuration() != UNKNOWN_DOUBLE);
@@ -607,7 +607,7 @@ public class TestParser {
         Assert.assertEquals(fullGC.getEventType(), GCEventType.FULL_GC);
         Assert.assertEquals(fullGC.getCause(), METADATA_GENERATION_THRESHOLD);
         Assert.assertEquals(fullGC.getMemoryItem(METASPACE), new GCMemoryItem(METASPACE, 1792694 * 1024, 291615 * 1024, 698368 * 1024));
-        Assert.assertEquals(fullGC.getMemoryItem(HEAP), new GCMemoryItem(HEAP, (long) (7521.7 * 1024 * 1024), (long) (7002.8 * 1024 * 1024), (long) (46144.0 * 1024 * 1024)));
+        Assert.assertEquals(fullGC.getMemoryItem(HEAP), new GCMemoryItem(HEAP, (long) (7521.7 * 1024 * 1024),  (long) (46144.0 * 1024 * 1024), (long) (7002.8 * 1024 * 1024), (long) (46144.0 * 1024 * 1024)));
         Assert.assertEquals(fullGC.getCpuTime().getUser(), 2090, DELTA);
         Assert.assertEquals(fullGC.getCpuTime().getSys(), 190, DELTA);
         Assert.assertEquals(fullGC.getCpuTime().getReal(), 1920, DELTA);
@@ -618,7 +618,7 @@ public class TestParser {
         Assert.assertEquals(mixedGC.getEventType(), GCEventType.G1_MIXED_GC);
         Assert.assertEquals(mixedGC.getCause(), G1_EVACUATION_PAUSE);
         Assert.assertTrue(mixedGC.isTrue(TO_SPACE_EXHAUSTED));
-        Assert.assertEquals(mixedGC.getMemoryItem(HEAP).getTotal(), (long) (19.8 * 1024 * 1024 * 1024));
+        Assert.assertEquals(mixedGC.getMemoryItem(HEAP).getPostCapacity(), (long) (19.8 * 1024 * 1024 * 1024));
         Assert.assertEquals(mixedGC.getMemoryItem(EDEN).getPreUsed(), 2304L * 1024 * 1024);
         Assert.assertNotNull(mixedGC.getPhases());
         for (GCEvent phase : mixedGC.getPhases()) {
@@ -921,11 +921,11 @@ public class TestParser {
         GCMemoryItem youngGen = youngGC.getMemoryItem(YOUNG);
         Assert.assertEquals(youngGen.getPreUsed(), 51200 * 1024);
         Assert.assertEquals(youngGen.getPostUsed(), 4096 * 1024);
-        Assert.assertEquals(youngGen.getTotal(), 77824 * 1024);
+        Assert.assertEquals(youngGen.getPostCapacity(), 77824 * 1024);
         GCMemoryItem total = youngGC.getMemoryItem(HEAP);
         Assert.assertEquals(total.getPreUsed(), 118572 * 1024);
         Assert.assertEquals(total.getPostUsed(), 117625 * 1024);
-        Assert.assertEquals(total.getTotal(), 252416 * 1024);
+        Assert.assertEquals(total.getPostCapacity(), 252416 * 1024);
         Assert.assertEquals(youngGC.getCpuTime().getUser(), 290, DELTA);
 
         GCEvent fullGC = model.getGcEvents().get(5);
@@ -936,19 +936,19 @@ public class TestParser {
         youngGen = fullGC.getMemoryItem(YOUNG);
         Assert.assertEquals(youngGen.getPreUsed(), 65530 * 1024);
         Assert.assertEquals(youngGen.getPostUsed(), 0);
-        Assert.assertEquals(youngGen.getTotal(), 113664 * 1024);
+        Assert.assertEquals(youngGen.getPostCapacity(), 113664 * 1024);
         GCMemoryItem oldGen = fullGC.getMemoryItem(OLD);
         Assert.assertEquals(oldGen.getPreUsed(), 341228 * 1024);
         Assert.assertEquals(oldGen.getPostUsed(), 720 * 1024);
-        Assert.assertEquals(oldGen.getTotal(), 302592 * 1024);
+        Assert.assertEquals(oldGen.getPostCapacity(), 302592 * 1024);
         GCMemoryItem metaspace = fullGC.getMemoryItem(METASPACE);
         Assert.assertEquals(metaspace.getPreUsed(), 3740 * 1024);
         Assert.assertEquals(metaspace.getPostUsed(), 3737 * 1024);
-        Assert.assertEquals(metaspace.getTotal(), 1056768 * 1024);
+        Assert.assertEquals(metaspace.getPostCapacity(), 1056768 * 1024);
         total = fullGC.getMemoryItem(HEAP);
         Assert.assertEquals(total.getPreUsed(), 406759 * 1024);
         Assert.assertEquals(total.getPostUsed(), 720 * 1024);
-        Assert.assertEquals(total.getTotal(), 416256 * 1024);
+        Assert.assertEquals(total.getPostCapacity(), 416256 * 1024);
         Assert.assertEquals(fullGC.getCpuTime().getUser(), 20, DELTA);
     }
 
@@ -982,11 +982,11 @@ public class TestParser {
         GCMemoryItem youngGen = youngGC.getMemoryItem(YOUNG);
         Assert.assertEquals(youngGen.getPreUsed(), 78656 * 1024);
         Assert.assertEquals(youngGen.getPostUsed(), 8703 * 1024);
-        Assert.assertEquals(youngGen.getTotal(), 78656 * 1024);
+        Assert.assertEquals(youngGen.getPostCapacity(), 78656 * 1024);
         GCMemoryItem total = youngGC.getMemoryItem(HEAP);
         Assert.assertEquals(total.getPreUsed(), 126740 * 1024);
         Assert.assertEquals(total.getPostUsed(), 114869 * 1024);
-        Assert.assertEquals(total.getTotal(), 253440 * 1024);
+        Assert.assertEquals(total.getPostCapacity(), 253440 * 1024);
         Assert.assertEquals(youngGC.getCpuTime().getReal(), 70, DELTA);
 
         GCEvent fullGC = model.getGcEvents().get(6);
@@ -997,19 +997,19 @@ public class TestParser {
         youngGen = fullGC.getMemoryItem(YOUNG);
         Assert.assertEquals(youngGen.getPreUsed(), 271999 * 1024);
         Assert.assertEquals(youngGen.getPostUsed(), 0);
-        Assert.assertEquals(youngGen.getTotal(), 272000 * 1024);
+        Assert.assertEquals(youngGen.getPostCapacity(), 272000 * 1024);
         GCMemoryItem oldGen = fullGC.getMemoryItem(OLD);
         Assert.assertEquals(oldGen.getPreUsed(), 785946 * 1024);
         Assert.assertEquals(oldGen.getPostUsed(), 756062 * 1024);
-        Assert.assertEquals(oldGen.getTotal(), 786120 * 1024);
+        Assert.assertEquals(oldGen.getPostCapacity(), 786120 * 1024);
         GCMemoryItem metaspace = fullGC.getMemoryItem(METASPACE);
         Assert.assertEquals(metaspace.getPreUsed(), 3782 * 1024);
         Assert.assertEquals(metaspace.getPostUsed(), 3782 * 1024);
-        Assert.assertEquals(metaspace.getTotal(), 1056768 * 1024);
+        Assert.assertEquals(metaspace.getPostCapacity(), 1056768 * 1024);
         total = fullGC.getMemoryItem(HEAP);
         Assert.assertEquals(total.getPreUsed(), 823069 * 1024);
         Assert.assertEquals(total.getPostUsed(), 756062 * 1024);
-        Assert.assertEquals(total.getTotal(), 1058120 * 1024);
+        Assert.assertEquals(total.getPostCapacity(), 1058120 * 1024);
         Assert.assertEquals(fullGC.getCpuTime().getSys(), 70, DELTA);
     }
 
@@ -1334,5 +1334,84 @@ public class TestParser {
 
         PauseStatistics pause = model.getPauseStatistics(new TimeRange(0, 99999999));
         Assert.assertEquals(pause.getPauseAvg(), (32.662 + 3.259 + 2.784) / 3.0, DELTA);
+    }
+
+    @Test
+    public void TestJDK17SerialGCParser() throws Exception {
+        String log = "[0.008s][info][gc] Using Serial\n" +
+                "[0.008s][info][gc,init] Version: 17.0.1+12-39 (release)\n" +
+                "[0.008s][info][gc,init] CPUs: 8 total, 8 available\n" +
+                "[0.008s][info][gc,init] Memory: 16384M\n" +
+                "[0.008s][info][gc,init] Large Page Support: Disabled\n" +
+                "[0.008s][info][gc,init] NUMA Support: Disabled\n" +
+                "[0.008s][info][gc,init] Compressed Oops: Enabled (Zero based)\n" +
+                "[0.008s][info][gc,init] Heap Min Capacity: 100M\n" +
+                "[0.008s][info][gc,init] Heap Initial Capacity: 100M\n" +
+                "[0.008s][info][gc,init] Heap Max Capacity: 100M\n" +
+                "[0.008s][info][gc,init] Pre-touch: Disabled\n" +
+                "[0.008s][info][gc,metaspace] CDS archive(s) mapped at: [0x0000000800000000-0x0000000800bd4000-0x0000000800bd4000), size 12402688, SharedBaseAddress: 0x0000000800000000, ArchiveRelocationMode: 0.\n" +
+                "[0.008s][info][gc,metaspace] Compressed class space mapped at: 0x0000000800c00000-0x0000000840c00000, reserved size: 1073741824\n" +
+                "[0.008s][info][gc,metaspace] Narrow klass base: 0x0000000800000000, Narrow klass shift: 0, Narrow klass range: 0x100000000\n" +
+                "[0.173s][info][gc,start    ] GC(0) Pause Young (Allocation Failure)\n" +
+                "[0.194s][info][gc,heap     ] GC(0) DefNew: 40960K(46080K)->5120K(46080K) Eden: 40960K(40960K)->0K(40960K) From: 0K(5120K)->5120K(5120K)\n" +
+                "[0.194s][info][gc,heap     ] GC(0) Tenured: 0K(51200K)->14524K(51200K)\n" +
+                "[0.194s][info][gc,metaspace] GC(0) Metaspace: 137K(384K)->138K(384K) NonClass: 133K(256K)->134K(256K) Class: 4K(128K)->4K(128K)\n" +
+                "[0.194s][info][gc          ] GC(0) Pause Young (Allocation Failure) 40M->19M(95M) 21.766ms\n" +
+                "[0.194s][info][gc,cpu      ] GC(0) User=0.01s Sys=0.00s Real=0.02s\n" +
+                "[2.616s][info][gc,start       ] GC(1) Pause Full (Allocation Failure)\n" +
+                "[2.616s][info][gc,phases,start] GC(1) Phase 1: Mark live objects\n" +
+                "[2.665s][info][gc,phases      ] GC(1) Phase 1: Mark live objects 49.316ms\n" +
+                "[2.665s][info][gc,phases,start] GC(1) Phase 2: Compute new object addresses\n" +
+                "[2.677s][info][gc,phases      ] GC(1) Phase 2: Compute new object addresses 12.103ms\n" +
+                "[2.677s][info][gc,phases,start] GC(1) Phase 3: Adjust pointers\n" +
+                "[2.698s][info][gc,phases      ] GC(1) Phase 3: Adjust pointers 20.186ms\n" +
+                "[2.698s][info][gc,phases,start] GC(1) Phase 4: Move objects\n" +
+                "[2.708s][info][gc,phases      ] GC(1) Phase 4: Move objects 10.313ms\n" +
+                "[2.708s][info][gc,heap        ] GC(1) DefNew: 46079K(46080K)->36798K(46080K) Eden: 40960K(40960K)->36798K(40960K) From: 5119K(5120K)->0K(5120K)\n" +
+                "[2.708s][info][gc,heap        ] GC(1) Tenured: 51199K(51200K)->51199K(51200K)\n" +
+                "[2.708s][info][gc,metaspace   ] GC(1) Metaspace: 137K(384K)->137K(384K) NonClass: 133K(256K)->133K(256K) Class: 4K(128K)->4K(128K)\n" +
+                "[2.708s][info][gc             ] GC(1) Pause Full (Allocation Failure) 94M->85M(95M) 92.137ms\n" +
+                "[2.708s][info][gc,cpu         ] GC(1) User=0.09s Sys=0.00s Real=0.09s";
+        GCLogParser parser = new GCLogParserFactory().getParser(stringToBufferedReader(log));
+        SerialGCModel model = (SerialGCModel) parser.parse(stringToBufferedReader(log));
+        model.calculateDerivedInfo(new DefaultProgressListener());
+
+        GCEvent youngGC = model.getGcEvents().get(0);
+        Assert.assertEquals(youngGC.getGcid(), 0);
+        Assert.assertEquals(youngGC.getStartTime(), 173, DELTA);
+        Assert.assertEquals(youngGC.getDuration(), 21.766, DELTA);
+        Assert.assertEquals(youngGC.getEventType(), GCEventType.YOUNG_GC);
+        Assert.assertEquals(youngGC.getCause(), ALLOCATION_FAILURE);
+        Assert.assertEquals(youngGC.getMemoryItem(YOUNG), new GCMemoryItem(YOUNG, 40960 * 1024, 46080 * 1024,5120 * 1024, 46080 * 1024));
+        Assert.assertEquals(youngGC.getMemoryItem(EDEN), new GCMemoryItem(EDEN, 40960 * 1024, 40960 * 1024, 0 * 1024, 40960 * 1024));
+        Assert.assertEquals(youngGC.getMemoryItem(SURVIVOR), new GCMemoryItem(SURVIVOR, 0 * 1024, 5120 * 1024,  5120 * 1024, 5120 * 1024));
+        Assert.assertEquals(youngGC.getMemoryItem(OLD), new GCMemoryItem(OLD, 0, 51200 * 1024, 14524 * 1024, 51200 * 1024));
+        Assert.assertEquals(youngGC.getMemoryItem(METASPACE), new GCMemoryItem(METASPACE, 137 * 1024, 384 * 1024, 138 * 1024, 384 * 1024));
+        Assert.assertEquals(youngGC.getMemoryItem(NONCLASS), new GCMemoryItem(NONCLASS, 133 * 1024, 256 * 1024, 134 * 1024, 256 * 1024));
+        Assert.assertEquals(youngGC.getMemoryItem(CLASS), new GCMemoryItem(CLASS, 4 * 1024, 128 * 1024, 4 * 1024, 128 * 1024));
+        Assert.assertEquals(youngGC.getMemoryItem(HEAP), new GCMemoryItem(HEAP, 40 * 1024 * 1024, 95 * 1024 * 1024, 19 * 1024 * 1024, 95 * 1024 * 1024));
+        Assert.assertEquals(youngGC.getCpuTime().getReal(), 20, DELTA);
+
+        GCEvent fullGC = model.getGcEvents().get(1);
+        Assert.assertEquals(fullGC.getGcid(), 1);
+        Assert.assertEquals(fullGC.getStartTime(), 2616, DELTA);
+        Assert.assertEquals(fullGC.getDuration(), 92.137, DELTA);
+        Assert.assertEquals(fullGC.getEventType(), GCEventType.FULL_GC);
+        Assert.assertEquals(fullGC.getCause(), ALLOCATION_FAILURE);
+        Assert.assertEquals(fullGC.getMemoryItem(YOUNG), new GCMemoryItem(YOUNG, 46079 * 1024, 46080 * 1024,36798 * 1024, 46080 * 1024));
+        Assert.assertEquals(fullGC.getMemoryItem(EDEN), new GCMemoryItem(EDEN, 40960 * 1024, 40960 * 1024, 36798 * 1024, 40960 * 1024));
+        Assert.assertEquals(fullGC.getMemoryItem(SURVIVOR), new GCMemoryItem(SURVIVOR, 5119 * 1024, 5120 * 1024,  0 * 1024, 5120 * 1024));
+        Assert.assertEquals(fullGC.getMemoryItem(OLD), new GCMemoryItem(OLD, 51199 * 1024, 51200 * 1024, 51199 * 1024, 51200 * 1024));
+        Assert.assertEquals(fullGC.getMemoryItem(METASPACE), new GCMemoryItem(METASPACE, 137 * 1024, 384 * 1024, 137 * 1024, 384 * 1024));
+        Assert.assertEquals(fullGC.getMemoryItem(NONCLASS), new GCMemoryItem(NONCLASS, 133 * 1024, 256 * 1024, 133 * 1024, 256 * 1024));
+        Assert.assertEquals(fullGC.getMemoryItem(CLASS), new GCMemoryItem(CLASS, 4 * 1024, 128 * 1024, 4 * 1024, 128 * 1024));
+        Assert.assertEquals(fullGC.getMemoryItem(HEAP), new GCMemoryItem(HEAP, 94 * 1024 * 1024,95 * 1024 * 1024, 85 * 1024 * 1024, 95 * 1024 * 1024));
+        Assert.assertEquals(fullGC.getPhases().size(), 4);
+        for (GCEvent phase : fullGC.getPhases()) {
+            Assert.assertTrue(phase.getStartTime() != UNKNOWN_DOUBLE);
+            Assert.assertTrue(phase.getDuration() != UNKNOWN_DOUBLE);
+        }
+        Assert.assertEquals(fullGC.getLastPhaseOfType(GCEventType.SERIAL_COMPUTE_NEW_OBJECT_ADDRESSES).getDuration(), 12.103, DELTA);
+        Assert.assertEquals(fullGC.getLastPhaseOfType(GCEventType.SERIAL_MOVE_OBJECTS).getDuration(), 10.313, DELTA);
     }
 }

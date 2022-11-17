@@ -242,7 +242,7 @@ public class JDK11ZGCLogParser extends AbstractJDK11GCLogParser {
         switch (prefix) {
             case "Capacity":
                 GCMemoryItem item = new GCMemoryItem(HEAP);
-                item.setTotal(GCLogUtil.toByte(parts[6]));
+                item.setPostCapacity(GCLogUtil.toByte(parts[6]));
                 event.setMemoryItem(item);
                 break;
             case "Used":
