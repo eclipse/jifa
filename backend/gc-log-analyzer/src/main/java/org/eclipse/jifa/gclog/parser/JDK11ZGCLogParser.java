@@ -200,6 +200,7 @@ public class JDK11ZGCLogParser extends AbstractJDK11GCLogParser {
     }
 
     //  [2021-08-31T08:08:17.471+0800] GC(374) Metaspace: 125M used, 128M capacity, 128M committed, 130M reserved
+    //  [0.950s][info][gc,metaspace] GC(0) Metaspace: 0M used, 0M committed, 1032M reserved
     private static void parseMetaspace(AbstractGCLogParser parser, ParseRule.ParseRuleContext context, String prefix, String value) {
         GCModel model = parser.getModel();
         String[] parts = GCLogUtil.splitBySpace(value);
@@ -207,8 +208,9 @@ public class JDK11ZGCLogParser extends AbstractJDK11GCLogParser {
         if (event == null) {
             return;
         }
-        GCMemoryItem item = new GCMemoryItem(METASPACE, UNKNOWN_INT,
-                GCLogUtil.toByte(parts[0]), GCLogUtil.toByte(parts[4]));
+        String capacityString = parts.length == 6 ? parts[2] : parts[4];
+        GCMemoryItem item = new GCMemoryItem(METASPACE, UNKNOWN_INT, UNKNOWN_INT,
+                GCLogUtil.toByte(parts[0]), GCLogUtil.toByte(capacityString));
         event.setMemoryItem(item);
     }
 
@@ -242,6 +244,7 @@ public class JDK11ZGCLogParser extends AbstractJDK11GCLogParser {
         switch (prefix) {
             case "Capacity":
                 GCMemoryItem item = new GCMemoryItem(HEAP);
+                item.setPreCapacity(GCLogUtil.toByte(parts[0]));
                 item.setPostCapacity(GCLogUtil.toByte(parts[6]));
                 event.setMemoryItem(item);
                 break;
@@ -341,12 +344,13 @@ public class JDK11ZGCLogParser extends AbstractJDK11GCLogParser {
      * [2021-08-31T08:08:25.210+0800]  Contention: Relocation Contention                             1 / 10                0 / 52                0 / 87                0 / 87          ops/s
      * [2021-08-31T08:08:25.210+0800]    Critical: Allocation Stall                              0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms
      * [2021-08-31T08:08:25.210+0800]    Critical: Allocation Stall                                  0 / 0                 0 / 0                 0 / 0                 0 / 0           ops/s
+     * [10.418s][info][gc,stats    ]      Memory: Uncommit                                          0 / 0                 0 / 0                 0 / 0                 0 / 0           MB/s
      */
     private static boolean parseZGCStatisticLine(AbstractGCLogParser parser, ParseRule.ParseRuleContext context, String text) {
         ZGCModel model = (ZGCModel) parser.getModel();
         String[] tokens = GCLogUtil.splitBySpace(text);
         int length = tokens.length;
-        if (length > 15 && "/".equals(tokens[length - 3]) && "/".equals(tokens[length - 6]) &&
+        if (length >= 15 && "/".equals(tokens[length - 3]) && "/".equals(tokens[length - 6]) &&
                 "/".equals(tokens[length - 9]) && "/".equals(tokens[length - 12])) {
             // make unit a part of type name to deduplicate
             String type = text.substring(0, text.indexOf('/') - 1 - tokens[length - 13].length()).trim()
