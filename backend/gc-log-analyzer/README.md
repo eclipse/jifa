@@ -5,7 +5,7 @@ A GC log includes details of the entire GC process and the resources it uses.
 Analyzing GC log can help troubleshoot long pause problems and optimize overall Java application performance.
 
 ### Supported Format
-- OpenJDK 8 and 11
+- OpenJDK 8, 11 and 17. Other versions may be not well supported.
 - Serial GC, Parallel GC, CMS GC, G1 GC, ZGC
 
 
