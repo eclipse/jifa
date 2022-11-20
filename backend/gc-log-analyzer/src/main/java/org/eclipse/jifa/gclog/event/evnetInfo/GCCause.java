@@ -59,6 +59,7 @@ public class GCCause {
     public static GCCause ALLOC_STALL = new GCCause("Allocation Stall");
     public static GCCause PROACTIVE = new GCCause("Proactive");
     public static GCCause PREVENTIVE = new GCCause("G1 Preventive Collection");
+    public static GCCause G1_COMPACTION = new GCCause("G1 Compaction Pause");
     public static GCCause UNKNOWN_GCCAUSE = new GCCause("unknown GCCause");
 
     static {
@@ -83,7 +84,7 @@ public class GCCause {
     }
 
     private static final List<GCCause> HeapMemoryTriggeredFullGCCauses = List.of(GC_LOCKER, ALLOCATION_FAILURE,
-            ERGONOMICS, G1_HUMONGOUS_ALLOCATION, PROMOTION_FAILED);
+            ERGONOMICS, G1_HUMONGOUS_ALLOCATION, PROMOTION_FAILED, G1_COMPACTION);
 
     public boolean isHeapMemoryTriggeredFullGCCause() {
         return HeapMemoryTriggeredFullGCCauses.contains(this);

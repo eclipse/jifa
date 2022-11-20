@@ -92,6 +92,8 @@ public class G1GCModel extends GCModel {
         return (type == YOUNG_GC || type == FULL_GC || type == G1_MIXED_GC) && event.getMemoryItems() != null;
     }
 
+    private static List<MemoryArea> AREAS_COUNTED_BY_REGION = List.of(EDEN, SURVIVOR, OLD, HUMONGOUS, ARCHIVE);
+
     private void inferHeapRegionSize() {
         if (heapRegionSize != UNKNOWN_INT) {
             return;
@@ -105,11 +107,15 @@ public class G1GCModel extends GCModel {
                 continue;
             }
             long regionCount = Arrays.stream(event.getMemoryItems())
-                    .filter(item -> item != null && item.getArea() != METASPACE && item.getArea() != HEAP)
+                    .filter(item -> item != null && AREAS_COUNTED_BY_REGION.contains(item.getArea())
+                            && item.getPreUsed() != UNKNOWN_INT)
                     .mapToLong(GCMemoryItem::getPreUsed)
                     .sum();
+            if (regionCount < 3) {
+                continue;
+            }
             double bytesPerRegion = event.getMemoryItem(HEAP).getPreUsed() / (double) regionCount;
-            heapRegionSize = (int) Math.pow(2, Math.ceil(Math.log(bytesPerRegion) / Math.log(2)));
+            heapRegionSize = (long) Math.pow(2, Math.ceil(Math.log(bytesPerRegion) / Math.log(2)));
             return;
         }
     }
@@ -123,7 +129,7 @@ public class G1GCModel extends GCModel {
                 continue;
             }
             for (GCMemoryItem item : event.getMemoryItems()) {
-                if (item != null && item.getArea() != MemoryArea.METASPACE && item.getArea() != HEAP) {
+                if (item != null && AREAS_COUNTED_BY_REGION.contains(item.getArea())) {
                     item.multiply(heapRegionSize);
                 }
             }

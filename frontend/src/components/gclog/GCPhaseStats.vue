@@ -212,7 +212,7 @@ export default {
       })
     },
     parentHasGCCause(phase) {
-      return phase !== "CMS" && phase !== "Concurrent Cycle"
+      return phase !== "CMS" && phase !== "Concurrent Mark Cycle" && phase !== "Concurrent Undo Cycle"
     },
     columnWidth(column) {
       return column === "name" ? undefined : "120"

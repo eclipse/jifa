@@ -19,6 +19,7 @@ public enum MemoryArea {
     YOUNG("young"),
     OLD("old"),
     HUMONGOUS("humongous"),
+    ARCHIVE("archive"),
     HEAP("heap"), //young + old + humongous
     METASPACE("metaspace"), // also represents perm
     CLASS("class"),
@@ -55,6 +56,8 @@ public enum MemoryArea {
                 return NONCLASS;
             case "humongous":
                 return HUMONGOUS;
+            case "archive":
+                return ARCHIVE;
             case "total":
             case "heap":
                 return HEAP;

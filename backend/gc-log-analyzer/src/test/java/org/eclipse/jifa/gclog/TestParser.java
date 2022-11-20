@@ -36,13 +36,14 @@ import static org.eclipse.jifa.gclog.event.evnetInfo.GCCause.*;
 import static org.eclipse.jifa.gclog.event.evnetInfo.GCEventBooleanType.TO_SPACE_EXHAUSTED;
 import static org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea.*;
 import static org.eclipse.jifa.gclog.TestUtil.stringToBufferedReader;
+import static org.eclipse.jifa.gclog.util.Constant.UNKNOWN_INT;
 
 public class TestParser {
 
     public static final double DELTA = 1e-6;
 
     @Test
-    public void testJDK11G1Parse() throws Exception {
+    public void testJDK11G1Parser() throws Exception {
         String log =
                 "[0.015s][info][gc,heap] Heap region size: 1M\n" +
                         "[0.017s][info][gc     ] Using G1\n" +
@@ -1635,5 +1636,190 @@ public class TestParser {
         Assert.assertEquals(statistics.get(0).getStartTime(), 10417, DELTA);
         Assert.assertEquals(statistics.get(0).get("System: Java Threads threads").getMax10s(), 11, DELTA);
         Assert.assertEquals(statistics.get(0).get("System: Java Threads threads").getMax10h(), 11, DELTA);
+    }
+
+    @Test
+    public void testJDK17G1Parser() throws Exception {
+        String log =
+                "[0.020s][info][gc] Using G1\n" +
+                        "[0.022s][info][gc,init] Version: 17.0.1+12-39 (release)\n" +
+                        "[0.022s][info][gc,init] CPUs: 8 total, 8 available\n" +
+                        "[0.022s][info][gc,init] Memory: 16384M\n" +
+                        "[0.022s][info][gc,init] Large Page Support: Disabled\n" +
+                        "[0.022s][info][gc,init] NUMA Support: Disabled\n" +
+                        "[0.022s][info][gc,init] Compressed Oops: Enabled (Zero based)\n" +
+                        "[0.022s][info][gc,init] Heap Region Size: 1M\n" +
+                        "[0.022s][info][gc,init] Heap Min Capacity: 100M\n" +
+                        "[0.022s][info][gc,init] Heap Initial Capacity: 100M\n" +
+                        "[0.022s][info][gc,init] Heap Max Capacity: 100M\n" +
+                        "[0.022s][info][gc,init] Pre-touch: Disabled\n" +
+                        "[0.022s][info][gc,init] Parallel Workers: 8\n" +
+                        "[0.022s][info][gc,init] Concurrent Workers: 2\n" +
+                        "[0.022s][info][gc,init] Concurrent Refinement Workers: 8\n" +
+                        "[0.022s][info][gc,init] Periodic GC: Disabled\n" +
+                        "[0.024s][info][gc,metaspace] CDS archive(s) mapped at: [0x0000000800000000-0x0000000800bd4000-0x0000000800bd4000), size 12402688, SharedBaseAddress: 0x0000000800000000, ArchiveRelocationMode: 0.\n" +
+                        "[0.025s][info][gc,metaspace] Compressed class space mapped at: 0x0000000800c00000-0x0000000840c00000, reserved size: 1073741824\n" +
+                        "[0.025s][info][gc,metaspace] Narrow klass base: 0x0000000800000000, Narrow klass shift: 0, Narrow klass range: 0x100000000\n" +
+                        "[0.333s][info][gc,start    ] GC(0) Pause Young (Normal) (G1 Evacuation Pause)\n" +
+                        "[0.333s][info][gc,task     ] GC(0) Using 2 workers of 8 for evacuation\n" +
+                        "[0.354s][info][gc,phases   ] GC(0)   Pre Evacuate Collection Set: 0.0ms\n" +
+                        "[0.354s][info][gc,phases   ] GC(0)   Merge Heap Roots: 0.1ms\n" +
+                        "[0.354s][info][gc,phases   ] GC(0)   Evacuate Collection Set: 20.3ms\n" +
+                        "[0.354s][info][gc,phases   ] GC(0)   Post Evacuate Collection Set: 0.2ms\n" +
+                        "[0.354s][info][gc,phases   ] GC(0)   Other: 0.3ms\n" +
+                        "[0.354s][info][gc,heap     ] GC(0) Eden regions: 50->0(43)\n" +
+                        "[0.354s][info][gc,heap     ] GC(0) Survivor regions: 0->7(7)\n" +
+                        "[0.354s][info][gc,heap     ] GC(0) Old regions: 0->18\n" +
+                        "[0.354s][info][gc,heap     ] GC(0) Archive regions: 2->2\n" +
+                        "[0.354s][info][gc,heap     ] GC(0) Humongous regions: 1->1\n" +
+                        "[0.354s][info][gc,metaspace] GC(0) Metaspace: 87K(320K)->87K(320K) NonClass: 84K(192K)->84K(192K) Class: 3K(128K)->3K(128K)\n" +
+                        "[0.354s][info][gc          ] GC(0) Pause Young (Normal) (G1 Evacuation Pause) 51M->26M(100M) 20.955ms\n" +
+                        "[0.354s][info][gc,cpu      ] GC(0) User=0.03s Sys=0.01s Real=0.02s\n" +
+                        "[1.097s][info][gc          ] GC(1) Concurrent Mark Cycle\n" +
+                        "[1.097s][info][gc,marking  ] GC(1) Concurrent Clear Claimed Marks\n" +
+                        "[1.097s][info][gc,marking  ] GC(1) Concurrent Clear Claimed Marks 0.020ms\n" +
+                        "[1.097s][info][gc,marking  ] GC(1) Concurrent Scan Root Regions\n" +
+                        "[1.099s][info][gc,marking  ] GC(1) Concurrent Scan Root Regions 1.966ms\n" +
+                        "[1.099s][info][gc,marking  ] GC(1) Concurrent Mark\n" +
+                        "[1.099s][info][gc,marking  ] GC(1) Concurrent Mark From Roots\n" +
+                        "[1.099s][info][gc,task     ] GC(1) Using 2 workers of 2 for marking\n" +
+                        "[1.113s][info][gc,marking  ] GC(1) Concurrent Mark From Roots 14.489ms\n" +
+                        "[1.113s][info][gc,marking  ] GC(1) Concurrent Preclean\n" +
+                        "[1.113s][info][gc,marking  ] GC(1) Concurrent Preclean 0.061ms\n" +
+                        "[1.114s][info][gc,start    ] GC(1) Pause Remark\n" +
+                        "[1.114s][info][gc          ] GC(1) Pause Remark 82M->65M(100M) 0.341ms\n" +
+                        "[1.114s][info][gc,cpu      ] GC(1) User=0.00s Sys=0.00s Real=0.00s\n" +
+                        "[1.115s][info][gc,marking  ] GC(1) Concurrent Mark 15.656ms\n" +
+                        "[1.115s][info][gc,marking  ] GC(1) Concurrent Rebuild Remembered Sets\n" +
+                        "[1.121s][info][gc,marking  ] GC(1) Concurrent Rebuild Remembered Sets 6.891ms\n" +
+                        "[1.122s][info][gc,start    ] GC(1) Pause Cleanup\n" +
+                        "[1.122s][info][gc          ] GC(1) Pause Cleanup 65M->65M(100M) 0.056ms\n" +
+                        "[1.122s][info][gc,cpu      ] GC(1) User=0.00s Sys=0.00s Real=0.00s\n" +
+                        "[1.122s][info][gc,marking  ] GC(1) Concurrent Cleanup for Next Mark\n" +
+                        "[1.122s][info][gc,marking  ] GC(1) Concurrent Cleanup for Next Mark 0.417ms\n" +
+                        "[1.122s][info][gc          ] GC(1) Concurrent Mark Cycle 25.265ms\n" +
+                        "[1.715s][info][gc,start    ] GC(2) Pause Full (G1 Compaction Pause)\n" +
+                        "[1.715s][info][gc,phases,start] GC(2) Phase 1: Mark live objects\n" +
+                        "[1.729s][info][gc,phases      ] GC(2) Phase 1: Mark live objects 14.039ms\n" +
+                        "[1.729s][info][gc,phases,start] GC(2) Phase 2: Prepare for compaction\n" +
+                        "[1.730s][info][gc,phases      ] GC(2) Phase 2: Prepare for compaction 0.875ms\n" +
+                        "[1.730s][info][gc,phases,start] GC(2) Phase 3: Adjust pointers\n" +
+                        "[1.736s][info][gc,phases      ] GC(2) Phase 3: Adjust pointers 6.156ms\n" +
+                        "[1.736s][info][gc,phases,start] GC(2) Phase 4: Compact heap\n" +
+                        "[1.738s][info][gc,phases      ] GC(2) Phase 4: Compact heap 1.153ms\n" +
+                        "[1.738s][info][gc,heap        ] GC(2) Eden regions: 0->0(50)\n" +
+                        "[1.738s][info][gc,heap        ] GC(2) Survivor regions: 0->0(0)\n" +
+                        "[1.738s][info][gc,heap        ] GC(2) Old regions: 96->68\n" +
+                        "[1.738s][info][gc,heap        ] GC(2) Archive regions: 2->2\n" +
+                        "[1.738s][info][gc,heap        ] GC(2) Humongous regions: 2->1\n" +
+                        "[1.738s][info][gc,metaspace   ] GC(2) Metaspace: 87K(320K)->87K(320K) NonClass: 84K(192K)->84K(192K) Class: 3K(128K)->3K(128K)\n" +
+                        "[1.738s][info][gc             ] GC(2) Pause Full (G1 Compaction Pause) 98M->69M(100M) 22.935ms\n" +
+                        "[1.738s][info][gc,cpu         ] GC(2) User=0.04s Sys=0.00s Real=0.02s\n" +
+                        "[2.145s][info][gc          ] GC(3) Concurrent Undo Cycle\n" +
+                        "[2.145s][info][gc,marking  ] GC(3) Concurrent Cleanup for Next Mark\n" +
+                        "[2.145s][info][gc,marking  ] GC(3) Concurrent Cleanup for Next Mark 0.109ms\n" +
+                        "[2.145s][info][gc          ] GC(3) Concurrent Undo Cycle 0.125ms";
+
+        JDK11G1GCLogParser parser = (JDK11G1GCLogParser)
+                (new GCLogParserFactory().getParser(stringToBufferedReader(log)));
+        G1GCModel model = (G1GCModel) parser.parse(stringToBufferedReader(log));
+        model.calculateDerivedInfo(new DefaultProgressListener());
+        // assert parsing success
+        Assert.assertNotNull(model);
+        Assert.assertEquals(model.getGcEvents().size(), 4);
+        Assert.assertEquals(model.getHeapRegionSize(), 1L * 1024 * 1024);
+
+        GCEvent youngGC = model.getGcEvents().get(0);
+        Assert.assertEquals(youngGC.getGcid(), 0);
+        Assert.assertEquals(youngGC.getStartTime(), 333, DELTA);
+        Assert.assertEquals(youngGC.getDuration(), 20.955, DELTA);
+        Assert.assertEquals(youngGC.getEventType(), GCEventType.YOUNG_GC);
+        Assert.assertEquals(youngGC.getCause(), G1_EVACUATION_PAUSE);
+        Assert.assertEquals(youngGC.getMemoryItem(YOUNG), new GCMemoryItem(YOUNG, 50 * 1024 * 1024, UNKNOWN_INT, 7 * 1024 * 1024, 50 * 1024 * 1024));
+        Assert.assertEquals(youngGC.getMemoryItem(EDEN), new GCMemoryItem(EDEN, 50 * 1024 * 1024, UNKNOWN_INT, 0 * 1024 * 1024, 43 * 1024 * 1024));
+        Assert.assertEquals(youngGC.getMemoryItem(SURVIVOR), new GCMemoryItem(SURVIVOR, 0 * 1024, UNKNOWN_INT, 7 * 1024 * 1024, 7 * 1024 * 1024));
+        Assert.assertEquals(youngGC.getMemoryItem(OLD), new GCMemoryItem(OLD, 0, UNKNOWN_INT, 18 * 1024 * 1024, 50 * 1024 * 1024));
+        Assert.assertEquals(youngGC.getMemoryItem(ARCHIVE), new GCMemoryItem(ARCHIVE, 2 * 1024 * 1024, UNKNOWN_INT, 2 * 1024 * 1024, UNKNOWN_INT));
+        Assert.assertEquals(youngGC.getMemoryItem(HUMONGOUS), new GCMemoryItem(HUMONGOUS, 1 * 1024 * 1024, UNKNOWN_INT, 1 * 1024 * 1024, UNKNOWN_INT));
+        Assert.assertEquals(youngGC.getMemoryItem(METASPACE), new GCMemoryItem(METASPACE, 87 * 1024, 320 * 1024, 87 * 1024, 320 * 1024));
+        Assert.assertEquals(youngGC.getMemoryItem(NONCLASS), new GCMemoryItem(NONCLASS, 84 * 1024, 192 * 1024, 84 * 1024, 192 * 1024));
+        Assert.assertEquals(youngGC.getMemoryItem(CLASS), new GCMemoryItem(CLASS, 3 * 1024, 128 * 1024, 3 * 1024, 128 * 1024));
+        Assert.assertEquals(youngGC.getMemoryItem(HEAP), new GCMemoryItem(HEAP, 51 * 1024 * 1024, UNKNOWN_INT, 26 * 1024 * 1024, 100 * 1024 * 1024));
+        Assert.assertEquals(youngGC.getCpuTime().getReal(), 20, DELTA);
+        Assert.assertEquals(youngGC.getPhases().size(), 5);
+        Assert.assertEquals(youngGC.getPhases().get(1).getEventType(), GCEventType.G1_MERGE_HEAP_ROOTS);
+        Assert.assertEquals(youngGC.getPhases().get(1).getDuration(), 0.1, DELTA);
+        for (GCEvent phase : youngGC.getPhases()) {
+            Assert.assertTrue(phase.getStartTime() >= 0);
+            Assert.assertTrue(phase.getDuration() >= 0);
+        }
+
+        GCEvent concurrentCycle = model.getGcEvents().get(1);
+        Assert.assertEquals(concurrentCycle.getEventType(), GCEventType.G1_CONCURRENT_CYCLE);
+        Assert.assertEquals(concurrentCycle.getGcid(), 1);
+        Assert.assertEquals(concurrentCycle.getStartTime(), 1097, DELTA);
+        Assert.assertEquals(concurrentCycle.getDuration(), 25.265, DELTA);
+        Assert.assertEquals(concurrentCycle.getPhases().size(), 9);
+        for (GCEvent phase : concurrentCycle.getPhases()) {
+            Assert.assertTrue(phase.getStartTime() > 0);
+            Assert.assertTrue(phase.getDuration() > 0);
+        }
+
+        GCEvent fullGC = model.getGcEvents().get(2);
+        Assert.assertEquals(fullGC.getGcid(), 2);
+        Assert.assertEquals(fullGC.getStartTime(), 1715, DELTA);
+        Assert.assertEquals(fullGC.getDuration(), 22.935, DELTA);
+        Assert.assertEquals(fullGC.getEventType(), GCEventType.FULL_GC);
+        Assert.assertEquals(fullGC.getCause(), G1_COMPACTION);
+        Assert.assertEquals(fullGC.getMemoryItem(YOUNG), new GCMemoryItem(YOUNG, 0 * 1024 * 1024, UNKNOWN_INT, 0 * 1024 * 1024, 50 * 1024 * 1024));
+        Assert.assertEquals(fullGC.getMemoryItem(HEAP), new GCMemoryItem(HEAP, 98 * 1024 * 1024, UNKNOWN_INT, 69 * 1024 * 1024, 100 * 1024 * 1024));
+        Assert.assertEquals(fullGC.getCpuTime().getReal(), 20, DELTA);
+        Assert.assertEquals(fullGC.getPhases().size(), 4);
+        for (GCEvent phase : fullGC.getPhases()) {
+            Assert.assertTrue(phase.getStartTime() >= 0);
+            Assert.assertTrue(phase.getDuration() >= 0);
+        }
+
+        GCEvent concurrentUndo = model.getGcEvents().get(3);
+        Assert.assertEquals(concurrentUndo.getEventType(), GCEventType.G1_CONCURRENT_UNDO_CYCLE);
+        Assert.assertEquals(concurrentUndo.getGcid(), 3);
+        Assert.assertEquals(concurrentUndo.getStartTime(), 2145, DELTA);
+        Assert.assertEquals(concurrentUndo.getDuration(), 0.125, DELTA);
+        Assert.assertEquals(concurrentUndo.getPhases().size(), 1);
+        for (GCEvent phase : concurrentUndo.getPhases()) {
+            Assert.assertTrue(phase.getStartTime() > 0);
+            Assert.assertTrue(phase.getDuration() > 0);
+        }
+    }
+
+    @Test
+    public void testJDK17G1InferRegionSize() throws Exception {
+        String log =
+                "[1.715s][info][gc,start    ] GC(2) Pause Full (G1 Compaction Pause)\n" +
+                        "[1.715s][info][gc,phases,start] GC(2) Phase 1: Mark live objects\n" +
+                        "[1.729s][info][gc,phases      ] GC(2) Phase 1: Mark live objects 14.039ms\n" +
+                        "[1.729s][info][gc,phases,start] GC(2) Phase 2: Prepare for compaction\n" +
+                        "[1.730s][info][gc,phases      ] GC(2) Phase 2: Prepare for compaction 0.875ms\n" +
+                        "[1.730s][info][gc,phases,start] GC(2) Phase 3: Adjust pointers\n" +
+                        "[1.736s][info][gc,phases      ] GC(2) Phase 3: Adjust pointers 6.156ms\n" +
+                        "[1.736s][info][gc,phases,start] GC(2) Phase 4: Compact heap\n" +
+                        "[1.738s][info][gc,phases      ] GC(2) Phase 4: Compact heap 1.153ms\n" +
+                        "[1.738s][info][gc,heap        ] GC(2) Eden regions: 0->0(50)\n" +
+                        "[1.738s][info][gc,heap        ] GC(2) Survivor regions: 0->0(0)\n" +
+                        "[1.738s][info][gc,heap        ] GC(2) Old regions: 96->68\n" +
+                        "[1.738s][info][gc,heap        ] GC(2) Archive regions: 2->2\n" +
+                        "[1.738s][info][gc,heap        ] GC(2) Humongous regions: 2->1\n" +
+                        "[1.738s][info][gc,metaspace   ] GC(2) Metaspace: 87K(320K)->87K(320K) NonClass: 84K(192K)->84K(192K) Class: 3K(128K)->3K(128K)\n" +
+                        "[1.738s][info][gc             ] GC(2) Pause Full (G1 Compaction Pause) 98M->69M(100M) 22.935ms\n" +
+                        "[1.738s][info][gc,cpu         ] GC(2) User=0.04s Sys=0.00s Real=0.02s";
+
+        JDK11G1GCLogParser parser = (JDK11G1GCLogParser)
+                (new GCLogParserFactory().getParser(stringToBufferedReader(log)));
+        G1GCModel model = (G1GCModel) parser.parse(stringToBufferedReader(log));
+        model.calculateDerivedInfo(new DefaultProgressListener());
+        // assert parsing success
+        Assert.assertNotNull(model);
+        Assert.assertEquals(model.getGcEvents().size(), 1);
+        Assert.assertEquals(model.getHeapRegionSize(), 1L * 1024 * 1024);
     }
 }

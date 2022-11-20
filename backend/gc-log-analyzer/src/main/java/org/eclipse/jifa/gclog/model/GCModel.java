@@ -633,7 +633,8 @@ public abstract class GCModel {
         //case 2: know young and old, calculate heap
         GCMemoryItem heap = event.getMemoryItemOrEmptyObject(YOUNG)
                 .merge(event.getMemoryItem(OLD))
-                .mergeIfPresent(event.getMemoryItem(HUMONGOUS));
+                .mergeIfPresent(event.getMemoryItem(HUMONGOUS))
+                .mergeIfPresent(event.getMemoryItem(ARCHIVE));
         heap.setArea(HEAP);
         event.setMemoryItem(event.getMemoryItemOrEmptyObject(HEAP)
                 .updateIfAbsent(heap), true);
@@ -641,7 +642,8 @@ public abstract class GCModel {
         //case 3: know old and heap, calculate young
         young = event.getMemoryItemOrEmptyObject(HEAP)
                 .subtract(event.getMemoryItem(OLD))
-                .subtractIfPresent(event.getMemoryItem(HUMONGOUS));
+                .subtractIfPresent(event.getMemoryItem(HUMONGOUS))
+                .subtractIfPresent(event.getMemoryItem(ARCHIVE));
         young.setArea(YOUNG);
         event.setMemoryItem(event.getMemoryItemOrEmptyObject(YOUNG)
                 .updateIfAbsent(young), true);
@@ -649,7 +651,8 @@ public abstract class GCModel {
         //case 4: know young and heap, calculate old
         GCMemoryItem old = event.getMemoryItemOrEmptyObject(HEAP)
                 .subtract(event.getMemoryItem(YOUNG))
-                .subtractIfPresent(event.getMemoryItem(HUMONGOUS));
+                .subtractIfPresent(event.getMemoryItem(HUMONGOUS))
+                .subtractIfPresent(event.getMemoryItem(ARCHIVE));
         old.setArea(OLD);
         event.setMemoryItem(event.getMemoryItemOrEmptyObject(OLD)
                 .updateIfAbsent(old), true);

@@ -43,6 +43,7 @@ public class GCLogParserFactory {
             new ParserMetadataRule("CMS", GCLogStyle.UNKNOWN, CMS),
             new ParserMetadataRule("Pre Evacuate Collection Set", UNIFIED, G1),
             new ParserMetadataRule("G1 Evacuation Pause", GCLogStyle.UNKNOWN, G1),
+            new ParserMetadataRule("Eden regions", UNIFIED, G1),
             new ParserMetadataRule("[GC Worker Start (ms): ", GCLogStyle.UNKNOWN, G1),
             new ParserMetadataRule("[concurrent-root-region-scan-start", GCLogStyle.UNKNOWN, G1),
             new ParserMetadataRule("Concurrent Scan Root Regions", GCLogStyle.UNKNOWN, G1),

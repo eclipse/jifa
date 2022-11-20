@@ -179,6 +179,7 @@ public abstract class JDK11G1OrGenerationalGCLogParser extends AbstractJDK11GCLo
      * [0.524s][info   ][gc,heap      ] GC(0) Survivor regions: 8->9(10)
      * [0.524s][info   ][gc,heap      ] GC(0) Old regions: 11->12
      * [0.524s][info   ][gc,heap      ] GC(0) Humongous regions: 13->14
+     * [1.738s][info][gc,heap        ] GC(2) Archive regions: 2->2
      * [0.524s][info   ][gc,metaspace ] GC(0) Metaspace: 15K->16K(17K)
      * [2.285s][info ][gc,heap      ] GC(2) Old: 23127K->2019K(43712K)
      * [0.160s][info ][gc,heap      ] GC(0) ParNew: 17393K->2175K(19648K)
