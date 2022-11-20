@@ -105,10 +105,10 @@ public class GCLogParserFactory {
                 case PARALLEL:
                 case CMS:
                 case UNKNOWN:
-                    parser = new JDK8GenerationalGCLogParser();
+                    parser = new PreUnifiedGenerationalGCLogParser();
                     break;
                 case G1:
-                    parser = new JDK8G1GCLogParser();
+                    parser = new PreUnifiedG1GCLogParser();
                     break;
                 default:
                     ErrorUtil.shouldNotReachHere();
@@ -119,13 +119,13 @@ public class GCLogParserFactory {
                 case PARALLEL:
                 case CMS:
                 case UNKNOWN:
-                    parser = new JDK11GenerationalGCLogParser();
+                    parser = new UnifiedGenerationalGCLogParser();
                     break;
                 case G1:
-                    parser = new JDK11G1GCLogParser();
+                    parser = new UnifiedG1GCLogParser();
                     break;
                 case ZGC:
-                    parser = new JDK11ZGCLogParser();
+                    parser = new UnifiedZGCLogParser();
                     break;
                 case SHENANDOAH:
                     throw new JifaException("Shenandoah is not supported.");

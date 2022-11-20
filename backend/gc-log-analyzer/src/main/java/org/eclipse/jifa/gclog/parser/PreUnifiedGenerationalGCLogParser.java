@@ -27,13 +27,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea.HEAP;
-import static org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea.METASPACE;
 import static org.eclipse.jifa.gclog.model.GCEventType.*;
 import static org.eclipse.jifa.gclog.parser.ParseRule.ParseRuleContext;
 import static org.eclipse.jifa.gclog.parser.ParseRule.ParseRuleContext.EVENT;
 import static org.eclipse.jifa.gclog.parser.ParseRule.PrefixAndValueParseRule;
 
-public class JDK8GenerationalGCLogParser extends AbstractJDK8GCLogParser {
+public class PreUnifiedGenerationalGCLogParser extends AbstractPreUnifiedGCLogParser {
     private final static GCEventType[] YOUNG_FULL_GC = {YOUNG_GC, FULL_GC};
     private final static GCEventType[] REFERENCE_GC_TYPES = {YOUNG_GC, FULL_GC, WEAK_REFS_PROCESSING};
     private final static GCEventType[] CPU_TIME_TYPES = {YOUNG_GC, FULL_GC, CMS_INITIAL_MARK, CMS_CONCURRENT_MARK, CMS_CONCURRENT_PRECLEAN, CMS_CONCURRENT_ABORTABLE_PRECLEAN, CMS_FINAL_REMARK, CMS_CONCURRENT_SWEEP, CMS_CONCURRENT_RESET};
@@ -76,27 +75,27 @@ public class JDK8GenerationalGCLogParser extends AbstractJDK8GCLogParser {
         fullSentenceRules = new ArrayList<>();
         fullSentenceRules.add(commandLineRule);
         fullSentenceRules.add(cpuTimeRule);
-        fullSentenceRules.add(new PrefixAndValueParseRule(" (concurrent mode interrupted)", JDK8GenerationalGCLogParser::parseCMSPhase));
-        fullSentenceRules.add(new PrefixAndValueParseRule(" (concurrent mode failure)", JDK8GenerationalGCLogParser::parseCMSPhase));
-        fullSentenceRules.add(new PrefixAndValueParseRule(" (promotion failed", JDK8GenerationalGCLogParser::parsePromotionFailed));
+        fullSentenceRules.add(new PrefixAndValueParseRule(" (concurrent mode interrupted)", PreUnifiedGenerationalGCLogParser::parseCMSPhase));
+        fullSentenceRules.add(new PrefixAndValueParseRule(" (concurrent mode failure)", PreUnifiedGenerationalGCLogParser::parseCMSPhase));
+        fullSentenceRules.add(new PrefixAndValueParseRule(" (promotion failed", PreUnifiedGenerationalGCLogParser::parsePromotionFailed));
 
         gcTraceTimeRules = new ArrayList<>();
-        gcTraceTimeRules.add(JDK8GenerationalGCLogParser::parseGenerationCollection);
-        gcTraceTimeRules.add(new PrefixAndValueParseRule("GC (CMS Initial Mark)", JDK8GenerationalGCLogParser::parseCMSPhase));
-        gcTraceTimeRules.add(new PrefixAndValueParseRule("CMS-concurrent-mark", JDK8GenerationalGCLogParser::parseCMSPhase));
-        gcTraceTimeRules.add(new PrefixAndValueParseRule("CMS-concurrent-preclean", JDK8GenerationalGCLogParser::parseCMSPhase));
-        gcTraceTimeRules.add(new PrefixAndValueParseRule("CMS-concurrent-abortable-preclean", JDK8GenerationalGCLogParser::parseCMSPhase));
-        gcTraceTimeRules.add(new PrefixAndValueParseRule("GC (CMS Final Remark)", JDK8GenerationalGCLogParser::parseCMSPhase));
-        gcTraceTimeRules.add(new PrefixAndValueParseRule("Rescan", JDK8GenerationalGCLogParser::parseCMSPhase));
-        gcTraceTimeRules.add(new PrefixAndValueParseRule("weak refs processing", JDK8GenerationalGCLogParser::parseCMSPhase));
-        gcTraceTimeRules.add(new PrefixAndValueParseRule("class unloading", JDK8GenerationalGCLogParser::parseCMSPhase));
-        gcTraceTimeRules.add(new PrefixAndValueParseRule("scrub symbol table", JDK8GenerationalGCLogParser::parseCMSPhase));
-        gcTraceTimeRules.add(new PrefixAndValueParseRule("scrub string table", JDK8GenerationalGCLogParser::parseCMSPhase));
-        gcTraceTimeRules.add(new PrefixAndValueParseRule("CMS-concurrent-sweep", JDK8GenerationalGCLogParser::parseCMSPhase));
-        gcTraceTimeRules.add(new PrefixAndValueParseRule("CMS-concurrent-reset", JDK8GenerationalGCLogParser::parseCMSPhase));
+        gcTraceTimeRules.add(PreUnifiedGenerationalGCLogParser::parseGenerationCollection);
+        gcTraceTimeRules.add(new PrefixAndValueParseRule("GC (CMS Initial Mark)", PreUnifiedGenerationalGCLogParser::parseCMSPhase));
+        gcTraceTimeRules.add(new PrefixAndValueParseRule("CMS-concurrent-mark", PreUnifiedGenerationalGCLogParser::parseCMSPhase));
+        gcTraceTimeRules.add(new PrefixAndValueParseRule("CMS-concurrent-preclean", PreUnifiedGenerationalGCLogParser::parseCMSPhase));
+        gcTraceTimeRules.add(new PrefixAndValueParseRule("CMS-concurrent-abortable-preclean", PreUnifiedGenerationalGCLogParser::parseCMSPhase));
+        gcTraceTimeRules.add(new PrefixAndValueParseRule("GC (CMS Final Remark)", PreUnifiedGenerationalGCLogParser::parseCMSPhase));
+        gcTraceTimeRules.add(new PrefixAndValueParseRule("Rescan", PreUnifiedGenerationalGCLogParser::parseCMSPhase));
+        gcTraceTimeRules.add(new PrefixAndValueParseRule("weak refs processing", PreUnifiedGenerationalGCLogParser::parseCMSPhase));
+        gcTraceTimeRules.add(new PrefixAndValueParseRule("class unloading", PreUnifiedGenerationalGCLogParser::parseCMSPhase));
+        gcTraceTimeRules.add(new PrefixAndValueParseRule("scrub symbol table", PreUnifiedGenerationalGCLogParser::parseCMSPhase));
+        gcTraceTimeRules.add(new PrefixAndValueParseRule("scrub string table", PreUnifiedGenerationalGCLogParser::parseCMSPhase));
+        gcTraceTimeRules.add(new PrefixAndValueParseRule("CMS-concurrent-sweep", PreUnifiedGenerationalGCLogParser::parseCMSPhase));
+        gcTraceTimeRules.add(new PrefixAndValueParseRule("CMS-concurrent-reset", PreUnifiedGenerationalGCLogParser::parseCMSPhase));
 
-        gcTraceTimeRules.add(new PrefixAndValueParseRule("GC", JDK8GenerationalGCLogParser::parseYoungFullGC));
-        gcTraceTimeRules.add(new PrefixAndValueParseRule("Full GC", JDK8GenerationalGCLogParser::parseYoungFullGC));
+        gcTraceTimeRules.add(new PrefixAndValueParseRule("GC", PreUnifiedGenerationalGCLogParser::parseYoungFullGC));
+        gcTraceTimeRules.add(new PrefixAndValueParseRule("Full GC", PreUnifiedGenerationalGCLogParser::parseYoungFullGC));
     }
 
     private static void parsePromotionFailed(AbstractGCLogParser parser, ParseRuleContext context, String s, String s1) {

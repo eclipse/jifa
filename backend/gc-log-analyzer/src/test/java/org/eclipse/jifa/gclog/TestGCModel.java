@@ -24,7 +24,7 @@ import org.eclipse.jifa.gclog.model.modeInfo.GCLogStyle;
 import org.eclipse.jifa.gclog.model.modeInfo.VmOptions;
 import org.eclipse.jifa.gclog.parser.GCLogParser;
 import org.eclipse.jifa.gclog.parser.GCLogParserFactory;
-import org.eclipse.jifa.gclog.parser.JDK8G1GCLogParser;
+import org.eclipse.jifa.gclog.parser.PreUnifiedG1GCLogParser;
 import org.eclipse.jifa.gclog.util.Constant;
 import org.eclipse.jifa.gclog.vo.*;
 import org.junit.Assert;
@@ -258,7 +258,7 @@ public class TestGCModel {
                 "  class space    used 14475K, capacity 16875K, committed 17152K, reserved 1048576K\n" +
                 "}\n" +
                 " [Times: user=0.29 sys=0.00, real=0.71 secs] ";
-        JDK8G1GCLogParser parser = (JDK8G1GCLogParser)
+        PreUnifiedG1GCLogParser parser = (PreUnifiedG1GCLogParser)
                 (new GCLogParserFactory().getParser(stringToBufferedReader(log)));
 
         G1GCModel model = (G1GCModel) parser.parse(stringToBufferedReader(log));

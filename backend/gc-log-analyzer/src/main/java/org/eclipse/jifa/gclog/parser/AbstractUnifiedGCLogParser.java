@@ -32,7 +32,7 @@ import static org.eclipse.jifa.gclog.parser.ParseRule.ParseRuleContext.UPTIME;
 /*
  * Currently, we only consider -Xlog:gc*=info. We will continue support for cases in the future.
  */
-public abstract class AbstractJDK11GCLogParser extends AbstractGCLogParser {
+public abstract class AbstractUnifiedGCLogParser extends AbstractGCLogParser {
     private static List<ParseRule> withoutGCIDRules;
     private static List<ParseRule> withGCIDRules;
 

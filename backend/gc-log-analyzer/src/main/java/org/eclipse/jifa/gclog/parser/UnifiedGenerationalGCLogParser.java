@@ -24,7 +24,7 @@ import java.util.List;
 
 import static org.eclipse.jifa.gclog.model.GCEventType.*;
 
-public class JDK11GenerationalGCLogParser extends JDK11G1OrGenerationalGCLogParser {
+public class UnifiedGenerationalGCLogParser extends UnifiedG1OrGenerationalGCLogParser {
     private final static GCEventType[] CMS_CPU_TIME_EVENTS = {CMS_INITIAL_MARK, CMS_CONCURRENT_MARK,
             CMS_CONCURRENT_PRECLEAN, CMS_FINAL_REMARK, CMS_CONCURRENT_SWEEP, CMS_CONCURRENT_RESET};
 
@@ -127,22 +127,22 @@ public class JDK11GenerationalGCLogParser extends JDK11G1OrGenerationalGCLogPars
         withoutGCIDRules = new ArrayList<>(getSharedWithoutGCIDRules());
 
         withGCIDRules = new ArrayList<>(getSharedWithGCIDRules());
-        withGCIDRules.add(new ParseRule.FixedContentParseRule("Promotion failed", JDK11GenerationalGCLogParser::parsePromotionFailed));
-        withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Phase 1: Mark live objects", JDK11G1OrGenerationalGCLogParser::parsePhase));
-        withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Phase 2: Compute new object addresses", JDK11G1OrGenerationalGCLogParser::parsePhase));
-        withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Phase 3: Adjust pointers", JDK11G1OrGenerationalGCLogParser::parsePhase));
-        withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Phase 4: Move objects", JDK11G1OrGenerationalGCLogParser::parsePhase));
-        withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Pause Initial Mark", JDK11G1OrGenerationalGCLogParser::parsePhase));
-        withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Concurrent Mark", JDK11G1OrGenerationalGCLogParser::parsePhase));
-        withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Concurrent Preclean", JDK11G1OrGenerationalGCLogParser::parsePhase));
-        withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Pause Remark", JDK11G1OrGenerationalGCLogParser::parsePhase));
-        withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Concurrent Sweep", JDK11G1OrGenerationalGCLogParser::parsePhase));
-        withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Concurrent Reset", JDK11G1OrGenerationalGCLogParser::parsePhase));
-        withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Marking Phase", JDK11G1OrGenerationalGCLogParser::parsePhase));
-        withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Summary Phase", JDK11G1OrGenerationalGCLogParser::parsePhase));
-        withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Adjust Roots", JDK11G1OrGenerationalGCLogParser::parsePhase));
-        withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Compaction Phase", JDK11G1OrGenerationalGCLogParser::parsePhase));
-        withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Post Compact", JDK11G1OrGenerationalGCLogParser::parsePhase));
+        withGCIDRules.add(new ParseRule.FixedContentParseRule("Promotion failed", UnifiedGenerationalGCLogParser::parsePromotionFailed));
+        withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Phase 1: Mark live objects", UnifiedG1OrGenerationalGCLogParser::parsePhase));
+        withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Phase 2: Compute new object addresses", UnifiedG1OrGenerationalGCLogParser::parsePhase));
+        withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Phase 3: Adjust pointers", UnifiedG1OrGenerationalGCLogParser::parsePhase));
+        withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Phase 4: Move objects", UnifiedG1OrGenerationalGCLogParser::parsePhase));
+        withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Pause Initial Mark", UnifiedG1OrGenerationalGCLogParser::parsePhase));
+        withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Concurrent Mark", UnifiedG1OrGenerationalGCLogParser::parsePhase));
+        withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Concurrent Preclean", UnifiedG1OrGenerationalGCLogParser::parsePhase));
+        withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Pause Remark", UnifiedG1OrGenerationalGCLogParser::parsePhase));
+        withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Concurrent Sweep", UnifiedG1OrGenerationalGCLogParser::parsePhase));
+        withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Concurrent Reset", UnifiedG1OrGenerationalGCLogParser::parsePhase));
+        withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Marking Phase", UnifiedG1OrGenerationalGCLogParser::parsePhase));
+        withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Summary Phase", UnifiedG1OrGenerationalGCLogParser::parsePhase));
+        withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Adjust Roots", UnifiedG1OrGenerationalGCLogParser::parsePhase));
+        withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Compaction Phase", UnifiedG1OrGenerationalGCLogParser::parsePhase));
+        withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Post Compact", UnifiedG1OrGenerationalGCLogParser::parsePhase));
     }
 
     @Override

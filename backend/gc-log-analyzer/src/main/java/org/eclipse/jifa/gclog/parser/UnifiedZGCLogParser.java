@@ -33,7 +33,7 @@ import static org.eclipse.jifa.gclog.model.GCEventType.*;
 import static org.eclipse.jifa.gclog.parser.ParseRule.ParseRuleContext.GCID;
 import static org.eclipse.jifa.gclog.parser.ParseRule.ParseRuleContext.UPTIME;
 
-public class JDK11ZGCLogParser extends AbstractJDK11GCLogParser {
+public class UnifiedZGCLogParser extends AbstractUnifiedGCLogParser {
     /*
      * [2021-08-31T08:08:17.108+0800] GC(374) Garbage Collection (Proactive)
      * [2021-08-31T08:08:17.114+0800] GC(374) Pause Mark Start 4.459ms
@@ -159,29 +159,29 @@ public class JDK11ZGCLogParser extends AbstractJDK11GCLogParser {
     }
 
     private static void initializeParseRules() {
-        withoutGCIDRules = new ArrayList<>(AbstractJDK11GCLogParser.getSharedWithoutGCIDRules());
-        withoutGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Allocation Stall", JDK11ZGCLogParser::parseAllocationStall));
-        withoutGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Out Of Memory", JDK11ZGCLogParser::pauseOutOfMemory));
-        withoutGCIDRules.add(JDK11ZGCLogParser::parseZGCStatisticLine);
+        withoutGCIDRules = new ArrayList<>(AbstractUnifiedGCLogParser.getSharedWithoutGCIDRules());
+        withoutGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Allocation Stall", UnifiedZGCLogParser::parseAllocationStall));
+        withoutGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Out Of Memory", UnifiedZGCLogParser::pauseOutOfMemory));
+        withoutGCIDRules.add(UnifiedZGCLogParser::parseZGCStatisticLine);
 
-        withGCIDRules = new ArrayList<>(AbstractJDK11GCLogParser.getSharedWithGCIDRules());
-        withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Pause Mark Start", JDK11ZGCLogParser::parsePhase));
-        withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Concurrent Mark", JDK11ZGCLogParser::parsePhase));
-        withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Pause Mark End", JDK11ZGCLogParser::parsePhase));
-        withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Concurrent Process Non-Strong References", JDK11ZGCLogParser::parsePhase));
-        withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Concurrent Reset Relocation Set", JDK11ZGCLogParser::parsePhase));
-        withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Concurrent Destroy Detached Pages", JDK11ZGCLogParser::parsePhase));
-        withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Concurrent Select Relocation Set", JDK11ZGCLogParser::parsePhase));
-        withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Concurrent Prepare Relocation Set", JDK11ZGCLogParser::parsePhase));
-        withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Pause Relocate Start", JDK11ZGCLogParser::parsePhase));
-        withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Concurrent Relocate", JDK11ZGCLogParser::parsePhase));
-        withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Metaspace", JDK11ZGCLogParser::parseMetaspace));
+        withGCIDRules = new ArrayList<>(AbstractUnifiedGCLogParser.getSharedWithGCIDRules());
+        withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Pause Mark Start", UnifiedZGCLogParser::parsePhase));
+        withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Concurrent Mark", UnifiedZGCLogParser::parsePhase));
+        withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Pause Mark End", UnifiedZGCLogParser::parsePhase));
+        withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Concurrent Process Non-Strong References", UnifiedZGCLogParser::parsePhase));
+        withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Concurrent Reset Relocation Set", UnifiedZGCLogParser::parsePhase));
+        withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Concurrent Destroy Detached Pages", UnifiedZGCLogParser::parsePhase));
+        withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Concurrent Select Relocation Set", UnifiedZGCLogParser::parsePhase));
+        withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Concurrent Prepare Relocation Set", UnifiedZGCLogParser::parsePhase));
+        withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Pause Relocate Start", UnifiedZGCLogParser::parsePhase));
+        withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Concurrent Relocate", UnifiedZGCLogParser::parsePhase));
+        withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Metaspace", UnifiedZGCLogParser::parseMetaspace));
         // some heap items are not listed because we do not use them
-        withGCIDRules.add(new ParseRule.PrefixAndValueParseRule(" Capacity", JDK11ZGCLogParser::parseHeap));
-        withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("     Used", JDK11ZGCLogParser::parseHeap));
-        withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Allocated", JDK11ZGCLogParser::parseHeap));
-        withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Reclaimed", JDK11ZGCLogParser::parseHeap));
-        withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Garbage Collection", JDK11ZGCLogParser::parseGarbageCollection));
+        withGCIDRules.add(new ParseRule.PrefixAndValueParseRule(" Capacity", UnifiedZGCLogParser::parseHeap));
+        withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("     Used", UnifiedZGCLogParser::parseHeap));
+        withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Allocated", UnifiedZGCLogParser::parseHeap));
+        withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Reclaimed", UnifiedZGCLogParser::parseHeap));
+        withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Garbage Collection", UnifiedZGCLogParser::parseGarbageCollection));
     }
 
     @Override
@@ -387,6 +387,8 @@ public class JDK11ZGCLogParser extends AbstractJDK11GCLogParser {
         switch (eventString) {
             case "Pause Mark Start":
                 return ZGC_PAUSE_MARK_START;
+            case "Pause Class Unloading":
+                return ZGC_PAUSE_CLASS_UNLOADING;
             case "Concurrent Mark":
                 return ZGC_CONCURRENT_MARK;
             case "Pause Mark End":

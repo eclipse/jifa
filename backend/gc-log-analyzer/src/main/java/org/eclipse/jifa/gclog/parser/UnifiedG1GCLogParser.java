@@ -30,7 +30,7 @@ import static org.eclipse.jifa.gclog.parser.ParseRule.*;
 import static org.eclipse.jifa.gclog.parser.ParseRule.ParseRuleContext.GCID;
 import static org.eclipse.jifa.gclog.parser.ParseRule.ParseRuleContext.UPTIME;
 
-public class JDK11G1GCLogParser extends JDK11G1OrGenerationalGCLogParser {
+public class UnifiedG1GCLogParser extends UnifiedG1OrGenerationalGCLogParser {
     private final static GCEventType[] YOUNG_MIXED = {YOUNG_GC, G1_MIXED_GC};
     private final static GCEventType[] CONCURRENT_CYCLE_CPU_TIME_EVENTS = {
             YOUNG_GC, G1_MIXED_GC, FULL_GC, G1_PAUSE_CLEANUP, G1_REMARK};
@@ -117,34 +117,34 @@ public class JDK11G1GCLogParser extends JDK11G1OrGenerationalGCLogParser {
 
     private static void initializeParseRules() {
         withoutGCIDRules = new ArrayList<>(getSharedWithoutGCIDRules());
-        withoutGCIDRules.add(new PrefixAndValueParseRule("Heap region size", JDK11G1GCLogParser::parseHeapRegionSize));
-        withoutGCIDRules.add(new PrefixAndValueParseRule("Heap Region Size:", JDK11G1GCLogParser::parseHeapRegionSize));
+        withoutGCIDRules.add(new PrefixAndValueParseRule("Heap region size", UnifiedG1GCLogParser::parseHeapRegionSize));
+        withoutGCIDRules.add(new PrefixAndValueParseRule("Heap Region Size:", UnifiedG1GCLogParser::parseHeapRegionSize));
 
         withGCIDRules = new ArrayList<>(getSharedWithGCIDRules());
-        withGCIDRules.add(new PrefixAndValueParseRule("  Pre Evacuate Collection Set", JDK11G1OrGenerationalGCLogParser::parsePhase));
-        withGCIDRules.add(new PrefixAndValueParseRule("  Merge Heap Roots", JDK11G1OrGenerationalGCLogParser::parsePhase));
-        withGCIDRules.add(new PrefixAndValueParseRule("  Evacuate Collection Set", JDK11G1OrGenerationalGCLogParser::parsePhase));
-        withGCIDRules.add(new PrefixAndValueParseRule("  Post Evacuate Collection Set", JDK11G1OrGenerationalGCLogParser::parsePhase));
-        withGCIDRules.add(new PrefixAndValueParseRule("  Other", JDK11G1OrGenerationalGCLogParser::parsePhase));
-        withGCIDRules.add(new PrefixAndValueParseRule("Concurrent Cycle", JDK11G1GCLogParser::parseConcurrentCycle));
-        withGCIDRules.add(new PrefixAndValueParseRule("Concurrent Mark Cycle", JDK11G1GCLogParser::parseConcurrentCycle));
-        withGCIDRules.add(new PrefixAndValueParseRule("Concurrent Undo Cycle", JDK11G1GCLogParser::parseConcurrentCycle));
-        withGCIDRules.add(new PrefixAndValueParseRule("Concurrent Clear Claimed Marks", JDK11G1OrGenerationalGCLogParser::parsePhase));
-        withGCIDRules.add(new PrefixAndValueParseRule("Concurrent Scan Root Regions", JDK11G1OrGenerationalGCLogParser::parsePhase));
-        withGCIDRules.add(new PrefixAndValueParseRule("Concurrent Mark From Roots", JDK11G1OrGenerationalGCLogParser::parsePhase));
-        withGCIDRules.add(new PrefixAndValueParseRule("Concurrent Mark", JDK11G1OrGenerationalGCLogParser::parsePhase));
-        withGCIDRules.add(new PrefixAndValueParseRule("Concurrent Mark Reset For Overflow", JDK11G1OrGenerationalGCLogParser::parsePhase));
-        withGCIDRules.add(new PrefixAndValueParseRule("Concurrent Preclean", JDK11G1OrGenerationalGCLogParser::parsePhase));
-        withGCIDRules.add(new PrefixAndValueParseRule("Pause Remark", JDK11G1OrGenerationalGCLogParser::parsePhase));
-        withGCIDRules.add(new PrefixAndValueParseRule("Concurrent Rebuild Remembered Sets", JDK11G1OrGenerationalGCLogParser::parsePhase));
-        withGCIDRules.add(new PrefixAndValueParseRule("Pause Cleanup", JDK11G1OrGenerationalGCLogParser::parsePhase));
-        withGCIDRules.add(new PrefixAndValueParseRule("Concurrent Cleanup for Next Mark", JDK11G1OrGenerationalGCLogParser::parsePhase));
-        withGCIDRules.add(new PrefixAndValueParseRule("Phase 1: Mark live objects", JDK11G1OrGenerationalGCLogParser::parsePhase));
-        withGCIDRules.add(new PrefixAndValueParseRule("Phase 2: Prepare for compaction", JDK11G1OrGenerationalGCLogParser::parsePhase));
-        withGCIDRules.add(new PrefixAndValueParseRule("Phase 3: Adjust pointers", JDK11G1OrGenerationalGCLogParser::parsePhase));
-        withGCIDRules.add(new PrefixAndValueParseRule("Phase 4: Compact heap", JDK11G1OrGenerationalGCLogParser::parsePhase));
-        withGCIDRules.add(new PrefixAndValueParseRule("Concurrent Mark Abort", JDK11G1OrGenerationalGCLogParser::parsePhase));
-        withGCIDRules.add(new FixedContentParseRule("To-space exhausted", JDK11G1GCLogParser::parseToSpaceExhausted));
+        withGCIDRules.add(new PrefixAndValueParseRule("  Pre Evacuate Collection Set", UnifiedG1OrGenerationalGCLogParser::parsePhase));
+        withGCIDRules.add(new PrefixAndValueParseRule("  Merge Heap Roots", UnifiedG1OrGenerationalGCLogParser::parsePhase));
+        withGCIDRules.add(new PrefixAndValueParseRule("  Evacuate Collection Set", UnifiedG1OrGenerationalGCLogParser::parsePhase));
+        withGCIDRules.add(new PrefixAndValueParseRule("  Post Evacuate Collection Set", UnifiedG1OrGenerationalGCLogParser::parsePhase));
+        withGCIDRules.add(new PrefixAndValueParseRule("  Other", UnifiedG1OrGenerationalGCLogParser::parsePhase));
+        withGCIDRules.add(new PrefixAndValueParseRule("Concurrent Cycle", UnifiedG1GCLogParser::parseConcurrentCycle));
+        withGCIDRules.add(new PrefixAndValueParseRule("Concurrent Mark Cycle", UnifiedG1GCLogParser::parseConcurrentCycle));
+        withGCIDRules.add(new PrefixAndValueParseRule("Concurrent Undo Cycle", UnifiedG1GCLogParser::parseConcurrentCycle));
+        withGCIDRules.add(new PrefixAndValueParseRule("Concurrent Clear Claimed Marks", UnifiedG1OrGenerationalGCLogParser::parsePhase));
+        withGCIDRules.add(new PrefixAndValueParseRule("Concurrent Scan Root Regions", UnifiedG1OrGenerationalGCLogParser::parsePhase));
+        withGCIDRules.add(new PrefixAndValueParseRule("Concurrent Mark From Roots", UnifiedG1OrGenerationalGCLogParser::parsePhase));
+        withGCIDRules.add(new PrefixAndValueParseRule("Concurrent Mark", UnifiedG1OrGenerationalGCLogParser::parsePhase));
+        withGCIDRules.add(new PrefixAndValueParseRule("Concurrent Mark Reset For Overflow", UnifiedG1OrGenerationalGCLogParser::parsePhase));
+        withGCIDRules.add(new PrefixAndValueParseRule("Concurrent Preclean", UnifiedG1OrGenerationalGCLogParser::parsePhase));
+        withGCIDRules.add(new PrefixAndValueParseRule("Pause Remark", UnifiedG1OrGenerationalGCLogParser::parsePhase));
+        withGCIDRules.add(new PrefixAndValueParseRule("Concurrent Rebuild Remembered Sets", UnifiedG1OrGenerationalGCLogParser::parsePhase));
+        withGCIDRules.add(new PrefixAndValueParseRule("Pause Cleanup", UnifiedG1OrGenerationalGCLogParser::parsePhase));
+        withGCIDRules.add(new PrefixAndValueParseRule("Concurrent Cleanup for Next Mark", UnifiedG1OrGenerationalGCLogParser::parsePhase));
+        withGCIDRules.add(new PrefixAndValueParseRule("Phase 1: Mark live objects", UnifiedG1OrGenerationalGCLogParser::parsePhase));
+        withGCIDRules.add(new PrefixAndValueParseRule("Phase 2: Prepare for compaction", UnifiedG1OrGenerationalGCLogParser::parsePhase));
+        withGCIDRules.add(new PrefixAndValueParseRule("Phase 3: Adjust pointers", UnifiedG1OrGenerationalGCLogParser::parsePhase));
+        withGCIDRules.add(new PrefixAndValueParseRule("Phase 4: Compact heap", UnifiedG1OrGenerationalGCLogParser::parsePhase));
+        withGCIDRules.add(new PrefixAndValueParseRule("Concurrent Mark Abort", UnifiedG1OrGenerationalGCLogParser::parsePhase));
+        withGCIDRules.add(new FixedContentParseRule("To-space exhausted", UnifiedG1GCLogParser::parseToSpaceExhausted));
     }
 
     @Override

@@ -109,7 +109,7 @@ public class TestParser {
                         "[7.123s][info   ][gc,metaspace   ] GC(2) Metaspace: 3604K->3604K(262144K)\n" +
                         "[7.123s][info   ][gc             ] GC(2) Pause Full (G1 Evacuation Pause) 1700M->1078M(1700M) 67.806ms\n" +
                         "[7.123s][info   ][gc,cpu         ] GC(2) User=0.33s Sys=0.00s Real=0.07s";
-        JDK11G1GCLogParser parser = (JDK11G1GCLogParser)
+        UnifiedG1GCLogParser parser = (UnifiedG1GCLogParser)
                 (new GCLogParserFactory().getParser(stringToBufferedReader(log)));
         G1GCModel model = (G1GCModel) parser.parse(stringToBufferedReader(log));
         model.calculateDerivedInfo(new DefaultProgressListener());
@@ -190,7 +190,7 @@ public class TestParser {
                 "[3.982s][info][gc,heap       ] GC(14) Humongous regions: 2->2\n" +
                 "[3.982s][info][gc,metaspace  ] GC(14) Metaspace: 21709K->21707K(1069056K)\n" +
                 "[3.982s][info][gc            ] GC(14) Pause Young (Normal) (G1 Evacuation Pause) 637M->630M(2048M) 116.771ms";
-        JDK11G1GCLogParser parser = new JDK11G1GCLogParser();
+        UnifiedG1GCLogParser parser = new UnifiedG1GCLogParser();
         parser.setMetadata(new GCLogParsingMetadata(GCCollectorType.G1, GCLogStyle.UNIFIED));
         G1GCModel model = (G1GCModel) parser.parse(stringToBufferedReader(log));
         model.calculateDerivedInfo(new DefaultProgressListener());
@@ -206,7 +206,7 @@ public class TestParser {
     public void testJDK11ParseDecoration() throws Exception {
         String log = "[2021-05-06T11:25:16.508+0800][info][gc           ] GC(0) Pause Young (Concurrent Start) (Metadata GC Threshold)\n" +
                 "[2021-05-06T11:25:16.510+0800][info][gc           ] GC(1) Pause Young (Concurrent Start) (Metadata GC Threshold)\n";
-        JDK11G1GCLogParser parser = new JDK11G1GCLogParser();
+        UnifiedG1GCLogParser parser = new UnifiedG1GCLogParser();
         parser.setMetadata(new GCLogParsingMetadata(GCCollectorType.G1, GCLogStyle.UNIFIED));
         GCModel model = parser.parse(stringToBufferedReader(log));
         Assert.assertEquals(model.getReferenceTimestamp(), 1620271516508d, DELTA);
@@ -214,7 +214,7 @@ public class TestParser {
 
         log = "[1000000000800ms][info][gc           ] GC(0) Pause Young (Concurrent Start) (Metadata GC Threshold)\n" +
                 "[1000000000802ms][info][gc           ] GC(1) Pause Young (Concurrent Start) (Metadata GC Threshold)\n";
-        parser = new JDK11G1GCLogParser();
+        parser = new UnifiedG1GCLogParser();
         parser.setMetadata(new GCLogParsingMetadata(GCCollectorType.G1, GCLogStyle.UNIFIED));
         model = parser.parse(stringToBufferedReader(log));
         Assert.assertEquals(model.getReferenceTimestamp(), 1000000000800D, DELTA);
@@ -334,7 +334,7 @@ public class TestParser {
                         "[7.777s] Allocation Stall (ThreadPoolTaskScheduler-1) 0.204ms\n" +
                         "[7.888s] Allocation Stall (NioProcessor-2) 0.391ms\n" +
                         "[7.889s] Out Of Memory (thread 8)";
-        JDK11ZGCLogParser parser = (JDK11ZGCLogParser)
+        UnifiedZGCLogParser parser = (UnifiedZGCLogParser)
                 (new GCLogParserFactory().getParser(stringToBufferedReader(log)));
         ZGCModel model = (ZGCModel) parser.parse(stringToBufferedReader(log));
         model.calculateDerivedInfo(new DefaultProgressListener());
@@ -411,7 +411,7 @@ public class TestParser {
                         "796.991: [GC (Allocation Failure) 796.992: [ParNew: 1922432K->1922432K(1922432K), 0.0000267 secs]796.992: [CMS797.832: [CMS-concurrent-sweep: 1.180/1.376 secs] [Times: user=3.42 sys=0.14, real=1.38 secs]\n" +
                         " (concurrent mode failure): 2034154K->1051300K(2097152K), 4.6146919 secs] 3956586K->1051300K(4019584K), [Metaspace: 296232K->296083K(1325056K)], 4.6165192 secs] [Times: user=4.60 sys=0.05, real=4.62 secs]\n" +
                         "813.396: [GC (Allocation Failure) 813.396: [ParNew813.404: [SoftReference, 4 refs, 0.0000260 secs]813.405: [WeakReference, 59 refs, 0.0000110 secs]813.406: [FinalReference, 1407 refs, 0.0025979 secs]813.407: [PhantomReference, 11 refs, 10 refs, 0.0000131 secs]813.408: [JNI Weak Reference, 0.0000088 secs]: 69952K->8704K(78656K), 0.0104509 secs] 69952K->11354K(253440K), 0.0105137 secs] [Times: user=0.04 sys=0.01, real=0.01 secs]\n";
-        JDK8GenerationalGCLogParser parser = (JDK8GenerationalGCLogParser)
+        PreUnifiedGenerationalGCLogParser parser = (PreUnifiedGenerationalGCLogParser)
                 (new GCLogParserFactory().getParser(stringToBufferedReader(log)));
 
         CMSGCModel model = (CMSGCModel) parser.parse(stringToBufferedReader(log));
@@ -556,7 +556,7 @@ public class TestParser {
                 "      [Free CSet: 0.1 ms]\n" +
                 "   [Eden: 2304.0M(2304.0M)->0.0B(2304.0M) Survivors: 192.0M->192.0M Heap: 15.0G(19.8G)->12.8G(19.8G)]\n" +
                 " [Times: user=0.17 sys=0.00, real=0.03 secs]";
-        JDK8G1GCLogParser parser = (JDK8G1GCLogParser)
+        PreUnifiedG1GCLogParser parser = (PreUnifiedG1GCLogParser)
                 (new GCLogParserFactory().getParser(stringToBufferedReader(log)));
 
         G1GCModel model = (G1GCModel) parser.parse(stringToBufferedReader(log));
@@ -663,7 +663,7 @@ public class TestParser {
                 "      [Free CSet: 0.1 ms]\n" +
                 "   [Eden: 52224.0K(52224.0K)->0.0B(45056.0K) Survivors: 0.0B->7168.0K Heap: 52224.0K(1024.0M)->8184.0K(1024.0M)]\n" +
                 " [Times: user=0.02 sys=0.01, real=0.01 secs] ";
-        JDK8G1GCLogParser parser = (JDK8G1GCLogParser)
+        PreUnifiedG1GCLogParser parser = (PreUnifiedG1GCLogParser)
                 (new GCLogParserFactory().getParser(stringToBufferedReader(log)));
 
         G1GCModel model = (G1GCModel) parser.parse(stringToBufferedReader(log));
@@ -696,7 +696,7 @@ public class TestParser {
                 "[5.743s][info][gc,phases,start] GC(1) Phase 4: Move objects\n" +
                 "[5.760s][info][gc,phases      ] GC(1) Phase 4: Move objects 17.259ms\n" +
                 "[5.761s][info][gc             ] GC(1) Pause Full (Allocation Failure) 215M->132M(247M) 146.617ms";
-        JDK11GenerationalGCLogParser parser = (JDK11GenerationalGCLogParser)
+        UnifiedGenerationalGCLogParser parser = (UnifiedGenerationalGCLogParser)
                 (new GCLogParserFactory().getParser(stringToBufferedReader(log)));
 
         SerialGCModel model = (SerialGCModel) parser.parse(stringToBufferedReader(log));
@@ -756,7 +756,7 @@ public class TestParser {
                 "[2.882s][info][gc,metaspace   ] GC(1) Metaspace: 7459K->7459K(1056768K)\n" +
                 "[2.882s][info][gc             ] GC(1) Pause Full (Ergonomics) 148M->92M(245M) 46.539ms\n" +
                 "[2.882s][info][gc,cpu         ] GC(1) User=0.17s Sys=0.00s Real=0.05s";
-        JDK11GenerationalGCLogParser parser = (JDK11GenerationalGCLogParser)
+        UnifiedGenerationalGCLogParser parser = (UnifiedGenerationalGCLogParser)
                 (new GCLogParserFactory().getParser(stringToBufferedReader(log)));
 
         ParallelGCModel model = (ParallelGCModel) parser.parse(stringToBufferedReader(log));
@@ -836,7 +836,7 @@ public class TestParser {
                 "[9.149s][info][gc,phases      ] GC(2) Phase 4: Move objects 28.069ms\n" +
                 "[9.149s][info][gc             ] GC(2) Pause Full (Allocation Failure) 174M->166M(247M) 178.617ms\n" +
                 "[9.149s][info][gc,cpu         ] GC(2) User=0.17s Sys=0.00s Real=0.18s";
-        JDK11GenerationalGCLogParser parser = (JDK11GenerationalGCLogParser)
+        UnifiedGenerationalGCLogParser parser = (UnifiedGenerationalGCLogParser)
                 (new GCLogParserFactory().getParser(stringToBufferedReader(log)));
 
         CMSGCModel model = (CMSGCModel) parser.parse(stringToBufferedReader(log));
@@ -905,7 +905,7 @@ public class TestParser {
                         "1.872: [Full GC (Ergonomics) [PSYoungGen: 4096K->0K(103936K)] [ParOldGen: 169794K->149708K(341504K)] 173890K->149708K(445440K), [Metaspace: 3202K->3202K(1056768K)], 1.3724621 secs] [Times: user=8.33 sys=0.01, real=1.38 secs]\n" +
                         "3.268: [GC (Allocation Failure) [PSYoungGen: 99840K->56802K(113664K)] 249548K->302089K(455168K), 0.1043993 secs] [Times: user=0.75 sys=0.06, real=0.10 secs]\n" +
                         "14.608: [Full GC (Ergonomics) [PSYoungGen: 65530K->0K(113664K)] [ParOldGen: 341228K->720K(302592K)] 406759K->720K(416256K), [Metaspace: 3740K->3737K(1056768K)], 0.0046781 secs] [Times: user=0.02 sys=0.01, real=0.00 secs]\n";
-        JDK8GenerationalGCLogParser parser = (JDK8GenerationalGCLogParser)
+        PreUnifiedGenerationalGCLogParser parser = (PreUnifiedGenerationalGCLogParser)
                 (new GCLogParserFactory().getParser(stringToBufferedReader(log)));
 
         ParallelGCModel model = (ParallelGCModel) parser.parse(stringToBufferedReader(log));
@@ -965,7 +965,7 @@ public class TestParser {
                         "2021-12-07T11:18:13.160+0800: #8: [GC (Allocation Failure) 2021-12-07T11:18:13.160+0800: #8: [DefNew: 271999K->30207K(272000K), 0.2782985 secs]2021-12-07T11:18:13.438+0800: #9: [Tenured: 785946K->756062K(786120K), 0.8169720 secs] 823069K->756062K(1058120K), [Metaspace: 3782K->3782K(1056768K)], 1.0959870 secs] [Times: user=1.03 sys=0.07, real=1.09 secs] \n" +
                         "2021-12-07T11:18:14.386+0800: #10: [GC (Allocation Failure) 2021-12-07T11:18:14.386+0800: #10: [DefNew: 504128K->62975K(567104K), 0.5169362 secs] 1260190K->1260189K(1827212K), 0.5169650 secs] [Times: user=0.40 sys=0.12, real=0.52 secs] ";
 
-        JDK8GenerationalGCLogParser parser = (JDK8GenerationalGCLogParser)
+        PreUnifiedGenerationalGCLogParser parser = (PreUnifiedGenerationalGCLogParser)
                 (new GCLogParserFactory().getParser(stringToBufferedReader(log)));
 
         SerialGCModel model = (SerialGCModel) parser.parse(stringToBufferedReader(log));
@@ -1058,7 +1058,7 @@ public class TestParser {
                         "[5.789s][info][gc             ] GC(3) Pause Young (Allocation Failure) 215M->132M(247M) 146.211ms\n" +
                         "[5.789s][info][gc,cpu         ] GC(3) User=0.15s Sys=0.00s Real=0.15s";
 
-        JDK11GenerationalGCLogParser parser = (JDK11GenerationalGCLogParser)
+        UnifiedGenerationalGCLogParser parser = (UnifiedGenerationalGCLogParser)
                 (new GCLogParserFactory().getParser(stringToBufferedReader(log)));
 
         SerialGCModel model = (SerialGCModel) parser.parse(stringToBufferedReader(log));
@@ -1120,7 +1120,7 @@ public class TestParser {
                         "[9.051s][info][gc,phases      ] GC(2) Phase 2: Compute new object addresses 24.761ms\n" +
                         "[9.051s][info][gc,phases,start] GC(2) Phase 3: Adjust pointers\n";
 
-        JDK11GenerationalGCLogParser parser = (JDK11GenerationalGCLogParser)
+        UnifiedGenerationalGCLogParser parser = (UnifiedGenerationalGCLogParser)
                 (new GCLogParserFactory().getParser(stringToBufferedReader(log)));
 
         CMSGCModel model = (CMSGCModel) parser.parse(stringToBufferedReader(log));
@@ -1214,7 +1214,7 @@ public class TestParser {
                 "2022-04-25T11:38:53.084+0800: 730.598: Application time: 0.0000928 seconds\n" +
                 "2022-04-25T11:38:53.089+0800: 730.603: [GC cleanup 1984M->1984M(2560M), 0.0016114 secs]\n" +
                 " [Times: user=0.01 sys=0.00, real=0.01 secs]\n";
-        JDK8G1GCLogParser parser = (JDK8G1GCLogParser)
+        PreUnifiedG1GCLogParser parser = (PreUnifiedG1GCLogParser)
                 (new GCLogParserFactory().getParser(stringToBufferedReader(log)));
         G1GCModel model = (G1GCModel) parser.parse(stringToBufferedReader(log));
         model.calculateDerivedInfo(new DefaultProgressListener());
@@ -1608,7 +1608,7 @@ public class TestParser {
                         "[10.418s][info][gc,stats    ]    Subphase: Pause Mark Try Complete                       0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms\n" +
                         "[10.418s][info][gc,stats    ]      System: Java Threads                                     11 / 11               11 / 11               11 / 11               11 / 11          threads\n" +
                         "[10.418s][info][gc,stats    ] =========================================================================================================================================================";
-        JDK11ZGCLogParser parser = (JDK11ZGCLogParser)
+        UnifiedZGCLogParser parser = (UnifiedZGCLogParser)
                 (new GCLogParserFactory().getParser(stringToBufferedReader(log)));
         ZGCModel model = (ZGCModel) parser.parse(stringToBufferedReader(log));
         model.calculateDerivedInfo(new DefaultProgressListener());
@@ -1720,7 +1720,7 @@ public class TestParser {
                         "[2.145s][info][gc,marking  ] GC(3) Concurrent Cleanup for Next Mark 0.109ms\n" +
                         "[2.145s][info][gc          ] GC(3) Concurrent Undo Cycle 0.125ms";
 
-        JDK11G1GCLogParser parser = (JDK11G1GCLogParser)
+        UnifiedG1GCLogParser parser = (UnifiedG1GCLogParser)
                 (new GCLogParserFactory().getParser(stringToBufferedReader(log)));
         G1GCModel model = (G1GCModel) parser.parse(stringToBufferedReader(log));
         model.calculateDerivedInfo(new DefaultProgressListener());
@@ -1813,7 +1813,7 @@ public class TestParser {
                         "[1.738s][info][gc             ] GC(2) Pause Full (G1 Compaction Pause) 98M->69M(100M) 22.935ms\n" +
                         "[1.738s][info][gc,cpu         ] GC(2) User=0.04s Sys=0.00s Real=0.02s";
 
-        JDK11G1GCLogParser parser = (JDK11G1GCLogParser)
+        UnifiedG1GCLogParser parser = (UnifiedG1GCLogParser)
                 (new GCLogParserFactory().getParser(stringToBufferedReader(log)));
         G1GCModel model = (G1GCModel) parser.parse(stringToBufferedReader(log));
         model.calculateDerivedInfo(new DefaultProgressListener());

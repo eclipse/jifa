@@ -30,7 +30,7 @@ import static org.eclipse.jifa.gclog.model.GCEventType.*;
 import static org.eclipse.jifa.gclog.parser.ParseRule.*;
 import static org.eclipse.jifa.gclog.parser.ParseRule.ParseRuleContext.EVENT;
 
-public class JDK8G1GCLogParser extends AbstractJDK8GCLogParser {
+public class PreUnifiedG1GCLogParser extends AbstractPreUnifiedGCLogParser {
     private final static GCEventType[] REF_GC_TYPES = {YOUNG_GC, FULL_GC, G1_MIXED_GC, G1_REMARK};
     private final static GCEventType[] YOUNG_MIXED = {YOUNG_GC, G1_MIXED_GC};
     private final static GCEventType[] YOUNG_MIXED_FULL = {YOUNG_GC, G1_MIXED_GC, FULL_GC};
@@ -95,40 +95,40 @@ public class JDK8G1GCLogParser extends AbstractJDK8GCLogParser {
         fullSentenceRules = new ArrayList<>();
         fullSentenceRules.add(commandLineRule);
         fullSentenceRules.add(cpuTimeRule);
-        fullSentenceRules.add(new FixedContentParseRule(" (to-space exhausted)", JDK8G1GCLogParser::parseToSpaceExhausted));
-        fullSentenceRules.add(new PrefixAndValueParseRule("   [Eden", JDK8G1GCLogParser::parseMemoryChange));
-        fullSentenceRules.add(new PrefixAndValueParseRule("   [Parallel Time", JDK8G1GCLogParser::parseParallelWorker));
+        fullSentenceRules.add(new FixedContentParseRule(" (to-space exhausted)", PreUnifiedG1GCLogParser::parseToSpaceExhausted));
+        fullSentenceRules.add(new PrefixAndValueParseRule("   [Eden", PreUnifiedG1GCLogParser::parseMemoryChange));
+        fullSentenceRules.add(new PrefixAndValueParseRule("   [Parallel Time", PreUnifiedG1GCLogParser::parseParallelWorker));
         // some phases are ignored
-        fullSentenceRules.add(new PrefixAndValueParseRule("      [Ext Root Scanning", JDK8G1GCLogParser::parseYoungGCPhase));
-        fullSentenceRules.add(new PrefixAndValueParseRule("      [Update RS", JDK8G1GCLogParser::parseYoungGCPhase));
-        fullSentenceRules.add(new PrefixAndValueParseRule("      [Scan RS", JDK8G1GCLogParser::parseYoungGCPhase));
-        fullSentenceRules.add(new PrefixAndValueParseRule("      [Code Root Scanning", JDK8G1GCLogParser::parseYoungGCPhase));
-        fullSentenceRules.add(new PrefixAndValueParseRule("      [Object Copy", JDK8G1GCLogParser::parseYoungGCPhase));
-        fullSentenceRules.add(new PrefixAndValueParseRule("      [Termination", JDK8G1GCLogParser::parseYoungGCPhase));
-        fullSentenceRules.add(new PrefixAndValueParseRule("   [Code Root Fixup", JDK8G1GCLogParser::parseYoungGCPhase));
-        fullSentenceRules.add(new PrefixAndValueParseRule("   [Code Root Purge", JDK8G1GCLogParser::parseYoungGCPhase));
-        fullSentenceRules.add(new PrefixAndValueParseRule("   [Clear CT", JDK8G1GCLogParser::parseYoungGCPhase));
-        fullSentenceRules.add(new PrefixAndValueParseRule("      [Choose CSet", JDK8G1GCLogParser::parseYoungGCPhase));
-        fullSentenceRules.add(new PrefixAndValueParseRule("      [Ref Proc", JDK8G1GCLogParser::parseYoungGCPhase));
-        fullSentenceRules.add(new PrefixAndValueParseRule("      [Ref Enq", JDK8G1GCLogParser::parseYoungGCPhase));
-        fullSentenceRules.add(new PrefixAndValueParseRule("      [Redirty Cards", JDK8G1GCLogParser::parseYoungGCPhase));
-        fullSentenceRules.add(new PrefixAndValueParseRule("      [Humongous Register", JDK8G1GCLogParser::parseYoungGCPhase));
-        fullSentenceRules.add(new PrefixAndValueParseRule("      [Humongous Reclaim", JDK8G1GCLogParser::parseYoungGCPhase));
-        fullSentenceRules.add(new PrefixAndValueParseRule("      [Free CSet", JDK8G1GCLogParser::parseYoungGCPhase));
+        fullSentenceRules.add(new PrefixAndValueParseRule("      [Ext Root Scanning", PreUnifiedG1GCLogParser::parseYoungGCPhase));
+        fullSentenceRules.add(new PrefixAndValueParseRule("      [Update RS", PreUnifiedG1GCLogParser::parseYoungGCPhase));
+        fullSentenceRules.add(new PrefixAndValueParseRule("      [Scan RS", PreUnifiedG1GCLogParser::parseYoungGCPhase));
+        fullSentenceRules.add(new PrefixAndValueParseRule("      [Code Root Scanning", PreUnifiedG1GCLogParser::parseYoungGCPhase));
+        fullSentenceRules.add(new PrefixAndValueParseRule("      [Object Copy", PreUnifiedG1GCLogParser::parseYoungGCPhase));
+        fullSentenceRules.add(new PrefixAndValueParseRule("      [Termination", PreUnifiedG1GCLogParser::parseYoungGCPhase));
+        fullSentenceRules.add(new PrefixAndValueParseRule("   [Code Root Fixup", PreUnifiedG1GCLogParser::parseYoungGCPhase));
+        fullSentenceRules.add(new PrefixAndValueParseRule("   [Code Root Purge", PreUnifiedG1GCLogParser::parseYoungGCPhase));
+        fullSentenceRules.add(new PrefixAndValueParseRule("   [Clear CT", PreUnifiedG1GCLogParser::parseYoungGCPhase));
+        fullSentenceRules.add(new PrefixAndValueParseRule("      [Choose CSet", PreUnifiedG1GCLogParser::parseYoungGCPhase));
+        fullSentenceRules.add(new PrefixAndValueParseRule("      [Ref Proc", PreUnifiedG1GCLogParser::parseYoungGCPhase));
+        fullSentenceRules.add(new PrefixAndValueParseRule("      [Ref Enq", PreUnifiedG1GCLogParser::parseYoungGCPhase));
+        fullSentenceRules.add(new PrefixAndValueParseRule("      [Redirty Cards", PreUnifiedG1GCLogParser::parseYoungGCPhase));
+        fullSentenceRules.add(new PrefixAndValueParseRule("      [Humongous Register", PreUnifiedG1GCLogParser::parseYoungGCPhase));
+        fullSentenceRules.add(new PrefixAndValueParseRule("      [Humongous Reclaim", PreUnifiedG1GCLogParser::parseYoungGCPhase));
+        fullSentenceRules.add(new PrefixAndValueParseRule("      [Free CSet", PreUnifiedG1GCLogParser::parseYoungGCPhase));
 
         gcTraceTimeRules = new ArrayList<>();
-        gcTraceTimeRules.add(new PrefixAndValueParseRule("GC concurrent-root-region-scan", JDK8G1GCLogParser::parseConcurrentCyclePhase));
-        gcTraceTimeRules.add(new PrefixAndValueParseRule("GC concurrent-mark-reset-for-overflow", JDK8G1GCLogParser::parseConcurrentCyclePhase));
-        gcTraceTimeRules.add(new PrefixAndValueParseRule("GC concurrent-mark-abort", JDK8G1GCLogParser::parseConcurrentCyclePhase));
-        gcTraceTimeRules.add(new PrefixAndValueParseRule("GC concurrent-mark", JDK8G1GCLogParser::parseConcurrentCyclePhase));
-        gcTraceTimeRules.add(new PrefixAndValueParseRule("GC remark", JDK8G1GCLogParser::parseConcurrentCyclePhase));
-        gcTraceTimeRules.add(new PrefixAndValueParseRule("Finalize Marking", JDK8G1GCLogParser::parseConcurrentCyclePhase));
-        gcTraceTimeRules.add(new PrefixAndValueParseRule("GC ref-proc", JDK8G1GCLogParser::parseConcurrentCyclePhase));
-        gcTraceTimeRules.add(new PrefixAndValueParseRule("Unloading", JDK8G1GCLogParser::parseConcurrentCyclePhase));
-        gcTraceTimeRules.add(new PrefixAndValueParseRule("GC cleanup", JDK8G1GCLogParser::parseConcurrentCyclePhase));
-        gcTraceTimeRules.add(new PrefixAndValueParseRule("GC concurrent-cleanup", JDK8G1GCLogParser::parseConcurrentCyclePhase));
-        gcTraceTimeRules.add(new PrefixAndValueParseRule("GC pause", JDK8G1GCLogParser::parseYoungMixedFullGC));
-        gcTraceTimeRules.add(new PrefixAndValueParseRule("Full GC", JDK8G1GCLogParser::parseYoungMixedFullGC));
+        gcTraceTimeRules.add(new PrefixAndValueParseRule("GC concurrent-root-region-scan", PreUnifiedG1GCLogParser::parseConcurrentCyclePhase));
+        gcTraceTimeRules.add(new PrefixAndValueParseRule("GC concurrent-mark-reset-for-overflow", PreUnifiedG1GCLogParser::parseConcurrentCyclePhase));
+        gcTraceTimeRules.add(new PrefixAndValueParseRule("GC concurrent-mark-abort", PreUnifiedG1GCLogParser::parseConcurrentCyclePhase));
+        gcTraceTimeRules.add(new PrefixAndValueParseRule("GC concurrent-mark", PreUnifiedG1GCLogParser::parseConcurrentCyclePhase));
+        gcTraceTimeRules.add(new PrefixAndValueParseRule("GC remark", PreUnifiedG1GCLogParser::parseConcurrentCyclePhase));
+        gcTraceTimeRules.add(new PrefixAndValueParseRule("Finalize Marking", PreUnifiedG1GCLogParser::parseConcurrentCyclePhase));
+        gcTraceTimeRules.add(new PrefixAndValueParseRule("GC ref-proc", PreUnifiedG1GCLogParser::parseConcurrentCyclePhase));
+        gcTraceTimeRules.add(new PrefixAndValueParseRule("Unloading", PreUnifiedG1GCLogParser::parseConcurrentCyclePhase));
+        gcTraceTimeRules.add(new PrefixAndValueParseRule("GC cleanup", PreUnifiedG1GCLogParser::parseConcurrentCyclePhase));
+        gcTraceTimeRules.add(new PrefixAndValueParseRule("GC concurrent-cleanup", PreUnifiedG1GCLogParser::parseConcurrentCyclePhase));
+        gcTraceTimeRules.add(new PrefixAndValueParseRule("GC pause", PreUnifiedG1GCLogParser::parseYoungMixedFullGC));
+        gcTraceTimeRules.add(new PrefixAndValueParseRule("Full GC", PreUnifiedG1GCLogParser::parseYoungMixedFullGC));
     }
 
     private static void parseParallelWorker(AbstractGCLogParser parser, ParseRuleContext context, String prefix, String value) {
