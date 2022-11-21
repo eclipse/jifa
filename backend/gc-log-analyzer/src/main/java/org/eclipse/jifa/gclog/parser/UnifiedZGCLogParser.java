@@ -40,7 +40,6 @@ public class UnifiedZGCLogParser extends AbstractUnifiedGCLogParser {
      * [2021-08-31T08:08:17.421+0800] GC(374) Concurrent Mark 306.720ms
      * [2021-08-31T08:08:17.423+0800] GC(374) Pause Mark End 0.606ms
      * [2021-08-31T08:08:17.424+0800] GC(374) Concurrent Process Non-Strong References 1.290ms
-     * [2021-08-31T08:08:17.424+0800] GC(374) Pause Class Unloading 10.234ms
      * [2021-08-31T08:08:17.425+0800] GC(374) Concurrent Reset Relocation Set 0.550ms
      * [2021-08-31T08:08:17.425+0800] GC(374) Concurrent Destroy Detached Pages 0.001ms
      * [2021-08-31T08:08:17.427+0800] GC(374) Concurrent Select Relocation Set 2.418ms
@@ -387,8 +386,6 @@ public class UnifiedZGCLogParser extends AbstractUnifiedGCLogParser {
         switch (eventString) {
             case "Pause Mark Start":
                 return ZGC_PAUSE_MARK_START;
-            case "Pause Class Unloading":
-                return ZGC_PAUSE_CLASS_UNLOADING;
             case "Concurrent Mark":
                 return ZGC_CONCURRENT_MARK;
             case "Pause Mark End":
