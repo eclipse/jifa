@@ -18,6 +18,7 @@ import org.eclipse.jifa.gclog.event.GCEvent;
 import org.eclipse.jifa.gclog.event.ThreadEvent;
 import org.eclipse.jifa.gclog.event.Safepoint;
 import org.eclipse.jifa.gclog.model.*;
+import org.eclipse.jifa.gclog.model.modeInfo.GCLogMetadata;
 import org.eclipse.jifa.gclog.parser.*;
 import org.eclipse.jifa.gclog.event.evnetInfo.GCMemoryItem;
 import org.eclipse.jifa.gclog.model.modeInfo.GCCollectorType;
@@ -174,6 +175,10 @@ public class TestParser {
         Assert.assertEquals(fullGC.getPhases().size(), 4);
         Assert.assertEquals(fullGC.getPhases().get(3).getEventType(), GCEventType.G1_COMPACT_HEAP);
         Assert.assertEquals(fullGC.getPhases().get(3).getDuration(), 57.656, DELTA);
+
+        GCLogMetadata metadata = model.getGcModelMetadata();
+        Assert.assertTrue(metadata.getImportantEventTypes().contains(GCEventType.G1_CONCURRENT_REBUILD_REMEMBERED_SETS.getName()));
+        Assert.assertFalse(metadata.getImportantEventTypes().contains(GCEventType.G1_CONCURRENT_UNDO_CYCLE.getName()));
     }
 
     @Test
@@ -625,6 +630,10 @@ public class TestParser {
         for (GCEvent phase : mixedGC.getPhases()) {
             Assert.assertTrue(phase.getDuration() != UNKNOWN_DOUBLE);
         }
+
+        GCLogMetadata metadata = model.getGcModelMetadata();
+        Assert.assertFalse(metadata.getImportantEventTypes().contains(GCEventType.G1_CONCURRENT_REBUILD_REMEMBERED_SETS.getName()));
+        Assert.assertFalse(metadata.getImportantEventTypes().contains(GCEventType.G1_CONCURRENT_UNDO_CYCLE.getName()));
     }
 
     @Test
@@ -1790,6 +1799,10 @@ public class TestParser {
             Assert.assertTrue(phase.getStartTime() > 0);
             Assert.assertTrue(phase.getDuration() > 0);
         }
+
+        GCLogMetadata metadata = model.getGcModelMetadata();
+        Assert.assertTrue(metadata.getImportantEventTypes().contains(GCEventType.G1_CONCURRENT_REBUILD_REMEMBERED_SETS.getName()));
+        Assert.assertTrue(metadata.getImportantEventTypes().contains(GCEventType.G1_CONCURRENT_UNDO_CYCLE.getName()));
     }
 
     @Test

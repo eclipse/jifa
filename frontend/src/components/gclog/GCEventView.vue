@@ -150,7 +150,7 @@ export default {
     },
     dealMemory() {
       let firstItemFound = false
-      const generations = ["young", "old", "humongous", "heap", "metaspace"]
+      const generations = ["young", "old", "humongous", "heap", "archive", "metaspace"]
       if (this.gcEvent.memory) {
         generations.forEach(generation => {
           const item = this.gcEvent.memory[generation];

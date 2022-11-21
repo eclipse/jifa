@@ -804,6 +804,20 @@ public abstract class GCModel {
         return metadata;
     }
 
+
+    // FIXME: need better implementation
+    private static final List<GCEventType> EVENT_TYPES_SHOULD_NOT_BE_REPORTED_IF_NOT_PRESENT = List.of(
+            G1_CONCURRENT_UNDO_CYCLE, G1_MERGE_HEAP_ROOTS, G1_CONCURRENT_REBUILD_REMEMBERED_SETS,
+            ZGC_CONCURRENT_DETATCHED_PAGES);
+    private List<String> dealEventTypeForMetadata(List<GCEventType> eventTypesExpected,
+                                                  Set<GCEventType> eventTypesActuallyShowUp) {
+        return eventTypesExpected.stream()
+                .filter(eventType -> !EVENT_TYPES_SHOULD_NOT_BE_REPORTED_IF_NOT_PRESENT.contains(eventType)
+                        || eventTypesActuallyShowUp.contains(eventType))
+                .map(GCEventType::getName)
+                .collect(Collectors.toList());
+    }
+
     private void calculateGcModelMetadata() {
         metadata = new GCLogMetadata();
         metadata.setCauses(gcEvents.stream()
@@ -820,11 +834,16 @@ public abstract class GCModel {
         metadata.setTimestamp(getReferenceTimestamp());
         metadata.setStartTime(getStartTime());
         metadata.setEndTime(getEndTime());
-        metadata.setParentEventTypes(getParentEventTypes().stream().map(GCEventType::getName).collect(Collectors.toList()));
-        metadata.setImportantEventTypes(getImportantEventTypes().stream().map(GCEventType::getName).collect(Collectors.toList()));
-        metadata.setPauseEventTypes(getPauseEventTypes().stream().map(GCEventType::getName).collect(Collectors.toList()));
-        metadata.setAllEventTypes(getAllEventTypes().stream().map(GCEventType::getName).collect(Collectors.toList()));
-        metadata.setMainPauseEventTypes(getMainPauseEventTypes().stream().map(GCEventType::getName).collect(Collectors.toList()));
+
+        Set<GCEventType> eventTypesActuallyShowUp = this.allEvents.stream()
+                .map(GCEvent::getEventType)
+                .collect(Collectors.toSet());
+        metadata.setParentEventTypes(dealEventTypeForMetadata(getParentEventTypes(), eventTypesActuallyShowUp));
+        metadata.setImportantEventTypes(dealEventTypeForMetadata(getImportantEventTypes(), eventTypesActuallyShowUp));
+        metadata.setPauseEventTypes(dealEventTypeForMetadata(getPauseEventTypes(), eventTypesActuallyShowUp));
+        metadata.setAllEventTypes(dealEventTypeForMetadata(getAllEventTypes(), eventTypesActuallyShowUp));
+        metadata.setMainPauseEventTypes(dealEventTypeForMetadata(getMainPauseEventTypes(), eventTypesActuallyShowUp));
+
         metadata.setParallelGCThreads(getParallelThread());
         metadata.setConcurrentGCThreads(getConcurrentThread());
     }

@@ -271,6 +271,7 @@ exports.default = {
         old: "Old Gen",
         humongous: "Metaspace",
         humongousHint: "Humongous objects in G1 refer to objects with size larger than half region size(correspond to option -XX:G1HeapRegionSize). Too many humongous objects may lead to problems and the solution is to enlarge region size or create less humongous object,",
+        archive: "Archive",
         heap: "Heap",
         metaspace: "Metaspace",
       },
@@ -299,6 +300,7 @@ exports.default = {
       },
 
       cause: {
+        archiveShare: 'Force a full GC with a single thread before writing heap archive regions',
         cmsFinalRemark: 'If -XX:+CMSScavengeBeforeRemark option is set，a Young GC will be triggered at the beginning of CMS Final Remark phase. This option may help reduce longest pause time of remark.',
         systemgc: 'Triggered when System.gc() or Runtime.getRuntime().gc() is called.',
         jvmti: "Triggered whenForceGarbageCollection is called using JVMTI.",

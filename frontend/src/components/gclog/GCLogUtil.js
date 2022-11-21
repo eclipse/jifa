@@ -42,6 +42,8 @@ export function getPhaseHint(phase) {
 
 export function getCauseHint(cause) {
   switch (cause) {
+    case "Full GC for -Xshare:dump":
+      return 'jifa.gclog.cause.archiveShare'
     case "CMS Final Remark":
       return 'jifa.gclog.cause.cmsFinalRemark'
     case "System.gc()":

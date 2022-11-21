@@ -56,10 +56,8 @@ public class G1GCModel extends GCModel {
     private static List<GCEventType> pauseEventTypes = GCModel.calcPauseEventTypes(collector);
     private static List<GCEventType> mainPauseEventTypes = GCModel.calcMainPauseEventTypes(collector);
     private static List<GCEventType> parentEventTypes = GCModel.calcParentEventTypes(collector);
-    private static List<GCEventType> importantEventTypesPreUnified = List.of(YOUNG_GC, G1_MIXED_GC, FULL_GC, G1_CONCURRENT_CYCLE,
-            G1_CONCURRENT_MARK, G1_REMARK, G1_PAUSE_CLEANUP);
-    private static List<GCEventType> importantEventTypesUnified = List.of(YOUNG_GC, G1_MIXED_GC, FULL_GC, G1_CONCURRENT_CYCLE,
-            G1_CONCURRENT_MARK, G1_REMARK, G1_CONCURRENT_REBUILD_REMEMBERED_SETS, G1_PAUSE_CLEANUP);
+    private static List<GCEventType> importantEventTypes = List.of(YOUNG_GC, G1_MIXED_GC, FULL_GC, G1_CONCURRENT_CYCLE,
+            G1_CONCURRENT_MARK, G1_REMARK, G1_CONCURRENT_REBUILD_REMEMBERED_SETS, G1_PAUSE_CLEANUP, G1_CONCURRENT_UNDO_CYCLE);
 
     @Override
     protected List<GCEventType> getAllEventTypes() {
@@ -78,7 +76,7 @@ public class G1GCModel extends GCModel {
 
     @Override
     protected List<GCEventType> getImportantEventTypes() {
-        return getLogStyle() == GCLogStyle.UNIFIED ? importantEventTypesUnified : importantEventTypesPreUnified;
+        return importantEventTypes;
     }
 
     @Override

@@ -269,6 +269,7 @@ exports.default = {
         old: "老年代",
         humongous: "大对象",
         humongousHint: "G1的大对象指的是大小超过Region大小(对应参数-XX:G1HeapRegionSize)一半的对象，如果大对象过多可能会引发GC异常，通常通过调大Region或者减少大对象创建优化",
+        archive: "CDS区",
         heap: "整堆",
         metaspace: "元空间",
       },
@@ -297,6 +298,7 @@ exports.default = {
       },
 
       cause: {
+        archiveShare: '在进行CDS dumping之前执行一次单线程的Full GC来减少内存碎片化',
         cmsFinalRemark: '如果设置了-XX:+CMSScavengeBeforeRemark参数，那么会在CMS Final Remark时先做一次Young GC，通常开启此参数可以减少Remark的最大暂停时间',
         systemgc: '调用System.gc()或Runtime.getRuntime().gc()时触发',
         jvmti: '使用Jvmti时调用ForceGarbageCollection触发',

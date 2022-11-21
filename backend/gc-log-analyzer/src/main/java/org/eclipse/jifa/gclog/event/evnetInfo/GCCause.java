@@ -27,6 +27,7 @@ public class GCCause {
     public static GCCause SCAVENGE_ALOT = new GCCause("ScavengeAlot");
     public static GCCause ALLOCATION_PROFILER = new GCCause("Allocation Profiler");
     public static GCCause JVMTI_FORCE_GC = new GCCause("JvmtiEnv ForceGarbageCollection");
+    public static GCCause ARCHIVE_SHARE_GC = new GCCause("Full GC for -Xshare:dump");
     public static GCCause GC_LOCKER = new GCCause("GCLocker Initiated GC");
     public static GCCause HEAP_INSPECTION = new GCCause("Heap Inspection Initiated GC");
     public static GCCause HEAP_DUMP = new GCCause("Heap Dump Initiated GC");
