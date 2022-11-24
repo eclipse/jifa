@@ -472,8 +472,7 @@ public class FileSupport {
             s3Client = AmazonS3ClientBuilder.standard()
                                             .withCredentials(new AWSStaticCredentialsProvider(credentials))
                                             .withClientConfiguration(clientConfig)
-                                            .withEndpointConfiguration(
-                                                new EndpointConfiguration(endpoint, Regions.DEFAULT_REGION.getName()))
+                                            .withRegion("us-east-1")
                                             .withPathStyleAccessEnabled(true)
                                             .build();
 
