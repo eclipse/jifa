@@ -460,7 +460,7 @@ public class FileSupport {
         }
     }
 
-    public static void transferByS3(String endpoint, String accessKey, String secretKey, String bucketName,
+    public static void transferByS3(String region, String accessKey, String secretKey, String bucketName,
                                     String objectName, FileType fileType, String fileName,
                                     TransferListener transferProgressListener,
                                     Promise<TransferringFile> promise) {
@@ -472,7 +472,7 @@ public class FileSupport {
             s3Client = AmazonS3ClientBuilder.standard()
                                             .withCredentials(new AWSStaticCredentialsProvider(credentials))
                                             .withClientConfiguration(clientConfig)
-                                            .withRegion("us-east-1")
+                                            .withRegion(region)
                                             .withPathStyleAccessEnabled(true)
                                             .build();
 

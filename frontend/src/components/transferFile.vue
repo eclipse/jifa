@@ -144,7 +144,7 @@
           </el-form-item>
         </el-form>
       </el-tab-pane>
-      
+
       <el-tab-pane label="O S S" name="oss">
         <el-form ref="ossForm" :model="oss" :rules="ossRules" label-width="150px" size="medium" label-position="right"
                  style="margin-top: 10px" status-icon :show-message=false>
@@ -179,12 +179,12 @@
       <el-tab-pane label="S3" name="s3">
         <el-form ref="s3Form" :model="s3" :rules="s3Rules" label-width="150px" size="medium" label-position="right"
                  style="margin-top: 10px" status-icon :show-message=false>
-          <el-form-item label="Endpoint" prop="endpoint">
-            <el-input v-model="s3.endpoint" placeholder="Endpoint" style="width: 80%" clearable></el-input>
+          <el-form-item label="Region" prop="endpoint">
+            <el-input v-model="s3.endpoint" placeholder="Region name in lowercase" style="width: 80%" clearable></el-input>
           </el-form-item>
 
-          <el-form-item label="Access Key" prop="accessKey">
-            <el-input v-model="s3.accessKey" placeholder="Access Key" style="width: 80%" clearable
+          <el-form-item label="Access Key ID" prop="accessKey">
+            <el-input v-model="s3.accessKey" placeholder="Access Key ID" style="width: 80%" clearable
                       show-password=""></el-input>
           </el-form-item>
 
@@ -228,7 +228,7 @@
 
     </el-tabs>
 
-    
+
   </div>
 </template>
 
