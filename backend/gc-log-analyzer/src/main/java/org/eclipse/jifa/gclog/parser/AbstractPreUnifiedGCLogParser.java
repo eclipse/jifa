@@ -38,7 +38,7 @@ import static org.eclipse.jifa.gclog.util.Constant.*;
  * because they are commonly used, and they will greatly affect parsing. We will continue support for cases in the future.
  */
 
-public abstract class AbstractJDK8GCLogParser extends AbstractGCLogParser {
+public abstract class AbstractPreUnifiedGCLogParser extends AbstractGCLogParser {
 
     private LinkedList<List<GCLogToken>> sentenceToParseQueue = new LinkedList<>();
     private LinkedList<List<GCLogToken>> sentenceToAssembleStack = new LinkedList<>();
@@ -410,7 +410,7 @@ public abstract class AbstractJDK8GCLogParser extends AbstractGCLogParser {
 
     private interface GCLogTokenType {
         // for efficiency, sometimes we do not check strictly
-        GCLogToken parseNextToken(String line, int index, AbstractJDK8GCLogParser parser);
+        GCLogToken parseNextToken(String line, int index, AbstractPreUnifiedGCLogParser parser);
     }
 
     @Override
@@ -703,12 +703,12 @@ public abstract class AbstractJDK8GCLogParser extends AbstractGCLogParser {
     };
 
     private static class LineAssembler {
-        AbstractJDK8GCLogParser parser;
+        AbstractPreUnifiedGCLogParser parser;
         private final String line;
         private int cursor = 0;
         private GCLogToken lastToken;
 
-        public LineAssembler(AbstractJDK8GCLogParser parser, String line) {
+        public LineAssembler(AbstractPreUnifiedGCLogParser parser, String line) {
             this.parser = parser;
             this.line = line;
         }
@@ -812,7 +812,7 @@ public abstract class AbstractJDK8GCLogParser extends AbstractGCLogParser {
 
     protected static final ParseRule cpuTimeRule = new PrefixAndValueParseRule(" [Times",
             ((parser, context, prefix, value) -> {
-                List<GCEventType> eventTypes = List.of(((AbstractJDK8GCLogParser) parser).getCPUTimeGCEvent());
+                List<GCEventType> eventTypes = List.of(((AbstractPreUnifiedGCLogParser) parser).getCPUTimeGCEvent());
                 GCEvent event = parser.getModel().getLastEventWithCondition(
                         (e) -> e.getCpuTime() == null && eventTypes.contains(e.getEventType()));
                 if (event == null) {

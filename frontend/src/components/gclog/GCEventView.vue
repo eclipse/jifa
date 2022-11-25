@@ -150,7 +150,7 @@ export default {
     },
     dealMemory() {
       let firstItemFound = false
-      const generations = ["young", "old", "humongous", "heap", "metaspace"]
+      const generations = ["young", "old", "humongous", "heap", "archive", "metaspace"]
       if (this.gcEvent.memory) {
         generations.forEach(generation => {
           const item = this.gcEvent.memory[generation];
@@ -164,8 +164,12 @@ export default {
           }
           this.appendNormalText(this.$t("jifa.gclog.generation." + generation) + ":")
           this.dealMemoryPreUsed(item.preUsed, generation)
+          this.dealMemoryPreCapacity(item.preCapacity, generation)
+          if (item.preUsed >= 0 || item.preCapacity >= 0) {
+            this.appendNormalText("->")
+          }
           this.dealMemoryPostUsed(item.postUsed, generation)
-          this.dealMemoryTotal(item.total, generation)
+          this.dealMemoryPostCapacity(item.postCapacity, generation)
           this.appendNormalText(" ")
 
           firstItemFound = true
@@ -181,7 +185,16 @@ export default {
           text: this.formatSizeInDetail(value)
         }
         this.parts.push(part)
-        this.appendNormalText("->")
+      }
+    },
+    dealMemoryPreCapacity(value, generation) {
+      if (value >= 0 && (generation !== "metaspace" || this.metadata.metaspaceCapacityReliable)) {
+        this.appendNormalText("(")
+        const part = {
+          text: this.formatSizeInDetail(value)
+        }
+        this.parts.push(part)
+        this.appendNormalText(")")
       }
     },
     dealMemoryPostUsed(value, generation) {
@@ -192,7 +205,7 @@ export default {
         this.parts.push(part)
       }
     },
-    dealMemoryTotal(value, generation) {
+    dealMemoryPostCapacity(value, generation) {
       if (value >= 0 && (generation !== "metaspace" || this.metadata.metaspaceCapacityReliable)) {
         this.appendNormalText("(")
         const part = {

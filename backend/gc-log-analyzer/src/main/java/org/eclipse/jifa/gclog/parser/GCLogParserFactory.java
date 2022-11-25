@@ -43,6 +43,7 @@ public class GCLogParserFactory {
             new ParserMetadataRule("CMS", GCLogStyle.UNKNOWN, CMS),
             new ParserMetadataRule("Pre Evacuate Collection Set", UNIFIED, G1),
             new ParserMetadataRule("G1 Evacuation Pause", GCLogStyle.UNKNOWN, G1),
+            new ParserMetadataRule("Eden regions", UNIFIED, G1),
             new ParserMetadataRule("[GC Worker Start (ms): ", GCLogStyle.UNKNOWN, G1),
             new ParserMetadataRule("[concurrent-root-region-scan-start", GCLogStyle.UNKNOWN, G1),
             new ParserMetadataRule("Concurrent Scan Root Regions", GCLogStyle.UNKNOWN, G1),
@@ -104,10 +105,10 @@ public class GCLogParserFactory {
                 case PARALLEL:
                 case CMS:
                 case UNKNOWN:
-                    parser = new JDK8GenerationalGCLogParser();
+                    parser = new PreUnifiedGenerationalGCLogParser();
                     break;
                 case G1:
-                    parser = new JDK8G1GCLogParser();
+                    parser = new PreUnifiedG1GCLogParser();
                     break;
                 default:
                     ErrorUtil.shouldNotReachHere();
@@ -118,13 +119,13 @@ public class GCLogParserFactory {
                 case PARALLEL:
                 case CMS:
                 case UNKNOWN:
-                    parser = new JDK11GenerationalGCLogParser();
+                    parser = new UnifiedGenerationalGCLogParser();
                     break;
                 case G1:
-                    parser = new JDK11G1GCLogParser();
+                    parser = new UnifiedG1GCLogParser();
                     break;
                 case ZGC:
-                    parser = new JDK11ZGCLogParser();
+                    parser = new UnifiedZGCLogParser();
                     break;
                 case SHENANDOAH:
                     throw new JifaException("Shenandoah is not supported.");

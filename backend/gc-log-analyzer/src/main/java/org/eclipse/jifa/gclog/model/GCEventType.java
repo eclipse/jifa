@@ -54,7 +54,8 @@ public class GCEventType {
     public static final GCEventType YOUNG_GC = new GCEventType("Young GC", PAUSE, GENERATIONAL_GCS);
     public static final GCEventType G1_MIXED_GC = new GCEventType("Mixed GC", PAUSE, G1);
     public static final GCEventType FULL_GC = new GCEventType("Full GC", PAUSE, GENERATIONAL_GCS);
-    public static final GCEventType G1_CONCURRENT_CYCLE = new GCEventType("Concurrent Cycle", GCPause.PARTIAL, G1);
+    public static final GCEventType G1_CONCURRENT_CYCLE = new GCEventType("Concurrent Mark Cycle", GCPause.PARTIAL, G1);
+    public static final GCEventType G1_CONCURRENT_UNDO_CYCLE = new GCEventType("Concurrent Undo Cycle", GCPause.PARTIAL, G1);
     public static final GCEventType CMS_CONCURRENT_MARK_SWEPT = new GCEventType("CMS", GCPause.PARTIAL, CMS);
     public static final GCEventType ZGC_GARBAGE_COLLECTION = new GCEventType("Garbage Collection", PARTIAL, ZGC);
 
@@ -80,6 +81,7 @@ public class GCEventType {
 
     // G1
     public static final GCEventType G1_COLLECT_PRE_EVACUATION = new GCEventType("Pre Evacuate Collection Set", PAUSE, PARENT_YOUNG_OLD_FULL_GC, G1);
+    public static final GCEventType G1_MERGE_HEAP_ROOTS = new GCEventType("Merge Heap Roots", PAUSE, PARENT_YOUNG_OLD_FULL_GC, G1);
     public static final GCEventType G1_COLLECT_EVACUATION = new GCEventType("Evacuate Collection Set", PAUSE, PARENT_YOUNG_OLD_FULL_GC, G1);
     public static final GCEventType G1_COLLECT_POST_EVACUATION = new GCEventType("Post Evacuate Collection Set", PAUSE, PARENT_YOUNG_OLD_FULL_GC, G1);
     public static final GCEventType G1_COLLECT_OTHER = new GCEventType("Other", PAUSE, PARENT_YOUNG_OLD_FULL_GC, G1);

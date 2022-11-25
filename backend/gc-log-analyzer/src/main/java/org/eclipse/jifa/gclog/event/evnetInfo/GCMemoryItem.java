@@ -30,16 +30,23 @@ public class GCMemoryItem {
 
     // memory size in kb
     private long preUsed = UNKNOWN_INT;
+    private long preCapacity = UNKNOWN_INT;
     private long postUsed = UNKNOWN_INT;
-    private long total = UNKNOWN_INT;
+    private long postCapacity = UNKNOWN_INT;
 
     public GCMemoryItem(MemoryArea area) {
         this.area = area;
     }
 
+    public GCMemoryItem(MemoryArea area, long preUsed, long postUsed, long postCapacity) {
+        this.area = area;
+        this.preUsed = preUsed;
+        this.postUsed = postUsed;
+        this.postCapacity = postCapacity;
+    }
 
     public GCMemoryItem(MemoryArea area, long[] memories) {
-        this(area, memories[0], memories[1], memories[2]);
+        this(area, memories[0], memories[1], memories[2], memories[3]);
     }
 
     public long getMemoryReduction() {
@@ -51,12 +58,13 @@ public class GCMemoryItem {
      */
     public GCMemoryItem merge(GCMemoryItem anotherItem) {
         if (anotherItem == null) {
-            return new GCMemoryItem(area, UNKNOWN_INT, UNKNOWN_INT, UNKNOWN_INT);
+            return new GCMemoryItem(area);
         }
         return new GCMemoryItem(area,
                 plus(preUsed, anotherItem.preUsed),
+                plus(preCapacity, anotherItem.preCapacity),
                 plus(postUsed, anotherItem.postUsed),
-                plus(total, anotherItem.total));
+                plus(postCapacity, anotherItem.postCapacity));
     }
 
     /**
@@ -69,8 +77,9 @@ public class GCMemoryItem {
         }
         return new GCMemoryItem(area,
                 plusIfPresent(preUsed, anotherItem.preUsed),
+                plusIfPresent(preCapacity, anotherItem.preCapacity),
                 plusIfPresent(postUsed, anotherItem.postUsed),
-                plusIfPresent(total, anotherItem.total));
+                plusIfPresent(postCapacity, anotherItem.postCapacity));
     }
 
     /**
@@ -78,12 +87,13 @@ public class GCMemoryItem {
      */
     public GCMemoryItem subtract(GCMemoryItem anotherItem) {
         if (anotherItem == null) {
-            return new GCMemoryItem(area, UNKNOWN_INT, UNKNOWN_INT, UNKNOWN_INT);
+            return new GCMemoryItem(area);
         }
         return new GCMemoryItem(area,
                 minus(preUsed, anotherItem.preUsed),
+                minus(preCapacity, anotherItem.preCapacity),
                 minus(postUsed, anotherItem.postUsed),
-                minus(total, anotherItem.total));
+                minus(postCapacity, anotherItem.postCapacity));
     }
 
     /**
@@ -96,8 +106,9 @@ public class GCMemoryItem {
         }
         return new GCMemoryItem(area,
                 minusIfPresent(preUsed, anotherItem.preUsed),
+                minusIfPresent(preCapacity, anotherItem.preCapacity),
                 minusIfPresent(postUsed, anotherItem.postUsed),
-                minusIfPresent(total, anotherItem.total));
+                minusIfPresent(postCapacity, anotherItem.postCapacity));
     }
 
     public GCMemoryItem updateIfAbsent(GCMemoryItem anotherItem) {
@@ -106,8 +117,9 @@ public class GCMemoryItem {
         }
         return new GCMemoryItem(area,
                 preUsed == UNKNOWN_INT ? anotherItem.preUsed : preUsed,
+                preCapacity == UNKNOWN_INT ? anotherItem.preCapacity : preCapacity,
                 postUsed == UNKNOWN_INT ? anotherItem.postUsed : postUsed,
-                total == UNKNOWN_INT ? anotherItem.total : total);
+                postCapacity == UNKNOWN_INT ? anotherItem.postCapacity : postCapacity);
     }
 
     private static long plus(long x, long y) {
@@ -142,11 +154,14 @@ public class GCMemoryItem {
         if (preUsed != UNKNOWN_INT) {
             preUsed *= x;
         }
+        if (preCapacity != UNKNOWN_INT) {
+            preCapacity *= x;
+        }
         if (postUsed != UNKNOWN_INT) {
             postUsed *= x;
         }
-        if (total != UNKNOWN_INT) {
-            total *= x;
+        if (postCapacity != UNKNOWN_INT) {
+            postCapacity *= x;
         }
     }
 
@@ -154,17 +169,17 @@ public class GCMemoryItem {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        GCMemoryItem that = (GCMemoryItem) o;
-        return preUsed == that.preUsed && postUsed == that.postUsed && total == that.total && area == that.area;
+        GCMemoryItem item = (GCMemoryItem) o;
+        return preUsed == item.preUsed && preCapacity == item.preCapacity && postUsed == item.postUsed && postCapacity == item.postCapacity && area == item.area;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(area, preUsed, postUsed, total);
+        return Objects.hash(area, preUsed, preCapacity, postUsed, postCapacity);
     }
 
     public boolean isEmpty() {
-        return preUsed == UNKNOWN_INT && postUsed == UNKNOWN_INT && total == UNKNOWN_INT;
+        return preUsed == UNKNOWN_INT && preCapacity == UNKNOWN_INT && postUsed == UNKNOWN_INT && postCapacity == UNKNOWN_INT;
     }
 
     @Override
@@ -176,15 +191,21 @@ public class GCMemoryItem {
             sb.append("unknown");
         } else {
             if (preUsed != UNKNOWN_INT) {
-                sb.append((long) (Math.max(0, preUsed) / KB2MB / KB2MB)).append("M->");
+                sb.append((long) (Math.max(0, preUsed) / KB2MB / KB2MB)).append("M");
+            }
+            if (preCapacity != UNKNOWN_INT) {
+                sb.append('(').append((long) (Math.max(0, preCapacity) / KB2MB / KB2MB)).append("M)");
+            }
+            if (preUsed != UNKNOWN_INT || preCapacity != UNKNOWN_INT) {
+                sb.append("->");
             }
             if (postUsed != UNKNOWN_INT) {
                 sb.append((long) (Math.max(0, postUsed) / KB2MB / KB2MB)).append('M');
             } else {
                 sb.append("unknown");
             }
-            if (total != UNKNOWN_INT) {
-                sb.append('(').append((long) (Math.max(0, total) / KB2MB / KB2MB)).append("M)");
+            if (postCapacity != UNKNOWN_INT) {
+                sb.append('(').append((long) (Math.max(0, postCapacity) / KB2MB / KB2MB)).append("M)");
             }
         }
         return sb.toString();

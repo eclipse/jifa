@@ -42,6 +42,8 @@ export function getPhaseHint(phase) {
 
 export function getCauseHint(cause) {
   switch (cause) {
+    case "Full GC for -Xshare:dump":
+      return 'jifa.gclog.cause.archiveShare'
     case "CMS Final Remark":
       return 'jifa.gclog.cause.cmsFinalRemark'
     case "System.gc()":
@@ -139,7 +141,7 @@ export function badCause(phase, cause, component) {
   }
   if (phase === "Full GC" && ["Allocation Failure", "Metadata GC Threshold", "Ergonomics", "Last ditch collection",
     "Promotion Failed", "Metadata GC Clear Soft References", "System.gc()", "G1 Humongous Allocation",
-    "GCLocker Initiated GC"].indexOf(cause) >= 0) {
+    "GCLocker Initiated GC", "G1 Compaction Pause"].indexOf(cause) >= 0) {
     return {
       bad: true,
       badHint: component.$t('jifa.gclog.badHint.badCauseFull', {name: cause})
@@ -153,7 +155,7 @@ export function isYoungGC(phase) {
 }
 
 export function isOldGC(phase) {
-  return phase === "Concurrent Cycle" || phase === "CMS"
+  return phase === "Concurrent Mark Cycle" || phase === "CMS"
 }
 
 export function isFullGC(phase) {

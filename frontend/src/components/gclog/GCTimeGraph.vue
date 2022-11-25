@@ -51,7 +51,8 @@ export default {
         'Mixed GC': '#fac858',
         'Full GC': '#ee6666',
         'Garbage Collection': '#ee6666',
-        'Concurrent Cycle': '#91cc75',
+        'Concurrent Mark Cycle': '#91cc75',
+        'Concurrent Undo Cycle': '#ea7ccc',
         'CMS': '#91cc75',
       },
       color: {}

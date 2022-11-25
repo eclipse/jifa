@@ -18,6 +18,7 @@ import org.eclipse.jifa.gclog.event.GCEvent;
 import org.eclipse.jifa.gclog.event.ThreadEvent;
 import org.eclipse.jifa.gclog.event.Safepoint;
 import org.eclipse.jifa.gclog.model.*;
+import org.eclipse.jifa.gclog.model.modeInfo.GCLogMetadata;
 import org.eclipse.jifa.gclog.parser.*;
 import org.eclipse.jifa.gclog.event.evnetInfo.GCMemoryItem;
 import org.eclipse.jifa.gclog.model.modeInfo.GCCollectorType;
@@ -36,13 +37,14 @@ import static org.eclipse.jifa.gclog.event.evnetInfo.GCCause.*;
 import static org.eclipse.jifa.gclog.event.evnetInfo.GCEventBooleanType.TO_SPACE_EXHAUSTED;
 import static org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea.*;
 import static org.eclipse.jifa.gclog.TestUtil.stringToBufferedReader;
+import static org.eclipse.jifa.gclog.util.Constant.UNKNOWN_INT;
 
 public class TestParser {
 
     public static final double DELTA = 1e-6;
 
     @Test
-    public void testJDK11G1Parse() throws Exception {
+    public void testJDK11G1Parser() throws Exception {
         String log =
                 "[0.015s][info][gc,heap] Heap region size: 1M\n" +
                         "[0.017s][info][gc     ] Using G1\n" +
@@ -108,7 +110,7 @@ public class TestParser {
                         "[7.123s][info   ][gc,metaspace   ] GC(2) Metaspace: 3604K->3604K(262144K)\n" +
                         "[7.123s][info   ][gc             ] GC(2) Pause Full (G1 Evacuation Pause) 1700M->1078M(1700M) 67.806ms\n" +
                         "[7.123s][info   ][gc,cpu         ] GC(2) User=0.33s Sys=0.00s Real=0.07s";
-        JDK11G1GCLogParser parser = (JDK11G1GCLogParser)
+        UnifiedG1GCLogParser parser = (UnifiedG1GCLogParser)
                 (new GCLogParserFactory().getParser(stringToBufferedReader(log)));
         G1GCModel model = (G1GCModel) parser.parse(stringToBufferedReader(log));
         model.calculateDerivedInfo(new DefaultProgressListener());
@@ -173,6 +175,10 @@ public class TestParser {
         Assert.assertEquals(fullGC.getPhases().size(), 4);
         Assert.assertEquals(fullGC.getPhases().get(3).getEventType(), GCEventType.G1_COMPACT_HEAP);
         Assert.assertEquals(fullGC.getPhases().get(3).getDuration(), 57.656, DELTA);
+
+        GCLogMetadata metadata = model.getGcModelMetadata();
+        Assert.assertTrue(metadata.getImportantEventTypes().contains(GCEventType.G1_CONCURRENT_REBUILD_REMEMBERED_SETS.getName()));
+        Assert.assertFalse(metadata.getImportantEventTypes().contains(GCEventType.G1_CONCURRENT_UNDO_CYCLE.getName()));
     }
 
     @Test
@@ -189,7 +195,7 @@ public class TestParser {
                 "[3.982s][info][gc,heap       ] GC(14) Humongous regions: 2->2\n" +
                 "[3.982s][info][gc,metaspace  ] GC(14) Metaspace: 21709K->21707K(1069056K)\n" +
                 "[3.982s][info][gc            ] GC(14) Pause Young (Normal) (G1 Evacuation Pause) 637M->630M(2048M) 116.771ms";
-        JDK11G1GCLogParser parser = new JDK11G1GCLogParser();
+        UnifiedG1GCLogParser parser = new UnifiedG1GCLogParser();
         parser.setMetadata(new GCLogParsingMetadata(GCCollectorType.G1, GCLogStyle.UNIFIED));
         G1GCModel model = (G1GCModel) parser.parse(stringToBufferedReader(log));
         model.calculateDerivedInfo(new DefaultProgressListener());
@@ -205,7 +211,7 @@ public class TestParser {
     public void testJDK11ParseDecoration() throws Exception {
         String log = "[2021-05-06T11:25:16.508+0800][info][gc           ] GC(0) Pause Young (Concurrent Start) (Metadata GC Threshold)\n" +
                 "[2021-05-06T11:25:16.510+0800][info][gc           ] GC(1) Pause Young (Concurrent Start) (Metadata GC Threshold)\n";
-        JDK11G1GCLogParser parser = new JDK11G1GCLogParser();
+        UnifiedG1GCLogParser parser = new UnifiedG1GCLogParser();
         parser.setMetadata(new GCLogParsingMetadata(GCCollectorType.G1, GCLogStyle.UNIFIED));
         GCModel model = parser.parse(stringToBufferedReader(log));
         Assert.assertEquals(model.getReferenceTimestamp(), 1620271516508d, DELTA);
@@ -213,7 +219,7 @@ public class TestParser {
 
         log = "[1000000000800ms][info][gc           ] GC(0) Pause Young (Concurrent Start) (Metadata GC Threshold)\n" +
                 "[1000000000802ms][info][gc           ] GC(1) Pause Young (Concurrent Start) (Metadata GC Threshold)\n";
-        parser = new JDK11G1GCLogParser();
+        parser = new UnifiedG1GCLogParser();
         parser.setMetadata(new GCLogParsingMetadata(GCCollectorType.G1, GCLogStyle.UNIFIED));
         model = parser.parse(stringToBufferedReader(log));
         Assert.assertEquals(model.getReferenceTimestamp(), 1000000000800D, DELTA);
@@ -333,7 +339,7 @@ public class TestParser {
                         "[7.777s] Allocation Stall (ThreadPoolTaskScheduler-1) 0.204ms\n" +
                         "[7.888s] Allocation Stall (NioProcessor-2) 0.391ms\n" +
                         "[7.889s] Out Of Memory (thread 8)";
-        JDK11ZGCLogParser parser = (JDK11ZGCLogParser)
+        UnifiedZGCLogParser parser = (UnifiedZGCLogParser)
                 (new GCLogParserFactory().getParser(stringToBufferedReader(log)));
         ZGCModel model = (ZGCModel) parser.parse(stringToBufferedReader(log));
         model.calculateDerivedInfo(new DefaultProgressListener());
@@ -349,9 +355,9 @@ public class TestParser {
         Assert.assertEquals(gc.getCause(), PROACTIVE);
         Assert.assertEquals(gc.getLastPhaseOfType(GCEventType.ZGC_PAUSE_MARK_START).getEndTime(), 7006, DELTA);
         Assert.assertEquals(gc.getLastPhaseOfType(GCEventType.ZGC_PAUSE_MARK_START).getDuration(), 4.459, DELTA);
-        Assert.assertEquals(gc.getMemoryItem(METASPACE).getTotal(), 128 * 1024 * 1024);
+        Assert.assertEquals(gc.getMemoryItem(METASPACE).getPostCapacity(), 128 * 1024 * 1024);
         Assert.assertEquals(gc.getMemoryItem(METASPACE).getPostUsed(), 125 * 1024 * 1024);
-        Assert.assertEquals(gc.getMemoryItem(HEAP), new GCMemoryItem(HEAP, 5614L * 1024 * 1024, 1454 * 1024 * 1024, 40960L * 1024 * 1024));
+        Assert.assertEquals(gc.getMemoryItem(HEAP), new GCMemoryItem(HEAP, 5614L * 1024 * 1024, 40960L * 1024 * 1024, 1454 * 1024 * 1024, 40960L * 1024 * 1024));
         Assert.assertEquals(gc.getAllocation(), 202 * 1024 * 1024);
         Assert.assertEquals(gc.getReclamation(), 4200L * 1024 * 1024);
 
@@ -365,7 +371,7 @@ public class TestParser {
         Assert.assertEquals(allocationStalls.size(), 2);
         Assert.assertEquals(allocationStalls.get(1).getEndTime(), 7888, DELTA);
         Assert.assertEquals(allocationStalls.get(1).getDuration(), 0.391, DELTA);
-        Assert.assertEquals(((ThreadEvent)(allocationStalls.get(1))).getThreadName(), "NioProcessor-2");
+        Assert.assertEquals(((ThreadEvent) (allocationStalls.get(1))).getThreadName(), "NioProcessor-2");
 
         Assert.assertEquals(model.getOoms().size(), 1);
         ThreadEvent oom = model.getOoms().get(0);
@@ -410,7 +416,7 @@ public class TestParser {
                         "796.991: [GC (Allocation Failure) 796.992: [ParNew: 1922432K->1922432K(1922432K), 0.0000267 secs]796.992: [CMS797.832: [CMS-concurrent-sweep: 1.180/1.376 secs] [Times: user=3.42 sys=0.14, real=1.38 secs]\n" +
                         " (concurrent mode failure): 2034154K->1051300K(2097152K), 4.6146919 secs] 3956586K->1051300K(4019584K), [Metaspace: 296232K->296083K(1325056K)], 4.6165192 secs] [Times: user=4.60 sys=0.05, real=4.62 secs]\n" +
                         "813.396: [GC (Allocation Failure) 813.396: [ParNew813.404: [SoftReference, 4 refs, 0.0000260 secs]813.405: [WeakReference, 59 refs, 0.0000110 secs]813.406: [FinalReference, 1407 refs, 0.0025979 secs]813.407: [PhantomReference, 11 refs, 10 refs, 0.0000131 secs]813.408: [JNI Weak Reference, 0.0000088 secs]: 69952K->8704K(78656K), 0.0104509 secs] 69952K->11354K(253440K), 0.0105137 secs] [Times: user=0.04 sys=0.01, real=0.01 secs]\n";
-        JDK8GenerationalGCLogParser parser = (JDK8GenerationalGCLogParser)
+        PreUnifiedGenerationalGCLogParser parser = (PreUnifiedGenerationalGCLogParser)
                 (new GCLogParserFactory().getParser(stringToBufferedReader(log)));
 
         CMSGCModel model = (CMSGCModel) parser.parse(stringToBufferedReader(log));
@@ -555,7 +561,7 @@ public class TestParser {
                 "      [Free CSet: 0.1 ms]\n" +
                 "   [Eden: 2304.0M(2304.0M)->0.0B(2304.0M) Survivors: 192.0M->192.0M Heap: 15.0G(19.8G)->12.8G(19.8G)]\n" +
                 " [Times: user=0.17 sys=0.00, real=0.03 secs]";
-        JDK8G1GCLogParser parser = (JDK8G1GCLogParser)
+        PreUnifiedG1GCLogParser parser = (PreUnifiedG1GCLogParser)
                 (new GCLogParserFactory().getParser(stringToBufferedReader(log)));
 
         G1GCModel model = (G1GCModel) parser.parse(stringToBufferedReader(log));
@@ -569,8 +575,8 @@ public class TestParser {
         Assert.assertEquals(youngGC.getDuration(), 56.3085, DELTA);
         Assert.assertEquals(youngGC.getEventType(), GCEventType.YOUNG_GC);
         Assert.assertEquals(youngGC.getCause(), G1_EVACUATION_PAUSE);
-        Assert.assertEquals(youngGC.getMemoryItem(HEAP), new GCMemoryItem(HEAP, 184 * 1024 * 1024, (int) (19.3 * 1024 * 1024), 3800L * 1024 * 1024));
-        Assert.assertEquals(youngGC.getMemoryItem(EDEN), new GCMemoryItem(EDEN, 184 * 1024 * 1024, 0, 160 * 1024 * 1024));
+        Assert.assertEquals(youngGC.getMemoryItem(HEAP), new GCMemoryItem(HEAP, 184 * 1024 * 1024, 3800L * 1024 * 1024, (int) (19.3 * 1024 * 1024), 3800L * 1024 * 1024));
+        Assert.assertEquals(youngGC.getMemoryItem(EDEN), new GCMemoryItem(EDEN, 184 * 1024 * 1024, 184 * 1024 * 1024, 0, 160 * 1024 * 1024));
         Assert.assertNotNull(youngGC.getPhases());
         for (GCEvent phase : youngGC.getPhases()) {
             Assert.assertTrue(phase.getDuration() != UNKNOWN_DOUBLE);
@@ -607,7 +613,7 @@ public class TestParser {
         Assert.assertEquals(fullGC.getEventType(), GCEventType.FULL_GC);
         Assert.assertEquals(fullGC.getCause(), METADATA_GENERATION_THRESHOLD);
         Assert.assertEquals(fullGC.getMemoryItem(METASPACE), new GCMemoryItem(METASPACE, 1792694 * 1024, 291615 * 1024, 698368 * 1024));
-        Assert.assertEquals(fullGC.getMemoryItem(HEAP), new GCMemoryItem(HEAP, (long) (7521.7 * 1024 * 1024), (long) (7002.8 * 1024 * 1024), (long) (46144.0 * 1024 * 1024)));
+        Assert.assertEquals(fullGC.getMemoryItem(HEAP), new GCMemoryItem(HEAP, (long) (7521.7 * 1024 * 1024), (long) (46144.0 * 1024 * 1024), (long) (7002.8 * 1024 * 1024), (long) (46144.0 * 1024 * 1024)));
         Assert.assertEquals(fullGC.getCpuTime().getUser(), 2090, DELTA);
         Assert.assertEquals(fullGC.getCpuTime().getSys(), 190, DELTA);
         Assert.assertEquals(fullGC.getCpuTime().getReal(), 1920, DELTA);
@@ -618,12 +624,16 @@ public class TestParser {
         Assert.assertEquals(mixedGC.getEventType(), GCEventType.G1_MIXED_GC);
         Assert.assertEquals(mixedGC.getCause(), G1_EVACUATION_PAUSE);
         Assert.assertTrue(mixedGC.isTrue(TO_SPACE_EXHAUSTED));
-        Assert.assertEquals(mixedGC.getMemoryItem(HEAP).getTotal(), (long) (19.8 * 1024 * 1024 * 1024));
+        Assert.assertEquals(mixedGC.getMemoryItem(HEAP).getPostCapacity(), (long) (19.8 * 1024 * 1024 * 1024));
         Assert.assertEquals(mixedGC.getMemoryItem(EDEN).getPreUsed(), 2304L * 1024 * 1024);
         Assert.assertNotNull(mixedGC.getPhases());
         for (GCEvent phase : mixedGC.getPhases()) {
             Assert.assertTrue(phase.getDuration() != UNKNOWN_DOUBLE);
         }
+
+        GCLogMetadata metadata = model.getGcModelMetadata();
+        Assert.assertFalse(metadata.getImportantEventTypes().contains(GCEventType.G1_CONCURRENT_REBUILD_REMEMBERED_SETS.getName()));
+        Assert.assertFalse(metadata.getImportantEventTypes().contains(GCEventType.G1_CONCURRENT_UNDO_CYCLE.getName()));
     }
 
     @Test
@@ -662,7 +672,7 @@ public class TestParser {
                 "      [Free CSet: 0.1 ms]\n" +
                 "   [Eden: 52224.0K(52224.0K)->0.0B(45056.0K) Survivors: 0.0B->7168.0K Heap: 52224.0K(1024.0M)->8184.0K(1024.0M)]\n" +
                 " [Times: user=0.02 sys=0.01, real=0.01 secs] ";
-        JDK8G1GCLogParser parser = (JDK8G1GCLogParser)
+        PreUnifiedG1GCLogParser parser = (PreUnifiedG1GCLogParser)
                 (new GCLogParserFactory().getParser(stringToBufferedReader(log)));
 
         G1GCModel model = (G1GCModel) parser.parse(stringToBufferedReader(log));
@@ -695,7 +705,7 @@ public class TestParser {
                 "[5.743s][info][gc,phases,start] GC(1) Phase 4: Move objects\n" +
                 "[5.760s][info][gc,phases      ] GC(1) Phase 4: Move objects 17.259ms\n" +
                 "[5.761s][info][gc             ] GC(1) Pause Full (Allocation Failure) 215M->132M(247M) 146.617ms";
-        JDK11GenerationalGCLogParser parser = (JDK11GenerationalGCLogParser)
+        UnifiedGenerationalGCLogParser parser = (UnifiedGenerationalGCLogParser)
                 (new GCLogParserFactory().getParser(stringToBufferedReader(log)));
 
         SerialGCModel model = (SerialGCModel) parser.parse(stringToBufferedReader(log));
@@ -755,7 +765,7 @@ public class TestParser {
                 "[2.882s][info][gc,metaspace   ] GC(1) Metaspace: 7459K->7459K(1056768K)\n" +
                 "[2.882s][info][gc             ] GC(1) Pause Full (Ergonomics) 148M->92M(245M) 46.539ms\n" +
                 "[2.882s][info][gc,cpu         ] GC(1) User=0.17s Sys=0.00s Real=0.05s";
-        JDK11GenerationalGCLogParser parser = (JDK11GenerationalGCLogParser)
+        UnifiedGenerationalGCLogParser parser = (UnifiedGenerationalGCLogParser)
                 (new GCLogParserFactory().getParser(stringToBufferedReader(log)));
 
         ParallelGCModel model = (ParallelGCModel) parser.parse(stringToBufferedReader(log));
@@ -835,7 +845,7 @@ public class TestParser {
                 "[9.149s][info][gc,phases      ] GC(2) Phase 4: Move objects 28.069ms\n" +
                 "[9.149s][info][gc             ] GC(2) Pause Full (Allocation Failure) 174M->166M(247M) 178.617ms\n" +
                 "[9.149s][info][gc,cpu         ] GC(2) User=0.17s Sys=0.00s Real=0.18s";
-        JDK11GenerationalGCLogParser parser = (JDK11GenerationalGCLogParser)
+        UnifiedGenerationalGCLogParser parser = (UnifiedGenerationalGCLogParser)
                 (new GCLogParserFactory().getParser(stringToBufferedReader(log)));
 
         CMSGCModel model = (CMSGCModel) parser.parse(stringToBufferedReader(log));
@@ -904,7 +914,7 @@ public class TestParser {
                         "1.872: [Full GC (Ergonomics) [PSYoungGen: 4096K->0K(103936K)] [ParOldGen: 169794K->149708K(341504K)] 173890K->149708K(445440K), [Metaspace: 3202K->3202K(1056768K)], 1.3724621 secs] [Times: user=8.33 sys=0.01, real=1.38 secs]\n" +
                         "3.268: [GC (Allocation Failure) [PSYoungGen: 99840K->56802K(113664K)] 249548K->302089K(455168K), 0.1043993 secs] [Times: user=0.75 sys=0.06, real=0.10 secs]\n" +
                         "14.608: [Full GC (Ergonomics) [PSYoungGen: 65530K->0K(113664K)] [ParOldGen: 341228K->720K(302592K)] 406759K->720K(416256K), [Metaspace: 3740K->3737K(1056768K)], 0.0046781 secs] [Times: user=0.02 sys=0.01, real=0.00 secs]\n";
-        JDK8GenerationalGCLogParser parser = (JDK8GenerationalGCLogParser)
+        PreUnifiedGenerationalGCLogParser parser = (PreUnifiedGenerationalGCLogParser)
                 (new GCLogParserFactory().getParser(stringToBufferedReader(log)));
 
         ParallelGCModel model = (ParallelGCModel) parser.parse(stringToBufferedReader(log));
@@ -921,11 +931,11 @@ public class TestParser {
         GCMemoryItem youngGen = youngGC.getMemoryItem(YOUNG);
         Assert.assertEquals(youngGen.getPreUsed(), 51200 * 1024);
         Assert.assertEquals(youngGen.getPostUsed(), 4096 * 1024);
-        Assert.assertEquals(youngGen.getTotal(), 77824 * 1024);
+        Assert.assertEquals(youngGen.getPostCapacity(), 77824 * 1024);
         GCMemoryItem total = youngGC.getMemoryItem(HEAP);
         Assert.assertEquals(total.getPreUsed(), 118572 * 1024);
         Assert.assertEquals(total.getPostUsed(), 117625 * 1024);
-        Assert.assertEquals(total.getTotal(), 252416 * 1024);
+        Assert.assertEquals(total.getPostCapacity(), 252416 * 1024);
         Assert.assertEquals(youngGC.getCpuTime().getUser(), 290, DELTA);
 
         GCEvent fullGC = model.getGcEvents().get(5);
@@ -936,19 +946,19 @@ public class TestParser {
         youngGen = fullGC.getMemoryItem(YOUNG);
         Assert.assertEquals(youngGen.getPreUsed(), 65530 * 1024);
         Assert.assertEquals(youngGen.getPostUsed(), 0);
-        Assert.assertEquals(youngGen.getTotal(), 113664 * 1024);
+        Assert.assertEquals(youngGen.getPostCapacity(), 113664 * 1024);
         GCMemoryItem oldGen = fullGC.getMemoryItem(OLD);
         Assert.assertEquals(oldGen.getPreUsed(), 341228 * 1024);
         Assert.assertEquals(oldGen.getPostUsed(), 720 * 1024);
-        Assert.assertEquals(oldGen.getTotal(), 302592 * 1024);
+        Assert.assertEquals(oldGen.getPostCapacity(), 302592 * 1024);
         GCMemoryItem metaspace = fullGC.getMemoryItem(METASPACE);
         Assert.assertEquals(metaspace.getPreUsed(), 3740 * 1024);
         Assert.assertEquals(metaspace.getPostUsed(), 3737 * 1024);
-        Assert.assertEquals(metaspace.getTotal(), 1056768 * 1024);
+        Assert.assertEquals(metaspace.getPostCapacity(), 1056768 * 1024);
         total = fullGC.getMemoryItem(HEAP);
         Assert.assertEquals(total.getPreUsed(), 406759 * 1024);
         Assert.assertEquals(total.getPostUsed(), 720 * 1024);
-        Assert.assertEquals(total.getTotal(), 416256 * 1024);
+        Assert.assertEquals(total.getPostCapacity(), 416256 * 1024);
         Assert.assertEquals(fullGC.getCpuTime().getUser(), 20, DELTA);
     }
 
@@ -964,7 +974,7 @@ public class TestParser {
                         "2021-12-07T11:18:13.160+0800: #8: [GC (Allocation Failure) 2021-12-07T11:18:13.160+0800: #8: [DefNew: 271999K->30207K(272000K), 0.2782985 secs]2021-12-07T11:18:13.438+0800: #9: [Tenured: 785946K->756062K(786120K), 0.8169720 secs] 823069K->756062K(1058120K), [Metaspace: 3782K->3782K(1056768K)], 1.0959870 secs] [Times: user=1.03 sys=0.07, real=1.09 secs] \n" +
                         "2021-12-07T11:18:14.386+0800: #10: [GC (Allocation Failure) 2021-12-07T11:18:14.386+0800: #10: [DefNew: 504128K->62975K(567104K), 0.5169362 secs] 1260190K->1260189K(1827212K), 0.5169650 secs] [Times: user=0.40 sys=0.12, real=0.52 secs] ";
 
-        JDK8GenerationalGCLogParser parser = (JDK8GenerationalGCLogParser)
+        PreUnifiedGenerationalGCLogParser parser = (PreUnifiedGenerationalGCLogParser)
                 (new GCLogParserFactory().getParser(stringToBufferedReader(log)));
 
         SerialGCModel model = (SerialGCModel) parser.parse(stringToBufferedReader(log));
@@ -982,11 +992,11 @@ public class TestParser {
         GCMemoryItem youngGen = youngGC.getMemoryItem(YOUNG);
         Assert.assertEquals(youngGen.getPreUsed(), 78656 * 1024);
         Assert.assertEquals(youngGen.getPostUsed(), 8703 * 1024);
-        Assert.assertEquals(youngGen.getTotal(), 78656 * 1024);
+        Assert.assertEquals(youngGen.getPostCapacity(), 78656 * 1024);
         GCMemoryItem total = youngGC.getMemoryItem(HEAP);
         Assert.assertEquals(total.getPreUsed(), 126740 * 1024);
         Assert.assertEquals(total.getPostUsed(), 114869 * 1024);
-        Assert.assertEquals(total.getTotal(), 253440 * 1024);
+        Assert.assertEquals(total.getPostCapacity(), 253440 * 1024);
         Assert.assertEquals(youngGC.getCpuTime().getReal(), 70, DELTA);
 
         GCEvent fullGC = model.getGcEvents().get(6);
@@ -997,19 +1007,19 @@ public class TestParser {
         youngGen = fullGC.getMemoryItem(YOUNG);
         Assert.assertEquals(youngGen.getPreUsed(), 271999 * 1024);
         Assert.assertEquals(youngGen.getPostUsed(), 0);
-        Assert.assertEquals(youngGen.getTotal(), 272000 * 1024);
+        Assert.assertEquals(youngGen.getPostCapacity(), 272000 * 1024);
         GCMemoryItem oldGen = fullGC.getMemoryItem(OLD);
         Assert.assertEquals(oldGen.getPreUsed(), 785946 * 1024);
         Assert.assertEquals(oldGen.getPostUsed(), 756062 * 1024);
-        Assert.assertEquals(oldGen.getTotal(), 786120 * 1024);
+        Assert.assertEquals(oldGen.getPostCapacity(), 786120 * 1024);
         GCMemoryItem metaspace = fullGC.getMemoryItem(METASPACE);
         Assert.assertEquals(metaspace.getPreUsed(), 3782 * 1024);
         Assert.assertEquals(metaspace.getPostUsed(), 3782 * 1024);
-        Assert.assertEquals(metaspace.getTotal(), 1056768 * 1024);
+        Assert.assertEquals(metaspace.getPostCapacity(), 1056768 * 1024);
         total = fullGC.getMemoryItem(HEAP);
         Assert.assertEquals(total.getPreUsed(), 823069 * 1024);
         Assert.assertEquals(total.getPostUsed(), 756062 * 1024);
-        Assert.assertEquals(total.getTotal(), 1058120 * 1024);
+        Assert.assertEquals(total.getPostCapacity(), 1058120 * 1024);
         Assert.assertEquals(fullGC.getCpuTime().getSys(), 70, DELTA);
     }
 
@@ -1057,7 +1067,7 @@ public class TestParser {
                         "[5.789s][info][gc             ] GC(3) Pause Young (Allocation Failure) 215M->132M(247M) 146.211ms\n" +
                         "[5.789s][info][gc,cpu         ] GC(3) User=0.15s Sys=0.00s Real=0.15s";
 
-        JDK11GenerationalGCLogParser parser = (JDK11GenerationalGCLogParser)
+        UnifiedGenerationalGCLogParser parser = (UnifiedGenerationalGCLogParser)
                 (new GCLogParserFactory().getParser(stringToBufferedReader(log)));
 
         SerialGCModel model = (SerialGCModel) parser.parse(stringToBufferedReader(log));
@@ -1119,7 +1129,7 @@ public class TestParser {
                         "[9.051s][info][gc,phases      ] GC(2) Phase 2: Compute new object addresses 24.761ms\n" +
                         "[9.051s][info][gc,phases,start] GC(2) Phase 3: Adjust pointers\n";
 
-        JDK11GenerationalGCLogParser parser = (JDK11GenerationalGCLogParser)
+        UnifiedGenerationalGCLogParser parser = (UnifiedGenerationalGCLogParser)
                 (new GCLogParserFactory().getParser(stringToBufferedReader(log)));
 
         CMSGCModel model = (CMSGCModel) parser.parse(stringToBufferedReader(log));
@@ -1213,7 +1223,7 @@ public class TestParser {
                 "2022-04-25T11:38:53.084+0800: 730.598: Application time: 0.0000928 seconds\n" +
                 "2022-04-25T11:38:53.089+0800: 730.603: [GC cleanup 1984M->1984M(2560M), 0.0016114 secs]\n" +
                 " [Times: user=0.01 sys=0.00, real=0.01 secs]\n";
-        JDK8G1GCLogParser parser = (JDK8G1GCLogParser)
+        PreUnifiedG1GCLogParser parser = (PreUnifiedG1GCLogParser)
                 (new GCLogParserFactory().getParser(stringToBufferedReader(log)));
         G1GCModel model = (G1GCModel) parser.parse(stringToBufferedReader(log));
         model.calculateDerivedInfo(new DefaultProgressListener());
@@ -1334,5 +1344,495 @@ public class TestParser {
 
         PauseStatistics pause = model.getPauseStatistics(new TimeRange(0, 99999999));
         Assert.assertEquals(pause.getPauseAvg(), (32.662 + 3.259 + 2.784) / 3.0, DELTA);
+    }
+
+    @Test
+    public void TestJDK17SerialGCParser() throws Exception {
+        String log = "[0.008s][info][gc] Using Serial\n" +
+                "[0.008s][info][gc,init] Version: 17.0.1+12-39 (release)\n" +
+                "[0.008s][info][gc,init] CPUs: 8 total, 8 available\n" +
+                "[0.008s][info][gc,init] Memory: 16384M\n" +
+                "[0.008s][info][gc,init] Large Page Support: Disabled\n" +
+                "[0.008s][info][gc,init] NUMA Support: Disabled\n" +
+                "[0.008s][info][gc,init] Compressed Oops: Enabled (Zero based)\n" +
+                "[0.008s][info][gc,init] Heap Min Capacity: 100M\n" +
+                "[0.008s][info][gc,init] Heap Initial Capacity: 100M\n" +
+                "[0.008s][info][gc,init] Heap Max Capacity: 100M\n" +
+                "[0.008s][info][gc,init] Pre-touch: Disabled\n" +
+                "[0.008s][info][gc,metaspace] CDS archive(s) mapped at: [0x0000000800000000-0x0000000800bd4000-0x0000000800bd4000), size 12402688, SharedBaseAddress: 0x0000000800000000, ArchiveRelocationMode: 0.\n" +
+                "[0.008s][info][gc,metaspace] Compressed class space mapped at: 0x0000000800c00000-0x0000000840c00000, reserved size: 1073741824\n" +
+                "[0.008s][info][gc,metaspace] Narrow klass base: 0x0000000800000000, Narrow klass shift: 0, Narrow klass range: 0x100000000\n" +
+                "[0.173s][info][gc,start    ] GC(0) Pause Young (Allocation Failure)\n" +
+                "[0.194s][info][gc,heap     ] GC(0) DefNew: 40960K(46080K)->5120K(46080K) Eden: 40960K(40960K)->0K(40960K) From: 0K(5120K)->5120K(5120K)\n" +
+                "[0.194s][info][gc,heap     ] GC(0) Tenured: 0K(51200K)->14524K(51200K)\n" +
+                "[0.194s][info][gc,metaspace] GC(0) Metaspace: 137K(384K)->138K(384K) NonClass: 133K(256K)->134K(256K) Class: 4K(128K)->4K(128K)\n" +
+                "[0.194s][info][gc          ] GC(0) Pause Young (Allocation Failure) 40M->19M(95M) 21.766ms\n" +
+                "[0.194s][info][gc,cpu      ] GC(0) User=0.01s Sys=0.00s Real=0.02s\n" +
+                "[2.616s][info][gc,start       ] GC(1) Pause Full (Allocation Failure)\n" +
+                "[2.616s][info][gc,phases,start] GC(1) Phase 1: Mark live objects\n" +
+                "[2.665s][info][gc,phases      ] GC(1) Phase 1: Mark live objects 49.316ms\n" +
+                "[2.665s][info][gc,phases,start] GC(1) Phase 2: Compute new object addresses\n" +
+                "[2.677s][info][gc,phases      ] GC(1) Phase 2: Compute new object addresses 12.103ms\n" +
+                "[2.677s][info][gc,phases,start] GC(1) Phase 3: Adjust pointers\n" +
+                "[2.698s][info][gc,phases      ] GC(1) Phase 3: Adjust pointers 20.186ms\n" +
+                "[2.698s][info][gc,phases,start] GC(1) Phase 4: Move objects\n" +
+                "[2.708s][info][gc,phases      ] GC(1) Phase 4: Move objects 10.313ms\n" +
+                "[2.708s][info][gc,heap        ] GC(1) DefNew: 46079K(46080K)->36798K(46080K) Eden: 40960K(40960K)->36798K(40960K) From: 5119K(5120K)->0K(5120K)\n" +
+                "[2.708s][info][gc,heap        ] GC(1) Tenured: 51199K(51200K)->51199K(51200K)\n" +
+                "[2.708s][info][gc,metaspace   ] GC(1) Metaspace: 137K(384K)->137K(384K) NonClass: 133K(256K)->133K(256K) Class: 4K(128K)->4K(128K)\n" +
+                "[2.708s][info][gc             ] GC(1) Pause Full (Allocation Failure) 94M->85M(95M) 92.137ms\n" +
+                "[2.708s][info][gc,cpu         ] GC(1) User=0.09s Sys=0.00s Real=0.09s";
+        GCLogParser parser = new GCLogParserFactory().getParser(stringToBufferedReader(log));
+        SerialGCModel model = (SerialGCModel) parser.parse(stringToBufferedReader(log));
+        model.calculateDerivedInfo(new DefaultProgressListener());
+
+        GCEvent youngGC = model.getGcEvents().get(0);
+        Assert.assertEquals(youngGC.getGcid(), 0);
+        Assert.assertEquals(youngGC.getStartTime(), 173, DELTA);
+        Assert.assertEquals(youngGC.getDuration(), 21.766, DELTA);
+        Assert.assertEquals(youngGC.getEventType(), GCEventType.YOUNG_GC);
+        Assert.assertEquals(youngGC.getCause(), ALLOCATION_FAILURE);
+        Assert.assertEquals(youngGC.getMemoryItem(YOUNG), new GCMemoryItem(YOUNG, 40960 * 1024, 46080 * 1024, 5120 * 1024, 46080 * 1024));
+        Assert.assertEquals(youngGC.getMemoryItem(EDEN), new GCMemoryItem(EDEN, 40960 * 1024, 40960 * 1024, 0 * 1024, 40960 * 1024));
+        Assert.assertEquals(youngGC.getMemoryItem(SURVIVOR), new GCMemoryItem(SURVIVOR, 0 * 1024, 5120 * 1024, 5120 * 1024, 5120 * 1024));
+        Assert.assertEquals(youngGC.getMemoryItem(OLD), new GCMemoryItem(OLD, 0, 51200 * 1024, 14524 * 1024, 51200 * 1024));
+        Assert.assertEquals(youngGC.getMemoryItem(METASPACE), new GCMemoryItem(METASPACE, 137 * 1024, 384 * 1024, 138 * 1024, 384 * 1024));
+        Assert.assertEquals(youngGC.getMemoryItem(NONCLASS), new GCMemoryItem(NONCLASS, 133 * 1024, 256 * 1024, 134 * 1024, 256 * 1024));
+        Assert.assertEquals(youngGC.getMemoryItem(CLASS), new GCMemoryItem(CLASS, 4 * 1024, 128 * 1024, 4 * 1024, 128 * 1024));
+        Assert.assertEquals(youngGC.getMemoryItem(HEAP), new GCMemoryItem(HEAP, 40 * 1024 * 1024, 95 * 1024 * 1024, 19 * 1024 * 1024, 95 * 1024 * 1024));
+        Assert.assertEquals(youngGC.getCpuTime().getReal(), 20, DELTA);
+
+        GCEvent fullGC = model.getGcEvents().get(1);
+        Assert.assertEquals(fullGC.getGcid(), 1);
+        Assert.assertEquals(fullGC.getStartTime(), 2616, DELTA);
+        Assert.assertEquals(fullGC.getDuration(), 92.137, DELTA);
+        Assert.assertEquals(fullGC.getEventType(), GCEventType.FULL_GC);
+        Assert.assertEquals(fullGC.getCause(), ALLOCATION_FAILURE);
+        Assert.assertEquals(fullGC.getMemoryItem(YOUNG), new GCMemoryItem(YOUNG, 46079 * 1024, 46080 * 1024, 36798 * 1024, 46080 * 1024));
+        Assert.assertEquals(fullGC.getMemoryItem(EDEN), new GCMemoryItem(EDEN, 40960 * 1024, 40960 * 1024, 36798 * 1024, 40960 * 1024));
+        Assert.assertEquals(fullGC.getMemoryItem(SURVIVOR), new GCMemoryItem(SURVIVOR, 5119 * 1024, 5120 * 1024, 0 * 1024, 5120 * 1024));
+        Assert.assertEquals(fullGC.getMemoryItem(OLD), new GCMemoryItem(OLD, 51199 * 1024, 51200 * 1024, 51199 * 1024, 51200 * 1024));
+        Assert.assertEquals(fullGC.getMemoryItem(METASPACE), new GCMemoryItem(METASPACE, 137 * 1024, 384 * 1024, 137 * 1024, 384 * 1024));
+        Assert.assertEquals(fullGC.getMemoryItem(NONCLASS), new GCMemoryItem(NONCLASS, 133 * 1024, 256 * 1024, 133 * 1024, 256 * 1024));
+        Assert.assertEquals(fullGC.getMemoryItem(CLASS), new GCMemoryItem(CLASS, 4 * 1024, 128 * 1024, 4 * 1024, 128 * 1024));
+        Assert.assertEquals(fullGC.getMemoryItem(HEAP), new GCMemoryItem(HEAP, 94 * 1024 * 1024, 95 * 1024 * 1024, 85 * 1024 * 1024, 95 * 1024 * 1024));
+        Assert.assertEquals(fullGC.getPhases().size(), 4);
+        for (GCEvent phase : fullGC.getPhases()) {
+            Assert.assertTrue(phase.getStartTime() != UNKNOWN_DOUBLE);
+            Assert.assertTrue(phase.getDuration() != UNKNOWN_DOUBLE);
+        }
+        Assert.assertEquals(fullGC.getLastPhaseOfType(GCEventType.SERIAL_COMPUTE_NEW_OBJECT_ADDRESSES).getDuration(), 12.103, DELTA);
+        Assert.assertEquals(fullGC.getLastPhaseOfType(GCEventType.SERIAL_MOVE_OBJECTS).getDuration(), 10.313, DELTA);
+    }
+
+    @Test
+    public void TestJDK17ParallelGCParser() throws Exception {
+        String log = "[0.017s][info][gc] Using Parallel\n" +
+                "[0.018s][info][gc,init] Version: 17.0.1+12-39 (release)\n" +
+                "[0.018s][info][gc,init] CPUs: 8 total, 8 available\n" +
+                "[0.018s][info][gc,init] Memory: 16384M\n" +
+                "[0.018s][info][gc,init] Large Page Support: Disabled\n" +
+                "[0.018s][info][gc,init] NUMA Support: Disabled\n" +
+                "[0.018s][info][gc,init] Compressed Oops: Enabled (Zero based)\n" +
+                "[0.018s][info][gc,init] Alignments: Space 512K, Generation 512K, Heap 2M\n" +
+                "[0.018s][info][gc,init] Heap Min Capacity: 100M\n" +
+                "[0.018s][info][gc,init] Heap Initial Capacity: 100M\n" +
+                "[0.018s][info][gc,init] Heap Max Capacity: 100M\n" +
+                "[0.018s][info][gc,init] Pre-touch: Disabled\n" +
+                "[0.018s][info][gc,init] Parallel Workers: 8\n" +
+                "[0.019s][info][gc,metaspace] CDS archive(s) mapped at: [0x0000000800000000-0x0000000800bd4000-0x0000000800bd4000), size 12402688, SharedBaseAddress: 0x0000000800000000, ArchiveRelocationMode: 0.\n" +
+                "[0.019s][info][gc,metaspace] Compressed class space mapped at: 0x0000000800c00000-0x0000000840c00000, reserved size: 1073741824\n" +
+                "[0.019s][info][gc,metaspace] Narrow klass base: 0x0000000800000000, Narrow klass shift: 0, Narrow klass range: 0x100000000\n" +
+                "[0.222s][info][gc,start    ] GC(0) Pause Young (Allocation Failure)\n" +
+                "[0.232s][info][gc,heap     ] GC(0) PSYoungGen: 38912K(45056K)->6137K(45056K) Eden: 38912K(38912K)->0K(38912K) From: 0K(6144K)->6137K(6144K)\n" +
+                "[0.232s][info][gc,heap     ] GC(0) ParOldGen: 0K(51200K)->13208K(51200K)\n" +
+                "[0.232s][info][gc,metaspace] GC(0) Metaspace: 135K(384K)->135K(384K) NonClass: 131K(256K)->131K(256K) Class: 4K(128K)->4K(128K)\n" +
+                "[0.232s][info][gc          ] GC(0) Pause Young (Allocation Failure) 38M->18M(94M) 10.085ms\n" +
+                "[0.232s][info][gc,cpu      ] GC(0) User=0.02s Sys=0.01s Real=0.01s\n" +
+                "[0.547s][info][gc,start    ] GC(1) Pause Full (Ergonomics)\n" +
+                "[0.548s][info][gc,phases,start] GC(1) Marking Phase\n" +
+                "[0.561s][info][gc,phases      ] GC(1) Marking Phase 13.555ms\n" +
+                "[0.561s][info][gc,phases,start] GC(1) Summary Phase\n" +
+                "[0.561s][info][gc,phases      ] GC(1) Summary Phase 0.006ms\n" +
+                "[0.561s][info][gc,phases,start] GC(1) Adjust Roots\n" +
+                "[0.561s][info][gc,phases      ] GC(1) Adjust Roots 0.238ms\n" +
+                "[0.561s][info][gc,phases,start] GC(1) Compaction Phase\n" +
+                "[0.568s][info][gc,phases      ] GC(1) Compaction Phase 6.917ms\n" +
+                "[0.568s][info][gc,phases,start] GC(1) Post Compact\n" +
+                "[0.568s][info][gc,phases      ] GC(1) Post Compact 0.222ms\n" +
+                "[0.569s][info][gc,heap        ] GC(1) PSYoungGen: 6128K(45056K)->0K(45056K) Eden: 0K(38912K)->0K(38912K) From: 6128K(6144K)->0K(6144K)\n" +
+                "[0.569s][info][gc,heap        ] GC(1) ParOldGen: 46504K(51200K)->38169K(51200K)\n" +
+                "[0.569s][info][gc,metaspace   ] GC(1) Metaspace: 135K(384K)->135K(384K) NonClass: 131K(256K)->131K(256K) Class: 4K(128K)->4K(128K)\n" +
+                "[0.569s][info][gc             ] GC(1) Pause Full (Ergonomics) 51M->37M(94M) 21.046ms\n" +
+                "[0.569s][info][gc,cpu         ] GC(1) User=0.04s Sys=0.00s Real=0.02s";
+        GCLogParser parser = new GCLogParserFactory().getParser(stringToBufferedReader(log));
+        ParallelGCModel model = (ParallelGCModel) parser.parse(stringToBufferedReader(log));
+        model.calculateDerivedInfo(new DefaultProgressListener());
+
+        GCEvent youngGC = model.getGcEvents().get(0);
+        Assert.assertEquals(youngGC.getGcid(), 0);
+        Assert.assertEquals(youngGC.getStartTime(), 222, DELTA);
+        Assert.assertEquals(youngGC.getDuration(), 10.085, DELTA);
+        Assert.assertEquals(youngGC.getEventType(), GCEventType.YOUNG_GC);
+        Assert.assertEquals(youngGC.getCause(), ALLOCATION_FAILURE);
+        Assert.assertEquals(youngGC.getMemoryItem(YOUNG), new GCMemoryItem(YOUNG, 38912 * 1024, 45056 * 1024, 6137 * 1024, 45056 * 1024));
+        Assert.assertEquals(youngGC.getMemoryItem(EDEN), new GCMemoryItem(EDEN, 38912 * 1024, 38912 * 1024, 0 * 1024, 38912 * 1024));
+        Assert.assertEquals(youngGC.getMemoryItem(SURVIVOR), new GCMemoryItem(SURVIVOR, 0 * 1024, 6144 * 1024, 6137 * 1024, 6144 * 1024));
+        Assert.assertEquals(youngGC.getMemoryItem(OLD), new GCMemoryItem(OLD, 0, 51200 * 1024, 13208 * 1024, 51200 * 1024));
+        Assert.assertEquals(youngGC.getMemoryItem(METASPACE), new GCMemoryItem(METASPACE, 135 * 1024, 384 * 1024, 135 * 1024, 384 * 1024));
+        Assert.assertEquals(youngGC.getMemoryItem(NONCLASS), new GCMemoryItem(NONCLASS, 131 * 1024, 256 * 1024, 131 * 1024, 256 * 1024));
+        Assert.assertEquals(youngGC.getMemoryItem(CLASS), new GCMemoryItem(CLASS, 4 * 1024, 128 * 1024, 4 * 1024, 128 * 1024));
+        Assert.assertEquals(youngGC.getMemoryItem(HEAP), new GCMemoryItem(HEAP, 38 * 1024 * 1024, (45056 + 51200) * 1024, 18 * 1024 * 1024, 94 * 1024 * 1024));
+        Assert.assertEquals(youngGC.getCpuTime().getReal(), 10, DELTA);
+
+        GCEvent fullGC = model.getGcEvents().get(1);
+        Assert.assertEquals(fullGC.getGcid(), 1);
+        Assert.assertEquals(fullGC.getStartTime(), 547, DELTA);
+        Assert.assertEquals(fullGC.getDuration(), 21.046, DELTA);
+        Assert.assertEquals(fullGC.getEventType(), GCEventType.FULL_GC);
+        Assert.assertEquals(fullGC.getCause(), ERGONOMICS);
+        Assert.assertEquals(fullGC.getMemoryItem(YOUNG), new GCMemoryItem(YOUNG, 6128 * 1024, 45056 * 1024, 0 * 1024, 45056 * 1024));
+        Assert.assertEquals(fullGC.getMemoryItem(EDEN), new GCMemoryItem(EDEN, 0 * 1024, 38912 * 1024, 0 * 1024, 38912 * 1024));
+        Assert.assertEquals(fullGC.getMemoryItem(SURVIVOR), new GCMemoryItem(SURVIVOR, 6128 * 1024, 6144 * 1024, 0 * 1024, 6144 * 1024));
+        Assert.assertEquals(fullGC.getMemoryItem(OLD), new GCMemoryItem(OLD, 46504 * 1024, 51200 * 1024, 38169 * 1024, 51200 * 1024));
+        Assert.assertEquals(fullGC.getMemoryItem(METASPACE), new GCMemoryItem(METASPACE, 135 * 1024, 384 * 1024, 135 * 1024, 384 * 1024));
+        Assert.assertEquals(fullGC.getMemoryItem(NONCLASS), new GCMemoryItem(NONCLASS, 131 * 1024, 256 * 1024, 131 * 1024, 256 * 1024));
+        Assert.assertEquals(fullGC.getMemoryItem(CLASS), new GCMemoryItem(CLASS, 4 * 1024, 128 * 1024, 4 * 1024, 128 * 1024));
+        Assert.assertEquals(fullGC.getMemoryItem(HEAP), new GCMemoryItem(HEAP, 51 * 1024 * 1024, (45056 + 51200) * 1024, 37 * 1024 * 1024, 94 * 1024 * 1024));
+        Assert.assertEquals(fullGC.getPhases().size(), 5);
+        for (GCEvent phase : fullGC.getPhases()) {
+            Assert.assertTrue(phase.getStartTime() != UNKNOWN_DOUBLE);
+            Assert.assertTrue(phase.getDuration() != UNKNOWN_DOUBLE);
+        }
+        Assert.assertEquals(fullGC.getLastPhaseOfType(GCEventType.PARALLEL_PHASE_SUMMARY).getDuration(), 0.006, DELTA);
+        Assert.assertEquals(fullGC.getLastPhaseOfType(GCEventType.PARALLEL_PHASE_COMPACTION).getDuration(), 6.917, DELTA);
+        Assert.assertEquals(fullGC.getCpuTime().getReal(), 20, DELTA);
+    }
+
+    @Test
+    public void testJDK17ZGCParser() throws Exception {
+        String log =
+                "[0.105s][info][gc,init] Initializing The Z Garbage Collector\n" +
+                        "[0.105s][info][gc,init] Version: 17.0.1+12-39 (release)\n" +
+                        "[0.105s][info][gc,init] NUMA Support: Disabled\n" +
+                        "[0.105s][info][gc,init] CPUs: 8 total, 8 available\n" +
+                        "[0.106s][info][gc,init] Memory: 16384M\n" +
+                        "[0.106s][info][gc,init] Large Page Support: Disabled\n" +
+                        "[0.106s][info][gc,init] GC Workers: 2 (dynamic)\n" +
+                        "[0.107s][info][gc,init] Address Space Type: Contiguous/Unrestricted/Complete\n" +
+                        "[0.107s][info][gc,init] Address Space Size: 16000M x 3 = 48000M\n" +
+                        "[0.107s][info][gc,init] Min Capacity: 1000M\n" +
+                        "[0.107s][info][gc,init] Initial Capacity: 1000M\n" +
+                        "[0.107s][info][gc,init] Max Capacity: 1000M\n" +
+                        "[0.107s][info][gc,init] Medium Page Size: 16M\n" +
+                        "[0.107s][info][gc,init] Pre-touch: Disabled\n" +
+                        "[0.107s][info][gc,init] Uncommit: Implicitly Disabled (-Xms equals -Xmx)\n" +
+                        "[0.109s][info][gc,init] Runtime Workers: 5\n" +
+                        "[0.111s][info][gc     ] Using The Z Garbage Collector\n" +
+                        "[0.114s][info][gc,metaspace] CDS archive(s) mapped at: [0x0000000800000000-0x0000000800bac000-0x0000000800bac000), size 12238848, SharedBaseAddress: 0x0000000800000000, ArchiveRelocationMode: 0.\n" +
+                        "[0.114s][info][gc,metaspace] Compressed class space mapped at: 0x0000000800c00000-0x0000000840c00000, reserved size: 1073741824\n" +
+                        "[0.114s][info][gc,metaspace] Narrow klass base: 0x0000000800000000, Narrow klass shift: 0, Narrow klass range: 0x100000000\n" +
+                        "[0.918s][info][gc,start    ] GC(0) Garbage Collection (Warmup)\n" +
+                        "[0.918s][info][gc,task     ] GC(0) Using 2 workers\n" +
+                        "[0.918s][info][gc,phases   ] GC(0) Pause Mark Start 0.007ms\n" +
+                        "[0.939s][info][gc,phases   ] GC(0) Concurrent Mark 20.975ms\n" +
+                        "[0.939s][info][gc,phases   ] GC(0) Pause Mark End 0.031ms\n" +
+                        "[0.939s][info][gc,phases   ] GC(0) Concurrent Mark Free 0.001ms\n" +
+                        "[0.940s][info][gc,phases   ] GC(0) Concurrent Process Non-Strong References 0.238ms\n" +
+                        "[0.940s][info][gc,phases   ] GC(0) Concurrent Reset Relocation Set 0.001ms\n" +
+                        "[0.948s][info][gc,phases   ] GC(0) Concurrent Select Relocation Set 8.843ms\n" +
+                        "[0.949s][info][gc,phases   ] GC(0) Pause Relocate Start 0.008ms\n" +
+                        "[0.949s][info][gc,phases   ] GC(0) Concurrent Relocate 0.811ms\n" +
+                        "[0.950s][info][gc,load     ] GC(0) Load: 3.83/4.68/5.15\n" +
+                        "[0.950s][info][gc,mmu      ] GC(0) MMU: 2ms/98.4%, 5ms/99.4%, 10ms/99.6%, 20ms/99.8%, 50ms/99.9%, 100ms/100.0%\n" +
+                        "[0.950s][info][gc,marking  ] GC(0) Mark: 2 stripe(s), 2 proactive flush(es), 1 terminate flush(es), 0 completion(s), 0 continuation(s)\n" +
+                        "[0.950s][info][gc,marking  ] GC(0) Mark Stack Usage: 32M\n" +
+                        "[0.950s][info][gc,nmethod  ] GC(0) NMethods: 91 registered, 0 unregistered\n" +
+                        "[0.950s][info][gc,metaspace] GC(0) Metaspace: 0M used, 0M committed, 1032M reserved\n" +
+                        "[0.950s][info][gc,ref      ] GC(0) Soft: 5 encountered, 0 discovered, 0 enqueued\n" +
+                        "[0.950s][info][gc,ref      ] GC(0) Weak: 5 encountered, 0 discovered, 0 enqueued\n" +
+                        "[0.950s][info][gc,ref      ] GC(0) Final: 0 encountered, 0 discovered, 0 enqueued\n" +
+                        "[0.950s][info][gc,ref      ] GC(0) Phantom: 1 encountered, 0 discovered, 0 enqueued\n" +
+                        "[0.950s][info][gc,reloc    ] GC(0) Small Pages: 44 / 88M, Empty: 10M, Relocated: 1M, In-Place: 0\n" +
+                        "[0.950s][info][gc,reloc    ] GC(0) Medium Pages: 1 / 16M, Empty: 0M, Relocated: 0M, In-Place: 0\n" +
+                        "[0.950s][info][gc,reloc    ] GC(0) Large Pages: 0 / 0M, Empty: 0M, Relocated: 0M, In-Place: 0\n" +
+                        "[0.950s][info][gc,reloc    ] GC(0) Forwarding Usage: 0M\n" +
+                        "[0.950s][info][gc,heap     ] GC(0) Min Capacity: 1000M(100%)\n" +
+                        "[0.950s][info][gc,heap     ] GC(0) Max Capacity: 1000M(100%)\n" +
+                        "[0.950s][info][gc,heap     ] GC(0) Soft Max Capacity: 1000M(100%)\n" +
+                        "[0.950s][info][gc,heap     ] GC(0)                Mark Start          Mark End        Relocate Start      Relocate End           High               Low\n" +
+                        "[0.950s][info][gc,heap     ] GC(0)  Capacity:     1000M (100%)       1000M (100%)       1000M (100%)       1000M (100%)       1000M (100%)       1000M (100%)\n" +
+                        "[0.950s][info][gc,heap     ] GC(0)      Free:      896M (90%)         892M (89%)         902M (90%)         912M (91%)         912M (91%)         892M (89%)\n" +
+                        "[0.950s][info][gc,heap     ] GC(0)      Used:      104M (10%)         108M (11%)          98M (10%)          88M (9%)          108M (11%)          88M (9%)\n" +
+                        "[0.950s][info][gc,heap     ] GC(0)      Live:         -                65M (7%)           65M (7%)           65M (7%)             -                  -\n" +
+                        "[0.950s][info][gc,heap     ] GC(0) Allocated:         -                 4M (0%)            4M (0%)            3M (0%)             -                  -\n" +
+                        "[0.950s][info][gc,heap     ] GC(0)   Garbage:         -                38M (4%)           28M (3%)           18M (2%)             -                  -\n" +
+                        "[0.950s][info][gc,heap     ] GC(0) Reclaimed:         -                  -                10M (1%)           19M (2%)             -                  -\n" +
+                        "[0.950s][info][gc          ] GC(0) Garbage Collection (Warmup) 104M(10%)->88M(9%)\n" +
+                        "[10.417s][info][gc,stats    ] === Garbage Collection Statistics =======================================================================================================================\n" +
+                        "[10.417s][info][gc,stats    ]                                                              Last 10s              Last 10m              Last 10h                Total\n" +
+                        "[10.417s][info][gc,stats    ]                                                              Avg / Max             Avg / Max             Avg / Max             Avg / Max\n" +
+                        "[10.417s][info][gc,stats    ]   Collector: Garbage Collection Cycle                     52.097 / 71.589       52.097 / 71.589       52.097 / 71.589       52.097 / 71.589      ms\n" +
+                        "[10.417s][info][gc,stats    ]  Contention: Mark Segment Reset Contention                     0 / 1                 0 / 1                 0 / 1                 0 / 1           ops/s\n" +
+                        "[10.417s][info][gc,stats    ]  Contention: Mark SeqNum Reset Contention                      0 / 0                 0 / 0                 0 / 0                 0 / 0           ops/s\n" +
+                        "[10.417s][info][gc,stats    ]    Critical: Allocation Stall                                  0 / 0                 0 / 0                 0 / 0                 0 / 0           ops/s\n" +
+                        "[10.417s][info][gc,stats    ]    Critical: Allocation Stall                              0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms\n" +
+                        "[10.418s][info][gc,stats    ]    Critical: GC Locker Stall                                   0 / 0                 0 / 0                 0 / 0                 0 / 0           ops/s\n" +
+                        "[10.418s][info][gc,stats    ]    Critical: GC Locker Stall                               0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms\n" +
+                        "[10.418s][info][gc,stats    ]    Critical: Relocation Stall                                  0 / 0                 0 / 0                 0 / 0                 0 / 0           ops/s\n" +
+                        "[10.418s][info][gc,stats    ]    Critical: Relocation Stall                              0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms\n" +
+                        "[10.418s][info][gc,stats    ]      Memory: Allocation Rate                                  48 / 162              48 / 162              48 / 162              48 / 162         MB/s\n" +
+                        "[10.418s][info][gc,stats    ]      Memory: Out Of Memory                                     0 / 0                 0 / 0                 0 / 0                 0 / 0           ops/s\n" +
+                        "[10.418s][info][gc,stats    ]      Memory: Page Cache Flush                                  0 / 0                 0 / 0                 0 / 0                 0 / 0           MB/s\n" +
+                        "[10.418s][info][gc,stats    ]      Memory: Page Cache Hit L1                                 4 / 15                4 / 15                4 / 15                4 / 15          ops/s\n" +
+                        "[10.418s][info][gc,stats    ]      Memory: Page Cache Hit L2                                 0 / 0                 0 / 0                 0 / 0                 0 / 0           ops/s\n" +
+                        "[10.418s][info][gc,stats    ]      Memory: Page Cache Hit L3                                18 / 59               18 / 59               18 / 59               18 / 59          ops/s\n" +
+                        "[10.418s][info][gc,stats    ]      Memory: Page Cache Miss                                   0 / 1                 0 / 1                 0 / 1                 0 / 1           ops/s\n" +
+                        "[10.418s][info][gc,stats    ]      Memory: Uncommit                                          0 / 0                 0 / 0                 0 / 0                 0 / 0           MB/s\n" +
+                        "[10.418s][info][gc,stats    ]      Memory: Undo Object Allocation Failed                     0 / 0                 0 / 0                 0 / 0                 0 / 0           ops/s\n" +
+                        "[10.418s][info][gc,stats    ]      Memory: Undo Object Allocation Succeeded                  7 / 73                7 / 73                7 / 73                7 / 73          ops/s\n" +
+                        "[10.418s][info][gc,stats    ]      Memory: Undo Page Allocation                              0 / 0                 0 / 0                 0 / 0                 0 / 0           ops/s\n" +
+                        "[10.418s][info][gc,stats    ]       Phase: Concurrent Mark                              45.361 / 66.984       45.361 / 66.984       45.361 / 66.984       45.361 / 66.984      ms\n" +
+                        "[10.418s][info][gc,stats    ]       Phase: Concurrent Mark Continue                      0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms\n" +
+                        "[10.418s][info][gc,stats    ]       Phase: Concurrent Mark Free                          0.001 / 0.001         0.001 / 0.001         0.001 / 0.001         0.001 / 0.001       ms\n" +
+                        "[10.418s][info][gc,stats    ]       Phase: Concurrent Process Non-Strong References      0.423 / 0.697         0.423 / 0.697         0.423 / 0.697         0.423 / 0.697       ms\n" +
+                        "[10.418s][info][gc,stats    ]       Phase: Concurrent Relocate                           0.808 / 0.928         0.808 / 0.928         0.808 / 0.928         0.808 / 0.928       ms\n" +
+                        "[10.418s][info][gc,stats    ]       Phase: Concurrent Reset Relocation Set               0.001 / 0.001         0.001 / 0.001         0.001 / 0.001         0.001 / 0.001       ms\n" +
+                        "[10.418s][info][gc,stats    ]       Phase: Concurrent Select Relocation Set              4.461 / 8.843         4.461 / 8.843         4.461 / 8.843         4.461 / 8.843       ms\n" +
+                        "[10.418s][info][gc,stats    ]       Phase: Pause Mark End                                0.018 / 0.031         0.018 / 0.031         0.018 / 0.031         0.018 / 0.031       ms\n" +
+                        "[10.418s][info][gc,stats    ]       Phase: Pause Mark Start                              0.010 / 0.015         0.010 / 0.015         0.010 / 0.015         0.010 / 0.015       ms\n" +
+                        "[10.418s][info][gc,stats    ]       Phase: Pause Relocate Start                          0.007 / 0.008         0.007 / 0.008         0.007 / 0.008         0.007 / 0.008       ms\n" +
+                        "[10.418s][info][gc,stats    ]    Subphase: Concurrent Classes Purge                      0.039 / 0.060         0.039 / 0.060         0.039 / 0.060         0.039 / 0.060       ms\n" +
+                        "[10.418s][info][gc,stats    ]    Subphase: Concurrent Classes Unlink                     0.097 / 0.143         0.097 / 0.143         0.097 / 0.143         0.097 / 0.143       ms\n" +
+                        "[10.418s][info][gc,stats    ]    Subphase: Concurrent Mark                              44.745 / 66.798       44.745 / 66.798       44.745 / 66.798       44.745 / 66.798      ms\n" +
+                        "[10.418s][info][gc,stats    ]    Subphase: Concurrent Mark Try Flush                     0.185 / 0.349         0.185 / 0.349         0.185 / 0.349         0.185 / 0.349       ms\n" +
+                        "[10.418s][info][gc,stats    ]    Subphase: Concurrent Mark Try Terminate                 0.558 / 1.293         0.558 / 1.293         0.558 / 1.293         0.558 / 1.293       ms\n" +
+                        "[10.418s][info][gc,stats    ]    Subphase: Concurrent References Enqueue                 0.002 / 0.006         0.002 / 0.006         0.002 / 0.006         0.002 / 0.006       ms\n" +
+                        "[10.418s][info][gc,stats    ]    Subphase: Concurrent References Process                 0.020 / 0.034         0.020 / 0.034         0.020 / 0.034         0.020 / 0.034       ms\n" +
+                        "[10.418s][info][gc,stats    ]    Subphase: Concurrent Roots ClassLoaderDataGraph         0.058 / 0.161         0.058 / 0.161         0.058 / 0.161         0.058 / 0.161       ms\n" +
+                        "[10.418s][info][gc,stats    ]    Subphase: Concurrent Roots CodeCache                    0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms\n" +
+                        "[10.418s][info][gc,stats    ]    Subphase: Concurrent Roots JavaThreads                  0.100 / 0.147         0.100 / 0.147         0.100 / 0.147         0.100 / 0.147       ms\n" +
+                        "[10.418s][info][gc,stats    ]    Subphase: Concurrent Roots OopStorageSet                0.031 / 0.054         0.031 / 0.054         0.031 / 0.054         0.031 / 0.054       ms\n" +
+                        "[10.418s][info][gc,stats    ]    Subphase: Concurrent Weak Roots OopStorageSet           0.071 / 0.119         0.071 / 0.119         0.071 / 0.119         0.071 / 0.119       ms\n" +
+                        "[10.418s][info][gc,stats    ]    Subphase: Pause Mark Try Complete                       0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms\n" +
+                        "[10.418s][info][gc,stats    ]      System: Java Threads                                     11 / 11               11 / 11               11 / 11               11 / 11          threads\n" +
+                        "[10.418s][info][gc,stats    ] =========================================================================================================================================================";
+        UnifiedZGCLogParser parser = (UnifiedZGCLogParser)
+                (new GCLogParserFactory().getParser(stringToBufferedReader(log)));
+        ZGCModel model = (ZGCModel) parser.parse(stringToBufferedReader(log));
+        model.calculateDerivedInfo(new DefaultProgressListener());
+        Assert.assertNotNull(model);
+
+        Assert.assertEquals(model.getGcEvents().size(), 1);
+        Assert.assertTrue(model.getGcModelMetadata().isMetaspaceCapacityReliable());
+        GCEvent gc = model.getGcEvents().get(0);
+        Assert.assertEquals(gc.getGcid(), 0);
+        Assert.assertEquals(gc.getStartTime(), 918, DELTA);
+        Assert.assertEquals(gc.getEndTime(), 950, DELTA);
+        Assert.assertEquals(gc.getDuration(), 32, DELTA);
+        Assert.assertEquals(gc.getEventType(), GCEventType.ZGC_GARBAGE_COLLECTION);
+        Assert.assertEquals(gc.getCause(), WARMUP);
+        Assert.assertEquals(gc.getLastPhaseOfType(GCEventType.ZGC_PAUSE_MARK_START).getStartTime(), 918 - 0.007, DELTA);
+        Assert.assertEquals(gc.getLastPhaseOfType(GCEventType.ZGC_PAUSE_MARK_START).getDuration(), 0.007, DELTA);
+        Assert.assertEquals(gc.getMemoryItem(METASPACE), new GCMemoryItem(METASPACE, -1, -1, 0, 0));
+        Assert.assertEquals(gc.getMemoryItem(HEAP), new GCMemoryItem(HEAP, 104L * 1024 * 1024, 1000L * 1024 * 1024, 88 * 1024 * 1024, 1000L * 1024 * 1024));
+        Assert.assertEquals(gc.getAllocation(), 3 * 1024 * 1024);
+        Assert.assertEquals(gc.getReclamation(), 19L * 1024 * 1024);
+
+        List<ZGCModel.ZStatistics> statistics = model.getStatistics();
+        Assert.assertEquals(statistics.size(), 1);
+        Assert.assertEquals(44, statistics.get(0).getStatisticItems().size());
+        Assert.assertEquals(statistics.get(0).getStartTime(), 10417, DELTA);
+        Assert.assertEquals(statistics.get(0).get("System: Java Threads threads").getMax10s(), 11, DELTA);
+        Assert.assertEquals(statistics.get(0).get("System: Java Threads threads").getMax10h(), 11, DELTA);
+    }
+
+    @Test
+    public void testJDK17G1Parser() throws Exception {
+        String log =
+                "[0.020s][info][gc] Using G1\n" +
+                        "[0.022s][info][gc,init] Version: 17.0.1+12-39 (release)\n" +
+                        "[0.022s][info][gc,init] CPUs: 8 total, 8 available\n" +
+                        "[0.022s][info][gc,init] Memory: 16384M\n" +
+                        "[0.022s][info][gc,init] Large Page Support: Disabled\n" +
+                        "[0.022s][info][gc,init] NUMA Support: Disabled\n" +
+                        "[0.022s][info][gc,init] Compressed Oops: Enabled (Zero based)\n" +
+                        "[0.022s][info][gc,init] Heap Region Size: 1M\n" +
+                        "[0.022s][info][gc,init] Heap Min Capacity: 100M\n" +
+                        "[0.022s][info][gc,init] Heap Initial Capacity: 100M\n" +
+                        "[0.022s][info][gc,init] Heap Max Capacity: 100M\n" +
+                        "[0.022s][info][gc,init] Pre-touch: Disabled\n" +
+                        "[0.022s][info][gc,init] Parallel Workers: 8\n" +
+                        "[0.022s][info][gc,init] Concurrent Workers: 2\n" +
+                        "[0.022s][info][gc,init] Concurrent Refinement Workers: 8\n" +
+                        "[0.022s][info][gc,init] Periodic GC: Disabled\n" +
+                        "[0.024s][info][gc,metaspace] CDS archive(s) mapped at: [0x0000000800000000-0x0000000800bd4000-0x0000000800bd4000), size 12402688, SharedBaseAddress: 0x0000000800000000, ArchiveRelocationMode: 0.\n" +
+                        "[0.025s][info][gc,metaspace] Compressed class space mapped at: 0x0000000800c00000-0x0000000840c00000, reserved size: 1073741824\n" +
+                        "[0.025s][info][gc,metaspace] Narrow klass base: 0x0000000800000000, Narrow klass shift: 0, Narrow klass range: 0x100000000\n" +
+                        "[0.333s][info][gc,start    ] GC(0) Pause Young (Normal) (G1 Evacuation Pause)\n" +
+                        "[0.333s][info][gc,task     ] GC(0) Using 2 workers of 8 for evacuation\n" +
+                        "[0.354s][info][gc,phases   ] GC(0)   Pre Evacuate Collection Set: 0.0ms\n" +
+                        "[0.354s][info][gc,phases   ] GC(0)   Merge Heap Roots: 0.1ms\n" +
+                        "[0.354s][info][gc,phases   ] GC(0)   Evacuate Collection Set: 20.3ms\n" +
+                        "[0.354s][info][gc,phases   ] GC(0)   Post Evacuate Collection Set: 0.2ms\n" +
+                        "[0.354s][info][gc,phases   ] GC(0)   Other: 0.3ms\n" +
+                        "[0.354s][info][gc,heap     ] GC(0) Eden regions: 50->0(43)\n" +
+                        "[0.354s][info][gc,heap     ] GC(0) Survivor regions: 0->7(7)\n" +
+                        "[0.354s][info][gc,heap     ] GC(0) Old regions: 0->18\n" +
+                        "[0.354s][info][gc,heap     ] GC(0) Archive regions: 2->2\n" +
+                        "[0.354s][info][gc,heap     ] GC(0) Humongous regions: 1->1\n" +
+                        "[0.354s][info][gc,metaspace] GC(0) Metaspace: 87K(320K)->87K(320K) NonClass: 84K(192K)->84K(192K) Class: 3K(128K)->3K(128K)\n" +
+                        "[0.354s][info][gc          ] GC(0) Pause Young (Normal) (G1 Evacuation Pause) 51M->26M(100M) 20.955ms\n" +
+                        "[0.354s][info][gc,cpu      ] GC(0) User=0.03s Sys=0.01s Real=0.02s\n" +
+                        "[1.097s][info][gc          ] GC(1) Concurrent Mark Cycle\n" +
+                        "[1.097s][info][gc,marking  ] GC(1) Concurrent Clear Claimed Marks\n" +
+                        "[1.097s][info][gc,marking  ] GC(1) Concurrent Clear Claimed Marks 0.020ms\n" +
+                        "[1.097s][info][gc,marking  ] GC(1) Concurrent Scan Root Regions\n" +
+                        "[1.099s][info][gc,marking  ] GC(1) Concurrent Scan Root Regions 1.966ms\n" +
+                        "[1.099s][info][gc,marking  ] GC(1) Concurrent Mark\n" +
+                        "[1.099s][info][gc,marking  ] GC(1) Concurrent Mark From Roots\n" +
+                        "[1.099s][info][gc,task     ] GC(1) Using 2 workers of 2 for marking\n" +
+                        "[1.113s][info][gc,marking  ] GC(1) Concurrent Mark From Roots 14.489ms\n" +
+                        "[1.113s][info][gc,marking  ] GC(1) Concurrent Preclean\n" +
+                        "[1.113s][info][gc,marking  ] GC(1) Concurrent Preclean 0.061ms\n" +
+                        "[1.114s][info][gc,start    ] GC(1) Pause Remark\n" +
+                        "[1.114s][info][gc          ] GC(1) Pause Remark 82M->65M(100M) 0.341ms\n" +
+                        "[1.114s][info][gc,cpu      ] GC(1) User=0.00s Sys=0.00s Real=0.00s\n" +
+                        "[1.115s][info][gc,marking  ] GC(1) Concurrent Mark 15.656ms\n" +
+                        "[1.115s][info][gc,marking  ] GC(1) Concurrent Rebuild Remembered Sets\n" +
+                        "[1.121s][info][gc,marking  ] GC(1) Concurrent Rebuild Remembered Sets 6.891ms\n" +
+                        "[1.122s][info][gc,start    ] GC(1) Pause Cleanup\n" +
+                        "[1.122s][info][gc          ] GC(1) Pause Cleanup 65M->65M(100M) 0.056ms\n" +
+                        "[1.122s][info][gc,cpu      ] GC(1) User=0.00s Sys=0.00s Real=0.00s\n" +
+                        "[1.122s][info][gc,marking  ] GC(1) Concurrent Cleanup for Next Mark\n" +
+                        "[1.122s][info][gc,marking  ] GC(1) Concurrent Cleanup for Next Mark 0.417ms\n" +
+                        "[1.122s][info][gc          ] GC(1) Concurrent Mark Cycle 25.265ms\n" +
+                        "[1.715s][info][gc,start    ] GC(2) Pause Full (G1 Compaction Pause)\n" +
+                        "[1.715s][info][gc,phases,start] GC(2) Phase 1: Mark live objects\n" +
+                        "[1.729s][info][gc,phases      ] GC(2) Phase 1: Mark live objects 14.039ms\n" +
+                        "[1.729s][info][gc,phases,start] GC(2) Phase 2: Prepare for compaction\n" +
+                        "[1.730s][info][gc,phases      ] GC(2) Phase 2: Prepare for compaction 0.875ms\n" +
+                        "[1.730s][info][gc,phases,start] GC(2) Phase 3: Adjust pointers\n" +
+                        "[1.736s][info][gc,phases      ] GC(2) Phase 3: Adjust pointers 6.156ms\n" +
+                        "[1.736s][info][gc,phases,start] GC(2) Phase 4: Compact heap\n" +
+                        "[1.738s][info][gc,phases      ] GC(2) Phase 4: Compact heap 1.153ms\n" +
+                        "[1.738s][info][gc,heap        ] GC(2) Eden regions: 0->0(50)\n" +
+                        "[1.738s][info][gc,heap        ] GC(2) Survivor regions: 0->0(0)\n" +
+                        "[1.738s][info][gc,heap        ] GC(2) Old regions: 96->68\n" +
+                        "[1.738s][info][gc,heap        ] GC(2) Archive regions: 2->2\n" +
+                        "[1.738s][info][gc,heap        ] GC(2) Humongous regions: 2->1\n" +
+                        "[1.738s][info][gc,metaspace   ] GC(2) Metaspace: 87K(320K)->87K(320K) NonClass: 84K(192K)->84K(192K) Class: 3K(128K)->3K(128K)\n" +
+                        "[1.738s][info][gc             ] GC(2) Pause Full (G1 Compaction Pause) 98M->69M(100M) 22.935ms\n" +
+                        "[1.738s][info][gc,cpu         ] GC(2) User=0.04s Sys=0.00s Real=0.02s\n" +
+                        "[2.145s][info][gc          ] GC(3) Concurrent Undo Cycle\n" +
+                        "[2.145s][info][gc,marking  ] GC(3) Concurrent Cleanup for Next Mark\n" +
+                        "[2.145s][info][gc,marking  ] GC(3) Concurrent Cleanup for Next Mark 0.109ms\n" +
+                        "[2.145s][info][gc          ] GC(3) Concurrent Undo Cycle 0.125ms";
+
+        UnifiedG1GCLogParser parser = (UnifiedG1GCLogParser)
+                (new GCLogParserFactory().getParser(stringToBufferedReader(log)));
+        G1GCModel model = (G1GCModel) parser.parse(stringToBufferedReader(log));
+        model.calculateDerivedInfo(new DefaultProgressListener());
+        // assert parsing success
+        Assert.assertNotNull(model);
+        Assert.assertEquals(model.getGcEvents().size(), 4);
+        Assert.assertEquals(model.getHeapRegionSize(), 1L * 1024 * 1024);
+
+        GCEvent youngGC = model.getGcEvents().get(0);
+        Assert.assertEquals(youngGC.getGcid(), 0);
+        Assert.assertEquals(youngGC.getStartTime(), 333, DELTA);
+        Assert.assertEquals(youngGC.getDuration(), 20.955, DELTA);
+        Assert.assertEquals(youngGC.getEventType(), GCEventType.YOUNG_GC);
+        Assert.assertEquals(youngGC.getCause(), G1_EVACUATION_PAUSE);
+        Assert.assertEquals(youngGC.getMemoryItem(YOUNG), new GCMemoryItem(YOUNG, 50 * 1024 * 1024, UNKNOWN_INT, 7 * 1024 * 1024, 50 * 1024 * 1024));
+        Assert.assertEquals(youngGC.getMemoryItem(EDEN), new GCMemoryItem(EDEN, 50 * 1024 * 1024, UNKNOWN_INT, 0 * 1024 * 1024, 43 * 1024 * 1024));
+        Assert.assertEquals(youngGC.getMemoryItem(SURVIVOR), new GCMemoryItem(SURVIVOR, 0 * 1024, UNKNOWN_INT, 7 * 1024 * 1024, 7 * 1024 * 1024));
+        Assert.assertEquals(youngGC.getMemoryItem(OLD), new GCMemoryItem(OLD, 0, UNKNOWN_INT, 18 * 1024 * 1024, 50 * 1024 * 1024));
+        Assert.assertEquals(youngGC.getMemoryItem(ARCHIVE), new GCMemoryItem(ARCHIVE, 2 * 1024 * 1024, UNKNOWN_INT, 2 * 1024 * 1024, UNKNOWN_INT));
+        Assert.assertEquals(youngGC.getMemoryItem(HUMONGOUS), new GCMemoryItem(HUMONGOUS, 1 * 1024 * 1024, UNKNOWN_INT, 1 * 1024 * 1024, UNKNOWN_INT));
+        Assert.assertEquals(youngGC.getMemoryItem(METASPACE), new GCMemoryItem(METASPACE, 87 * 1024, 320 * 1024, 87 * 1024, 320 * 1024));
+        Assert.assertEquals(youngGC.getMemoryItem(NONCLASS), new GCMemoryItem(NONCLASS, 84 * 1024, 192 * 1024, 84 * 1024, 192 * 1024));
+        Assert.assertEquals(youngGC.getMemoryItem(CLASS), new GCMemoryItem(CLASS, 3 * 1024, 128 * 1024, 3 * 1024, 128 * 1024));
+        Assert.assertEquals(youngGC.getMemoryItem(HEAP), new GCMemoryItem(HEAP, 51 * 1024 * 1024, UNKNOWN_INT, 26 * 1024 * 1024, 100 * 1024 * 1024));
+        Assert.assertEquals(youngGC.getCpuTime().getReal(), 20, DELTA);
+        Assert.assertEquals(youngGC.getPhases().size(), 5);
+        Assert.assertEquals(youngGC.getPhases().get(1).getEventType(), GCEventType.G1_MERGE_HEAP_ROOTS);
+        Assert.assertEquals(youngGC.getPhases().get(1).getDuration(), 0.1, DELTA);
+        for (GCEvent phase : youngGC.getPhases()) {
+            Assert.assertTrue(phase.getStartTime() >= 0);
+            Assert.assertTrue(phase.getDuration() >= 0);
+        }
+
+        GCEvent concurrentCycle = model.getGcEvents().get(1);
+        Assert.assertEquals(concurrentCycle.getEventType(), GCEventType.G1_CONCURRENT_CYCLE);
+        Assert.assertEquals(concurrentCycle.getGcid(), 1);
+        Assert.assertEquals(concurrentCycle.getStartTime(), 1097, DELTA);
+        Assert.assertEquals(concurrentCycle.getDuration(), 25.265, DELTA);
+        Assert.assertEquals(concurrentCycle.getPhases().size(), 9);
+        for (GCEvent phase : concurrentCycle.getPhases()) {
+            Assert.assertTrue(phase.getStartTime() > 0);
+            Assert.assertTrue(phase.getDuration() > 0);
+        }
+
+        GCEvent fullGC = model.getGcEvents().get(2);
+        Assert.assertEquals(fullGC.getGcid(), 2);
+        Assert.assertEquals(fullGC.getStartTime(), 1715, DELTA);
+        Assert.assertEquals(fullGC.getDuration(), 22.935, DELTA);
+        Assert.assertEquals(fullGC.getEventType(), GCEventType.FULL_GC);
+        Assert.assertEquals(fullGC.getCause(), G1_COMPACTION);
+        Assert.assertEquals(fullGC.getMemoryItem(YOUNG), new GCMemoryItem(YOUNG, 0 * 1024 * 1024, UNKNOWN_INT, 0 * 1024 * 1024, 50 * 1024 * 1024));
+        Assert.assertEquals(fullGC.getMemoryItem(HEAP), new GCMemoryItem(HEAP, 98 * 1024 * 1024, UNKNOWN_INT, 69 * 1024 * 1024, 100 * 1024 * 1024));
+        Assert.assertEquals(fullGC.getCpuTime().getReal(), 20, DELTA);
+        Assert.assertEquals(fullGC.getPhases().size(), 4);
+        for (GCEvent phase : fullGC.getPhases()) {
+            Assert.assertTrue(phase.getStartTime() >= 0);
+            Assert.assertTrue(phase.getDuration() >= 0);
+        }
+
+        GCEvent concurrentUndo = model.getGcEvents().get(3);
+        Assert.assertEquals(concurrentUndo.getEventType(), GCEventType.G1_CONCURRENT_UNDO_CYCLE);
+        Assert.assertEquals(concurrentUndo.getGcid(), 3);
+        Assert.assertEquals(concurrentUndo.getStartTime(), 2145, DELTA);
+        Assert.assertEquals(concurrentUndo.getDuration(), 0.125, DELTA);
+        Assert.assertEquals(concurrentUndo.getPhases().size(), 1);
+        for (GCEvent phase : concurrentUndo.getPhases()) {
+            Assert.assertTrue(phase.getStartTime() > 0);
+            Assert.assertTrue(phase.getDuration() > 0);
+        }
+
+        GCLogMetadata metadata = model.getGcModelMetadata();
+        Assert.assertTrue(metadata.getImportantEventTypes().contains(GCEventType.G1_CONCURRENT_REBUILD_REMEMBERED_SETS.getName()));
+        Assert.assertTrue(metadata.getImportantEventTypes().contains(GCEventType.G1_CONCURRENT_UNDO_CYCLE.getName()));
+    }
+
+    @Test
+    public void testJDK17G1InferRegionSize() throws Exception {
+        String log =
+                "[1.715s][info][gc,start    ] GC(2) Pause Full (G1 Compaction Pause)\n" +
+                        "[1.715s][info][gc,phases,start] GC(2) Phase 1: Mark live objects\n" +
+                        "[1.729s][info][gc,phases      ] GC(2) Phase 1: Mark live objects 14.039ms\n" +
+                        "[1.729s][info][gc,phases,start] GC(2) Phase 2: Prepare for compaction\n" +
+                        "[1.730s][info][gc,phases      ] GC(2) Phase 2: Prepare for compaction 0.875ms\n" +
+                        "[1.730s][info][gc,phases,start] GC(2) Phase 3: Adjust pointers\n" +
+                        "[1.736s][info][gc,phases      ] GC(2) Phase 3: Adjust pointers 6.156ms\n" +
+                        "[1.736s][info][gc,phases,start] GC(2) Phase 4: Compact heap\n" +
+                        "[1.738s][info][gc,phases      ] GC(2) Phase 4: Compact heap 1.153ms\n" +
+                        "[1.738s][info][gc,heap        ] GC(2) Eden regions: 0->0(50)\n" +
+                        "[1.738s][info][gc,heap        ] GC(2) Survivor regions: 0->0(0)\n" +
+                        "[1.738s][info][gc,heap        ] GC(2) Old regions: 96->68\n" +
+                        "[1.738s][info][gc,heap        ] GC(2) Archive regions: 2->2\n" +
+                        "[1.738s][info][gc,heap        ] GC(2) Humongous regions: 2->1\n" +
+                        "[1.738s][info][gc,metaspace   ] GC(2) Metaspace: 87K(320K)->87K(320K) NonClass: 84K(192K)->84K(192K) Class: 3K(128K)->3K(128K)\n" +
+                        "[1.738s][info][gc             ] GC(2) Pause Full (G1 Compaction Pause) 98M->69M(100M) 22.935ms\n" +
+                        "[1.738s][info][gc,cpu         ] GC(2) User=0.04s Sys=0.00s Real=0.02s";
+
+        UnifiedG1GCLogParser parser = (UnifiedG1GCLogParser)
+                (new GCLogParserFactory().getParser(stringToBufferedReader(log)));
+        G1GCModel model = (G1GCModel) parser.parse(stringToBufferedReader(log));
+        model.calculateDerivedInfo(new DefaultProgressListener());
+        // assert parsing success
+        Assert.assertNotNull(model);
+        Assert.assertEquals(model.getGcEvents().size(), 1);
+        Assert.assertEquals(model.getHeapRegionSize(), 1L * 1024 * 1024);
     }
 }

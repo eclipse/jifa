@@ -4,8 +4,8 @@ import org.eclipse.jifa.common.listener.DefaultProgressListener;
 import org.eclipse.jifa.gclog.model.CMSGCModel;
 import org.eclipse.jifa.gclog.model.G1GCModel;
 import org.eclipse.jifa.gclog.parser.GCLogParserFactory;
-import org.eclipse.jifa.gclog.parser.JDK11G1GCLogParser;
-import org.eclipse.jifa.gclog.parser.JDK8GenerationalGCLogParser;
+import org.eclipse.jifa.gclog.parser.UnifiedG1GCLogParser;
+import org.eclipse.jifa.gclog.parser.PreUnifiedGenerationalGCLogParser;
 import org.eclipse.jifa.gclog.vo.MemoryStatistics;
 import org.eclipse.jifa.gclog.vo.TimeRange;
 import org.junit.Assert;
@@ -58,7 +58,7 @@ public class TestObjectStatistics {
                 "63819.309: [CMS-concurrent-reset-start]\n" +
                 "63819.314: [CMS-concurrent-reset: 0.005/0.005 secs] [Times: user=0.02 sys=0.00, real=0.00 secs]\n" +
                 "63966.141: [GC (Allocation Failure) 63966.141: [ParNew: 1920339K->174720K(1922492K), 0.2086826 secs] 2338509K->621384K(4019584K), 0.2089897 secs] [Times: user=0.72 sys=0.00, real=0.21 secs]";
-        JDK8GenerationalGCLogParser parser = (JDK8GenerationalGCLogParser)
+        PreUnifiedGenerationalGCLogParser parser = (PreUnifiedGenerationalGCLogParser)
                 (new GCLogParserFactory().getParser(stringToBufferedReader(log)));
 
         CMSGCModel model = (CMSGCModel) parser.parse(stringToBufferedReader(log));
@@ -159,7 +159,7 @@ public class TestObjectStatistics {
                 "[29.365s][info][gc,metaspace  ] GC(4) Metaspace: 225002K->225002K(1253376K)\n" +
                 "[29.365s][info][gc            ] GC(4) Pause Young (Concurrent Start) (G1 Humongous Allocation) 258M->237M(505M) 8.709ms\n" +
                 "[29.365s][info][gc,cpu        ] GC(4) User=0.05s Sys=0.00s Real=0.00s";
-        JDK11G1GCLogParser parser = (JDK11G1GCLogParser)
+        UnifiedG1GCLogParser parser = (UnifiedG1GCLogParser)
                 (new GCLogParserFactory().getParser(stringToBufferedReader(log)));
         G1GCModel model = (G1GCModel) parser.parse(stringToBufferedReader(log));
         model.calculateDerivedInfo(new DefaultProgressListener());

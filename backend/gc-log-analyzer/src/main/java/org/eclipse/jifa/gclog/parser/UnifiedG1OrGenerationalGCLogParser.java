@@ -31,7 +31,7 @@ import static org.eclipse.jifa.gclog.model.GCEventType.*;
 import static org.eclipse.jifa.gclog.parser.ParseRule.ParseRuleContext.GCID;
 import static org.eclipse.jifa.gclog.parser.ParseRule.ParseRuleContext.UPTIME;
 
-public abstract class JDK11G1OrGenerationalGCLogParser extends AbstractJDK11GCLogParser {
+public abstract class UnifiedG1OrGenerationalGCLogParser extends AbstractUnifiedGCLogParser {
     private static List<ParseRule> withoutGCIDRules;
     private static List<ParseRule> withGCIDRules;
 
@@ -48,14 +48,15 @@ public abstract class JDK11G1OrGenerationalGCLogParser extends AbstractJDK11GCLo
     }
 
     private static void initializeParseRules() {
-        withoutGCIDRules = new ArrayList<>(AbstractJDK11GCLogParser.getSharedWithoutGCIDRules());
+        withoutGCIDRules = new ArrayList<>(AbstractUnifiedGCLogParser.getSharedWithoutGCIDRules());
 
-        withGCIDRules = new ArrayList<>(AbstractJDK11GCLogParser.getSharedWithGCIDRules());
-        withGCIDRules.add(JDK11G1OrGenerationalGCLogParser::parseHeap);
-        withGCIDRules.add(new PrefixAndValueParseRule("Pause Young", JDK11G1OrGenerationalGCLogParser::parseYoungFullGC));
-        withGCIDRules.add(new PrefixAndValueParseRule("Pause Full", JDK11G1OrGenerationalGCLogParser::parseYoungFullGC));
-        withGCIDRules.add(JDK11G1OrGenerationalGCLogParser::parseWorker);
-        withGCIDRules.add(JDK11G1OrGenerationalGCLogParser::parseCpuTime);
+        withGCIDRules = new ArrayList<>(AbstractUnifiedGCLogParser.getSharedWithGCIDRules());
+        withGCIDRules.add(new PrefixAndValueParseRule("Metaspace:", UnifiedG1OrGenerationalGCLogParser::parseMetaspace));
+        withGCIDRules.add(UnifiedG1OrGenerationalGCLogParser::parseHeap);
+        withGCIDRules.add(new PrefixAndValueParseRule("Pause Young", UnifiedG1OrGenerationalGCLogParser::parseYoungFullGC));
+        withGCIDRules.add(new PrefixAndValueParseRule("Pause Full", UnifiedG1OrGenerationalGCLogParser::parseYoungFullGC));
+        withGCIDRules.add(UnifiedG1OrGenerationalGCLogParser::parseWorker);
+        withGCIDRules.add(UnifiedG1OrGenerationalGCLogParser::parseCpuTime);
         // subclass will add more rules
     }
 
@@ -72,7 +73,7 @@ public abstract class JDK11G1OrGenerationalGCLogParser extends AbstractJDK11GCLo
         CpuTime cpuTime = GCLogUtil.parseCPUTime(text);
         GCEvent event = model.getLastEventOfGCID(context.get(GCID));
         if (event != null) {
-            event = ((JDK11G1OrGenerationalGCLogParser) parser).getCPUTimeEventOrPhase(event);
+            event = ((UnifiedG1OrGenerationalGCLogParser) parser).getCPUTimeEventOrPhase(event);
             if (event != null) {
                 event.setCpuTime(cpuTime);
             }
@@ -178,21 +179,23 @@ public abstract class JDK11G1OrGenerationalGCLogParser extends AbstractJDK11GCLo
      * [0.524s][info   ][gc,heap      ] GC(0) Survivor regions: 8->9(10)
      * [0.524s][info   ][gc,heap      ] GC(0) Old regions: 11->12
      * [0.524s][info   ][gc,heap      ] GC(0) Humongous regions: 13->14
+     * [1.738s][info][gc,heap        ] GC(2) Archive regions: 2->2
      * [0.524s][info   ][gc,metaspace ] GC(0) Metaspace: 15K->16K(17K)
      * [2.285s][info ][gc,heap      ] GC(2) Old: 23127K->2019K(43712K)
      * [0.160s][info ][gc,heap      ] GC(0) ParNew: 17393K->2175K(19648K)
      * [0.160s][info ][gc,heap      ] GC(0) CMS: 0K->130K(43712K)
-     * [0.160s][info ][gc,metaspace ] GC(0) Metaspace: 5147K->5147K(1056768K)
+     * [0.194s][info][gc,heap     ] GC(0) DefNew: 40960K(46080K)->5120K(46080K) Eden: 40960K(40960K)->0K(40960K) From: 0K(5120K)->5120K(5120K)
+     * [0.569s][info][gc,heap        ] GC(1) PSYoungGen: 6128K(45056K)->0K(45056K) Eden: 0K(38912K)->0K(38912K) From: 6128K(6144K)->0K(6144K)
      */
     private static boolean parseHeap(AbstractGCLogParser parser, ParseRuleContext context, String s) {
         GCModel model = parser.getModel();
-        String[] parts = s.split(": ");
-        if (parts.length != 2) {
+        String[] parts = GCLogUtil.splitBySpace(s);
+        if (parts.length != 2 && parts.length != 3 && parts.length != 6) {
             return false;
         }
         String generationName = parts[0];
-        if (generationName.endsWith(" regions")) {
-            generationName = generationName.substring(0, generationName.length() - " regions".length());
+        if (generationName.endsWith(":")) {
+            generationName = generationName.substring(0, generationName.length() - 1);
         }
         MemoryArea generation = MemoryArea.getMemoryArea(generationName);
         if (generation == null) {
@@ -211,11 +214,37 @@ public abstract class JDK11G1OrGenerationalGCLogParser extends AbstractJDK11GCLo
                 return true;
             }
         }
-        long[] memories = GCLogUtil.parseMemorySizeFromTo(parts[1], 1);
+        long[] memories = GCLogUtil.parseMemorySizeFromTo(parts.length == 3 ? parts[2] :parts[1], 1);
         // will multiply region size before calculating derived info for g1
         GCMemoryItem item = new GCMemoryItem(generation, memories);
         event.setMemoryItem(item);
+
+        if (parts.length == 6) {
+            event.setMemoryItem(new GCMemoryItem(MemoryArea.EDEN, GCLogUtil.parseMemorySizeFromTo(parts[3])));
+            event.setMemoryItem(new GCMemoryItem(MemoryArea.SURVIVOR, GCLogUtil.parseMemorySizeFromTo(parts[5])));
+        }
         return true;
+    }
+
+
+    /*
+     * [0.160s][info ][gc,metaspace ] GC(0) Metaspace: 5147K->5147K(1056768K)
+     * [0.194s][info][gc,metaspace] GC(0) Metaspace: 137K(384K)->138K(384K) NonClass: 133K(256K)->133K(256K) Class: 4K(128K)->4K(128K)
+     */
+    private static void parseMetaspace(AbstractGCLogParser parser, ParseRuleContext context, String title, String text) {
+        GCModel model = parser.getModel();
+        GCEvent event = model.getLastEventOfGCID(context.get(GCID));
+        if (event == null) {
+            // log may be incomplete
+            return;
+        }
+        String[] parts = GCLogUtil.splitBySpace(text);
+        event.setMemoryItem(new GCMemoryItem(MemoryArea.METASPACE, GCLogUtil.parseMemorySizeFromTo(parts[0])));
+        if (parts.length == 5) {
+            model.setMetaspaceCapacityReliable(true);
+            event.setMemoryItem(new GCMemoryItem(MemoryArea.NONCLASS, GCLogUtil.parseMemorySizeFromTo(parts[2])));
+            event.setMemoryItem(new GCMemoryItem(MemoryArea.CLASS, GCLogUtil.parseMemorySizeFromTo(parts[4])));
+        }
     }
 
     /**
@@ -230,7 +259,7 @@ public abstract class JDK11G1OrGenerationalGCLogParser extends AbstractJDK11GCLo
     protected static void parsePhase(AbstractGCLogParser parser, ParseRuleContext context, String phaseName, String value) {
         GCModel model = parser.getModel();
         phaseName = phaseName.trim();
-        GCEventType phaseType = ((JDK11G1OrGenerationalGCLogParser) parser).getGCEventType(phaseName);
+        GCEventType phaseType = ((UnifiedG1OrGenerationalGCLogParser) parser).getGCEventType(phaseName);
         boolean end = value.endsWith("ms");
         GCEvent event;
         // cms does not have a line to indicate its beginning, hard code here

@@ -80,6 +80,8 @@ public abstract class GCModel {
     private GCLogStyle logStyle;
     private GCLogMetadata metadata;
 
+    private boolean metaspaceCapacityReliable = false;
+
     public GCModel() {
     }
 
@@ -344,7 +346,7 @@ public abstract class GCModel {
                 MemoryArea generation = generations[genIndex];
                 GCMemoryItem memory = event.getMemoryItem(generation);
                 if (memory != null) {
-                    data[genIndex][0].add(memory.getTotal());
+                    data[genIndex][0].add(memory.getPostCapacity());
                     data[genIndex][1].add(Math.max(memory.getPreUsed(), memory.getPostUsed()));
                     if (event.isFullGC() && generation != YOUNG) {
                         data[genIndex][2].add(memory.getPostUsed());
@@ -438,8 +440,8 @@ public abstract class GCModel {
                     result.add(new Object[]{(long) event.getEndTime(), memory.getPostUsed()});
                 }
             } else {
-                if (memory.getTotal() != Constant.UNKNOWN_LONG) {
-                    result.add(new Object[]{(long) event.getEndTime(), memory.getTotal()});
+                if (memory.getPostCapacity() != Constant.UNKNOWN_LONG) {
+                    result.add(new Object[]{(long) event.getEndTime(), memory.getPostCapacity()});
                 }
             }
         }
@@ -617,8 +619,8 @@ public abstract class GCModel {
         // hack: Survivor capacity of g1 is not printed in jdk8. Make it equal to pre used so that
         // we can calculate young and old capacity
         if (event.getMemoryItem(SURVIVOR) != null &&
-                event.getMemoryItem(SURVIVOR).getTotal() == Constant.UNKNOWN_INT) {
-            event.getMemoryItem(SURVIVOR).setTotal(event.getMemoryItem(SURVIVOR).getPreUsed());
+                event.getMemoryItem(SURVIVOR).getPostCapacity() == Constant.UNKNOWN_INT) {
+            event.getMemoryItem(SURVIVOR).setPostCapacity(event.getMemoryItem(SURVIVOR).getPreUsed());
         }
 
         //case 1: know eden and survivor, calculate young
@@ -631,7 +633,8 @@ public abstract class GCModel {
         //case 2: know young and old, calculate heap
         GCMemoryItem heap = event.getMemoryItemOrEmptyObject(YOUNG)
                 .merge(event.getMemoryItem(OLD))
-                .mergeIfPresent(event.getMemoryItem(HUMONGOUS));
+                .mergeIfPresent(event.getMemoryItem(HUMONGOUS))
+                .mergeIfPresent(event.getMemoryItem(ARCHIVE));
         heap.setArea(HEAP);
         event.setMemoryItem(event.getMemoryItemOrEmptyObject(HEAP)
                 .updateIfAbsent(heap), true);
@@ -639,7 +642,8 @@ public abstract class GCModel {
         //case 3: know old and heap, calculate young
         young = event.getMemoryItemOrEmptyObject(HEAP)
                 .subtract(event.getMemoryItem(OLD))
-                .subtractIfPresent(event.getMemoryItem(HUMONGOUS));
+                .subtractIfPresent(event.getMemoryItem(HUMONGOUS))
+                .subtractIfPresent(event.getMemoryItem(ARCHIVE));
         young.setArea(YOUNG);
         event.setMemoryItem(event.getMemoryItemOrEmptyObject(YOUNG)
                 .updateIfAbsent(young), true);
@@ -647,10 +651,14 @@ public abstract class GCModel {
         //case 4: know young and heap, calculate old
         GCMemoryItem old = event.getMemoryItemOrEmptyObject(HEAP)
                 .subtract(event.getMemoryItem(YOUNG))
-                .subtractIfPresent(event.getMemoryItem(HUMONGOUS));
+                .subtractIfPresent(event.getMemoryItem(HUMONGOUS))
+                .subtractIfPresent(event.getMemoryItem(ARCHIVE));
         old.setArea(OLD);
         event.setMemoryItem(event.getMemoryItemOrEmptyObject(OLD)
                 .updateIfAbsent(old), true);
+
+        // Although we can calculate metaspace = class + non class, there is no need to do
+        // so because when class and non class are known, metaspace must have been known
     }
 
     private void filterInvalidEvents() {
@@ -796,6 +804,20 @@ public abstract class GCModel {
         return metadata;
     }
 
+
+    // FIXME: need better implementation
+    private static final List<GCEventType> EVENT_TYPES_SHOULD_NOT_BE_REPORTED_IF_NOT_PRESENT = List.of(
+            G1_CONCURRENT_UNDO_CYCLE, G1_MERGE_HEAP_ROOTS, G1_CONCURRENT_REBUILD_REMEMBERED_SETS,
+            ZGC_CONCURRENT_DETATCHED_PAGES);
+    private List<String> dealEventTypeForMetadata(List<GCEventType> eventTypesExpected,
+                                                  Set<GCEventType> eventTypesActuallyShowUp) {
+        return eventTypesExpected.stream()
+                .filter(eventType -> !EVENT_TYPES_SHOULD_NOT_BE_REPORTED_IF_NOT_PRESENT.contains(eventType)
+                        || eventTypesActuallyShowUp.contains(eventType))
+                .map(GCEventType::getName)
+                .collect(Collectors.toList());
+    }
+
     private void calculateGcModelMetadata() {
         metadata = new GCLogMetadata();
         metadata.setCauses(gcEvents.stream()
@@ -812,17 +834,26 @@ public abstract class GCModel {
         metadata.setTimestamp(getReferenceTimestamp());
         metadata.setStartTime(getStartTime());
         metadata.setEndTime(getEndTime());
-        metadata.setParentEventTypes(getParentEventTypes().stream().map(GCEventType::getName).collect(Collectors.toList()));
-        metadata.setImportantEventTypes(getImportantEventTypes().stream().map(GCEventType::getName).collect(Collectors.toList()));
-        metadata.setPauseEventTypes(getPauseEventTypes().stream().map(GCEventType::getName).collect(Collectors.toList()));
-        metadata.setAllEventTypes(getAllEventTypes().stream().map(GCEventType::getName).collect(Collectors.toList()));
-        metadata.setMainPauseEventTypes(getMainPauseEventTypes().stream().map(GCEventType::getName).collect(Collectors.toList()));
+
+        Set<GCEventType> eventTypesActuallyShowUp = this.allEvents.stream()
+                .map(GCEvent::getEventType)
+                .collect(Collectors.toSet());
+        metadata.setParentEventTypes(dealEventTypeForMetadata(getParentEventTypes(), eventTypesActuallyShowUp));
+        metadata.setImportantEventTypes(dealEventTypeForMetadata(getImportantEventTypes(), eventTypesActuallyShowUp));
+        metadata.setPauseEventTypes(dealEventTypeForMetadata(getPauseEventTypes(), eventTypesActuallyShowUp));
+        metadata.setAllEventTypes(dealEventTypeForMetadata(getAllEventTypes(), eventTypesActuallyShowUp));
+        metadata.setMainPauseEventTypes(dealEventTypeForMetadata(getMainPauseEventTypes(), eventTypesActuallyShowUp));
+
         metadata.setParallelGCThreads(getParallelThread());
         metadata.setConcurrentGCThreads(getConcurrentThread());
     }
 
     protected boolean isMetaspaceCapacityReliable() {
-        return collectorType == ZGC;
+        return metaspaceCapacityReliable;
+    }
+
+    public void setMetaspaceCapacityReliable(boolean metaspaceCapacityReliable) {
+        this.metaspaceCapacityReliable = metaspaceCapacityReliable;
     }
 
     public void setParallelThread(int parallelThread) {
