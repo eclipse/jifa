@@ -13,8 +13,8 @@
 
 package org.eclipse.jifa.gclog.model;
 
-import com.google.common.util.concurrent.AtomicDouble;
 import org.eclipse.jifa.gclog.event.GCEvent;
+import org.eclipse.jifa.gclog.event.evnetInfo.GCEventBooleanType;
 import org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea;
 import org.eclipse.jifa.gclog.event.evnetInfo.GCMemoryItem;
 import org.eclipse.jifa.gclog.model.modeInfo.GCCollectorType;
@@ -24,9 +24,9 @@ import org.eclipse.jifa.gclog.vo.TimeRange;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 
-import static org.eclipse.jifa.gclog.util.Constant.UNKNOWN_INT;
+import static org.eclipse.jifa.gclog.event.evnetInfo.GCEventBooleanType.*;
+import static org.eclipse.jifa.gclog.util.Constant.*;
 import static org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea.*;
 import static org.eclipse.jifa.gclog.model.GCEventType.*;
 
@@ -143,34 +143,70 @@ public class G1GCModel extends GCModel {
     }
 
     @Override
-    protected void calculateUsedAvgAfterOldGC(TimeRange range, LongData[][] data) {
-        AtomicReference<GCEvent> lastMixedGC = new AtomicReference<>();
-        AtomicDouble lastRemarkEndTime = new AtomicDouble(Double.MAX_VALUE);
-        iterateEventsWithinTimeRange(getGcEvents(), range, event -> {
+    protected void doAfterCalculatingDerivedInfo() {
+        decideGCsAfterOldGC();
+    }
+
+    private void decideGCsAfterOldGC() {
+        GCEvent lastGCInCycle = null;
+        double lastRemarkEndTime = Double.MAX_VALUE;
+        double lastConcCycleEndTime = Double.MAX_VALUE;
+        for (GCEvent event : getGcEvents()) {
             GCEventType type = event.getEventType();
-            // read old from the last mixed gc of old gc cycle
-            if (type == G1_MIXED_GC) {
-                lastMixedGC.set(event);
-            } else if (type == YOUNG_GC || type == G1_CONCURRENT_CYCLE || type == FULL_GC) {
-                GCEvent mixedGC = lastMixedGC.get();
-                if (mixedGC != null) {
-                    if (mixedGC.getMemoryItem(OLD) != null) {
-                        data[1][3].add(mixedGC.getMemoryItem(OLD).getPostUsed());
-                    }
-                    lastMixedGC.set(null);
-                }
+            if (type == G1_CONCURRENT_UNDO_CYCLE) {
+                continue;
             }
-            // read humongous and metaspace from the gc after remark
-            if (event.getEventType() == G1_CONCURRENT_CYCLE) {
-                if (event.getLastPhaseOfType(G1_CONCURRENT_MARK_ABORT) != null) {
+            if (type == G1_CONCURRENT_CYCLE) {
+                if (event.containPhase(G1_CONCURRENT_MARK_ABORT)) {
                     return;
                 }
+                lastConcCycleEndTime = event.getEndTime();
                 GCEvent remark = event.getLastPhaseOfType(G1_REMARK);
                 if (remark != null) {
-                    lastRemarkEndTime.set(remark.getEndTime());
+                    lastRemarkEndTime = remark.getEndTime();
                 }
-            } else if ((event.getEventType() == YOUNG_GC || event.getEventType() == FULL_GC || event.getEventType() == G1_MIXED_GC)
-                    && event.getStartTime() > lastRemarkEndTime.get()) {
+            }
+            if (type == FULL_GC || type == YOUNG_GC || type == G1_MIXED_GC) {
+                if (event.getStartTime() > lastRemarkEndTime) {
+                    event.setTrue(GCEventBooleanType.GC_AFTER_REMARK);
+                    lastRemarkEndTime = Double.MAX_VALUE;
+                }
+                if (event.getStartTime() >= lastConcCycleEndTime) {
+                    if (type == FULL_GC) {
+                        // a full gc interrupts mixed gcs
+                        event.setTrue(GC_AT_END_OF_OLD_CYCLE);
+                        lastGCInCycle = null;
+                        lastConcCycleEndTime = Double.MAX_VALUE;
+                    } else if (lastGCInCycle == null) {
+                        lastGCInCycle = event;
+                        if (type == YOUNG_GC && getLogStyle() == GCLogStyle.PRE_UNIFIED) {
+                            // jdk8 does not print Prepare Mixed, add this sign for easier
+                            // future analysis
+                            event.setTrue(GCEventBooleanType.PREPARE_MIXED);
+                        }
+                    } else if (type == YOUNG_GC) {
+                        // we have found the end of mixed gcs
+                        lastGCInCycle.setTrue(GC_AT_END_OF_OLD_CYCLE);
+                        lastGCInCycle = null;
+                        lastConcCycleEndTime = Double.MAX_VALUE;
+                    } else if (type == G1_MIXED_GC) {
+                        lastGCInCycle = event;
+                    }
+                }
+            }
+        }
+    }
+
+
+    @Override
+    protected void calculateUsedAvgAfterOldGC(TimeRange range, LongData[][] data) {
+        iterateEventsWithinTimeRange(getGcEvents(), range, event -> {
+            // read old from the last gc of old gc cycle
+            if (event.isTrue(GC_AT_END_OF_OLD_CYCLE) && event.getMemoryItem(OLD) != null) {
+                    data[1][3].add(event.getMemoryItem(OLD).getPostUsed());
+            }
+            // read humongous and metaspace from the gc after remark
+            if (event.isTrue(GC_AFTER_REMARK)) {
                 if (event.getMemoryItem(HUMONGOUS) != null) {
                     data[2][3].add(event.getMemoryItem(HUMONGOUS).getPreUsed());
 
@@ -178,7 +214,6 @@ public class G1GCModel extends GCModel {
                 if (event.getMemoryItem(METASPACE) != null) {
                     data[4][3].add(event.getMemoryItem(METASPACE).getPreUsed());
                 }
-                lastRemarkEndTime.set(Double.MAX_VALUE);
             }
         });
     }

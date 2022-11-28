@@ -117,6 +117,8 @@ public class GCEventType {
     public static final GCEventType G1_CODE_ROOT_PURGE = new GCEventType("Code Root Purge", PAUSE, PARENT_YOUNG_OLD_FULL_GC, G1);
     public static final GCEventType G1_CLEAR_CT = new GCEventType("Clear Card Table", PAUSE, PARENT_YOUNG_OLD_FULL_GC, G1);
     public static final GCEventType G1_CHOOSE_CSET = new GCEventType("Choose Collection Set", PAUSE, PARENT_YOUNG_OLD_FULL_GC, G1);
+
+    public static final GCEventType G1_EVACUATION_FAILURE = new GCEventType("Evacuation Failure", PAUSE, PARENT_YOUNG_OLD_FULL_GC, G1);
     public static final GCEventType G1_REF_ENQ = new GCEventType("Ref Enq", PAUSE, PARENT_YOUNG_OLD_FULL_GC, G1);
     public static final GCEventType G1_REDIRTY_CARDS = new GCEventType("Redirty Cards", PAUSE, PARENT_YOUNG_OLD_FULL_GC, G1);
     public static final GCEventType G1_HUMONGOUS_REGISTER = new GCEventType("Humongous Register", PAUSE, PARENT_YOUNG_OLD_FULL_GC, G1);
@@ -229,5 +231,19 @@ public class GCEventType {
 
     public boolean isFullGC() {
         return this == GCEventType.FULL_GC || this == ZGC_GARBAGE_COLLECTION;
+    }
+
+    public static List<GCEventType> badEventTypes = List.of(
+            FULL_GC,
+            G1_CONCURRENT_MARK_ABORT,
+            G1_EVACUATION_FAILURE,
+            CMS_CONCURRENT_FAILURE,
+            CMS_CONCURRENT_INTERRUPTED,
+            OUT_OF_MEMORY,
+            ZGC_ALLOCATION_STALL,
+            G1_CONCURRENT_MARK_RESET_FOR_OVERFLOW);
+
+    public boolean isBad() {
+        return badEventTypes.contains(this);
     }
 }

@@ -16,6 +16,7 @@ package org.eclipse.jifa.gclog.model.modeInfo;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.eclipse.jifa.gclog.diagnoser.AnalysisConfig;
 
 import java.util.List;
 
@@ -46,4 +47,5 @@ public class GCLogMetadata {
     private List<String> mainPauseEventTypes;
     private List<String> allEventTypes;
     private List<String> causes;
+    private AnalysisConfig analysisConfig;
 }

@@ -20,14 +20,12 @@ import lombok.ToString;
 import org.eclipse.jifa.gclog.model.GCModel;
 import org.eclipse.jifa.gclog.vo.TimeRange;
 
+import java.util.Objects;
+
 @Data
 @NoArgsConstructor
-@EqualsAndHashCode
 @ToString
 public class AnalysisConfig {
-    /*
-     * Notice: This class should be kept in sync with initializePage in GCLog.vue.
-     */
     private TimeRange timeRange;
     private double longPauseThreshold;
     private double longConcurrentThreshold;
@@ -42,9 +40,9 @@ public class AnalysisConfig {
     private double highPromotionThreshold;
     private double badThroughputThreshold;
     private double tooManyOldGCThreshold;
+    private double highSysThreshold;
+    private double lowUsrThreshold;
 
-    // Basically mirror of analysisConfigModel in GCLog.vue, but this function is for testing and debugging.
-    // No need to keep sync with frontend
     public static AnalysisConfig defaultConfig(GCModel model) {
         AnalysisConfig config = new AnalysisConfig();
         config.setTimeRange(new TimeRange(model.getStartTime(), model.getEndTime()));
@@ -61,8 +59,23 @@ public class AnalysisConfig {
         config.setHighPromotionThreshold(3);
         config.setBadThroughputThreshold(90);
         config.setTooManyOldGCThreshold(20);
+        config.setHighSysThreshold(50);
+        config.setLowUsrThreshold(100);
         return config;
     }
 
 
+    // time range is ignored here
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        AnalysisConfig config = (AnalysisConfig) o;
+        return Double.compare(config.longPauseThreshold, longPauseThreshold) == 0 && Double.compare(config.longConcurrentThreshold, longConcurrentThreshold) == 0 && Double.compare(config.youngGCFrequentIntervalThreshold, youngGCFrequentIntervalThreshold) == 0 && Double.compare(config.oldGCFrequentIntervalThreshold, oldGCFrequentIntervalThreshold) == 0 && Double.compare(config.fullGCFrequentIntervalThreshold, fullGCFrequentIntervalThreshold) == 0 && Double.compare(config.highOldUsageThreshold, highOldUsageThreshold) == 0 && Double.compare(config.highHumongousUsageThreshold, highHumongousUsageThreshold) == 0 && Double.compare(config.highHeapUsageThreshold, highHeapUsageThreshold) == 0 && Double.compare(config.highMetaspaceUsageThreshold, highMetaspaceUsageThreshold) == 0 && Double.compare(config.smallGenerationThreshold, smallGenerationThreshold) == 0 && Double.compare(config.highPromotionThreshold, highPromotionThreshold) == 0 && Double.compare(config.badThroughputThreshold, badThroughputThreshold) == 0 && Double.compare(config.tooManyOldGCThreshold, tooManyOldGCThreshold) == 0 && Double.compare(config.highSysThreshold, highSysThreshold) == 0 && Double.compare(config.lowUsrThreshold, lowUsrThreshold) == 0;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(longPauseThreshold, longConcurrentThreshold, youngGCFrequentIntervalThreshold, oldGCFrequentIntervalThreshold, fullGCFrequentIntervalThreshold, highOldUsageThreshold, highHumongousUsageThreshold, highHeapUsageThreshold, highMetaspaceUsageThreshold, smallGenerationThreshold, highPromotionThreshold, badThroughputThreshold, tooManyOldGCThreshold, highSysThreshold, lowUsrThreshold);
+    }
 }

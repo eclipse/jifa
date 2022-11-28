@@ -91,6 +91,14 @@ public class GCCause {
         return HeapMemoryTriggeredFullGCCauses.contains(this);
     }
 
+    public boolean isSystemGC() {
+        return this == SYSTEM_GC;
+    }
+
+    public boolean isBad() {
+        return isSystemGC() || isMetaspaceFullGCCause() || isHeapMemoryTriggeredFullGCCause();
+    }
+
     @Override
     public String toString() {
         return name;

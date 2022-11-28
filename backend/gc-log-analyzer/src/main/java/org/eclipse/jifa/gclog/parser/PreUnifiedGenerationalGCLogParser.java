@@ -35,7 +35,7 @@ import static org.eclipse.jifa.gclog.parser.ParseRule.PrefixAndValueParseRule;
 public class PreUnifiedGenerationalGCLogParser extends AbstractPreUnifiedGCLogParser {
     private final static GCEventType[] YOUNG_FULL_GC = {YOUNG_GC, FULL_GC};
     private final static GCEventType[] REFERENCE_GC_TYPES = {YOUNG_GC, FULL_GC, WEAK_REFS_PROCESSING};
-    private final static GCEventType[] CPU_TIME_TYPES = {YOUNG_GC, FULL_GC, CMS_INITIAL_MARK, CMS_CONCURRENT_MARK, CMS_CONCURRENT_PRECLEAN, CMS_CONCURRENT_ABORTABLE_PRECLEAN, CMS_FINAL_REMARK, CMS_CONCURRENT_SWEEP, CMS_CONCURRENT_RESET};
+    private final static List<GCEventType> CPU_TIME_TYPES = List.of(YOUNG_GC, FULL_GC, CMS_INITIAL_MARK, CMS_CONCURRENT_MARK, CMS_CONCURRENT_PRECLEAN, CMS_CONCURRENT_ABORTABLE_PRECLEAN, CMS_FINAL_REMARK, CMS_CONCURRENT_SWEEP, CMS_CONCURRENT_RESET);
     private final static GCEventType[] CMS_FULL = {CMS_CONCURRENT_MARK_SWEPT, FULL_GC};
 
     /*
@@ -157,6 +157,7 @@ public class PreUnifiedGenerationalGCLogParser extends AbstractPreUnifiedGCLogPa
             phase.setCause(GCCause.CMS_FINAL_REMARK);
             phase.setTrue(GCEventBooleanType.IGNORE_PAUSE);
             model.putEvent(phase);
+            ((AbstractPreUnifiedGCLogParser)parser).pushIfWaitingForCpuTime(phase);
             return;
         }
 
@@ -167,8 +168,10 @@ public class PreUnifiedGenerationalGCLogParser extends AbstractPreUnifiedGCLogPa
             if (phaseType == CMS_CONCURRENT_INTERRUPTED || phaseType == CMS_CONCURRENT_FAILURE) {
                 phase.setDuration(0);
             }
+            ((AbstractPreUnifiedGCLogParser)parser).pushIfWaitingForCpuTime(phase);
         } else {
             copyPhaseDataToStart(phaseStart, phase);
+            ((AbstractPreUnifiedGCLogParser)parser).pushIfWaitingForCpuTime(phaseStart);
         }
     }
 
@@ -181,6 +184,7 @@ public class PreUnifiedGenerationalGCLogParser extends AbstractPreUnifiedGCLogPa
             event.setCause(causes[0]);
         }
         parser.getModel().putEvent(event);
+        ((AbstractPreUnifiedGCLogParser)parser).pushIfWaitingForCpuTime(event);
     }
 
     private static boolean parseGenerationCollection(AbstractGCLogParser parser, ParseRuleContext context, String s) {
@@ -221,7 +225,7 @@ public class PreUnifiedGenerationalGCLogParser extends AbstractPreUnifiedGCLogPa
     }
 
     @Override
-    protected GCEventType[] getCPUTimeGCEvent() {
+    protected List<GCEventType> getCPUTimeGCEvent() {
         return CPU_TIME_TYPES;
     }
 

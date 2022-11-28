@@ -55,6 +55,7 @@ public class TestGlobalDiagnoser {
         GCLogParser parser = new GCLogParserFactory().getParser(stringToBufferedReader(log));
         GCModel model = parser.parse(stringToBufferedReader(log));
         model.calculateDerivedInfo(new DefaultProgressListener());
+        Assert.assertEquals(model.getGcEvents().size(), 7);
         GlobalAbnormalInfo diagnose = new GlobalDiagnoser(model, defaultConfig(model)).diagnose();
 
         Map<String, List<Double>> seriousProblems = diagnose.getSeriousProblems();

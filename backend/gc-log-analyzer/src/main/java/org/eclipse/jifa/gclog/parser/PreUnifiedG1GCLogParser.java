@@ -34,7 +34,7 @@ public class PreUnifiedG1GCLogParser extends AbstractPreUnifiedGCLogParser {
     private final static GCEventType[] REF_GC_TYPES = {YOUNG_GC, FULL_GC, G1_MIXED_GC, G1_REMARK};
     private final static GCEventType[] YOUNG_MIXED = {YOUNG_GC, G1_MIXED_GC};
     private final static GCEventType[] YOUNG_MIXED_FULL = {YOUNG_GC, G1_MIXED_GC, FULL_GC};
-    private final static GCEventType[] CPU_TIME_TYPES = {YOUNG_GC, FULL_GC, G1_MIXED_GC, G1_REMARK, G1_PAUSE_CLEANUP};
+    private final static List<GCEventType> CPU_TIME_TYPES = List.of(YOUNG_GC, FULL_GC, G1_MIXED_GC, G1_REMARK, G1_PAUSE_CLEANUP);
 
     /*
      * 2021-05-19T22:52:16.311+0800: 3.960: [GC pause (G1 Evacuation Pause) (young)2021-05-19T22:52:16.351+0800: 4.000: [SoftReference, 0 refs, 0.0000435 secs]2021-05-19T22:52:16.352+0800: 4.000: [WeakReference, 374 refs, 0.0002082 secs]2021-05-19T22:52:16.352+0800: 4.001: [FinalReference, 5466 refs, 0.0141707 secs]2021-05-19T22:52:16.366+0800: 4.015: [PhantomReference, 0 refs, 0 refs, 0.0000253 secs]2021-05-19T22:52:16.366+0800: 4.015: [JNI Weak Reference, 0.0000057 secs], 0.0563085 secs]
@@ -55,6 +55,7 @@ public class PreUnifiedG1GCLogParser extends AbstractPreUnifiedGCLogParser {
      *   [Code Root Purge: 0.2 ms]
      *   [Clear CT: 0.2 ms]
      *   [Other: 16.0 ms]
+     *      [Evacuation Failure: 629.5 ms]
      *      [Choose CSet: 0.0 ms]
      *      [Ref Proc: 15.1 ms]
      *      [Ref Enq: 0.2 ms]
@@ -108,6 +109,7 @@ public class PreUnifiedG1GCLogParser extends AbstractPreUnifiedGCLogParser {
         fullSentenceRules.add(new PrefixAndValueParseRule("   [Code Root Fixup", PreUnifiedG1GCLogParser::parseYoungGCPhase));
         fullSentenceRules.add(new PrefixAndValueParseRule("   [Code Root Purge", PreUnifiedG1GCLogParser::parseYoungGCPhase));
         fullSentenceRules.add(new PrefixAndValueParseRule("   [Clear CT", PreUnifiedG1GCLogParser::parseYoungGCPhase));
+        fullSentenceRules.add(new PrefixAndValueParseRule("      [Evacuation Failure", PreUnifiedG1GCLogParser::parseYoungGCPhase));
         fullSentenceRules.add(new PrefixAndValueParseRule("      [Choose CSet", PreUnifiedG1GCLogParser::parseYoungGCPhase));
         fullSentenceRules.add(new PrefixAndValueParseRule("      [Ref Proc", PreUnifiedG1GCLogParser::parseYoungGCPhase));
         fullSentenceRules.add(new PrefixAndValueParseRule("      [Ref Enq", PreUnifiedG1GCLogParser::parseYoungGCPhase));
@@ -158,8 +160,10 @@ public class PreUnifiedG1GCLogParser extends AbstractPreUnifiedGCLogParser {
             if (phaseType == G1_CONCURRENT_MARK_RESET_FOR_OVERFLOW || phaseType == G1_CONCURRENT_MARK_ABORT) {
                 phase.setDuration(0);
             }
+            ((AbstractPreUnifiedGCLogParser) parser).pushIfWaitingForCpuTime(phase);
         } else {
             copyPhaseDataToStart(phaseStart, phase);
+            ((AbstractPreUnifiedGCLogParser) parser).pushIfWaitingForCpuTime(phaseStart);
         }
     }
 
@@ -247,6 +251,7 @@ public class PreUnifiedG1GCLogParser extends AbstractPreUnifiedGCLogParser {
         }
         event.setEventType(eventType);
         parser.getModel().putEvent(event);
+        ((AbstractPreUnifiedGCLogParser) parser).pushIfWaitingForCpuTime(event);
     }
 
     @Override
@@ -255,7 +260,7 @@ public class PreUnifiedG1GCLogParser extends AbstractPreUnifiedGCLogParser {
     }
 
     @Override
-    protected GCEventType[] getCPUTimeGCEvent() {
+    protected List<GCEventType> getCPUTimeGCEvent() {
         return CPU_TIME_TYPES;
     }
 
@@ -279,6 +284,8 @@ public class PreUnifiedG1GCLogParser extends AbstractPreUnifiedGCLogParser {
                 return G1_CODE_ROOT_PURGE;
             case "Clear CT":
                 return G1_CLEAR_CT;
+            case "Evacuation Failure":
+                return G1_EVACUATION_FAILURE;
             case "Choose CSet":
                 return G1_CHOOSE_CSET;
             case "Ref Proc":

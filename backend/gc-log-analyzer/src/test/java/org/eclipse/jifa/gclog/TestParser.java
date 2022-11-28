@@ -494,6 +494,37 @@ public class TestParser {
     }
 
     @Test
+    public void testJDK8CMSCPUTime() throws Exception {
+        String log = "2022-11-28T14:57:05.217+0800: 6.216: [GC (CMS Initial Mark) [1 CMS-initial-mark: 0K(3584000K)] 619320K(5519360K), 0.1236090 secs] [Times: user=0.08 sys=0.08, real=0.13 secs] \n" +
+                "2022-11-28T14:57:05.341+0800: 6.340: [CMS-concurrent-mark-start]\n" +
+                "2022-11-28T14:57:05.342+0800: 6.340: [CMS-concurrent-mark: 0.001/0.001 secs] [Times: user=0.01 sys=0.00, real=0.00 secs] \n" +
+                "2022-11-28T14:57:05.342+0800: 6.340: [CMS-concurrent-preclean-start]\n" +
+                "2022-11-28T14:57:05.347+0800: 6.345: [CMS-concurrent-preclean: 0.005/0.005 secs] [Times: user=0.01 sys=0.00, real=0.03 secs] \n" +
+                "2022-11-28T14:57:05.347+0800: 6.346: [CMS-concurrent-abortable-preclean-start]\n" +
+                "2022-11-28T14:57:09.974+0800: 10.973: [GC (Allocation Failure) 2022-11-28T14:57:09.974+0800: 10.973: [ParNew2022-11-28T14:57:09.997+0800: 10.996: [CMS-concurrent-abortable-preclean: 0.335/4.650 secs] [Times: user=10.64 sys=0.72, real=4.65 secs] \n" +
+                ": 1720320K->36032K(1935360K), 0.0395605 secs] 1720320K->36032K(5519360K), 0.0397919 secs] [Times: user=0.18 sys=0.03, real=0.05 secs] \n" +
+                "2022-11-28T14:57:10.015+0800: 11.013: [GC (CMS Final Remark) [YG occupancy: 70439 K (1935360 K)]2022-11-28T14:57:10.015+0800: 11.013: [Rescan (parallel) , 0.0049504 secs]2022-11-28T14:57:10.020+0800: 11.018: [weak refs processing, 0.0001257 secs]2022-11-28T14:57:10.020+0800: 11.018: [class unloading, 0.0154147 secs]2022-11-28T14:57:10.035+0800: 11.034: [scrub symbol table, 0.0077166 secs]2022-11-28T14:57:10.043+0800: 11.042: [scrub string table, 0.0006843 secs][1 CMS-remark: 0K(3584000K)] 70439K(5519360K), 0.0301977 secs] [Times: user=0.15 sys=0.00, real=0.03 secs] \n" +
+                "2022-11-28T14:57:10.046+0800: 11.044: [CMS-concurrent-sweep-start]\n" +
+                "2022-11-28T14:57:10.046+0800: 11.044: [CMS-concurrent-sweep: 0.000/0.000 secs] [Times: user=0.00 sys=0.00, real=0.02 secs] \n" +
+                "2022-11-28T14:57:10.047+0800: 11.045: [CMS-concurrent-reset-start]\n" +
+                "2022-11-28T14:57:10.074+0800: 11.072: [CMS-concurrent-reset: 0.027/0.027 secs] [Times: user=0.25 sys=0.04, real=0.04 secs] ";
+        PreUnifiedGenerationalGCLogParser parser = (PreUnifiedGenerationalGCLogParser)
+                (new GCLogParserFactory().getParser(stringToBufferedReader(log)));
+
+        CMSGCModel model = (CMSGCModel) parser.parse(stringToBufferedReader(log));
+        model.calculateDerivedInfo(new DefaultProgressListener());
+        Assert.assertNotNull(model);
+        Assert.assertEquals(model.getLastEventOfType(GCEventType.CMS_INITIAL_MARK).getCpuTime().getReal(),130, DELTA);
+        Assert.assertEquals(model.getLastEventOfType(GCEventType.CMS_CONCURRENT_MARK).getCpuTime().getUser(),10, DELTA);
+        Assert.assertEquals(model.getLastEventOfType(GCEventType.CMS_CONCURRENT_PRECLEAN).getCpuTime().getReal(),30, DELTA);
+        Assert.assertEquals(model.getLastEventOfType(GCEventType.CMS_CONCURRENT_ABORTABLE_PRECLEAN).getCpuTime().getReal(),4650, DELTA);
+        Assert.assertEquals(model.getLastEventOfType(GCEventType.CMS_FINAL_REMARK).getCpuTime().getReal(),30, DELTA);
+        Assert.assertEquals(model.getLastEventOfType(GCEventType.CMS_CONCURRENT_SWEEP).getCpuTime().getReal(),20, DELTA);
+        Assert.assertEquals(model.getLastEventOfType(GCEventType.CMS_CONCURRENT_RESET).getCpuTime().getReal(),40, DELTA);
+        Assert.assertEquals(model.getLastEventOfType(GCEventType.YOUNG_GC).getCpuTime().getReal(),50, DELTA);
+    }
+
+    @Test
     public void testJDK8G1GCParser() throws Exception {
         String log = "3.960: [GC pause (G1 Evacuation Pause) (young)4.000: [SoftReference, 0 refs, 0.0000435 secs]4.000: [WeakReference, 374 refs, 0.0002082 secs]4.001: [FinalReference, 5466 refs, 0.0141707 secs]4.015: [PhantomReference, 0 refs, 0 refs, 0.0000253 secs]4.015: [JNI Weak Reference, 0.0000057 secs], 0.0563085 secs]\n" +
                 "   [Parallel Time: 39.7 ms, GC Workers: 4]\n" +

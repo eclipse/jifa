@@ -13,17 +13,20 @@
 
 package org.eclipse.jifa.gclog.event;
 
-import org.eclipse.jifa.gclog.diagnoser.AnalysisConfig;
+import org.eclipse.jifa.gclog.diagnoser.GlobalDiagnoseInfo;
 import org.eclipse.jifa.gclog.model.GCModel;
+import org.eclipse.jifa.gclog.vo.GCEventVO;
 import org.eclipse.jifa.gclog.vo.TimeRange;
 
 import static org.eclipse.jifa.gclog.util.Constant.UNKNOWN_DOUBLE;
+import static org.eclipse.jifa.gclog.util.Constant.UNKNOWN_INT;
 
 public class TimedEvent {
     // We assume that start time always exists. We will refuse to analyze logs that does not print any time,
     // and will add a suitable start time to events that does not have a start time in log.
     // Unit of all time variables is ms.
     protected double startTime = UNKNOWN_DOUBLE;
+    protected int id = UNKNOWN_INT; // id is used to identify events, should not be showed to user
     // Real time duration of event. The duration may not exist, and we should always check its existence when using.
     private double duration = UNKNOWN_DOUBLE;
 
@@ -79,14 +82,16 @@ public class TimedEvent {
         return new TimedEvent(start, end - start);
     }
 
-    protected void fillInfoToVO(GCModel model, AnalysisConfig config, GCEventVO vo) {
+    protected void fillInfoToVO(GCModel model, GCEventVO vo, GlobalDiagnoseInfo diagnose) {
+        vo.saveInfo("id", id);
         vo.saveInfo("startTime", getStartTime());
         vo.saveInfo("duration", getDuration());
     }
 
-    public GCEventVO toEventVO(GCModel model, AnalysisConfig config) {
+    // notice: should call GCModel.transformEventsToVo to create a vo because diagnose info is filled there
+    public GCEventVO toEventVO(GCModel model, GlobalDiagnoseInfo diagnose) {
         GCEventVO vo = new GCEventVO();
-        fillInfoToVO(model, config, vo);
+        fillInfoToVO(model, vo, diagnose);
         return vo;
     }
 }

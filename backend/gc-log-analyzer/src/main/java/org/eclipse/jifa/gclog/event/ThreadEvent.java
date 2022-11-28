@@ -12,8 +12,9 @@
  ********************************************************************************/
 package org.eclipse.jifa.gclog.event;
 
-import org.eclipse.jifa.gclog.diagnoser.AnalysisConfig;
+import org.eclipse.jifa.gclog.diagnoser.GlobalDiagnoseInfo;
 import org.eclipse.jifa.gclog.model.GCModel;
+import org.eclipse.jifa.gclog.vo.GCEventVO;
 
 public class ThreadEvent extends GCEvent {
     private String threadName;
@@ -35,8 +36,8 @@ public class ThreadEvent extends GCEvent {
     }
 
     @Override
-    protected void fillInfoToVO(GCModel model, AnalysisConfig config, GCEventVO vo) {
-        super.fillInfoToVO(model, config, vo);
+    protected void fillInfoToVO(GCModel model, GCEventVO vo, GlobalDiagnoseInfo diagnose) {
+        super.fillInfoToVO(model, vo, diagnose);
         vo.saveInfo("threadName", threadName);
     }
 }

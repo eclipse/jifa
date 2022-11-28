@@ -42,8 +42,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static org.eclipse.jifa.gclog.diagnoser.AbnormalSeverity.HIGH;
-import static org.eclipse.jifa.gclog.diagnoser.AbnormalSeverity.ULTRA;
 import static org.eclipse.jifa.gclog.diagnoser.AbnormalType.*;
 import static org.eclipse.jifa.gclog.model.GCEventType.*;
 import static org.eclipse.jifa.gclog.util.Constant.UNKNOWN_DOUBLE;
@@ -115,14 +113,14 @@ public class GlobalDiagnoser {
             } else if (ab.getSite().getStartTime() - end <= 2 * EXTEND_TIME) {
                 end = Math.max(Math.max(ab.getSite().getStartTime(), ab.getSite().getEndTime()), end);
             } else {
-                AbnormalPoint merged = new AbnormalPoint(first.getType(), newByStartEnd(start, end), first.getSeverity());
+                AbnormalPoint merged = new AbnormalPoint(first.getType(), newByStartEnd(start, end));
                 mergedMostSeriousProblemList.add(merged);
                 start = ab.getSite().getStartTime();
                 end = Math.max(ab.getSite().getStartTime(), ab.getSite().getEndTime());
             }
         }
         if (start != UNKNOWN_DOUBLE) {
-            AbnormalPoint merged = new AbnormalPoint(first.getType(), newByStartEnd(start, end), first.getSeverity());
+            AbnormalPoint merged = new AbnormalPoint(first.getType(), newByStartEnd(start, end));
             mergedMostSeriousProblemList.add(merged);
         }
     }
@@ -131,6 +129,7 @@ public class GlobalDiagnoser {
         MostSeriousProblemSummary summary = null;
         if (mostSerious != AbnormalPoint.LEAST_SERIOUS) {
             AbnormalPoint first = mergedMostSeriousProblemList.get(0);
+            first.generateDefaultSuggestions(model);
             summary = new MostSeriousProblemSummary(
                     mergedMostSeriousProblemList.stream()
                             .sorted((ab1, ab2) -> Double.compare(ab2.getSite().getDuration(), ab1.getSite().getDuration()))
@@ -141,8 +140,8 @@ public class GlobalDiagnoser {
                                     Math.min(ab.getSite().getEndTime() + EXTEND_TIME, config.getTimeRange().getEnd())
                             ))
                             .collect(Collectors.toList()),
-                    new I18nStringView(AbnormalType.I18N_PREFIX + first.getType().getName()),
-                    first.generateDefaultSuggestions(model)
+                    first.getType().toI18nStringView(),
+                    first.getDefaultSuggestions()
             );
         }
         return new GlobalAbnormalInfo(summary, allProblems.getInnerMap());
@@ -177,7 +176,7 @@ public class GlobalDiagnoser {
                     return;
                 }
                 if (pauseEvent.isYoungGC()) {
-                    addAbnormalPoint(new AbnormalPoint(LONG_YOUNG_GC_PAUSE, pauseEvent, HIGH));
+                    addAbnormalPoint(new AbnormalPoint(LONG_YOUNG_GC_PAUSE, pauseEvent));
                 }
             });
         });
@@ -190,14 +189,14 @@ public class GlobalDiagnoser {
         }
         ZGCModel zModel = (ZGCModel) model;
         model.iterateEventsWithinTimeRange(zModel.getAllocationStalls(), config.getTimeRange(), stall -> {
-            addAbnormalPoint(new AbnormalPoint(ALLOCATION_STALL, stall, ULTRA));
+            addAbnormalPoint(new AbnormalPoint(ALLOCATION_STALL, stall));
         });
     }
 
     @GlobalDiagnoseRule
     protected void outOfMemory() {
         model.iterateEventsWithinTimeRange(model.getOoms(), config.getTimeRange(), oom -> {
-            addAbnormalPoint(new AbnormalPoint(AbnormalType.OUT_OF_MEMORY, oom, ULTRA));
+            addAbnormalPoint(new AbnormalPoint(AbnormalType.OUT_OF_MEMORY, oom));
         });
     }
 
@@ -205,10 +204,13 @@ public class GlobalDiagnoser {
     protected void longRemark() {
         model.iterateEventsWithinTimeRange(model.getAllEvents(), config.getTimeRange(), remark -> {
             GCEventType type = remark.getEventType();
+            if (remark.getPause() < config.getLongPauseThreshold()) {
+                return;
+            }
             if (type == CMS_FINAL_REMARK) {
-                addAbnormalPoint(new AbnormalPoint(LONG_CMS_REMARK, remark, HIGH));
+                addAbnormalPoint(new AbnormalPoint(LONG_CMS_REMARK, remark));
             } else if (type == G1_REMARK) {
-                addAbnormalPoint(new AbnormalPoint(LONG_G1_REMARK, remark, HIGH));
+                addAbnormalPoint(new AbnormalPoint(LONG_G1_REMARK, remark));
             }
         });
     }
@@ -222,7 +224,7 @@ public class GlobalDiagnoser {
             }
         });
         if (interval.getN() > 0 && interval.average() < config.getYoungGCFrequentIntervalThreshold()) {
-            addAbnormalPoint(new AbnormalPoint(FREQUENT_YOUNG_GC, TimedEvent.fromTimeRange(config.getTimeRange()), HIGH));
+            addAbnormalPoint(new AbnormalPoint(FREQUENT_YOUNG_GC, TimedEvent.fromTimeRange(config.getTimeRange())));
         }
     }
 
@@ -235,11 +237,11 @@ public class GlobalDiagnoser {
             }
             GCCause cause = event.getCause();
             if (cause.isMetaspaceFullGCCause()) {
-                addAbnormalPoint(new AbnormalPoint(METASPACE_FULL_GC, event, ULTRA));
+                addAbnormalPoint(new AbnormalPoint(METASPACE_FULL_GC, event));
             } else if (shouldAvoidFullGC && cause.isHeapMemoryTriggeredFullGCCause()) {
-                addAbnormalPoint(new AbnormalPoint(HEAP_MEMORY_FULL_GC, event, ULTRA));
+                addAbnormalPoint(new AbnormalPoint(HEAP_MEMORY_FULL_GC, event));
             } else if (cause == GCCause.SYSTEM_GC) {
-                addAbnormalPoint(new AbnormalPoint(AbnormalType.SYSTEM_GC, event, HIGH));
+                addAbnormalPoint(new AbnormalPoint(AbnormalType.SYSTEM_GC, event));
             }
         });
     }

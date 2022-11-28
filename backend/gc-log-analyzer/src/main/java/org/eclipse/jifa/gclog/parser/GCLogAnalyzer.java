@@ -14,6 +14,7 @@
 package org.eclipse.jifa.gclog.parser;
 
 import org.eclipse.jifa.common.JifaException;
+import org.eclipse.jifa.common.listener.DefaultProgressListener;
 import org.eclipse.jifa.common.listener.ProgressListener;
 import org.eclipse.jifa.gclog.model.GCModel;
 import org.slf4j.Logger;
@@ -35,6 +36,10 @@ public class GCLogAnalyzer {
     public GCLogAnalyzer(File file, ProgressListener listener) {
         this.file = file;
         this.listener = listener;
+    }
+
+    public GCLogAnalyzer(File file) {
+        this(file, new DefaultProgressListener());
     }
 
     public GCModel parse() throws Exception {

@@ -13,6 +13,7 @@
 
 package org.eclipse.jifa.gclog.model;
 
+import io.vertx.ext.web.impl.ConcurrentLRUCache;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
@@ -20,6 +21,8 @@ import org.eclipse.jifa.common.listener.ProgressListener;
 import org.eclipse.jifa.common.request.PagingRequest;
 import org.eclipse.jifa.common.vo.PageView;
 import org.eclipse.jifa.gclog.diagnoser.AnalysisConfig;
+import org.eclipse.jifa.gclog.diagnoser.EventAbnormalDetector;
+import org.eclipse.jifa.gclog.diagnoser.GlobalDiagnoseInfo;
 import org.eclipse.jifa.gclog.diagnoser.GlobalDiagnoser;
 import org.eclipse.jifa.gclog.event.*;
 import org.eclipse.jifa.gclog.event.evnetInfo.*;
@@ -80,6 +83,7 @@ public abstract class GCModel {
     private GCLogStyle logStyle;
     private GCLogMetadata metadata;
 
+    private ConcurrentLRUCache<AnalysisConfig, GlobalDiagnoseInfo> globalDiagnoseInfoCache = new ConcurrentLRUCache<>(3);
     private boolean metaspaceCapacityReliable = false;
 
     public GCModel() {
@@ -162,6 +166,10 @@ public abstract class GCModel {
         GCEvent event = new GCEvent();
         gcEvents.add(event);
         return event;
+    }
+
+    public boolean hasHumongousArea() {
+        return collectorType == G1 && logStyle == GCLogStyle.UNIFIED;
     }
 
     public boolean hasOldGC() {
@@ -471,7 +479,7 @@ public abstract class GCModel {
                 .collect(Collectors.toList());
     }
 
-    public GlobalDiagnoser.GlobalAbnormalInfo getGlobalDiagnoseInfo(AnalysisConfig config) {
+    public GlobalDiagnoser.GlobalAbnormalInfo getGlobalAbnormalInfo(AnalysisConfig config) {
         config.setTimeRange(makeValidTimeRange(config.getTimeRange()));
         return new GlobalDiagnoser(this, config).diagnose();
     }
@@ -491,17 +499,7 @@ public abstract class GCModel {
         parent.addPhase(phase);
     }
 
-    private static final List<GCCollectorType> SUPPORTED_COLLECTORS = List.of(G1, CMS, SERIAL, PARALLEL, UNKNOWN, ZGC);
-
-    private boolean isGCCollectorSupported(GCCollectorType collectorType) {
-        return SUPPORTED_COLLECTORS.contains(collectorType);
-    }
-
     public void calculateDerivedInfo(ProgressListener progressListener) {
-        if (!isGCCollectorSupported(collectorType)) {
-            throw new UnsupportedOperationException("Collector not supported.");
-        }
-
         allEvents = null;
         // must be done before other steps
         filterInvalidEvents();
@@ -512,17 +510,26 @@ public abstract class GCModel {
         doBeforeCalculatingDerivedInfo();
 
         rebuildEventLists();
+        // the structure of gcEvents and allEvents should not change after this line
 
         // calculate derived data for events themselves
         calculateEventsInterval();
         calculateEventsMemoryInfo();
+
+        // let subclass do something
+        doAfterCalculatingDerivedInfo();
 
         // data in events should not change after this line
         // calculate specific data prepared for route api, order of these calls doesn't matter
         calculateGcModelMetadata();
     }
 
+    // for implementation
     protected void doBeforeCalculatingDerivedInfo() {
+    }
+
+    // for implementation
+    protected void doAfterCalculatingDerivedInfo() {
     }
 
     private void rebuildEventLists() {
@@ -577,7 +584,7 @@ public abstract class GCModel {
             // sometimes it may have been calculated during parsing log
             if (event.getReclamation() == Constant.UNKNOWN_INT && total != null &&
                     total.getPreUsed() != Constant.UNKNOWN_INT && total.getPostUsed() != Constant.UNKNOWN_INT) {
-                event.setReclamation(total.getPreUsed() - total.getPostUsed());
+                event.setReclamation(zeroIfNegative(total.getPreUsed() - total.getPostUsed()));
             }
             // promotion
             if (event.getPromotion() == Constant.UNKNOWN_INT
@@ -591,7 +598,7 @@ public abstract class GCModel {
                     if (humongous != null && humongous.getMemoryReduction() != Constant.UNKNOWN_INT) {
                         promotion -= humongous.getMemoryReduction();
                     }
-                    event.setPromotion(promotion);
+                    event.setPromotion(zeroIfNegative(promotion));
                 }
             }
             // allocation
@@ -599,7 +606,8 @@ public abstract class GCModel {
                     total != null && total.getPreUsed() != Constant.UNKNOWN_INT) {
                 // As to concurrent event, allocation is composed of two parts: allocation between two adjacent events
                 // and during event. If original allocation is not unknown, that value is allocation during event.
-                event.setAllocation(zeroIfUnknownInt(event.getAllocation()) + total.getPreUsed() - lastTotalMemory);
+                event.setAllocation(zeroIfNegative(
+                        zeroIfUnknownInt(event.getAllocation()) + total.getPreUsed() - lastTotalMemory));
                 lastTotalMemory = total.getPostUsed();
             }
         }
@@ -607,6 +615,10 @@ public abstract class GCModel {
 
     private long zeroIfUnknownInt(long x) {
         return x == Constant.UNKNOWN_INT ? 0 : x;
+    }
+
+    private long zeroIfNegative(long x) {
+        return x < 0 ? 0 : x;
     }
 
     private void calculateEventMemoryItems(GCEvent event) {
@@ -784,20 +796,35 @@ public abstract class GCModel {
         return collectorType != SERIAL && collectorType != PARALLEL && collectorType != UNKNOWN;
     }
 
+    public List<GCEventVO> getEventsVO(List<GCEvent> events, AnalysisConfig config) {
+        GlobalDiagnoseInfo diagnose = getGlobalDiagnoseInfo(config);
+        return events.stream().map(event -> event.toEventVO(this, diagnose)).collect(Collectors.toList());
+    }
+
+    public GCEventVO getEventVO(GCEvent event, AnalysisConfig config) {
+        GlobalDiagnoseInfo diagnose = getGlobalDiagnoseInfo(config);
+        return event.toEventVO(this, diagnose);
+    }
+
     public PageView<GCEventVO> getGCDetails(PagingRequest pagingRequest, GCDetailFilter filter, AnalysisConfig config) {
         int firstIndex = (pagingRequest.getPage() - 1) * pagingRequest.getPageSize();
         int total = 0;
-        List<GCEventVO> result = new ArrayList<>();
+        List<GCEvent> resultEvents = new ArrayList<>();
 
         for (GCEvent event : gcEvents) {
             if (!filter.isFiltered(event)) {
-                if (total >= firstIndex && result.size() < pagingRequest.getPageSize()) {
-                    result.add(event.toEventVO(this, config));
+                if (total >= firstIndex && resultEvents.size() < pagingRequest.getPageSize()) {
+                    resultEvents.add(event);
                 }
                 total++;
             }
         }
+        List<GCEventVO> result = getEventsVO(resultEvents, config);
         return new PageView<>(pagingRequest, total, result);
+    }
+
+    public boolean shouldTryToAvoidMemoryFullGC() {
+        return collectorType != SERIAL && collectorType != PARALLEL;
     }
 
     public GCLogMetadata getGcModelMetadata() {
@@ -809,6 +836,7 @@ public abstract class GCModel {
     private static final List<GCEventType> EVENT_TYPES_SHOULD_NOT_BE_REPORTED_IF_NOT_PRESENT = List.of(
             G1_CONCURRENT_UNDO_CYCLE, G1_MERGE_HEAP_ROOTS, G1_CONCURRENT_REBUILD_REMEMBERED_SETS,
             ZGC_CONCURRENT_DETATCHED_PAGES);
+
     private List<String> dealEventTypeForMetadata(List<GCEventType> eventTypesExpected,
                                                   Set<GCEventType> eventTypesActuallyShowUp) {
         return eventTypesExpected.stream()
@@ -843,6 +871,7 @@ public abstract class GCModel {
         metadata.setPauseEventTypes(dealEventTypeForMetadata(getPauseEventTypes(), eventTypesActuallyShowUp));
         metadata.setAllEventTypes(dealEventTypeForMetadata(getAllEventTypes(), eventTypesActuallyShowUp));
         metadata.setMainPauseEventTypes(dealEventTypeForMetadata(getMainPauseEventTypes(), eventTypesActuallyShowUp));
+        metadata.setAnalysisConfig(AnalysisConfig.defaultConfig(this));
 
         metadata.setParallelGCThreads(getParallelThread());
         metadata.setConcurrentGCThreads(getConcurrentThread());
@@ -876,6 +905,22 @@ public abstract class GCModel {
             return vmOptions.<Long>getOptionValue("ConcGCThreads", Constant.UNKNOWN_LONG).intValue();
         }
         return concurrentThread;
+    }
+
+    public GlobalDiagnoseInfo getGlobalDiagnoseInfo(AnalysisConfig config) {
+        GlobalDiagnoseInfo result = globalDiagnoseInfoCache.get(config);
+        if (result == null) {
+            result = calculateGlobalDiagnoseInfo(config);
+            globalDiagnoseInfoCache.put(config, result);
+        }
+        return result;
+    }
+
+    private GlobalDiagnoseInfo calculateGlobalDiagnoseInfo(AnalysisConfig config) {
+        GlobalDiagnoseInfo info = new GlobalDiagnoseInfo(this, config);
+        EventAbnormalDetector abDetector = new EventAbnormalDetector(this, config, info);
+        abDetector.diagnose();
+        return info;
     }
 
     @Data

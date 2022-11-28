@@ -15,7 +15,7 @@ package org.eclipse.jifa.worker.route.gclog;
 
 import org.eclipse.jifa.gclog.diagnoser.AnalysisConfig;
 import org.eclipse.jifa.gclog.diagnoser.GlobalDiagnoser;
-import org.eclipse.jifa.gclog.event.GCEventVO;
+import org.eclipse.jifa.gclog.vo.GCEventVO;
 import org.eclipse.jifa.gclog.model.modeInfo.GCLogMetadata;
 import org.eclipse.jifa.gclog.model.GCModel;
 import io.vertx.core.Promise;
@@ -124,6 +124,6 @@ public class GCLogRoute extends org.eclipse.jifa.worker.route.gclog.GCLogBaseRou
                           @ParamKey("file") String file,
                           @ParamKey("config") AnalysisConfig config) {
         final GCModel model = Analyzer.getOrOpenGCLogModel(file);
-        promise.complete(model.getGlobalDiagnoseInfo(config));
+        promise.complete(model.getGlobalAbnormalInfo(config));
     }
 }
