@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
 
-package org.eclipse.jifa.gclog.event;
+package org.eclipse.jifa.gclog.vo;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,5 +32,21 @@ public class GCEventVO {
 
     public void addPhase(GCEventVO phase) {
         phases.add(phase);
+    }
+
+    private String infoToString() {
+        return info.toString();
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(infoToString());
+        if (phases != null) {
+            for (GCEventVO phase : phases) {
+                sb.append("\n    ").append(phase.infoToString());
+            }
+        }
+        return sb.toString();
     }
 }

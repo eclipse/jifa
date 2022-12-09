@@ -20,7 +20,13 @@ package org.eclipse.jifa.gclog.event.evnetInfo;
 public enum GCEventBooleanType {
 
     PROMOTION_FAILED,
-    IGNORE_PAUSE, // pause of this event should not be included in statistics
+    // this gc is just after a cms or g1 remark
+    GC_AFTER_REMARK,
+    // this event is just after a cms cycle, or last mixed gc of an old cycle in g1, or the Prepare Mixed gc
+    // because no mixed gc will be scheduled
+    GC_AT_END_OF_OLD_CYCLE,
+    // pause of this event should not be included in statistics
+    IGNORE_PAUSE,
     TO_SPACE_EXHAUSTED,
     YOUNG_GC_BECOME_FULL_GC,
     INITIAL_MARK,

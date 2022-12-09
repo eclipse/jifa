@@ -12,7 +12,6 @@
  ********************************************************************************/
 package org.eclipse.jifa.gclog.diagnoser;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.eclipse.jifa.gclog.event.TimedEvent;
@@ -22,29 +21,52 @@ import org.eclipse.jifa.gclog.util.I18nStringView;
 import java.util.Comparator;
 import java.util.List;
 
-import static org.eclipse.jifa.gclog.diagnoser.AbnormalSeverity.NONE;
 import static org.eclipse.jifa.gclog.diagnoser.AbnormalType.LAST_TYPE;
 
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
 public class AbnormalPoint {
     private AbnormalType type;
     private TimedEvent site;
-    private AbnormalSeverity severity;
+    private List<I18nStringView> defaultSuggestions;
 
-    public static final AbnormalPoint LEAST_SERIOUS = new AbnormalPoint(LAST_TYPE, null, NONE);
+    public static final AbnormalPoint LEAST_SERIOUS = new AbnormalPoint(LAST_TYPE, null);
+
+    public AbnormalPoint(AbnormalType type, TimedEvent site) {
+        this.type = type;
+        this.site = site;
+    }
 
     public static final Comparator<AbnormalPoint> compareByImportance = (ab1, ab2) -> {
-        if (ab1.severity != ab2.severity) {
-            return ab1.severity.ordinal() - ab2.severity.ordinal();
-        } else if (ab1.type != ab2.type) {
+        if (ab1.type != ab2.type) {
             return ab1.type.getOrdinal() - ab2.type.getOrdinal();
         }
         return 0;
     };
 
-    public List<I18nStringView> generateDefaultSuggestions(GCModel model) {
-        return new DefaultSuggestionGenerator(model, this).generate();
+    public void generateDefaultSuggestions(GCModel model) {
+        this.defaultSuggestions = new DefaultSuggestionGenerator(model, this).generate();
+    }
+
+    public AbnormalPointVO toVO() {
+        AbnormalPointVO vo = new AbnormalPointVO();
+        vo.setType(type.getName());
+        vo.setDefaultSuggestions(defaultSuggestions);
+        return vo;
+    }
+
+    @Override
+    public String toString() {
+        return "AbnormalPoint{" +
+                "type=" + type +
+                ", defaultSuggestions=" + defaultSuggestions +
+                '}';
+    }
+
+    @Data
+    @NoArgsConstructor
+    public static class AbnormalPointVO {
+        // don't use I18nStringView because frontend need to check this field
+        private String type;
+        private List<I18nStringView> defaultSuggestions;
     }
 }

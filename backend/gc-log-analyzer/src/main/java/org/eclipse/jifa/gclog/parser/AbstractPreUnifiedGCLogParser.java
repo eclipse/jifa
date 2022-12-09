@@ -64,6 +64,7 @@ public abstract class AbstractPreUnifiedGCLogParser extends AbstractGCLogParser 
             "   [Code Root Purge",
             "   [Clear CT",
             "   [Other",
+            "      [Evacuation Failure",
             "      [Choose CSet",
             "      [Ref Proc",
             "      [Ref Enq",
@@ -289,7 +290,7 @@ public abstract class AbstractPreUnifiedGCLogParser extends AbstractGCLogParser 
     protected abstract GCEvent getReferenceGCEvent();
 
     // subclass should tell which event this cputime belongs to
-    protected abstract GCEventType[] getCPUTimeGCEvent();
+    protected abstract List<GCEventType> getCPUTimeGCEvent();
 
     // 0.231: Total time for which application threads were stopped: 0.0001215 seconds, Stopping threads took: 0.0000271 seconds
     private void doParseSafePoint(GCEvent event, String s) {
@@ -810,15 +811,23 @@ public abstract class AbstractPreUnifiedGCLogParser extends AbstractGCLogParser 
     protected static final ParseRule commandLineRule = new PrefixAndValueParseRule("CommandLine flags:",
             ((parser, context, prefix, flags) -> parser.getModel().setVmOptions(new VmOptions(flags))));
 
+    private LinkedList<GCEvent> eventsWaitingForCpuTime = new LinkedList<>();
+
+    protected void pushIfWaitingForCpuTime(GCEvent event) {
+        if (getCPUTimeGCEvent().contains(event.getEventType())) {
+            eventsWaitingForCpuTime.offerLast(event);
+        }
+    }
     protected static final ParseRule cpuTimeRule = new PrefixAndValueParseRule(" [Times",
             ((parser, context, prefix, value) -> {
-                List<GCEventType> eventTypes = List.of(((AbstractPreUnifiedGCLogParser) parser).getCPUTimeGCEvent());
-                GCEvent event = parser.getModel().getLastEventWithCondition(
-                        (e) -> e.getCpuTime() == null && eventTypes.contains(e.getEventType()));
-                if (event == null) {
-                    return;
+                LinkedList<GCEvent> queue = ((AbstractPreUnifiedGCLogParser)parser).eventsWaitingForCpuTime;
+                while (!queue.isEmpty()) {
+                    GCEvent event = queue.pollLast();
+                    if (event.getCpuTime() == null) {
+                        CpuTime cpuTime = GCLogUtil.parseCPUTime(value.substring(0, value.length() - 1));
+                        event.setCpuTime(cpuTime);
+                        return;
+                    }
                 }
-                CpuTime cpuTime = GCLogUtil.parseCPUTime(value.substring(0, value.length() - 1));
-                event.setCpuTime(cpuTime);
             }));
 }

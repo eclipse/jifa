@@ -322,27 +322,11 @@
         })
       },
       initializePage() {
-        /*
-         * Notice: This variable should be kept in sync with AnalysisConfig class in AnalysisConfig.java.
-         */
-        this.analysisConfigModel = {
-          timeRange: {
-            start: typeof this.start !== 'undefined' ? Math.max(this.metadata.startTime, parseInt(this.start)) : this.metadata.startTime,
-            end: typeof this.end !== 'undefined' ? Math.min(this.metadata.endTime, parseInt(this.end)) : this.metadata.endTime,
-          },
-          longPauseThreshold : this.metadata.pauseless ? 30 : 400,
-          longConcurrentThreshold : 30000,
-          youngGCFrequentIntervalThreshold: 1000,
-          oldGCFrequentIntervalThreshold: 15000,
-          fullGCFrequentIntervalThreshold: this.metadata.generational ? 60000 : 2000,
-          highOldUsageThreshold: 80,
-          highHumongousUsageThreshold: 50,
-          highHeapUsageThreshold: 60,
-          highMetaspaceUsageThreshold: 80,
-          smallGenerationThreshold: 10,
-          highPromotionThreshold: 3,
-          badThroughputThreshold: 90,
-          tooManyOldGCThreshold: 20,
+        this.analysisConfigModel = this.metadata.analysisConfig
+        // url time overrides default time
+        this.analysisConfigModel.timeRange = {
+          start: typeof this.start !== 'undefined' ? Math.max(this.metadata.startTime, parseInt(this.start)) : this.metadata.analysisConfig.timeRange.start,
+          end: typeof this.end !== 'undefined' ? Math.min(this.metadata.endTime, parseInt(this.end)) : this.metadata.analysisConfig.timeRange.end,
         }
         this.analysisConfig = {...this.analysisConfigModel}
         this.updateUrl()

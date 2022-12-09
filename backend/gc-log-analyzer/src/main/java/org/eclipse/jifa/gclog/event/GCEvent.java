@@ -14,11 +14,12 @@
 package org.eclipse.jifa.gclog.event;
 
 import org.eclipse.jifa.common.util.ErrorUtil;
-import org.eclipse.jifa.gclog.diagnoser.AnalysisConfig;
+import org.eclipse.jifa.gclog.diagnoser.GlobalDiagnoseInfo;
 import org.eclipse.jifa.gclog.event.evnetInfo.*;
 import org.eclipse.jifa.gclog.model.GCEventType;
 import org.eclipse.jifa.gclog.model.GCModel;
 import org.eclipse.jifa.gclog.util.Constant;
+import org.eclipse.jifa.gclog.vo.GCEventVO;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -28,11 +29,11 @@ import static org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea.*;
 import static org.eclipse.jifa.gclog.event.evnetInfo.GCEventLevel.EVENT;
 import static org.eclipse.jifa.gclog.event.evnetInfo.GCEventLevel.PHASE;
 import static org.eclipse.jifa.gclog.util.Constant.KB2MB;
-import static org.eclipse.jifa.gclog.util.Constant.UNKNOWN_INT;
 
 public class GCEvent extends TimedEvent {
-
-    private int id = UNKNOWN_INT; // id is used to identify events, should not be showed to user
+    /* All info saved here should not be relevant to AnalysisConfig. Anything related to the config
+       should be saved in EventDiagnoseInfo
+    **/
     private int gcid = Constant.UNKNOWN_INT;
 
     private CpuTime cpuTime;
@@ -127,6 +128,10 @@ public class GCEvent extends TimedEvent {
             }
         }
         return null;
+    }
+
+    public boolean containPhase(GCEventType type) {
+        return getLastPhaseOfType(type) != null;
     }
 
     public void setBoolean(GCEventBooleanType type, boolean value) {
@@ -258,6 +263,22 @@ public class GCEvent extends TimedEvent {
 
     public void setCauseInterval(double causeInterval) {
         this.causeInterval = causeInterval;
+    }
+
+    public boolean isPause() {
+        return getEventType().getPause() == GCPause.PAUSE;
+    }
+
+    public boolean isPartialConcurrent() {
+        return getEventType().getPause() == GCPause.PARTIAL;
+    }
+
+    public boolean isConcurrent() {
+        return getEventType().getPause() == GCPause.CONCURRENT;
+    }
+
+    public boolean isBadFullGC() {
+        return isFullGC() && getCause().isBad();
     }
 
     private static final double GCTRACETIME_TRACECPUTIME_CLOSE_THRESHOLD = 10.0;
@@ -455,8 +476,8 @@ public class GCEvent extends TimedEvent {
     }
 
     @Override
-    protected void fillInfoToVO(GCModel model, AnalysisConfig config, GCEventVO vo) {
-        super.fillInfoToVO(model, config, vo);
+    protected void fillInfoToVO(GCModel model, GCEventVO vo, GlobalDiagnoseInfo diagnose) {
+        super.fillInfoToVO(model, vo, diagnose);
         vo.saveInfo("eventType", eventType.getName());
         vo.saveInfo("gcid", gcid);
         vo.saveInfo("cputime", cpuTime);
@@ -468,8 +489,8 @@ public class GCEvent extends TimedEvent {
         vo.saveInfo("promotion", promotion);
         vo.saveInfo("reclamation", reclamation);
         vo.saveInfo("allocation", allocation);
-        vo.saveInfo("id", id);
-        phasesDoDFS(phase -> vo.addPhase(phase.toEventVO(model, config)));
+        phasesDoDFS(phase -> vo.addPhase(phase.toEventVO(model, diagnose)));
+        vo.saveInfo("diagnose", diagnose.getEventDiagnoseVO(this));
         for (GCEventBooleanType type : GCEventBooleanType.values()) {
             if (isTrue(type)) {
                 vo.saveInfo(type.name(), true);

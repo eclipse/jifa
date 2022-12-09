@@ -125,7 +125,7 @@ export function getCauseHint(cause) {
 
 export function badPhase(phase, component) {
   const bad = ['Full GC', 'Concurrent Mark Abort', 'Concurrent Mode Failure', "Concurrent Mode Interrupted",
-    "Allocation Stall", "Concurrent Mark Reset For Overflow", "Out Of Memory"].indexOf(phase) >= 0
+    "Allocation Stall", "Concurrent Mark Reset For Overflow", "Out Of Memory", "Evacuation Failure"].indexOf(phase) >= 0
   return {
     bad: bad,
     badHint: component.$t('jifa.gclog.badHint.badPhase', {name: phase})

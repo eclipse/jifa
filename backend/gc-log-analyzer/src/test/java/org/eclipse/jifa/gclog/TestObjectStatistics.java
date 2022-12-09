@@ -173,4 +173,100 @@ public class TestObjectStatistics {
                 UNKNOWN_INT, 225002 * 1024, UNKNOWN_INT, 224850 * 1024));
 
     }
+
+    @Test
+    public void testJDK11G1NoMixedGC() throws Exception {
+        String log = "[0.029s][info][gc,heap] Heap region size: 1M\n" +
+                "[0.033s][info][gc     ] Using G1\n" +
+                "[0.033s][info][gc,heap,coops] Heap address: 0x0000000740000000, size: 3072 MB, Compressed Oops mode: Zero based, Oop shift amount: 3\n" +
+                "[28.224s][info][gc,start      ] GC(0) Pause Young (Concurrent Start) (G1 Humongous Allocation)\n" +
+                "[28.224s][info][gc,task       ] GC(0) Using 8 workers of 8 for evacuation\n" +
+                "[28.242s][info][gc,phases     ] GC(0)   Pre Evacuate Collection Set: 0.3ms\n" +
+                "[28.242s][info][gc,phases     ] GC(0)   Evacuate Collection Set: 15.9ms\n" +
+                "[28.242s][info][gc,phases     ] GC(0)   Post Evacuate Collection Set: 1.8ms\n" +
+                "[28.242s][info][gc,phases     ] GC(0)   Other: 0.3ms\n" +
+                "[28.242s][info][gc,heap       ] GC(0) Eden regions: 148->0(172)\n" +
+                "[28.242s][info][gc,heap       ] GC(0) Survivor regions: 20->10(23)\n" +
+                "[28.242s][info][gc,heap       ] GC(0) Old regions: 214->220\n" +
+                "[28.242s][info][gc,heap       ] GC(0) Humongous regions: 13->13\n" +
+                "[28.242s][info][gc,metaspace  ] GC(0) Metaspace: 222590K->222590K(1251328K)\n" +
+                "[28.242s][info][gc            ] GC(0) Pause Young (Concurrent Start) (G1 Humongous Allocation) 393M->242M(505M) 18.390ms\n" +
+                "[28.242s][info][gc,cpu        ] GC(0) User=0.10s Sys=0.00s Real=0.02s\n" +
+                "[28.242s][info][gc            ] GC(1) Concurrent Cycle\n" +
+                "[28.242s][info][gc,marking    ] GC(1) Concurrent Clear Claimed Marks\n" +
+                "[28.242s][info][gc,marking    ] GC(1) Concurrent Clear Claimed Marks 0.301ms\n" +
+                "[28.243s][info][gc,marking    ] GC(1) Concurrent Scan Root Regions\n" +
+                "[28.250s][info][gc,marking    ] GC(1) Concurrent Scan Root Regions 7.413ms\n" +
+                "[28.250s][info][gc,marking    ] GC(1) Concurrent Mark (28.250s)\n" +
+                "[28.250s][info][gc,marking    ] GC(1) Concurrent Mark From Roots\n" +
+                "[28.250s][info][gc,task       ] GC(1) Using 2 workers of 2 for marking\n" +
+                "[28.794s][info][gc,marking    ] GC(1) Concurrent Mark From Roots 544.204ms\n" +
+                "[28.794s][info][gc,marking    ] GC(1) Concurrent Preclean\n" +
+                "[28.795s][info][gc,marking    ] GC(1) Concurrent Preclean 0.996ms\n" +
+                "[28.795s][info][gc,marking    ] GC(1) Concurrent Mark (28.250s, 28.795s) 545.303ms\n" +
+                "[28.795s][info][gc,start      ] GC(1) Pause Remark\n" +
+                "[28.818s][info][gc,stringtable] GC(1) Cleaned string and symbol table, strings: 93320 processed, 4 removed, symbols: 553250 processed, 79 removed\n" +
+                "[28.818s][info][gc            ] GC(1) Pause Remark 341M->334M(505M) 22.698ms\n" +
+                "[28.818s][info][gc,cpu        ] GC(1) User=0.11s Sys=0.01s Real=0.03s\n" +
+                "[28.818s][info][gc,marking    ] GC(1) Concurrent Rebuild Remembered Sets\n" +
+                "[29.125s][info][gc,marking    ] GC(1) Concurrent Rebuild Remembered Sets 306.244ms\n" +
+                "[29.126s][info][gc,start      ] GC(1) Pause Cleanup\n" +
+                "[29.126s][info][gc            ] GC(1) Pause Cleanup 395M->395M(505M) 0.225ms\n" +
+                "[29.126s][info][gc,cpu        ] GC(1) User=0.00s Sys=0.00s Real=0.00s\n" +
+                "[29.126s][info][gc,marking    ] GC(1) Concurrent Cleanup for Next Mark\n" +
+                "[29.130s][info][gc,marking    ] GC(1) Concurrent Cleanup for Next Mark 3.930ms\n" +
+                "[29.130s][info][gc            ] GC(1) Concurrent Cycle 888.287ms\n" +
+                "[29.228s][info][gc,start      ] GC(2) Pause Young (Prepare Mixed) (G1 Evacuation Pause)\n" +
+                "[29.228s][info][gc,task       ] GC(2) Using 8 workers of 8 for evacuation\n" +
+                "[29.240s][info][gc,phases     ] GC(2)   Pre Evacuate Collection Set: 0.0ms\n" +
+                "[29.240s][info][gc,phases     ] GC(2)   Evacuate Collection Set: 10.4ms\n" +
+                "[29.240s][info][gc,phases     ] GC(2)   Post Evacuate Collection Set: 1.3ms\n" +
+                "[29.240s][info][gc,phases     ] GC(2)   Other: 0.2ms\n" +
+                "[29.240s][info][gc,heap       ] GC(2) Eden regions: 172->0(9)\n" +
+                "[29.240s][info][gc,heap       ] GC(2) Survivor regions: 10->16(23)\n" +
+                "[29.240s][info][gc,heap       ] GC(2) Old regions: 218->217\n" +
+                "[29.240s][info][gc,heap       ] GC(2) Humongous regions: 29->11\n" +
+                "[29.240s][info][gc,metaspace  ] GC(2) Metaspace: 224850K->224850K(1253376K)\n" +
+                "[29.240s][info][gc            ] GC(2) Pause Young (Prepare Mixed) (G1 Evacuation Pause) 427M->243M(505M) 12.048ms\n" +
+                "[29.240s][info][gc,cpu        ] GC(2) User=0.08s Sys=0.00s Real=0.01s\n" +
+                "[29.268s][info][gc,start      ] GC(3) Pause Young (Normal) (G1 Evacuation Pause)\n" +
+                "[29.268s][info][gc,task       ] GC(3) Using 8 workers of 8 for evacuation\n" +
+                "[29.280s][info][gc,phases     ] GC(3)   Pre Evacuate Collection Set: 0.0ms\n" +
+                "[29.280s][info][gc,phases     ] GC(3)   Evacuate Collection Set: 10.9ms\n" +
+                "[29.280s][info][gc,phases     ] GC(3)   Post Evacuate Collection Set: 0.4ms\n" +
+                "[29.280s][info][gc,phases     ] GC(3)   Other: 0.2ms\n" +
+                "[29.280s][info][gc,heap       ] GC(3) Eden regions: 9->0(176)\n" +
+                "[29.280s][info][gc,heap       ] GC(3) Survivor regions: 16->3(4)\n" +
+                "[29.280s][info][gc,heap       ] GC(3) Old regions: 217->222\n" +
+                "[29.280s][info][gc,heap       ] GC(3) Humongous regions: 12->11\n" +
+                "[29.280s][info][gc,metaspace  ] GC(3) Metaspace: 224854K->224855K(1253376K)\n" +
+                "[29.280s][info][gc            ] GC(3) Pause Young (Normal) (G1 Evacuation Pause) 252M->236M(505M) 11.771ms\n" +
+                "[29.280s][info][gc,cpu        ] GC(3) User=0.09s Sys=0.00s Real=0.01s\n" +
+                "[29.356s][info][gc,start      ] GC(4) Pause Young (Concurrent Start) (G1 Humongous Allocation)\n" +
+                "[29.356s][info][gc,task       ] GC(4) Using 8 workers of 8 for evacuation\n" +
+                "[29.365s][info][gc,phases     ] GC(4)   Pre Evacuate Collection Set: 0.3ms\n" +
+                "[29.365s][info][gc,phases     ] GC(4)   Evacuate Collection Set: 6.9ms\n" +
+                "[29.365s][info][gc,phases     ] GC(4)   Post Evacuate Collection Set: 1.2ms\n" +
+                "[29.365s][info][gc,phases     ] GC(4)   Other: 0.2ms\n" +
+                "[29.365s][info][gc,heap       ] GC(4) Eden regions: 23->0(137)\n" +
+                "[29.365s][info][gc,heap       ] GC(4) Survivor regions: 3->5(23)\n" +
+                "[29.365s][info][gc,heap       ] GC(4) Old regions: 223->223\n" +
+                "[29.365s][info][gc,heap       ] GC(4) Humongous regions: 11->11\n" +
+                "[29.365s][info][gc,metaspace  ] GC(4) Metaspace: 225002K->225002K(1253376K)\n" +
+                "[29.365s][info][gc            ] GC(4) Pause Young (Concurrent Start) (G1 Humongous Allocation) 258M->237M(505M) 8.709ms\n" +
+                "[29.365s][info][gc,cpu        ] GC(4) User=0.05s Sys=0.00s Real=0.00s";
+        UnifiedG1GCLogParser parser = (UnifiedG1GCLogParser)
+                (new GCLogParserFactory().getParser(stringToBufferedReader(log)));
+        G1GCModel model = (G1GCModel) parser.parse(stringToBufferedReader(log));
+        model.calculateDerivedInfo(new DefaultProgressListener());
+
+        MemoryStatistics memStats = model.getMemoryStatistics(new TimeRange(0, 9999999999.0));
+        Assert.assertEquals(memStats.getHumongous(), new MemoryStatistics.MemoryStatisticsItem(
+                UNKNOWN_INT, 29 * 1024 * 1024, UNKNOWN_INT, 29 * 1024 * 1024));
+        Assert.assertEquals(memStats.getOld(), new MemoryStatistics.MemoryStatisticsItem(
+                (505 * 4 - 195 - 32 - 180 - 160) * 1024 * 1024 / 4, 223 * 1024 * 1024, UNKNOWN_INT, 217 * 1024 * 1024));
+        Assert.assertEquals(memStats.getMetaspace(), new MemoryStatistics.MemoryStatisticsItem(
+                UNKNOWN_INT, 225002 * 1024, UNKNOWN_INT, 224850 * 1024));
+
+    }
 }

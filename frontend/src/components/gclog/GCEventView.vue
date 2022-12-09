@@ -81,22 +81,22 @@ export default {
       const cause = this.gcEvent.cause;
       if (cause) {
         this.appendNormalText("(");
-        const part = {
+        this.parts.push({
           text: cause,
-          hint: [getCauseHint(cause)]
-        }
-        this.parts.push(part)
+          hint: [getCauseHint(cause)],
+          ...this.getPartProblem("badCauseFullGC", cause)
+        })
         this.appendNormalText(") ");
       }
     },
     dealEventType() {
       const type = this.gcEvent.eventType
       if (type) {
-        const part = {
+        this.parts.push({
           text: type,
-          hint: [getPhaseHint(type)]
-        }
-        this.parts.push(part)
+          hint: [getPhaseHint(type)],
+          ...this.getPartProblem("badEventType", this.gcEvent.eventType)
+        })
         this.appendNormalText(" ");
       }
     },
@@ -135,16 +135,18 @@ export default {
       if (this.gcEvent.TO_SPACE_EXHAUSTED) {
         return {
           text: "To-space Exhausted",
-          hint: [getCauseHint("To-space Exhausted")]
+          hint: [getCauseHint("To-space Exhausted")],
+          ...this.getPartProblem("toSpaceExhausted")
         }
       }
     },
     dealDuration() {
       if (this.gcEvent.duration >= 0) {
-        const part = {
-          text: this.$t("jifa.gclog.duration") + ":" + formatTimePeriod(this.gcEvent.duration)
-        }
-        this.parts.push(part)
+        this.appendNormalText(this.$t("jifa.gclog.duration") + ":")
+        this.parts.push({
+          text: formatTimePeriod(this.gcEvent.duration),
+          ...this.getPartProblem("badDuration", this.gcEvent.eventType)
+        })
         this.appendNormalText(" ")
       }
     },
@@ -181,37 +183,51 @@ export default {
     },
     dealMemoryPreUsed(value, generation) {
       if (value >= 0) {
-        const part = {
+        this.parts.push({
           text: this.formatSizeInDetail(value)
-        }
-        this.parts.push(part)
+        })
       }
     },
     dealMemoryPreCapacity(value, generation) {
       if (value >= 0 && (generation !== "metaspace" || this.metadata.metaspaceCapacityReliable)) {
         this.appendNormalText("(")
-        const part = {
+        this.parts.push({
           text: this.formatSizeInDetail(value)
-        }
-        this.parts.push(part)
+        })
         this.appendNormalText(")")
       }
     },
     dealMemoryPostUsed(value, generation) {
       if (value >= 0) {
-        const part = {
-          text: this.formatSizeInDetail(value)
+        let problem = ""
+        if (generation === "old") {
+          problem = "highOldUsed"
+        } else if (generation === 'humongous'){
+          problem = "highHumongousUsed"
+        } else if (generation === "heap") {
+          problem = "highHeapUsed"
+        } else if (generation === 'metaspace') {
+          problem = "highMetaspaceUsed"
         }
-        this.parts.push(part)
+        this.parts.push({
+          text: this.formatSizeInDetail(value),
+          ...this.getPartProblem(problem)
+        })
       }
     },
     dealMemoryPostCapacity(value, generation) {
       if (value >= 0 && (generation !== "metaspace" || this.metadata.metaspaceCapacityReliable)) {
         this.appendNormalText("(")
-        const part = {
-          text: this.formatSizeInDetail(value)
+        let problem = ""
+        if (generation === "old") {
+          problem = "smallOldGen"
+        } else if (generation === 'young'){
+          problem = "smallYoungGen"
         }
-        this.parts.push(part)
+        this.parts.push({
+          text: this.formatSizeInDetail(value),
+          ...this.getPartProblem(problem)
+        })
         this.appendNormalText(")")
       }
     },
@@ -225,50 +241,52 @@ export default {
       }
     },
     dealUser() {
-      const part = {
-        text: " User=" + formatTimePeriod(this.gcEvent.cputime.user),
-      }
-      this.parts.push(part)
+      this.appendNormalText(" User=")
+      this.parts.push({
+        text: formatTimePeriod(this.gcEvent.cputime.user),
+        ...this.getPartProblem("badUsr")
+      })
     },
     dealSys() {
-      const part = {
-        text: " Sys=" + formatTimePeriod(this.gcEvent.cputime.sys),
-      }
-      this.parts.push(part)
+      this.appendNormalText(" Sys=")
+      this.parts.push({
+        text: formatTimePeriod(this.gcEvent.cputime.sys),
+        ...this.getPartProblem("badSys")
+      })
     },
     dealReal() {
+      this.appendNormalText(" Real=")
       const part = {
-        text: " Real=" + formatTimePeriod(this.gcEvent.cputime.real),
+        text: formatTimePeriod(this.gcEvent.cputime.real),
       }
       this.parts.push(part)
     },
     dealPromotion() {
       if (this.gcEvent.promotion >= 0) {
         this.appendNormalText(this.$t("jifa.gclog.timeGraph.promotion") + ":")
-        const part = {
-          text: this.formatSizeInDetail(this.gcEvent.promotion)
-        }
-        this.parts.push(part)
+        this.parts.push({
+          text: this.formatSizeInDetail(this.gcEvent.promotion),
+          ...this.getPartProblem("badPromotion", this.gcEvent.eventType),
+        })
         this.appendNormalText(" ")
       }
     },
     dealInterval() {
       if (this.gcEvent.interval >= 0) {
         this.appendNormalText(this.$t("jifa.gclog.detail.interval") + ":")
-        const part = {
-          text: formatTimePeriod(this.gcEvent.interval)
-        }
-        this.parts.push(part)
+        this.parts.push({
+          text: formatTimePeriod(this.gcEvent.interval),
+          ...this.getPartProblem("badInterval", this.gcEvent.eventType),
+        })
         this.appendNormalText(" ")
       }
     },
     dealReclamation() {
       if (this.gcEvent.reclamation >= 0) {
         this.appendNormalText(this.$t("jifa.gclog.timeGraph.reclamation") + ":")
-        const part = {
+        this.parts.push({
           text: this.formatSizeInDetail(this.gcEvent.reclamation)
-        }
-        this.parts.push(part)
+        })
         this.appendNormalText(" ")
       }
     },
@@ -299,12 +317,26 @@ export default {
           text: part.text,
           class: part.bad ? "bad-metric" : "",
         }
-        const hint = [part.hint].flat().filter(s => s).map(s => s.startsWith("jifa.") ? this.$t(s) : s);
+        const hint = [part.hint, part.problemDescription]
+            .flat().filter(s => s).map(s => s.startsWith("jifa.") ? this.$t(s) : s);
         if (hint.length > 0) {
           r.hints = hint
         }
         return r;
       })
+    },
+    getPartProblem(problemType, descriptionParam) {
+      if (problemType === "") {
+        return
+      }
+      const problem = this.gcEvent.diagnose.find(p => p.type === problemType)
+      if (problem === undefined) {
+        return
+      }
+      return {
+        bad: true,
+        problemDescription: this.$t('jifa.gclog.diagnose.abnormal.' + problemType, {param: descriptionParam})
+      }
     }
   },
   created() {
