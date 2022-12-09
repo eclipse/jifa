@@ -26,6 +26,13 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.GetObjectRequest;
+import com.amazonaws.AmazonServiceException;
+import com.amazonaws.SdkClientException;
+import com.amazonaws.auth.*;
+import com.amazonaws.auth.profile.ProfileCredentialsProvider;
+import com.amazonaws.services.s3.model.ResponseHeaderOverrides;
+import com.amazonaws.services.s3.model.S3Object;
+
 
 import io.vertx.core.Promise;
 import net.schmizz.sshj.SSHClient;
@@ -471,6 +478,7 @@ public class FileSupport {
             clientConfig.setProtocol(Protocol.HTTPS);
             s3Client = AmazonS3ClientBuilder.standard()
                                             .withCredentials(new AWSStaticCredentialsProvider(credentials))
+                                            .withCredentials(new InstanceProfileCredentialsProvider(false))
                                             .withClientConfiguration(clientConfig)
                                             .withRegion(region)
                                             .withPathStyleAccessEnabled(true)
