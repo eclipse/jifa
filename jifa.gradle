@@ -10,19 +10,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-allprojects {
-    repositories {
-        maven {
-            url "https://plugins.gradle.org/m2/"
-        }
-        mavenCentral()
-    }
-}
-
-subprojects {
-    apply plugin: 'idea'
-    version = '1.0'
-}
+apply from: "$rootDir/gradle/base.gradle"
 
 task deleteSSHConfig(type: Delete) {
     delete "${rootProject.rootDir}/backend/config/jifa-ssh-key", "${rootProject.rootDir}/backend/config/jifa-ssh-key.pub"
@@ -39,12 +27,12 @@ task copySSHConfig(dependsOn: generateSSHConfig, type: Copy) {
 }
 
 task copyMasterDist(type: Copy, dependsOn: ':backend:master:build') {
-    from "${rootProject.rootDir}/backend/master/build/distributions/master-1.0.zip" as Object
+    from "${rootProject.rootDir}/backend/master/build/distributions/master-${project.version}.zip" as Object
     into "${rootProject.rootDir}/artifacts" as Object
 }
 
 task copyWorkerDist(type: Copy, dependsOn: ':backend:worker:build') {
-    from "${rootProject.rootDir}/backend/worker/build/distributions/worker-1.0.zip" as Object
+    from "${rootProject.rootDir}/backend/worker/build/distributions/worker-${project.version}.zip" as Object
     into "${rootProject.rootDir}/artifacts" as Object
 }
 
@@ -52,7 +40,7 @@ task compressFrontendDist(type: Zip) {
     from "${rootProject.rootDir}/frontend/build"
     destinationDirectory = file("${rootProject.rootDir}/artifacts")
     archiveBaseName.set('frontend')
-    archiveVersion.set('1.0')
+    archiveVersion.set(project.version)
     archiveExtension.set('zip')
 }
 

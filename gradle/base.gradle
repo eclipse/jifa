@@ -1,0 +1,10 @@
+version = '0.2.0-SNAPSHOT'
+
+repositories {
+    maven {
+        url "https://plugins.gradle.org/m2/"
+    }
+    mavenCentral()
+}
+
+apply plugin: 'idea'

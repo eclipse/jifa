@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-
+apply from: "$rootDir/gradle/base.gradle"
 
 def COMMON = 'common'
 def WORKER = 'worker'

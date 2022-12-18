@@ -10,10 +10,11 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-
 plugins {
     id 'java-library'
 }
+
+apply from: "$rootDir/gradle/java.gradle"
 
 dependencies {
 

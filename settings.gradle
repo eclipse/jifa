@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-rootProject.name = 'Jifa'
+rootProject.name = 'jifa'
 
 include ':backend'
 include ':backend:common'

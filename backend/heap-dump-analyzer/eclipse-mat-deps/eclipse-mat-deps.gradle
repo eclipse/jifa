@@ -10,10 +10,11 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-
 plugins {
     id 'com.diffplug.p2.asmaven' version '3.37.1'
 }
+
+apply from: "$rootDir/gradle/base.gradle"
 
 p2AsMaven {
     group 'eclipse-deps', {

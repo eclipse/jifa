@@ -14,6 +14,8 @@ plugins {
     id 'java-library'
 }
 
+apply from: "$rootDir/gradle/java.gradle"
+
 jar {
     manifest {
         attributes(
@@ -22,7 +24,7 @@ jar {
                 "Bundle-Activator": "org.eclipse.jifa.hda.impl.Activator",
                 "Import-Package":
                         "org.eclipse.mat.snapshot,org.eclipse.mat.util,org.eclipse.mat.query,org.eclipse.mat.parser.model,org.eclipse.mat.hprof.extension",
-                "Bundle-Version": "1.0"
+                "Bundle-Version": project.version
         )
     }
 
@@ -48,5 +50,5 @@ compileJava.dependsOn(':backend:heap-dump-analyzer:hook:hookPreferences')
 task installJar(type: Copy, dependsOn: jar) {
     from "${buildDir}/libs"
     into "${mat_deps_dir_path}"
-    include '*.jar'
+    include "*${project.version}.jar"
 }
