@@ -74,7 +74,7 @@ export default {
     },
     dealGCID() {
       if (this.gcEvent.gcid > 0) {
-        this.appendNormalText("(" + this.gcEvent.gcid / 1000 + ") ");
+        this.appendNormalText(this.gcEvent.gcid  + ": ");
       }
     },
     dealCause() {
