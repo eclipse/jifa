@@ -35,9 +35,9 @@
     "vue-runtime-helpers": "^1.1.2"
   },
   "devDependencies": {
-    "@vue/cli-plugin-babel": "^3.5.0",
+    "@vue/cli-plugin-babel": "^3.12.1",
     "@vue/cli-plugin-eslint": "^3.5.0",
-    "@vue/cli-service": "^3.6.0",
+    "@vue/cli-service": "^5.0.8",
     "babel-eslint": "^10.0.1",
     "eslint": "^5.0.8",
     "eslint-plugin-vue": "^5.0.0",
