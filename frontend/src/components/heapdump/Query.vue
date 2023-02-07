@@ -179,7 +179,7 @@
   const TEXT = 3
 
   export default {
-    props: ['file', 'preparedQuery'],
+    props: ['file', 'preparedQuery', 'preparedQueryType'],
     data() {
       return {
         ICONS,
@@ -412,8 +412,9 @@
     },
 
     created() {
-      if (this.preparedQuery) {
+      if (this.preparedQuery && this.preparedQueryType) {
         this.query = this.preparedQuery
+        this.queryType = this.preparedQueryType
         this.disabledInput = true
         this.search()
       } else {
