@@ -30,6 +30,7 @@ import java.util.List;
 import static org.eclipse.jifa.gclog.model.GCEventType.*;
 import static org.eclipse.jifa.gclog.parser.ParseRule.ParseRuleContext.GCID;
 import static org.eclipse.jifa.gclog.parser.ParseRule.ParseRuleContext.UPTIME;
+import static org.eclipse.jifa.gclog.util.Constant.UNKNOWN_DOUBLE;
 
 public abstract class UnifiedG1OrGenerationalGCLogParser extends AbstractUnifiedGCLogParser {
     private static List<ParseRule> withoutGCIDRules;
@@ -167,7 +168,7 @@ public abstract class UnifiedG1OrGenerationalGCLogParser extends AbstractUnified
             } else if (part.endsWith("ms")) {
                 double duration = GCLogUtil.toMillisecond(part);
                 event.setDuration(duration);
-                if (event.getStartTime() == Constant.UNKNOWN_DOUBLE) {
+                if (event.getStartTime() == UNKNOWN_DOUBLE) {
                     event.setStartTime((double) context.get(UPTIME) - duration);
                 }
             }
@@ -260,11 +261,10 @@ public abstract class UnifiedG1OrGenerationalGCLogParser extends AbstractUnified
         GCModel model = parser.getModel();
         phaseName = phaseName.trim();
         GCEventType phaseType = ((UnifiedG1OrGenerationalGCLogParser) parser).getGCEventType(phaseName);
-        boolean end = value.endsWith("ms");
         GCEvent event;
         // cms does not have a line to indicate its beginning, hard code here
         if (parser.getMetadata().getCollector() == GCCollectorType.CMS &&
-                phaseType == CMS_INITIAL_MARK && !end) {
+                phaseType == CMS_INITIAL_MARK && model.getLastEventOfGCID(context.get(GCID)) == null) {
             event = new GCEvent();
             event.setEventType(CMS_CONCURRENT_MARK_SWEPT);
             event.setStartTime(context.get(UPTIME));

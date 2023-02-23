@@ -26,7 +26,8 @@ import static org.eclipse.jifa.gclog.model.GCEventType.*;
 
 public class UnifiedGenerationalGCLogParser extends UnifiedG1OrGenerationalGCLogParser {
     private final static GCEventType[] CMS_CPU_TIME_EVENTS = {CMS_INITIAL_MARK, CMS_CONCURRENT_MARK,
-            CMS_CONCURRENT_PRECLEAN, CMS_FINAL_REMARK, CMS_CONCURRENT_SWEEP, CMS_CONCURRENT_RESET};
+            CMS_CONCURRENT_PRECLEAN, CMS_CONCURRENT_ABORTABLE_PRECLEAN, CMS_FINAL_REMARK,
+            CMS_CONCURRENT_SWEEP, CMS_CONCURRENT_RESET};
 
     /*
      * cms
@@ -135,6 +136,7 @@ public class UnifiedGenerationalGCLogParser extends UnifiedG1OrGenerationalGCLog
         withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Pause Initial Mark", UnifiedG1OrGenerationalGCLogParser::parsePhase));
         withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Concurrent Mark", UnifiedG1OrGenerationalGCLogParser::parsePhase));
         withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Concurrent Preclean", UnifiedG1OrGenerationalGCLogParser::parsePhase));
+        withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Concurrent Abortable Preclean", UnifiedG1OrGenerationalGCLogParser::parsePhase));
         withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Pause Remark", UnifiedG1OrGenerationalGCLogParser::parsePhase));
         withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Concurrent Sweep", UnifiedG1OrGenerationalGCLogParser::parsePhase));
         withGCIDRules.add(new ParseRule.PrefixAndValueParseRule("Concurrent Reset", UnifiedG1OrGenerationalGCLogParser::parsePhase));
@@ -192,6 +194,8 @@ public class UnifiedGenerationalGCLogParser extends UnifiedG1OrGenerationalGCLog
                 return CMS_CONCURRENT_MARK;
             case "Concurrent Preclean":
                 return CMS_CONCURRENT_PRECLEAN;
+            case "Concurrent Abortable Preclean":
+                return CMS_CONCURRENT_ABORTABLE_PRECLEAN;
             case "Pause Remark":
                 return CMS_FINAL_REMARK;
             case "Concurrent Sweep":
