@@ -97,6 +97,7 @@ public class PreUnifiedG1GCLogParser extends AbstractPreUnifiedGCLogParser {
         fullSentenceRules.add(commandLineRule);
         fullSentenceRules.add(cpuTimeRule);
         fullSentenceRules.add(new FixedContentParseRule(" (to-space exhausted)", PreUnifiedG1GCLogParser::parseToSpaceExhausted));
+        fullSentenceRules.add(new FixedContentParseRule("--", PreUnifiedG1GCLogParser::parseToSpaceExhausted));
         fullSentenceRules.add(new PrefixAndValueParseRule("   [Eden", PreUnifiedG1GCLogParser::parseMemoryChange));
         fullSentenceRules.add(new PrefixAndValueParseRule("   [Parallel Time", PreUnifiedG1GCLogParser::parseParallelWorker));
         // some phases are ignored

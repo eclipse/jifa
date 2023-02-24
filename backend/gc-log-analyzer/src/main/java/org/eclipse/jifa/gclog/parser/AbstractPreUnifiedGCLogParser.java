@@ -22,6 +22,7 @@ import org.eclipse.jifa.gclog.event.evnetInfo.GCMemoryItem;
 import org.eclipse.jifa.gclog.event.evnetInfo.ReferenceGC;
 import org.eclipse.jifa.gclog.model.GCEventType;
 import org.eclipse.jifa.gclog.model.GCModel;
+import org.eclipse.jifa.gclog.model.modeInfo.GCCollectorType;
 import org.eclipse.jifa.gclog.model.modeInfo.VmOptions;
 import org.eclipse.jifa.gclog.parser.ParseRule.PrefixAndValueParseRule;
 import org.eclipse.jifa.gclog.util.Constant;
@@ -183,6 +184,7 @@ public abstract class AbstractPreUnifiedGCLogParser extends AbstractGCLogParser 
             {" (promotion failed)", null},
             {" (concurrent mode failure)", null},
             {" (to-space exhausted)", null},
+            {"--", null},
             {" [Times", "]"}
     };
 
@@ -509,6 +511,7 @@ public abstract class AbstractPreUnifiedGCLogParser extends AbstractGCLogParser 
     // 2021-08-25T11:28:31.969+0800: 114402.958: [GC pause (Metadata GC Threshold) (young) (initial-mark), 0.3875850 secs]
     // 0.269: [Full GC (Ergonomics) [PSYoungGen: 4096K->0K(55296K)] [ParOldGen: 93741K->67372K(174592K)] 97837K->67372K(229888K), [Metaspace: 3202K->3202K(1056768K)], 0.6862093 secs] [Times: user=2.60 sys=0.02, real=0.69 secs]
     // " [1 CMS-initial-mark"
+    // 2023-02-22T01:35:44.598+0800: 8.897: [GC pause (G1 Evacuation Pause) (young) 1120M->67183K(22432M), 0.0629057 secs]
     protected final static GCLogTokenType TOKEN_GC_TRACETIME_TITLE = (line, index, parser) -> {
         if (line.charAt(index) == ' ') {
             index++;// ps full gc has an extra space
@@ -542,7 +545,10 @@ public abstract class AbstractPreUnifiedGCLogParser extends AbstractGCLogParser 
                 }
                 end = rightBracket + 1;
             }
-            if (!endWithEmbeddedSentence && end < line.length() && line.charAt(end) == ' ') {
+            // HACK: G1 young gc doesn't have extra space in the end
+            boolean isG1YoungGC = parser.getMetadata().getCollector() == GCCollectorType.G1
+                    && GCLogUtil.stringSubEquals(line, index, "GC pause");
+            if (!endWithEmbeddedSentence && !isG1YoungGC && end < line.length() && line.charAt(end) == ' ') {
                 end++;
             }
             return new GCLogToken(line.substring(index, end), end);

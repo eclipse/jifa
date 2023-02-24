@@ -1866,4 +1866,200 @@ public class TestParser {
         Assert.assertEquals(model.getGcEvents().size(), 1);
         Assert.assertEquals(model.getHeapRegionSize(), 1L * 1024 * 1024);
     }
+
+
+    @Test
+    public void testJDK8G1PrintGC() throws Exception {
+        String log =
+                "OpenJDK 64-Bit Server VM (25.322-b06) for linux-amd64 JRE (1.8.0_322-b06), built on Jan 27 2022 17:54:59 by \"mockbuild\" with gcc 4.8.5 20150623 (Red Hat 4.8.5-44)\n" +
+                        "Memory: 4k page, physical 32245912k(28375460k free), swap 0k(0k free)\n" +
+                        "CommandLine flags: -XX:CompressedClassSpaceSize=1065353216 -XX:ConcGCThreads=4 -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/var/log/hsy/dump.hprof -XX:InitialHeapSize=23521656832 -XX:MaxHeapSize=23521656832 -XX:MaxMetaspaceSize=1073741824 -XX:MetaspaceSize=536870912 -XX:ParallelGCThreads=4 -XX:+PrintGC -XX:+PrintGCDateStamps -XX:+PrintGCTimeStamps -XX:SurvivorRatio=8 -XX:ThreadStackSize=512 -XX:+UseCompressedClassPointers -XX:+UseCompressedOops -XX:+UseG1GC -XX:-UseGCLogFileRotation \n" +
+                        "25345.655: [GC pause (G1 Humongous Allocation) (young) (initial-mark) 19312M->18816M(22432M), 0.0259009 secs]\n" +
+                        "25345.681: [GC concurrent-root-region-scan-start]\n" +
+                        "25345.700: [GC concurrent-root-region-scan-end, 0.0187169 secs]\n" +
+                        "25345.700: [GC concurrent-mark-start]\n" +
+                        "25346.590: [GC pause (G1 Evacuation Pause) (young) 19948M->18868M(22432M), 0.0274763 secs]\n" +
+                        "25347.456: [GC pause (G1 Evacuation Pause) (young) 20097M->19456M(22432M), 0.8351748 secs]\n" +
+                        "25360.101: [GC concurrent-mark-end, 14.4015709 secs]\n" +
+                        "25360.104: [GC remark, 0.0943079 secs]\n" +
+                        "25360.201: [GC cleanup 21811M->21175M(22432M), 0.0354017 secs]\n" +
+                        "25360.237: [GC concurrent-cleanup-start]\n" +
+                        "25360.237: [GC concurrent-cleanup-end, 0.0002351 secs]\n" +
+                        "25365.325: [GC pause (G1 Evacuation Pause) (young)-- 22058M->22154M(22432M), 1.6706033 secs]\n" +
+                        "25367.056: [GC pause (G1 Evacuation Pause) (young) (initial-mark)-- 22330M->22330M(22432M), 2.2812162 secs]\n" +
+                        "25369.337: [GC concurrent-root-region-scan-start]\n" +
+                        "25369.338: [GC concurrent-root-region-scan-end, 0.0003028 secs]\n" +
+                        "25369.338: [GC concurrent-mark-start]\n" +
+                        "25369.342: [GC pause (G1 Evacuation Pause) (young) 22330M->22330M(22432M), 0.2968099 secs]\n" +
+                        "25369.642: [GC pause (G1 Evacuation Pause) (young) 22330M->22330M(22432M), 0.0045584 secs]\n" +
+                        "25369.649: [Full GC (Allocation Failure)  22330M->8207M(22432M), 27.9811092 secs]\n" +
+                        "25397.630: [GC concurrent-mark-abort]\n" +
+                        "25398.097: [GC pause (G1 Evacuation Pause) (young) 9327M->8249M(22432M), 0.0434199 secs]";
+
+        GCLogParser parser = new GCLogParserFactory().getParser(stringToBufferedReader(log));
+        G1GCModel model = (G1GCModel) parser.parse(stringToBufferedReader(log));
+        model.calculateDerivedInfo(new DefaultProgressListener());
+
+        Assert.assertEquals(model.getGcEvents().stream().filter(GCEvent::isYoungGC).count(), 8);
+        Assert.assertEquals(model.getGcEvents().stream().filter(GCEvent::isOldGC).count(), 2);
+        Assert.assertEquals(model.getGcEvents().stream().filter(GCEvent::isFullGC).count(), 1);
+        Assert.assertEquals(model.getGcEvents().stream().filter(event -> event.isTrue(TO_SPACE_EXHAUSTED)).count(), 2);
+        for (GCEvent event : model.getGcEvents()) {
+            Assert.assertTrue(event.getStartTime() > 0);
+            if (event.isYoungGC() || event.isFullGC()) {
+                Assert.assertTrue(event.getDuration() > 0);
+                Assert.assertNotNull(event.getCause());
+                Assert.assertNotNull(event.getMemoryItem(HEAP));
+            }
+            if (event.isOldGC()) {
+                Assert.assertTrue( event.getPhases().size() >= 2);
+            }
+        }
+    }
+
+    @Test
+    public void testJDK8CMSPrintGC() throws Exception {
+        String log =
+                "0.486: [GC (Allocation Failure)  245362K->234628K(993280K), 0.1909734 secs]\n" +
+                        "1.068: [GC (Allocation Failure)  480316K->475102K(993280K), 0.2660193 secs]\n" +
+                        "1.334: [GC (CMS Initial Mark)  480684K(993280K), 0.0002189 secs]\n" +
+                        "1.653: [GC (CMS Final Remark)  633602K(993280K), 0.0015383 secs]\n" +
+                        "2.085: [GC (Allocation Failure)  720803K->608585K(993280K), 0.1361803 secs]\n" +
+                        "2.221: [GC (CMS Initial Mark)  608985K(993280K), 0.0001955 secs]\n" +
+                        "2.754: [GC (CMS Final Remark)  717779K(993280K), 0.0020208 secs]\n" +
+                        "3.441: [Full GC (Allocation Failure)  854181K->608527K(993280K), 0.1245185 secs]\n" +
+                        "3.566: [GC (CMS Initial Mark)  614159K(993280K), 0.0002204 secs]\n" +
+                        "4.080: [GC (CMS Final Remark)  718797K(993280K), 0.0014277 secs]\n" +
+                        "4.776: [Full GC (Allocation Failure)  854287K->608527K(993280K), 0.0073924 secs]\n" +
+                        "4.784: [GC (CMS Initial Mark)  614178K(993280K), 0.0001551 secs]\n" +
+                        "5.298: [GC (CMS Final Remark)  719210K(993280K), 0.0014780 secs]\n" +
+                        "5.986: [Full GC (Allocation Failure)  854287K->608527K(993280K), 0.0076610 secs]";
+
+        GCLogParser parser = new GCLogParserFactory().getParser(stringToBufferedReader(log));
+        CMSGCModel model = (CMSGCModel) parser.parse(stringToBufferedReader(log));
+        model.calculateDerivedInfo(new DefaultProgressListener());
+
+        Assert.assertEquals(model.getGcEvents().stream().filter(GCEvent::isYoungGC).count(), 3);
+        Assert.assertEquals(model.getGcEvents().stream().filter(GCEvent::isOldGC).count(), 4);
+        Assert.assertEquals(model.getGcEvents().stream().filter(GCEvent::isFullGC).count(), 3);
+        for (GCEvent event : model.getGcEvents()) {
+            Assert.assertTrue(event.getStartTime() > 0);
+            if (event.isYoungGC() || event.isFullGC()) {
+                Assert.assertTrue(event.getDuration() > 0);
+                Assert.assertNotNull(event.getCause());
+                Assert.assertNotNull(event.getMemoryItem(HEAP));
+            }
+            if (event.isOldGC()) {
+                Assert.assertEquals(2, event.getPhases().size());
+            }
+        }
+    }
+
+    public void testJDK11G1PrintGC() throws Exception {
+        String log =
+                "[0.100s] Using G1\n" +
+                        "[0.691s] GC(0) Pause Young (Normal) (G1 Evacuation Pause) 307M->305M(1000M) 60.851ms\n" +
+                        "[1.142s] GC(1) Pause Young (Normal) (G1 Evacuation Pause) 567M->567M(1000M) 110.104ms\n" +
+                        "[1.726s] GC(2) To-space exhausted\n" +
+                        "[1.726s] GC(2) Pause Young (Concurrent Start) (G1 Evacuation Pause) 829M->760M(1000M) 54.967ms\n" +
+                        "[1.726s] GC(3) Concurrent Cycle\n" +
+                        "[1.736s] GC(3) Pause Remark 763M->763M(1000M) 1.307ms\n" +
+                        "[1.741s] GC(3) Pause Cleanup 766M->766M(1000M) 0.293ms\n" +
+                        "[1.745s] GC(3) Concurrent Cycle 18.975ms\n" +
+                        "[2.677s] GC(4) To-space exhausted\n" +
+                        "[2.677s] GC(4) Pause Young (Prepare Mixed) (G1 Evacuation Pause) 999M->760M(1000M) 0.885ms\n" +
+                        "[3.637s] GC(5) To-space exhausted\n" +
+                        "[3.637s] GC(5) Pause Young (Mixed) (G1 Evacuation Pause) 999M->760M(1000M) 0.811ms\n" +
+                        "[4.597s] GC(6) To-space exhausted\n" +
+                        "[4.597s] GC(6) Pause Young (Mixed) (G1 Evacuation Pause) 999M->760M(1000M) 0.826ms\n" +
+                        "[5.557s] GC(7) To-space exhausted\n" +
+                        "[5.557s] GC(7) Pause Young (Mixed) (G1 Evacuation Pause) 999M->760M(1000M) 1.262ms";
+
+        GCLogParser parser = new GCLogParserFactory().getParser(stringToBufferedReader(log));
+        G1GCModel model = (G1GCModel) parser.parse(stringToBufferedReader(log));
+        model.calculateDerivedInfo(new DefaultProgressListener());
+
+        Assert.assertEquals(model.getGcEvents().stream().filter(GCEvent::isYoungGC).count(), 7);
+        Assert.assertEquals(model.getGcEvents().stream().filter(GCEvent::isOldGC).count(), 1);
+        Assert.assertEquals(model.getGcEvents().stream().filter(GCEvent::isFullGC).count(), 0);
+        Assert.assertEquals(model.getGcEvents().stream().filter(event -> event.isTrue(TO_SPACE_EXHAUSTED)).count(), 5);
+        for (GCEvent event : model.getGcEvents()) {
+            Assert.assertTrue(event.getStartTime() > 0);
+            if (event.isYoungGC() || event.isFullGC()) {
+                Assert.assertTrue(event.getDuration() > 0);
+                Assert.assertNotNull(event.getCause());
+                Assert.assertNotNull(event.getMemoryItem(HEAP));
+            }
+            if (event.isOldGC()) {
+                Assert.assertEquals(2, event.getPhases().size());
+            }
+        }
+    }
+
+    @Test
+    public void testJDK11CMSPrintGC() throws Exception {
+        String log =
+                "[0.026s] Using Concurrent Mark Sweep\n" +
+                        "[0.752s] GC(0) Pause Young (Allocation Failure) 239M->224M(970M) 226.267ms\n" +
+                        "[1.466s] GC(1) Pause Young (Allocation Failure) 464M->455M(970M) 324.075ms\n" +
+                        "[1.466s] GC(2) Pause Initial Mark 461M->461M(970M) 0.527ms\n" +
+                        "[1.466s] GC(2) Concurrent Mark\n" +
+                        "[1.478s] GC(2) Concurrent Mark 11.949ms\n" +
+                        "[1.478s] GC(2) Concurrent Preclean\n" +
+                        "[1.480s] GC(2) Concurrent Preclean 1.245ms\n" +
+                        "[1.480s] GC(2) Concurrent Abortable Preclean\n" +
+                        "[1.794s] GC(2) Concurrent Abortable Preclean 314.730ms\n" +
+                        "[1.796s] GC(2) Pause Remark 617M->617M(970M) 1.573ms\n" +
+                        "[1.796s] GC(2) Concurrent Sweep\n" +
+                        "[1.797s] GC(2) Concurrent Sweep 0.664ms\n" +
+                        "[1.797s] GC(2) Concurrent Reset\n" +
+                        "[1.800s] GC(2) Concurrent Reset 3.236ms\n" +
+                        "[2.328s] GC(3) Pause Young (Allocation Failure) 695M->595M(970M) 131.164ms\n" +
+                        "[2.328s] GC(4) Pause Initial Mark 600M->600M(970M) 0.143ms\n" +
+                        "[2.328s] GC(4) Concurrent Mark\n" +
+                        "[2.333s] GC(4) Concurrent Mark 4.815ms\n" +
+                        "[2.333s] GC(4) Concurrent Preclean\n" +
+                        "[2.334s] GC(4) Concurrent Preclean 0.828ms\n" +
+                        "[2.334s] GC(4) Concurrent Abortable Preclean\n" +
+                        "[2.860s] GC(4) Concurrent Abortable Preclean 526.685ms\n" +
+                        "[2.862s] GC(4) Pause Remark 702M->702M(970M) 1.094ms\n" +
+                        "[2.862s] GC(4) Concurrent Sweep\n" +
+                        "[2.862s] GC(4) Concurrent Sweep 0.846ms\n" +
+                        "[2.862s] GC(4) Concurrent Reset\n" +
+                        "[2.863s] GC(4) Concurrent Reset 0.524ms\n" +
+                        "[3.679s] GC(6) Pause Full (Allocation Failure) 834M->594M(970M) 141.054ms\n" +
+                        "[3.679s] GC(5) Pause Young (Allocation Failure) 834M->594M(970M) 141.110ms\n" +
+                        "[3.679s] GC(7) Pause Initial Mark 595M->595M(970M) 0.078ms\n" +
+                        "[3.679s] GC(7) Concurrent Mark\n" +
+                        "[3.685s] GC(7) Concurrent Mark 5.686ms\n" +
+                        "[3.685s] GC(7) Concurrent Preclean\n" +
+                        "[3.686s] GC(7) Concurrent Preclean 1.002ms\n" +
+                        "[3.686s] GC(7) Concurrent Abortable Preclean\n" +
+                        "[4.054s] GC(7) Concurrent Abortable Preclean 368.068ms\n" +
+                        "[4.055s] GC(7) Pause Remark 676M->676M(970M) 1.649ms\n" +
+                        "[4.056s] GC(7) Concurrent Sweep\n" +
+                        "[4.056s] GC(7) Concurrent Sweep 0.701ms\n" +
+                        "[4.056s] GC(7) Concurrent Reset\n" +
+                        "[4.057s] GC(7) Concurrent Reset 0.375ms\n" +
+                        "[4.679s] GC(8) Pause Young (Allocation Failure) 834M->594M(970M) 141.110ms";
+
+        GCLogParser parser = new GCLogParserFactory().getParser(stringToBufferedReader(log));
+        CMSGCModel model = (CMSGCModel) parser.parse(stringToBufferedReader(log));
+        model.calculateDerivedInfo(new DefaultProgressListener());
+
+        Assert.assertEquals(model.getGcEvents().stream().filter(GCEvent::isYoungGC).count(), 5);
+        Assert.assertEquals(model.getGcEvents().stream().filter(GCEvent::isOldGC).count(), 3);
+        Assert.assertEquals(model.getGcEvents().stream().filter(GCEvent::isFullGC).count(), 1);
+        for (GCEvent event : model.getGcEvents()) {
+            Assert.assertTrue(event.getStartTime() > 0);
+            if (event.isYoungGC() || event.isFullGC()) {
+                Assert.assertTrue(event.getDuration() > 0);
+                Assert.assertNotNull(event.getCause());
+                Assert.assertNotNull(event.getMemoryItem(HEAP));
+            }
+            if (event.isOldGC()) {
+                Assert.assertEquals(7, event.getPhases().size());
+            }
+        }
+    }
 }
