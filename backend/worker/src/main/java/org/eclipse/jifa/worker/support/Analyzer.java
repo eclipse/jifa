@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020, 2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -12,19 +12,20 @@
  ********************************************************************************/
 package org.eclipse.jifa.worker.support;
 
-import org.eclipse.jifa.gclog.model.GCModel;
-import org.eclipse.jifa.gclog.parser.GCLogAnalyzer;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.Scheduler;
 import io.vertx.core.Promise;
 import org.eclipse.jifa.common.JifaException;
 import org.eclipse.jifa.common.enums.FileType;
 import org.eclipse.jifa.common.enums.ProgressState;
+import org.eclipse.jifa.common.listener.DefaultProgressListener;
+import org.eclipse.jifa.common.listener.ProgressListener;
 import org.eclipse.jifa.common.util.ErrorUtil;
 import org.eclipse.jifa.common.util.FileUtil;
-import org.eclipse.jifa.common.listener.DefaultProgressListener;
+import org.eclipse.jifa.gclog.model.GCModel;
+import org.eclipse.jifa.gclog.parser.GCLogAnalyzer;
 import org.eclipse.jifa.hda.api.HeapDumpAnalyzer;
-import org.eclipse.jifa.common.listener.ProgressListener;
 import org.eclipse.jifa.tda.ThreadDumpAnalyzer;
 import org.eclipse.jifa.worker.Worker;
 import org.eclipse.jifa.worker.WorkerGlobal;
@@ -38,9 +39,13 @@ import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.concurrent.TimeUnit;
 
-import static org.eclipse.jifa.common.enums.FileType.*;
+import static org.eclipse.jifa.common.enums.FileType.GC_LOG;
+import static org.eclipse.jifa.common.enums.FileType.HEAP_DUMP;
+import static org.eclipse.jifa.common.enums.FileType.THREAD_DUMP;
 import static org.eclipse.jifa.common.util.Assertion.ASSERT;
-import static org.eclipse.jifa.worker.Constant.CacheConfig.*;
+import static org.eclipse.jifa.worker.Constant.CacheConfig.CACHE_CONFIG;
+import static org.eclipse.jifa.worker.Constant.CacheConfig.EXPIRE_AFTER_ACCESS;
+import static org.eclipse.jifa.worker.Constant.CacheConfig.EXPIRE_AFTER_ACCESS_TIME_UNIT;
 
 public class Analyzer {
 
@@ -64,14 +69,21 @@ public class Analyzer {
 
     private Analyzer() {
         listeners = new HashMap<>();
-        cache = CacheBuilder
+        cache = Caffeine
                 .newBuilder()
+                .scheduler(Scheduler.systemScheduler())
                 .softValues()
-                .recordStats()
-                .expireAfterWrite(
+                .expireAfterAccess(
                         WorkerGlobal.intConfig(CACHE_CONFIG, EXPIRE_AFTER_ACCESS),
                         TimeUnit.valueOf(WorkerGlobal.stringConfig(CACHE_CONFIG, EXPIRE_AFTER_ACCESS_TIME_UNIT))
-                )
+                                  )
+                .removalListener((k, v, removalCause) -> {
+                    LOGGER.info("Clear cache: {}", k);
+                    if (v instanceof HeapDumpAnalyzer) {
+                        ((HeapDumpAnalyzer) v).dispose();
+                    }
+
+                })
                 .build();
     }
 
@@ -210,10 +222,6 @@ public class Analyzer {
     }
 
     private synchronized void clearCacheValue(String key) {
-        Object value = cache.getIfPresent(key);
-        if (value instanceof HeapDumpAnalyzer) {
-            ((HeapDumpAnalyzer) value).dispose();
-        }
         cache.invalidate(key);
         LOGGER.info("Clear cache: {}", key);
     }

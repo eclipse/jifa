@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -29,7 +29,6 @@ import org.eclipse.jifa.hda.api.HeapDumpAnalyzer;
 import org.eclipse.jifa.hda.api.Model;
 import org.eclipse.mat.SnapshotException;
 import org.eclipse.mat.hprof.extension.HprofPreferencesAccess;
-import org.eclipse.mat.hprof.ui.HprofPreferences;
 import org.eclipse.mat.internal.snapshot.SnapshotQueryContext;
 import org.eclipse.mat.parser.model.ClassImpl;
 import org.eclipse.mat.parser.model.XClassHistogramRecord;
@@ -72,6 +71,7 @@ import org.eclipse.mat.snapshot.model.ObjectReference;
 import org.eclipse.mat.snapshot.query.Icons;
 import org.eclipse.mat.snapshot.query.SnapshotQuery;
 
+import java.lang.ref.Cleaner;
 import java.lang.ref.SoftReference;
 import java.net.URL;
 import java.nio.file.Path;
@@ -88,12 +88,17 @@ import static org.eclipse.jifa.hda.impl.AnalysisContext.DirectByteBufferData;
 
 public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer {
 
+    private static final Cleaner CLEANER = Cleaner.create();
+
     static final Provider PROVIDER = new ProviderImpl();
 
     private final AnalysisContext context;
 
+    private final Cleaner.Cleanable cleaner;
+
     public HeapDumpAnalyzerImpl(AnalysisContext context) {
         this.context = context;
+        this.cleaner = CLEANER.register(this, () -> $(() -> SnapshotFactory.dispose(context.snapshot)));
     }
 
     public static int typeOf(IObject object) {
@@ -160,7 +165,7 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer {
         }
     }
 
-    private void $(R e) {
+    private static void $(R e) {
         $(() -> {
             e.run();
             return null;
@@ -169,7 +174,7 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer {
 
     @Override
     public void dispose() {
-        $(() -> SnapshotFactory.dispose(context.snapshot));
+        cleaner.clean();
     }
 
     @Override

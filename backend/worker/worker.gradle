@@ -33,6 +33,10 @@ dependencies {
 
     implementation 'com.amazonaws:aws-java-sdk-s3:1.12.57'
 
+    implementation("com.github.ben-manes.caffeine:caffeine:3.1.4")
+    implementation("com.github.ben-manes.caffeine:guava:3.1.4")
+    implementation("com.github.ben-manes.caffeine:jcache:3.1.4")
+
     testImplementation 'junit:junit:4.12'
     testImplementation group: 'io.vertx', name: 'vertx-unit', version: "${vertx_version}"
 }
