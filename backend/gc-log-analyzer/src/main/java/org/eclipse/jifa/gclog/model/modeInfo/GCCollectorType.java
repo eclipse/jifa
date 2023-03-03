@@ -14,10 +14,13 @@
 package org.eclipse.jifa.gclog.model.modeInfo;
 
 public enum GCCollectorType {
+    EPSILON("Epsilon GC"),
     SERIAL("Serial GC"),
     PARALLEL("Parallel GC"),
     ZGC("ZGC"),
+    GENZ("Generational ZGC"),
     SHENANDOAH("Shenandoah GC"),
+    GENSHEN("Generational Shenandoah GC"),
     G1("G1 GC"),
     CMS("CMS GC"),
     UNKNOWN("Unknown GC");

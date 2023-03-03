@@ -41,21 +41,27 @@ public class GCLogParserFactory {
             new ParserMetadataRule("DefNew", GCLogStyle.UNKNOWN, SERIAL),
             new ParserMetadataRule("ParNew", GCLogStyle.UNKNOWN, CMS),
             new ParserMetadataRule("CMS", GCLogStyle.UNKNOWN, CMS),
+
             new ParserMetadataRule("Pre Evacuate Collection Set", UNIFIED, G1),
             new ParserMetadataRule("G1 Evacuation Pause", GCLogStyle.UNKNOWN, G1),
             new ParserMetadataRule("Eden regions", UNIFIED, G1),
             new ParserMetadataRule("[GC Worker Start (ms): ", GCLogStyle.UNKNOWN, G1),
             new ParserMetadataRule("[concurrent-root-region-scan-start", GCLogStyle.UNKNOWN, G1),
             new ParserMetadataRule("Concurrent Scan Root Regions", GCLogStyle.UNKNOWN, G1),
-            new ParserMetadataRule("Concurrent Reset Relocation Set", UNIFIED, ZGC),
-            new ParserMetadataRule("=== Garbage Collection Statistics ===", UNIFIED, ZGC),
+
+            new ParserMetadataRule(") Garbage Collection", UNIFIED, ZGC),
+            new ParserMetadataRule("Collector: Garbage Collection Cycle", UNIFIED, ZGC),
+            new ParserMetadataRule(") Minor Garbage Collection", UNIFIED, GENZ),
+            new ParserMetadataRule("Young Pause: Pause Mark End", UNIFIED, GENZ),
+
             new ParserMetadataRule("Pause Init Update Refs", UNIFIED, SHENANDOAH),
+
+            new ParserMetadataRule("Using Epsilon", UNIFIED, EPSILON),
             new ParserMetadataRule("Using Concurrent Mark Sweep", UNIFIED, CMS),
             new ParserMetadataRule("Using G1", UNIFIED, G1),
             new ParserMetadataRule("Using Parallel", UNIFIED, PARALLEL),
             new ParserMetadataRule("Using Serial", UNIFIED, SERIAL),
             new ParserMetadataRule("Using Shenandoah", UNIFIED, SHENANDOAH),
-            new ParserMetadataRule("Using The Z Garbage Collector", UNIFIED, ZGC),
     };
 
     public GCLogParser getParser(BufferedReader br) {
@@ -110,8 +116,6 @@ public class GCLogParserFactory {
                 case G1:
                     parser = new PreUnifiedG1GCLogParser();
                     break;
-                default:
-                    ErrorUtil.shouldNotReachHere();
             }
         } else if (metadata.getStyle() == UNIFIED) {
             switch (metadata.getCollector()) {
@@ -128,12 +132,14 @@ public class GCLogParserFactory {
                     parser = new UnifiedZGCLogParser();
                     break;
                 case SHENANDOAH:
-                    throw new JifaException("Shenandoah is not supported.");
-                default:
-                    ErrorUtil.shouldNotReachHere();
+                case GENSHEN:
+                case GENZ:
+                case EPSILON:
+                    throw new JifaException("GC type not supported: " + metadata.getCollector().getName());
             }
-        } else {
-            throw new JifaException("Can not recognize format. Is this really a gc log?");
+        }
+        if (parser == null) {
+            throw new JifaException("Can not recognize file format. Please check if the file is a gc log.");
         }
         parser.setMetadata(metadata);
         return parser;
