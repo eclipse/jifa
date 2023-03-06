@@ -68,7 +68,7 @@ public class GCLogAnalyzer {
             listener.sendUserMessage(ProgressListener.Level.INFO, "Parsing gc log file.", null);
             GCModel model = parser.parse(br);
             if (model.isEmpty()) {
-                throw new JifaException("Fail to parse gc log. Is this really a gc log?");
+                throw new JifaException("Fail to find any gc event in this log.");
             }
             listener.worked(500);
 
