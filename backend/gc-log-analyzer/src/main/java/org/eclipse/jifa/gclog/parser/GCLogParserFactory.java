@@ -27,7 +27,9 @@ import static org.eclipse.jifa.gclog.model.modeInfo.GCLogStyle.PRE_UNIFIED;
 import static org.eclipse.jifa.gclog.model.modeInfo.GCLogStyle.UNIFIED;
 
 public class GCLogParserFactory {
-    static final int MAX_ATTEMPT_LINE = 1000;
+    // When -Xlog:gc*=trace is used, a single gc produces at most about 5000 lines of log.
+    // 20000 lines should be enough to cover at least one gc.
+    static final int MAX_ATTEMPT_LINE = 20000;
 
     private static final ParserMetadataRule[] rules = {
             // style
