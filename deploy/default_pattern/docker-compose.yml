@@ -3,7 +3,7 @@ version: "3.9"
 services:
   worker:
     image: openjdk:11
-    command: /bin/bash -c "cd /jifa/artifacts && rm -rf worker-1.0 && unzip worker-1.0.zip && cd worker-1.0 && ./bin/worker"
+    command: /bin/bash -c "cd /jifa/artifacts && rm -rf worker-0.2.0-SNAPSHOT && unzip worker-0.2.0-SNAPSHOT.zip && cd worker-0.2.0-SNAPSHOT && ./bin/worker"
     ports:
       - "8102:8102"
     volumes:
@@ -39,7 +39,7 @@ services:
     depends_on:
       database:
         condition: service_healthy
-    command: /bin/bash -c "cd /jifa/artifacts && rm -rf master-1.0 && unzip master-1.0.zip && cd master-1.0 && ./bin/master"
+    command: /bin/bash -c "cd /jifa/artifacts && rm -rf master-0.2.0-SNAPSHOT && unzip master-0.2.0-SNAPSHOT.zip && cd master-0.2.0-SNAPSHOT && ./bin/master"
     ports:
       - "9102:9102"
     volumes:
