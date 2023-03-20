@@ -112,6 +112,5 @@ Then, you can visit Jifa at `http://localhost:8102`
 - 钉钉中文交流群
 
   <div>
-    <img src=https://user-images.githubusercontent.com/33491035/188837171-7e49b620-fcb0-49b6-9e66-71391d58eca1.JPG width=25%/>
+    <img src=https://user-images.githubusercontent.com/33491035/226314386-e1cf71d4-8429-4e4c-bdc0-c511a9009ee1.JPG width=25%/>
   </div>
-
