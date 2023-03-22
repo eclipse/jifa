@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
 
-package org.eclipse.jifa.gclog.event.evnetInfo;
+package org.eclipse.jifa.gclog.event.eventInfo;
 
 /*
  * This class records some boolean types related to a GCEvent. They will be saved in a BitSet of GCEvent,

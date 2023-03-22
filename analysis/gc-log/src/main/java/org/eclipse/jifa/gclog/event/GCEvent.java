@@ -15,14 +15,14 @@ package org.eclipse.jifa.gclog.event;
 
 import org.eclipse.jifa.common.domain.exception.ShouldNotReachHereException;
 import org.eclipse.jifa.gclog.diagnoser.GlobalDiagnoseInfo;
-import org.eclipse.jifa.gclog.event.evnetInfo.CpuTime;
-import org.eclipse.jifa.gclog.event.evnetInfo.GCCause;
-import org.eclipse.jifa.gclog.event.evnetInfo.GCEventBooleanType;
-import org.eclipse.jifa.gclog.event.evnetInfo.GCEventLevel;
-import org.eclipse.jifa.gclog.event.evnetInfo.GCMemoryItem;
-import org.eclipse.jifa.gclog.event.evnetInfo.GCPause;
-import org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea;
-import org.eclipse.jifa.gclog.event.evnetInfo.ReferenceGC;
+import org.eclipse.jifa.gclog.event.eventInfo.CpuTime;
+import org.eclipse.jifa.gclog.event.eventInfo.GCCause;
+import org.eclipse.jifa.gclog.event.eventInfo.GCEventBooleanType;
+import org.eclipse.jifa.gclog.event.eventInfo.GCEventLevel;
+import org.eclipse.jifa.gclog.event.eventInfo.GCMemoryItem;
+import org.eclipse.jifa.gclog.event.eventInfo.GCPause;
+import org.eclipse.jifa.gclog.event.eventInfo.MemoryArea;
+import org.eclipse.jifa.gclog.event.eventInfo.ReferenceGC;
 import org.eclipse.jifa.gclog.model.GCEventType;
 import org.eclipse.jifa.gclog.model.GCModel;
 import org.eclipse.jifa.gclog.util.Constant;
@@ -36,9 +36,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import static org.eclipse.jifa.gclog.event.evnetInfo.GCEventLevel.EVENT;
-import static org.eclipse.jifa.gclog.event.evnetInfo.GCEventLevel.PHASE;
-import static org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea.values;
+import static org.eclipse.jifa.gclog.event.eventInfo.GCEventLevel.EVENT;
+import static org.eclipse.jifa.gclog.event.eventInfo.GCEventLevel.PHASE;
+import static org.eclipse.jifa.gclog.event.eventInfo.MemoryArea.values;
 import static org.eclipse.jifa.gclog.util.Constant.KB2MB;
 
 public class GCEvent extends TimedEvent {

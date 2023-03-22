@@ -15,10 +15,10 @@ package org.eclipse.jifa.gclog.parser;
 
 import org.eclipse.jifa.common.domain.exception.ShouldNotReachHereException;
 import org.eclipse.jifa.gclog.event.GCEvent;
-import org.eclipse.jifa.gclog.event.evnetInfo.GCCause;
-import org.eclipse.jifa.gclog.event.evnetInfo.GCEventBooleanType;
-import org.eclipse.jifa.gclog.event.evnetInfo.GCMemoryItem;
-import org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea;
+import org.eclipse.jifa.gclog.event.eventInfo.GCCause;
+import org.eclipse.jifa.gclog.event.eventInfo.GCEventBooleanType;
+import org.eclipse.jifa.gclog.event.eventInfo.GCMemoryItem;
+import org.eclipse.jifa.gclog.event.eventInfo.MemoryArea;
 import org.eclipse.jifa.gclog.model.GCEventType;
 import org.eclipse.jifa.gclog.model.GCModel;
 import org.eclipse.jifa.gclog.util.GCLogUtil;
@@ -26,7 +26,7 @@ import org.eclipse.jifa.gclog.util.GCLogUtil;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea.HEAP;
+import static org.eclipse.jifa.gclog.event.eventInfo.MemoryArea.HEAP;
 import static org.eclipse.jifa.gclog.model.GCEventType.*;
 import static org.eclipse.jifa.gclog.parser.ParseRule.ParseRuleContext;
 import static org.eclipse.jifa.gclog.parser.ParseRule.ParseRuleContext.EVENT;

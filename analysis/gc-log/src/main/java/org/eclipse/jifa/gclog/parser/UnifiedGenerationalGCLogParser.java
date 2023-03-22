@@ -15,7 +15,7 @@ package org.eclipse.jifa.gclog.parser;
 
 import org.eclipse.jifa.common.domain.exception.ShouldNotReachHereException;
 import org.eclipse.jifa.gclog.event.GCEvent;
-import org.eclipse.jifa.gclog.event.evnetInfo.GCEventBooleanType;
+import org.eclipse.jifa.gclog.event.eventInfo.GCEventBooleanType;
 import org.eclipse.jifa.gclog.model.GCEventType;
 import org.eclipse.jifa.gclog.model.GCModel;
 

@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-package org.eclipse.jifa.gclog.event.evnetInfo;
+package org.eclipse.jifa.gclog.event.eventInfo;
 
 import java.util.HashMap;
 import java.util.List;
