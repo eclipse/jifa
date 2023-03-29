@@ -11,14 +11,14 @@
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
 plugins {
-    id 'com.diffplug.p2.asmaven' version '3.37.1'
+    id 'com.diffplug.p2.asmaven' version '3.41.1'
 }
 
 apply from: "$rootDir/gradle/base.gradle"
 
 p2AsMaven {
     group 'eclipse-deps', {
-        repoEclipse '4.22'
+        repoEclipse '4.25'
         iu 'com.ibm.icu'
         iu 'org.apache.felix.scr'
         iu 'org.eclipse.core.commands'
@@ -38,11 +38,12 @@ p2AsMaven {
     }
 
     group 'eclipse-mat', {
-        repo 'http://download.eclipse.org/mat/1.13.0/update-site/'
+        repo 'http://download.eclipse.org/mat/1.14.0/update-site/'
         iu 'org.eclipse.mat.api'
         iu 'org.eclipse.mat.hprof'
         iu 'org.eclipse.mat.parser'
         iu 'org.eclipse.mat.report'
+        iu 'org.eclipse.mat.ui'
         append true
         slicingOption 'includeFeatures', 'false'
         slicingOption 'includeNonGreedy', 'false'
@@ -50,7 +51,7 @@ p2AsMaven {
     }
 
     group 'calcite-eclipse-deps', {
-        repoEclipse '4.22'
+        repoEclipse '4.25'
         iu 'org.eclipse.help'
         iu 'org.eclipse.jface'
         iu 'org.eclipse.jface.text'
@@ -62,15 +63,6 @@ p2AsMaven {
         slicingOption 'includeNonGreedy', 'false'
         slicingOption 'includeOptional', 'false'
         slicingOption 'platformFilter', 'linux,gtk,x86_64'
-    }
-
-    group 'calcite-mat-deps', {
-        repo 'https://archive.eclipse.org/mat/photon/M7/update-site/'
-        iu 'org.eclipse.mat.ui'
-        append true
-        slicingOption 'includeFeatures', 'false'
-        slicingOption 'includeNonGreedy', 'false'
-        slicingOption 'includeOptional', 'false'
     }
 
     group 'mat-calcite-plugin', {
@@ -90,7 +82,6 @@ afterEvaluate {
         from files(
                 "${buildDir}/p2asmaven/p2/mat-calcite-plugin/plugins",
                 "${buildDir}/p2asmaven/p2/calcite-eclipse-deps/plugins",
-                "${buildDir}/p2asmaven/p2/calcite-mat-deps/plugins",
                 "${buildDir}/p2asmaven/p2/eclipse-deps/plugins",
                 "${buildDir}/p2asmaven/p2/eclipse-mat/plugins",
                 )
