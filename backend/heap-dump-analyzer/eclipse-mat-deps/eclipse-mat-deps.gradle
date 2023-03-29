@@ -18,7 +18,7 @@ apply from: "$rootDir/gradle/base.gradle"
 
 p2AsMaven {
     group 'eclipse-deps', {
-        repoEclipse '4.25'
+        repoEclipse '4.26'
         iu 'com.ibm.icu'
         iu 'org.apache.felix.scr'
         iu 'org.eclipse.core.commands'
@@ -51,7 +51,7 @@ p2AsMaven {
     }
 
     group 'calcite-eclipse-deps', {
-        repoEclipse '4.25'
+        repoEclipse '4.26'
         iu 'org.eclipse.help'
         iu 'org.eclipse.jface'
         iu 'org.eclipse.jface.text'

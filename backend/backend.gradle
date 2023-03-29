@@ -85,7 +85,7 @@ def deps_dir_path = project(HEAP_DUMP_ANALYZER_ECLIPSE_MAT_DEPS).projectDir.pare
             ext {
                 mat_deps_dir_name = deps_dir_name
                 mat_deps_dir_path = deps_dir_path
-                osgi_jar = "org.eclipse.osgi_3.18.100.v20220817-1601.jar"
+                osgi_jar = "org.eclipse.osgi_3.18.200.v20221116-1324.jar"
             }
         }
 }
