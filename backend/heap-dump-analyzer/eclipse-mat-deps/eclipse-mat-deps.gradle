@@ -11,89 +11,51 @@
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
 plugins {
-    id 'com.diffplug.p2.asmaven' version '3.41.1'
+    id 'java'
+    id "dev.equo.p2deps" version "1.1.0"
 }
 
 apply from: "$rootDir/gradle/base.gradle"
 
-p2AsMaven {
-    group 'eclipse-deps', {
-        repoEclipse '4.26'
-        iu 'com.ibm.icu'
-        iu 'org.apache.felix.scr'
-        iu 'org.eclipse.core.commands'
-        iu 'org.eclipse.core.contenttype'
-        iu 'org.eclipse.core.jobs'
-        iu 'org.eclipse.core.runtime'
-        iu 'org.eclipse.equinox.app'
-        iu 'org.eclipse.equinox.common'
-        iu 'org.eclipse.equinox.event'
-        iu 'org.eclipse.equinox.preferences'
-        iu 'org.eclipse.equinox.registry'
-        iu 'org.eclipse.osgi'
-        append true
-        slicingOption 'includeFeatures', 'false'
-        slicingOption 'includeNonGreedy', 'false'
-        slicingOption 'includeOptional', 'false'
-    }
+p2deps {
+    into 'compileOnly', {
+        p2repo 'https://download.eclipse.org/eclipse/updates/4.26/'
+        install 'com.ibm.icu'
+        install 'org.apache.felix.scr'
+        install 'org.eclipse.core.commands'
+        install 'org.eclipse.core.contenttype'
+        install 'org.eclipse.core.jobs'
+        install 'org.eclipse.core.runtime'
+        install 'org.eclipse.equinox.app'
+        install 'org.eclipse.equinox.common'
+        install 'org.eclipse.equinox.event'
+        install 'org.eclipse.equinox.preferences'
+        install 'org.eclipse.equinox.registry'
+        install 'org.eclipse.osgi'
 
-    group 'eclipse-mat', {
-        repo 'http://download.eclipse.org/mat/1.14.0/update-site/'
-        iu 'org.eclipse.mat.api'
-        iu 'org.eclipse.mat.hprof'
-        iu 'org.eclipse.mat.parser'
-        iu 'org.eclipse.mat.report'
-        iu 'org.eclipse.mat.ui'
-        append true
-        slicingOption 'includeFeatures', 'false'
-        slicingOption 'includeNonGreedy', 'false'
-        slicingOption 'includeOptional', 'false'
-    }
+        install 'org.eclipse.help'
+        install 'org.eclipse.jface'
+        install 'org.eclipse.jface.text'
+        install 'org.eclipse.swt'
+        install 'org.eclipse.ui'
+        install 'org.eclipse.platform.feature.group'
 
-    group 'calcite-eclipse-deps', {
-        repoEclipse '4.26'
-        iu 'org.eclipse.help'
-        iu 'org.eclipse.jface'
-        iu 'org.eclipse.jface.text'
-        iu 'org.eclipse.swt'
-        iu 'org.eclipse.ui'
-        feature 'org.eclipse.platform'
-        append true
-        slicingOption 'includeFeatures', 'false'
-        slicingOption 'includeNonGreedy', 'false'
-        slicingOption 'includeOptional', 'false'
-        slicingOption 'platformFilter', 'linux,gtk,x86_64'
-    }
 
-    group 'mat-calcite-plugin', {
-        repo Locale.getDefault().getCountry() == 'CN' ? 'jar:https://jifa-dep.oss-cn-shanghai.aliyuncs.com/MatCalciteRepository-1.5.0.zip!'
-                : 'jar:https://github.com/vlsi/mat-calcite-plugin/releases/download/v1.5.0/MatCalciteRepository-1.5.0.zip!'
-        iu 'MatCalcitePlugin'
-        append true
-        slicingOption 'includeFeatures', 'false'
-        slicingOption 'includeNonGreedy', 'false'
-        slicingOption 'includeOptional', 'false'
+        p2repo 'https://download.eclipse.org/mat/1.14.0/update-site/'
+        install 'org.eclipse.mat.api'
+        install 'org.eclipse.mat.hprof'
+        install 'org.eclipse.mat.parser'
+        install 'org.eclipse.mat.report'
+        install 'org.eclipse.mat.ui'
+
+        p2repo 'https://raw.githubusercontent.com/wiki/eclipse/jifa/resources/MatCalciteRepository-1.5.0/'
+        install 'MatCalcitePlugin'
     }
 }
-
 
 afterEvaluate {
     copy {
-        from files(
-                "${buildDir}/p2asmaven/p2/mat-calcite-plugin/plugins",
-                "${buildDir}/p2asmaven/p2/calcite-eclipse-deps/plugins",
-                "${buildDir}/p2asmaven/p2/eclipse-deps/plugins",
-                "${buildDir}/p2asmaven/p2/eclipse-mat/plugins",
-                )
         into "${mat_deps_dir_path}"
-        duplicatesStrategy = DuplicatesStrategy.WARN
-        include '*.jar'
-        rename '(.+)', '$1'
-    }
-}
-
-task clean {
-    doFirst {
-        delete files("${projectDir}/workspace")
+        from configurations.compileClasspath
     }
 }

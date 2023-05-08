@@ -21,10 +21,10 @@ dependencies {
     def prefix = "${mat_deps_dir_path}/"
 
     implementation fileTree(prefix) {
-        include "org.eclipse.osgi_*.jar"
-        include "org.eclipse.core.runtime_*.jar"
-        include "org.eclipse.mat.hprof_*.jar"
-        include "org.eclipse.equinox.preferences_*.jar"
+        include "org.eclipse.osgi*.jar"
+        include "org.eclipse.core.runtime*.jar"
+        include "org.eclipse.mat.hprof*.jar"
+        include "org.eclipse.equinox.preferences*.jar"
     }
 }
 

@@ -17,6 +17,8 @@ plugins {
 apply from: "$rootDir/gradle/java.gradle"
 
 jar {
+    def version = project.version.toString()
+
     manifest {
         attributes(
                 "Bundle-SymbolicName": "org.eclipse.jifa.hda.implementation; singleton:=true",
@@ -24,7 +26,7 @@ jar {
                 "Bundle-Activator": "org.eclipse.jifa.hda.impl.Activator",
                 "Import-Package":
                         "org.eclipse.mat.snapshot,org.eclipse.mat.util,org.eclipse.mat.query,org.eclipse.mat.parser.model,org.eclipse.mat.hprof.extension",
-                "Bundle-Version": project.version
+                "Bundle-Version": version.endsWith("-SNAPSHOT") ? version.substring(0, version.indexOf('-')) : version
         )
     }
 

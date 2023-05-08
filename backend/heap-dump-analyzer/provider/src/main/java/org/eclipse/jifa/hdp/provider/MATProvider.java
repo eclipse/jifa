@@ -21,8 +21,12 @@ import org.osgi.framework.BundleException;
 import org.osgi.framework.Constants;
 import org.osgi.framework.launch.Framework;
 import org.osgi.framework.launch.FrameworkFactory;
+import org.osgi.framework.wiring.BundleWiring;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.lang.invoke.MethodHandles;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,6 +36,8 @@ import java.util.Objects;
 import java.util.ServiceLoader;
 
 public class MATProvider implements HeapDumpAnalyzer.Provider {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private HeapDumpAnalyzer.Provider provider;
 
@@ -80,20 +86,20 @@ public class MATProvider implements HeapDumpAnalyzer.Provider {
             for (File file : files) {
                 String name = file.getName();
                 // org.eclipse.osgi is the system bundle
-                if (name.endsWith(".jar") && !name.startsWith("org.eclipse.osgi_")) {
+                if (name.endsWith(".jar") && !name.startsWith("org.eclipse.osgi-")) {
                     Bundle b = framework.getBundleContext().installBundle(file.toURI().toString());
                     bundles.add(b);
                 }
             }
 
-            ArrayList validNames = new ArrayList();
+            List<String> validNames = new ArrayList<>();
             validNames.add("org.apache.felix.scr");
             validNames.add("org.eclipse.equinox.event");
             validNames.add("org.eclipse.jifa.hda.implementation");
 
             for (Bundle bundle : bundles) {
                 if (validNames.contains(bundle.getSymbolicName())) {
-                    System.out.println("starting bundle:   " + bundle);
+                    LOGGER.info("starting bundle: {}", bundle);
                     bundle.start();
                 }
             }
