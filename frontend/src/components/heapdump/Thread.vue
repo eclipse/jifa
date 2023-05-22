@@ -331,11 +331,7 @@
               daemon: res[i].daemon + '',
               hasChildren: res[i].hasStack
             }
-            if(res[i].hasStack){
-              tmp.unshift(tmp_obj)
-            } else {
-              tmp.push(tmp_obj)
-            }
+            tmp.push(tmp_obj)
           }
           this.nextPage++
           tmp.forEach(t => this.threads.push(t))
