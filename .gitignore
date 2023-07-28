@@ -15,11 +15,6 @@ gradle-app.setting
 !gradle-wrapper.jar
 
 file-uploads
-backend/master/src/main/generated/**
-artifacts/
-
-backend/config/jifa-ssh-key
-backend/config/jifa-ssh-key.pub
 
 *.hprof
 .log
@@ -32,4 +27,3 @@ cloud/
 *.tgz
 
 bin
-deploy/k8s_pattern/*.log

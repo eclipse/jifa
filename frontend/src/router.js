@@ -50,6 +50,9 @@ axiosRetry(axios, {
       let data = resp.data
       if (status === 500 || status === 400 || status === 401 || status === 403) {
         if (data && data.hasOwnProperty('errorCode')) {
+          if (data.errorCode === 'ELASTIC_WORKER_NOT_READY') {
+            return true
+          }
           if (data.errorCode === 'RETRY' && data.message !== undefined) {
             let [, targetName] = data.message.split(": ");
             if (error.config.data !== undefined) {
@@ -114,6 +117,7 @@ const router = new VueRouter({
 });
 
 axios.interceptors.response.use(function (response) {
+  JifaGlobal.reset_authorization_header(response.headers.authorization)
   return response;
 }, function (error) {
   let resp = error.response
@@ -134,8 +138,8 @@ axios.interceptors.response.use(function (response) {
           });
         }
       } else if (status === 401) {
-        JifaGlobal.save_back_url(window.location.href)
-        window.location.href = window.location.protocol + "//" +window.location.host + "/auth"
+        // JifaGlobal.save_back_url(window.location.href)
+        // window.location.href = window.location.protocol + "//" +window.location.host + "/auth"
       }
     }
   }

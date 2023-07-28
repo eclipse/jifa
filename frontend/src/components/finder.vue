@@ -52,48 +52,27 @@
                 <el-col align="right" class="icons-col">
                   <el-tooltip class="item" effect="light" :content="$t('jifa.tip.copyName')" placement="top-start">
                     <span>
-                      <el-link icon="el-icon-document-copy" v-clipboard:copy="file(row, col).name"
+                      <el-link icon="el-icon-document-copy" v-clipboard:copy="file(row, col).originalName"
                                :underline="false" target="_blank"/>
                     </span>
                   </el-tooltip>
 
-                  <el-tooltip class="item" effect="light" :content="$t('jifa.tip.rename')" placement="top-start"
-                              v-if="file(row,col).hasOwnProperty('displayName')">
-                    <span>
-                      <el-divider direction="vertical"></el-divider>
-                      <el-link icon="el-icon-edit" :underline="false" @click="updateFile(file(row,col))"/>
-                    </span>
-                  </el-tooltip>
-
-                  <el-tooltip class="item" effect="light" :content="$t('jifa.tip.setShare')" placement="top-start"
-                              v-if="file(row,col).hasOwnProperty('shared')">
-                    <span>
-                      <el-divider direction="vertical"></el-divider>
-                      <el-link :icon="file(row, col).shared ? 'el-icon-unlock' : 'el-icon-lock'"
-                               v-on:click="toggleSharedState(file(row, col))"
-                               :underline="false"
-                               target="_blank"/>
-                    </span>
-                  </el-tooltip>
-
-                  <el-tooltip class="item" effect="light" :content="$t('jifa.tip.downloadFile')" placement="top-start"
-                              v-if="transferIsSuccess(file(row,col))">
+                  <el-tooltip class="item" effect="light" :content="$t('jifa.tip.downloadFile')" placement="top-start">
                     <span>
                       <el-divider direction="vertical"></el-divider>
                       <el-link icon="el-icon-download" :underline="false"
                                target="_blank"
                                download
-                               :href="`/jifa-api/file/download?name=${file(row,col).name}&type=${currentMenuItem}`"
+                               :href="`/jifa-api/files/${file(row,col).id}/download`"
                       />
                     </span>
                   </el-tooltip>
 
-                  <el-tooltip class="item" effect="light" :content="$t('jifa.tip.deleteFile')" placement="top-start"
-                              v-if="canDelete(file(row,col))">
+                  <el-tooltip class="item" effect="light" :content="$t('jifa.tip.deleteFile')" placement="top-start">
                     <span>
                       <el-divider direction="vertical"></el-divider>
                       <el-link icon="el-icon-delete" :underline="false"
-                               v-on:click="fileToDelete =  file(row, col).name"/>
+                               v-on:click="fileToDelete =  file(row, col).id"/>
                     </span>
                   </el-tooltip>
                 </el-col>
@@ -104,7 +83,7 @@
                   <p style='font-size: 15px; margin:0 auto; white-space: nowrap; text-overflow:ellipsis; overflow:hidden;
                             color: #606266;'>
                     <i class="el-icon-document"></i>
-                    {{file(row, col).displayName ? file(row, col).displayName : file(row, col).name}}
+                    {{file(row, col).originalName}}
                   </p>
                 </el-col>
               </el-row>
@@ -126,20 +105,10 @@
               </el-row>
 
               <el-row type="flex" justify="space-around" style="margin-bottom: -15px">
-                <el-col :span="8" align="middle"
-                        v-if="file(row, col).transferState === 'NOT_STARTED' || file(row, col).transferState ==='IN_PROGRESS'">
-                  <el-button type="text"><i class="el-icon-loading"></i> {{$t('jifa.transferring')}}</el-button>
-                </el-col>
 
-                <el-col :span="8" align="middle"
-                        v-if="file(row, col).transferState === 'ERROR'">
-                  <el-button type="text"><i class="el-icon-error"></i> {{$t('jifa.transferError')}}</el-button>
-                </el-col>
-
-                <el-col :span="8" align="middle"
-                        v-if="file(row, col).transferState === 'SUCCESS'">
+                <el-col :span="8" align="middle">
                   <router-link
-                          :to="{path : analysisPath() , query: {file: file(row, col).name, displayName: file(row, col).displayName} }">
+                          :to="{path : analysisPath() , query: {file: file(row, col).uniqueName} }">
                     <el-button type="text"><i class="el-icon-view"></i> {{$t('jifa.analyze')}}</el-button>
                   </router-link>
                 </el-col>
@@ -252,21 +221,8 @@ const defaultMenuItem = 'HEAP_DUMP'
         this.fetchFiles()
       },
 
-      toggleSharedState(file) {
-        let formData = new FormData()
-        formData.append('name', file.name)
-        axios.post(service(file.shared ? "/file/unsetShared" : "/file/setShared"),
-            new URLSearchParams(formData)).then(() => {
-          file.shared = !file.shared
-        })
-      },
-
       transferIsSuccess(file) {
         return file.transferState === 'SUCCESS'
-      },
-
-      canDelete(file) {
-        return file.transferState === 'SUCCESS' || file.transferState === 'ERROR'
       },
 
       cancelDelete() {
@@ -282,10 +238,7 @@ const defaultMenuItem = 'HEAP_DUMP'
         if (!this.fileToDelete) {
           return
         }
-        let formData = new FormData()
-        formData.append('type', this.currentMenuItem)
-        formData.append('name', this.fileToDelete)
-        axios.post(service("/file/delete"), new URLSearchParams(formData)).then(() => {
+        axios.delete(service("/files/" + this.fileToDelete)).then(() => {
           this.fileToDelete = null
           this.$message({
             message: this.$t('jifa.deleteSuccessPrompt'),
@@ -331,22 +284,6 @@ const defaultMenuItem = 'HEAP_DUMP'
           this.loading = false
         })
       },
-
-      updateFile(file) {
-        this.$prompt('New display name: ', 'Edit', {
-          confirmButtonText: this.$t("jifa.confirm"),
-          cancelButtonText: this.$t('jifa.cancel'),
-          inputValue: file.displayName
-        }).then(({value}) => {
-          let formData = new FormData()
-          formData.append('name', file.name)
-          formData.append('displayName', value)
-          axios.post(service("/file/updateDisplayName"), new URLSearchParams(formData))
-              .then(() => {
-                this.go(this.page)
-              })
-        })
-      }
     },
 
     watch: {

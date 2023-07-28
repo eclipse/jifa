@@ -1,7 +1,7 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2023 Contributors to the Eclipse Foundation
  *
- * See the NOTICE file(s) distributed with this work for additional
+ * See the NOTICE file(s) buildributed with this work for additional
  * information regarding copyright ownership.
  *
  * This program and the accompanying materials are made available under the
@@ -10,27 +10,35 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-apply from: "$rootDir/gradle/base.gradle"
-
-buildscript {
-    repositories {
-        maven {
-            url "https://plugins.gradle.org/m2/"
-        }
-    }
-
-    dependencies {
-        classpath "com.moowork.gradle:gradle-node-plugin:1.3.1"
-    }
+plugins {
+    id "com.github.node-gradle.node" version "5.0.0"
 }
 
-apply plugin: 'com.moowork.node'
+apply from: "$rootDir/gradle/base.gradle"
 
-//Gradle task calling npm run build command
-task build(type: NpmTask, dependsOn: npmInstall) {
-    group = 'node'
+task buildFrontend(type: NpmTask) {
+    dependsOn npmInstall
     args = ['run', 'prod-build']
 }
 
-task clean() {
+println project(':server').projectDir
+
+task moveStaticResourcesToServer(type: Copy) {
+    if (!file('build').exists() || gradle.startParameter.taskNames.contains("clean")) {
+        dependsOn buildFrontend
+    }
+    from "build"
+    include "**/**"
+    into project(':server').projectDir.toPath().resolve('src/main/resources/static')
+}
+
+task("build") {
+    dependsOn(moveStaticResourcesToServer)
+}
+
+task("clean") {
+    doFirst(() -> {
+        delete 'build'
+        into project(':server').projectDir.toPath().resolve('src/main/resources/static')
+    })
 }

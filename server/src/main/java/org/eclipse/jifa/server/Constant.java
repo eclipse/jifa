@@ -1,0 +1,83 @@
+/********************************************************************************
+ * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ ********************************************************************************/
+package org.eclipse.jifa.server;
+
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+
+public interface Constant extends org.eclipse.jifa.common.Constant {
+
+    int DEFAULT_MASTER_PORT = 9102;
+
+    int DEFAULT_WORKER_PORT = 8102;
+
+    String HTTP_API_PREFIX = "/jifa-api";
+
+    String HTTP_ANALYSIS_API_MAPPING = "/analysis";
+
+    String HTTP_HEALTH_CHECK_MAPPING = "/health-check";
+
+    String STOMP_ENDPOINT = "jifa-stomp";
+
+    String STOMP_APPLICATION_DESTINATION_PREFIX = "/ad";
+
+    String STOMP_USER_DESTINATION_PREFIX = "/ud";
+
+    String STOMP_ANALYSIS_API_MAPPING = "analysis";
+
+    Charset CHARSET = StandardCharsets.UTF_8;
+
+    String APPLICATION_JSON = "application/json;charset=utf-8";
+
+    long JWT_EXPIRY = 604800;
+
+    long JWT_REFRESH_WINDOW = 86400;
+
+    String STOMP_ANALYSIS_API_REQUEST_ID_KEY = "request-id";
+
+    String STOMP_ANALYSIS_API_RESPONSE_SUCCESS_KEY = "response-success";
+
+    String HTTP_HEADER_ENABLE_SSE = "X-Enable-SSE";
+
+    String SSE_EVENT_PING = "ping";
+
+    String SSE_EVENT_SUCCESS_RESPONSE = "response";
+
+    String SSE_EVENT_ERROR_RESPONSE = "error";
+
+    String ADMIN_ONLY = "admin-only";
+
+    String ROLE_PREFIX = "ROLE_";
+
+    String ROLE_ADMIN = "ADMIN";
+
+    String ANONYMOUS_USERNAME = "anonymous_user";
+
+    byte[] EMPTY_BYTE_ARRAY = new byte[0];
+
+    String K8S_NAMESPACE = "jifa";
+
+    String POD_NAME_PREFIX = "elastic-worker-";
+
+    String ELASTIC_WORKER_IDENTITY_ENV_KEY = "JIFA_ELASTIC_WORKER_IDENTITY";
+
+    String WORKER_CONTAINER_NAME = "main-container";
+
+    String ANALYSIS_API_REQUEST_NAMESPACE_KEY = "namespace";
+
+    String ANALYSIS_API_REQUEST_API_KEY = "api";
+
+    String ANALYSIS_API_REQUEST_TARGET_KEY = "target";
+
+    String ANALYSIS_API_REQUEST_PARAMETERS_KEY = "parameters";
+}

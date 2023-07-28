@@ -1,0 +1,144 @@
+/********************************************************************************
+ * Copyright (c) 2020, 2023 Contributors to the Eclipse Foundation
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ ********************************************************************************/
+buildscript {
+    repositories {
+        gradlePluginPortal()
+    }
+
+    dependencies {
+        classpath 'io.spring.gradle:dependency-management-plugin:1.1.0'
+        classpath 'org.springframework.boot:spring-boot-gradle-plugin:3.1.0'
+    }
+}
+
+apply from: "$rootDir/gradle/java.gradle"
+apply from: "$rootDir/gradle/lombok.gradle"
+
+apply plugin: 'application'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
+
+springBoot {
+    applicationName = 'jifa'
+}
+
+dependencies {
+    implementation project(':common')
+    implementation project(':analysis')
+
+    runtimeOnly project(':analysis:heap-dump:provider')
+    runtimeOnly project(':analysis:gc-log')
+    runtimeOnly project(':analysis:thread-dump')
+
+    implementation 'io.kubernetes:client-java:18.0.1'
+
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+
+    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
+    implementation 'org.springframework.retry:spring-retry'
+
+    implementation 'com.mysql:mysql-connector-j:8.0.33'
+    runtimeOnly 'com.h2database:h2:2.2.220'
+
+    implementation 'com.hierynomus:sshj:0.35.0'
+
+    implementation 'com.aliyun.oss:aliyun-sdk-oss:3.17.0'
+
+    implementation 'com.amazonaws:aws-java-sdk-s3:1.12.506'
+
+    // test
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+run.enabled = false
+jar.enabled = false
+startScripts.enabled = false
+distTar.enabled = false
+distZip.enabled = false
+
+mainClassName = 'org.eclipse.jifa.server.Launcher'
+
+tasks.named('compileJava') {
+    inputs.files(tasks.named('processResources'))
+}
+
+tasks.named("processResources") {
+    dependsOn(':frontend:build')
+}
+
+
+bootJar {
+    manifest {
+        attributes('Implementation-Title': 'Eclipse Jifa')
+    }
+    archiveFileName = 'jifa.jar'
+}
+
+bootDistTar {
+    archiveFileName = 'jifa.tar'
+}
+
+bootDistZip {
+    archiveFileName = 'jifa.zip'
+}
+
+// for kryo
+applicationDefaultJvmArgs = ['--add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED']
+
+import org.springframework.boot.gradle.tasks.run.BootRun
+
+tasks.register('runStandaloneWorker', BootRun) {
+    group('jifa')
+    classpath(project.sourceSets.main.runtimeClasspath)
+    mainClass.convention(mainClassName)
+}
+
+static void setMysqlEnv(BootRun bootRun) {
+    bootRun.environment('MYSQL_HOST', 'localhost:3306')
+    bootRun.environment('MYSQL_DATABASE_NAME', 'jifa')
+    bootRun.environment('MYSQL_USERNAME', 'root')
+    bootRun.environment('MYSQL_PASSWORD', 'password')
+}
+
+tasks.register('runStandaloneWorkerWithMysql', BootRun) {
+    group('jifa')
+    classpath(project.sourceSets.main.runtimeClasspath)
+    mainClass.convention(mainClassName)
+
+    setMysqlEnv(it)
+}
+
+tasks.register('runMaster', BootRun) {
+    group('jifa')
+    classpath(project.sourceSets.main.runtimeClasspath)
+    mainClass.convention(mainClassName)
+
+    args('--jifa.role=master', '--jifa.scheduling-strategy=static')
+    setMysqlEnv(it)
+}
+
+tasks.register('runStaticWorker', BootRun) {
+    group('jifa')
+    classpath(project.sourceSets.main.runtimeClasspath)
+    mainClass.convention(mainClassName)
+
+    args('--jifa.role=static-worker')
+    setMysqlEnv(it)
+}

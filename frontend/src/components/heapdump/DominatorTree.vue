@@ -236,7 +236,7 @@
             parentObjectId: objectId,
             page: page,
             pageSize: this.pageSize,
-            grouping: this.grouping,
+            groupBy: this.grouping,
             idPathInResultTree: JSON.stringify(idPathInResultTree),
             sortBy: this.sortBy,
             ascendingOrder: this.ascendingOrder,
@@ -302,7 +302,7 @@
           params: {
             page: this.nextPage,
             pageSize: this.pageSize,
-            grouping: this.grouping,
+            groupBy: this.grouping,
             sortBy: this.sortBy,
             ascendingOrder: this.ascendingOrder,
             searchText: this.searchText,

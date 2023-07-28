@@ -63,7 +63,7 @@
                      :headers="authHeader"
                      :limit=1
                      :data="{uploadName:'upload', type: fileType}"
-                     :action="service('/file/upload')"
+                     :action="service('/file-upload')"
                      :multiple=true
                      :on-success="onSuccess">
             <i class="el-icon-upload"></i>
@@ -121,26 +121,6 @@
 
           <el-form-item>
             <el-button type="primary" @click="urlConfirm" :disabled="inTransferring">{{$t('jifa.confirm')}}</el-button>
-          </el-form-item>
-        </el-form>
-      </el-tab-pane>
-
-      <el-tab-pane label="File System" name="fileSystem" v-if="false">
-        <el-form ref="fileSystemForm" :model="fileSystem" :rules="fileSystemRules" label-width="150px" size="medium"
-                 label-position="right"
-                 style="margin-top: 10px" :show-message=false status-icon>
-          <el-form-item label="">
-            <el-radio-group v-model="fileSystem.moveOrCopy">
-              <el-radio label="move">Move</el-radio>
-              <el-radio label="copy">Copy</el-radio>
-            </el-radio-group>
-          </el-form-item>
-          <el-form-item label="Path" prop="path" :show-message=false>
-            <el-input v-model="fileSystem.path" placeholder="path" style="width: 80%" clearable></el-input>
-          </el-form-item>
-
-          <el-form-item>
-            <el-button type="primary" @click="fileSystemConfirm" :disabled="inTransferring">{{$t('jifa.confirm')}}</el-button>
           </el-form-item>
         </el-form>
       </el-tab-pane>
@@ -356,7 +336,7 @@
         transferredSize: 0,
         totalSize: 0,
         transferSpeed: 0,
-        fileName: '',
+        id: null,
         pollingInternal: 1000,
 
         inTransferring: false,
@@ -399,59 +379,40 @@
           if (valid) {
             let formData = new FormData()
             formData.append('url', this.url.url)
-            this.doTransfer('/file/transferByURL', formData)
-          }
-        })
-      },
-      fileSystemConfirm() {
-        this.$refs['fileSystemForm'].validate((valid) => {
-          if (valid) {
-            let formData = new FormData()
-            formData.append('path', this.fileSystem.path)
-            formData.append('move', this.fileSystem.moveOrCopy === 'move')
-            this.doTransfer('/file/transferByFileSystem', formData)
+            this.doTransfer({
+              'method': 'URL',
+              url: this.url.url
+            })
           }
         })
       },
       scpConfirm() {
         this.$refs['scpForm'].validate((valid) => {
           if (valid) {
-            let usePublicKey = this.scp.authType === 'publicKey'
-            let formData = new FormData()
-            formData.append('hostname', this.scp.hostname)
-            formData.append('path', this.scp.path)
-            formData.append('user', this.scp.user)
-            formData.append('usePublicKey', usePublicKey)
-            if (!usePublicKey) {
-              formData.append('password', this.scp.password)
-            }
-            this.doTransfer('/file/transferBySCP', formData)
+            this.doTransfer({
+              'method': 'SCP',
+              'scp': this.scp
+            })
           }
         })
       },
       ossConfirm() {
         this.$refs['ossForm'].validate((valid) => {
           if (valid) {
-            let formData = new FormData()
-            formData.append('endpoint', this.oss.endpoint)
-            formData.append('accessKeyId', this.oss.accessKeyId)
-            formData.append('accessKeySecret', this.oss.accessKeySecret)
-            formData.append('bucketName', this.oss.bucketName)
-            formData.append('objectName', this.oss.objectName)
-            this.doTransfer('/file/transferByOSS', formData)
+            this.doTransfer({
+              'method': 'OSS',
+              'oss': this.oss
+            })
           }
         })
       },
       s3Confirm() {
         this.$refs['s3Form'].validate((valid) => {
           if (valid) {
-            let formData = new FormData()
-            formData.append('endpoint', this.s3.endpoint)
-            formData.append('accessKey', this.s3.accessKey)
-            formData.append('keySecret', this.s3.secretKey)
-            formData.append('bucketName', this.s3.bucketName)
-            formData.append('objectName', this.s3.objectName)
-            this.doTransfer('/file/transferByS3', formData)
+            this.doTransfer({
+              'method': 'S3',
+              's3': this.s3
+            })
           }
         })
       },
@@ -469,7 +430,7 @@
               },
             }
             this.inTransferring = true
-            axios.post(service('/file/upload'), formData, config).then(resp => {
+            axios.post(service('/file-upload'), formData, config).then(resp => {
               this.onSuccess(resp.data)
             })
           }
@@ -507,12 +468,7 @@
         if (!self || self._isDestroyed) {
           return
         }
-        axios.get(service('/file/transferProgress'), {
-          params: {
-            name: this.fileName,
-            type: this.fileType
-          }
-        }).then(resp => {
+        axios.get(service('/files/transfer/' + this.id)).then(resp => {
           let progress = resp.data
           this.totalSize = progress.totalSize
           this.lastTransferredSize = this.transferredSize
@@ -521,16 +477,18 @@
               + '/s '
               + "[" + toReadableSizeWithUnit(this.transferredSize)
               + ", " + (this.totalSize > 0 ? toReadableSizeWithUnit(this.totalSize) : " ? ") + "]"
-          if (progress.percent <= 1) {
-            this.transferProgress = parseFloat((progress.percent * 100).toPrecision(3))
+
+          let percent = this.totalSize > 0 ? this.transferredSize / this.totalSize : 0
+          if (percent <= 1) {
+            this.transferProgress = parseFloat((percent * 100).toPrecision(3))
           } else {
             this.transferProgress = 99.9
           }
           if (progress.state === 'SUCCESS') {
             this.onSuccess()
-          } else if (progress.state === 'ERROR') {
+          } else if (progress.state === 'FAILURE') {
             this.transferState = 'exception'
-            this.transferErrorMessage = progress.message
+            this.transferErrorMessage = progress.failureMessage
             this.inTransferring = false
           } else if (progress.state === 'IN_PROGRESS' || progress.state === 'NOT_STARTED') {
             setTimeout(this.transferProgressPoll, this.pollingInternal)
@@ -538,7 +496,7 @@
         })
 
       },
-      doTransfer(api, formData) {
+      doTransfer(request) {
         this.inTransferring = true
         this.currentProgress = '0 [0, 0]'
         this.transferProgress = 0
@@ -548,10 +506,10 @@
         this.transferredSize = 0
         this.lastTransferredSize = 0
 
-        formData.append('type', this.fileType)
-        axios.post(service(api), new URLSearchParams(formData)).then(resp => {
-          this.fileName = resp.data.name
+        request.type = this.fileType
+        axios.post(service('/files/transfer'), request).then(resp => {
           this.transferProgressViewVisible = true
+          this.id = resp.data
           this.transferProgressPoll()
         }).catch(e => {
           this.transferState = 'exception'

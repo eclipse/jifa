@@ -485,14 +485,14 @@ export default {
 
       analyzeHeapDump() {
         this.optionViewVisible = false;
-        let params = new FormData();
-        params.append('keep_unreachable_objects', this.options.keepUnreachableObjects);
-        params.append('strictness', this.options.strictness);
-        this.doAnalyzeHeapDump(params);
+        this.doAnalyzeHeapDump({
+          'keep_unreachable_objects': this.options.keepUnreachableObjects,
+          'strictness': this.options.strictness
+        });
       },
 
       doAnalyzeHeapDump(params) {
-        axios.post(heapDumpService(this.file, 'analyze'), new URLSearchParams(params)).then(() => {
+        axios.post(heapDumpService(this.file, 'analyze'), params).then(() => {
           this.analysisState = "IN_PROGRESS";
           this.pollProgressOfAnalysis();
         })
@@ -500,11 +500,11 @@ export default {
     },
     mounted() {
       let loadingInstance = Loading.service({fullscreen: true})
-      axios.get(heapDumpService(this.file, 'isFirstAnalysis')).then(resp => {
-        if (resp.data.result) {
+      axios.get(heapDumpService(this.file, 'needOptionsForAnalysis')).then(resp => {
+        if (resp.data) {
           this.optionViewVisible = true
         } else {
-          this.doAnalyzeHeapDump(new FormData())
+          this.doAnalyzeHeapDump({})
         }
         loadingInstance.close()
       })

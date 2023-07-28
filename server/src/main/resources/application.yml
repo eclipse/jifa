@@ -1,0 +1,20 @@
+jifa:
+  role: standalone-worker
+  storage-path: ${user.home}/jifa-storage
+
+spring:
+  task.scheduling.pool.size: 8
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  servlet:
+    multipart:
+      max-request-size: 512MB
+      max-file-size: 512MB
+
+server:
+  tomcat:
+    relaxed-query-chars:
+      - '['
+      - ']'

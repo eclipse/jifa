@@ -1,0 +1,188 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: jifa
+  labels:
+    name: jifa
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  namespace: jifa
+  name: jifa-service-account
+
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  namespace: jifa
+  name: jifa-role
+rules:
+  - apiGroups: [""]
+    resources: ["pods", "pods/exec"]
+    verbs: ["get", "list", "delete", "patch", "create"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  namespace: jifa
+  name: role-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: jifa-role
+subjects:
+  - kind: ServiceAccount
+    namespace: jifa
+    name: jifa-service-account
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  namespace: jifa
+  name: mysql-pvc
+spec:
+  storageClassName: alibabacloud-cnfs-nas
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: jifa
+  name: mysql-initdb-config
+data:
+  initdb.sql: |
+    CREATE DATABASE IF NOT EXISTS jifa;
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: jifa
+  name: mysql
+spec:
+  selector:
+    matchLabels:
+      app: mysql
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+        - image: mysql:5.6
+          name: mysql
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: password
+          ports:
+            - containerPort: 3306
+              name: mysql
+          volumeMounts:
+            - name: mysql-pv
+              mountPath: /var/lib/mysql
+            - name: mysql-initdb
+              mountPath: /docker-entrypoint-initdb.d
+      volumes:
+        - name: mysql-pv
+          persistentVolumeClaim:
+            claimName: mysql-pvc
+        - name: mysql-initdb
+          configMap:
+            name: mysql-initdb-config
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: jifa
+  name: mysql-service
+spec:
+  ports:
+    - port: 3306
+  selector:
+    app: mysql
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  namespace: jifa
+  name: jifa-pvc
+spec:
+  storageClassName: alibabacloud-cnfs-nas
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 2Gi
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: jifa
+  name: master
+  labels:
+    app: master
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: master
+  template:
+    metadata:
+      labels:
+        app: master
+    spec:
+      serviceAccountName: jifa-service-account
+      containers:
+        - name: main-container
+          image: jifadocker/jifa-test
+          imagePullPolicy: Always
+          volumeMounts:
+            - name: jifa-pv
+              mountPath: "/jifa-storage"
+          env:
+            - name: MYSQL_HOST
+              value: mysql-service:3306
+            - name: MYSQL_DATABASE_NAME
+              value: jifa
+            - name: MYSQL_USERNAME
+              value: root
+            - name: MYSQL_PASSWORD
+              value: password
+          command: [ "/wd/jifa/bin/jifa" ]
+          args: [ "--jifa.role=master", "--jifa.scheduling-strategy=elastic", "--jifa.storage-pvc-name=jifa-pvc", "--jifa.storage-path=/jifa-storage", "--jifa.worker-image=jifadocker/jifa-test" ]
+          ports:
+            - name: jifa-http-port
+              containerPort: 9102
+      volumes:
+        - name: jifa-pv
+          persistentVolumeClaim:
+            claimName: jifa-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: jifa
+  name: master-service
+spec:
+  selector:
+    app: master
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: jifa-http-port
+  type: LoadBalancer

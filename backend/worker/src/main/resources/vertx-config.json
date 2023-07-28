@@ -1,5 +1,0 @@
-{
-  "workerPoolSize": 32,
-  "maxWorkerExecuteTime": 15,
-  "maxWorkerExecuteTimeUnit": "MINUTES"
-}

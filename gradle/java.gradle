@@ -1,1 +1,48 @@
+/********************************************************************************
+ * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ ********************************************************************************/
 apply from: "$rootDir/gradle/base.gradle"
+
+apply plugin: 'java'
+apply plugin: 'jacoco'
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.2'
+
+    testImplementation 'org.mockito:mockito-junit-jupiter:4.8.1'
+    testRuntimeOnly 'org.mockito:mockito-core:4.8.1'
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+[compileJava, compileTestJava].each { compile ->
+    compile.options.encoding = "UTF-8"
+
+    compile.options.compilerArgs << '-Xlint:unchecked'
+    compile.options.compilerArgs << "-Xlint:deprecation"
+    compile.options.compilerArgs << '-parameters'
+}
+
+test {
+    useJUnitPlatform()
+    finalizedBy jacocoTestReport
+}
+
+jacocoTestReport {
+    dependsOn test
+
+}
