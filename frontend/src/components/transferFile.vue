@@ -63,7 +63,7 @@
                      :headers="authHeader"
                      :limit=1
                      :data="{uploadName:'upload', type: fileType}"
-                     :action="service('/file-upload')"
+                     :action="service('/files/upload')"
                      :multiple=true
                      :on-success="onSuccess">
             <i class="el-icon-upload"></i>
