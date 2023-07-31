@@ -17,7 +17,7 @@
     </div>
     <div style="flex-shrink: 0; height: 30px; line-height: 30px; text-align: center;">
       <a href="https://github.com/eclipse/jifa" target="_blank"
-         style="color: rgba(0, 0, 0, 0.6); font-size: 14px; font-weight: bold">Eclipse Jifa v0.1.0</a>
+         style="color: rgba(0, 0, 0, 0.6); font-size: 14px; font-weight: bold">Eclipse Jifa v0.2.0-SNAPSHOT</a>
     </div>
   </div>
 </template>
