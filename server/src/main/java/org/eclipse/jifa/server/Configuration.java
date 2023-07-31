@@ -33,13 +33,12 @@ import java.security.NoSuchAlgorithmException;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 
-import static lombok.AccessLevel.PACKAGE;
 import static org.eclipse.jifa.server.Constant.DEFAULT_WORKER_PORT;
 
 @ConfigurationProperties(prefix = "jifa", ignoreUnknownFields = false)
 @Validated
 @Getter
-@Setter(PACKAGE)
+@Setter
 public class Configuration {
 
     /**
