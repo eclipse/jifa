@@ -10,11 +10,13 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-package org.eclipse.jifa.server.domain.exception;
+package org.eclipse.jifa.server.service;
 
-public class DecryptionException extends RuntimeException {
+public interface CipherService {
 
-    public DecryptionException(Throwable cause) {
-        super(cause);
-    }
+    String encrypt(String plaintext);
+
+    String decrypt(String ciphertext);
+
+    String getPublicKeyString();
 }

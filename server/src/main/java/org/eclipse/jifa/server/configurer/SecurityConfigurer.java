@@ -15,6 +15,7 @@ package org.eclipse.jifa.server.configurer;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
+import jakarta.annotation.Nullable;
 import jakarta.servlet.Filter;
 import jakarta.servlet.http.Cookie;
 import org.eclipse.jifa.server.ConfigurationAccessor;
@@ -24,6 +25,7 @@ import org.eclipse.jifa.server.domain.security.JifaAuthenticationToken;
 import org.eclipse.jifa.server.filter.JwtTokenRefreshFilter;
 import org.eclipse.jifa.server.service.JwtService;
 import org.eclipse.jifa.server.service.UserService;
+import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -40,6 +42,7 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtTimestampValidator;
@@ -51,7 +54,6 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.savedrequest.NullRequestCache;
 
 import java.time.Duration;
-import java.util.Collections;
 
 import static org.eclipse.jifa.server.Constant.HTTP_API_PREFIX;
 import static org.eclipse.jifa.server.enums.Role.MASTER;
@@ -79,7 +81,8 @@ public class SecurityConfigurer extends ConfigurationAccessor {
     }
 
     @Bean
-    public SecurityFilterChain configure(HttpSecurity hs, UserService userService, JwtService jwtService) throws Exception {
+    public SecurityFilterChain configure(HttpSecurity hs, UserService userService, JwtService jwtService,
+                                         @Nullable OAuth2ClientProperties oauth2ClientProperties) throws Exception {
         hs.cors(cors -> {
           })
           .csrf(AbstractHttpConfigurer::disable)
@@ -116,22 +119,25 @@ public class SecurityConfigurer extends ConfigurationAccessor {
             }
         });
 
-        hs.oauth2Login(oauth2 -> oauth2.successHandler((request, response, authentication) -> {
-            Cookie jifaToken = new Cookie("jifa_token", userService.handleOauth2Login((OAuth2AuthenticationToken) authentication).getToken());
-            jifaToken.setPath("/");
-            jifaToken.setHttpOnly(false);
-            response.addCookie(jifaToken);
-            response.sendRedirect("/");
-        })).formLogin(formLogin -> {
+        hs.formLogin(formLogin -> {
             formLogin.successHandler((request, response, authentication) -> {
                 Cookie jifaToken = new Cookie("jifa_token", ((JifaAuthenticationToken) authentication).getToken());
                 jifaToken.setPath("/");
                 jifaToken.setHttpOnly(false);
                 response.addCookie(jifaToken);
                 response.sendRedirect("/");
-                response.sendRedirect("/");
             });
         });
+
+        if (oauth2ClientProperties != null && !oauth2ClientProperties.getRegistration().isEmpty()) {
+            hs.oauth2Login(oauth2 -> oauth2.successHandler((request, response, authentication) -> {
+                Cookie jifaToken = new Cookie("jifa_token", userService.handleOauth2Login((OAuth2AuthenticationToken) authentication).getToken());
+                jifaToken.setPath("/");
+                jifaToken.setHttpOnly(false);
+                response.addCookie(jifaToken);
+                response.sendRedirect("/");
+            }));
+        }
 
         hs.oauth2ResourceServer(rs -> rs.jwt(jwtConfigurer -> jwtConfigurer.jwtAuthenticationConverter(jwtService::convert)));
 

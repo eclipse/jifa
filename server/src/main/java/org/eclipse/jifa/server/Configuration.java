@@ -92,6 +92,10 @@ public class Configuration {
 
     private boolean allowAnonymousAccess = true;
 
+    private String rootUsername = "root";
+
+    private String rootPassword = "password";
+
     @PostConstruct
     private void init() throws NoSuchAlgorithmException {
         if (role == Role.MASTER) {

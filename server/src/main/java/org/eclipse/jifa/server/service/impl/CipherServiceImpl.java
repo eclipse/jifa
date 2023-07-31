@@ -12,27 +12,38 @@
  ********************************************************************************/
 package org.eclipse.jifa.server.service.impl;
 
+import org.eclipse.jifa.common.domain.exception.CommonException;
 import org.eclipse.jifa.server.ConfigurationAccessor;
 import org.eclipse.jifa.server.Constant;
-import org.eclipse.jifa.server.domain.exception.DecryptionException;
-import org.eclipse.jifa.server.service.SensitiveDataService;
+import org.eclipse.jifa.server.service.CipherService;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.Cipher;
 import java.util.Base64;
 
 @Service
-public class SensitiveDataServiceImpl extends ConfigurationAccessor implements SensitiveDataService {
+public class CipherServiceImpl extends ConfigurationAccessor implements CipherService {
+
+    public String encrypt(String raw) {
+        try {
+            Cipher cipher = Cipher.getInstance("RSA");
+            cipher.init(Cipher.ENCRYPT_MODE, getPublicKey());
+            byte[] bytes = cipher.doFinal(raw.getBytes(Constant.CHARSET));
+            return Base64.getEncoder().encodeToString(bytes);
+        } catch (Throwable t) {
+            throw new CommonException(t);
+        }
+    }
 
     @Override
-    public String decrypt(String encodedText) {
+    public String decrypt(String encoded) {
         try {
-            byte[] bytes = Base64.getDecoder().decode(encodedText);
+            byte[] bytes = Base64.getDecoder().decode(encoded);
             Cipher cipher = Cipher.getInstance("RSA");
             cipher.init(Cipher.DECRYPT_MODE, getPrivateKey());
             return new String(cipher.doFinal(bytes), Constant.CHARSET);
         } catch (Throwable t) {
-            throw new DecryptionException(t);
+            throw new CommonException(t);
         }
     }
 

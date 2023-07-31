@@ -12,17 +12,13 @@
  ********************************************************************************/
 package org.eclipse.jifa.server.controller;
 
-import jakarta.servlet.http.HttpServletResponse;
 import org.eclipse.jifa.server.ConfigurationAccessor;
 import org.eclipse.jifa.server.condition.ConditionalOnRole;
 import org.eclipse.jifa.server.enums.Role;
-import org.eclipse.jifa.server.service.SensitiveDataService;
+import org.eclipse.jifa.server.service.CipherService;
 import org.eclipse.jifa.server.service.UserService;
-import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @ConditionalOnRole({Role.MASTER, Role.STANDALONE_WORKER})
@@ -32,16 +28,16 @@ public class AuthController extends ConfigurationAccessor {
 
     private final UserService userService;
 
-    private final SensitiveDataService sensitiveDataService;
+    private final CipherService cipherService;
 
-    public AuthController(UserService userService, SensitiveDataService sensitiveDataService) {
+    public AuthController(UserService userService, CipherService cipherService) {
         this.userService = userService;
-        this.sensitiveDataService = sensitiveDataService;
+        this.cipherService = cipherService;
     }
 
     @GetMapping(value = "/public-key")
     public String meta() {
-        return sensitiveDataService.getPublicKeyString();
+        return cipherService.getPublicKeyString();
     }
 
 //    @PostMapping(value = "/login")

@@ -12,19 +12,20 @@
  ********************************************************************************/
 package org.eclipse.jifa.server.service.impl;
 
+import jakarta.annotation.PostConstruct;
 import org.eclipse.jifa.common.domain.exception.ShouldNotReachHereException;
 import org.eclipse.jifa.common.util.Validate;
+import org.eclipse.jifa.server.ConfigurationAccessor;
 import org.eclipse.jifa.server.domain.entity.shared.user.ExternalLoginDataEntity;
 import org.eclipse.jifa.server.domain.entity.shared.user.LoginDataEntity;
 import org.eclipse.jifa.server.domain.entity.shared.user.UserEntity;
-import org.eclipse.jifa.server.domain.exception.UsernamePasswordValidationException;
 import org.eclipse.jifa.server.domain.security.JifaAuthenticationToken;
 import org.eclipse.jifa.server.enums.ExternalLoginMethod;
 import org.eclipse.jifa.server.repository.ExternalLoginDataRepo;
 import org.eclipse.jifa.server.repository.LoginDataRepo;
 import org.eclipse.jifa.server.repository.UserRepo;
+import org.eclipse.jifa.server.service.CipherService;
 import org.eclipse.jifa.server.service.JwtService;
-import org.eclipse.jifa.server.service.SensitiveDataService;
 import org.eclipse.jifa.server.service.UserService;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -32,26 +33,22 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.Optional;
 
-import static org.eclipse.jifa.common.domain.exception.CommonException.CE;
 import static org.eclipse.jifa.server.enums.ServerErrorCode.INCORRECT_PASSWORD;
 import static org.eclipse.jifa.server.enums.ServerErrorCode.USERNAME_EXISTS;
 import static org.eclipse.jifa.server.enums.ServerErrorCode.USER_NOT_FOUND;
 
 @Service
-public class UserServiceImpl implements UserService {
+public class UserServiceImpl extends ConfigurationAccessor implements UserService {
 
     private final TransactionTemplate transactionTemplate;
     private final UserRepo userRepo;
     private final LoginDataRepo loginDataRepo;
-
     private final ExternalLoginDataRepo externalLoginDataRepo;
-    private final SensitiveDataService sensitiveDataService;
+    private final CipherService cipherService;
     private final PasswordEncoder encoder;
     private final JwtService jwtService;
 
@@ -59,23 +56,42 @@ public class UserServiceImpl implements UserService {
                            UserRepo userRepo,
                            LoginDataRepo loginDataRepo,
                            ExternalLoginDataRepo externalLoginDataRepo,
-                           SensitiveDataService sensitiveDataService,
+                           CipherService cipherService,
                            PasswordEncoder encoder,
                            JwtService jwtService) {
         this.transactionTemplate = transactionTemplate;
         this.userRepo = userRepo;
         this.loginDataRepo = loginDataRepo;
         this.externalLoginDataRepo = externalLoginDataRepo;
-        this.sensitiveDataService = sensitiveDataService;
+        this.cipherService = cipherService;
         this.encoder = encoder;
         this.jwtService = jwtService;
+    }
+
+    @PostConstruct
+    private void init() {
+        if (config.getRootUsername() != null) {
+            Optional<LoginDataEntity> root = loginDataRepo.findByUsername(config.getRootUsername());
+            if (root.isPresent()) {
+                return;
+            }
+            try {
+                register("root", config.getRootUsername(), cipherService.encrypt(config.getRootPassword()), true);
+            } catch (Throwable t) {
+                if (loginDataRepo.findByUsername(config.getRootUsername()).isEmpty()) {
+                    throw t;
+                }
+            }
+        }
     }
 
     @Override
     public JifaAuthenticationToken login(String username, String password) {
         LoginDataEntity loginData = loginDataRepo.findByUsername(username).orElse(null);
         Validate.notNull(loginData, USER_NOT_FOUND);
-        Validate.isTrue(encoder.matches(sensitiveDataService.decrypt(password), loginData.getPasswordHash()),
+        // Validate.isTrue(encoder.matches(cipherService.decrypt(password), loginData.getPasswordHash()),
+        //                 INCORRECT_PASSWORD);
+        Validate.isTrue(encoder.matches(password, loginData.getPasswordHash()),
                         INCORRECT_PASSWORD);
         return jwtService.generateToken(loginData.getUser());
     }
@@ -114,7 +130,7 @@ public class UserServiceImpl implements UserService {
 
         LoginDataEntity loginData = new LoginDataEntity();
         loginData.setUsername(username);
-        loginData.setPasswordHash(encoder.encode(sensitiveDataService.decrypt(password)));
+        loginData.setPasswordHash(encoder.encode(cipherService.decrypt(password)));
 
         transactionTemplate.executeWithoutResult(status -> {
             loginData.setUser(userRepo.save(createUser(name, admin)));
@@ -185,5 +201,3 @@ public class UserServiceImpl implements UserService {
         return user;
     }
 }
-
-
