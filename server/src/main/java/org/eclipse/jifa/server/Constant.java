@@ -55,13 +55,11 @@ public interface Constant extends org.eclipse.jifa.common.Constant {
 
     String SSE_EVENT_ERROR_RESPONSE = "error";
 
-    String ADMIN_ONLY = "admin-only";
-
     String ROLE_PREFIX = "ROLE_";
 
     String ROLE_ADMIN = "ADMIN";
 
-    String ANONYMOUS_USERNAME = "anonymous_user";
+    String ANONYMOUS_USERNAME = "Anonymous User";
 
     byte[] EMPTY_BYTE_ARRAY = new byte[0];
 

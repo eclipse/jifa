@@ -12,6 +12,8 @@
  ********************************************************************************/
 package org.eclipse.jifa.server.domain.exception;
 
+import org.eclipse.jifa.common.domain.exception.ValidationException;
+
 public class UsernamePasswordValidationException extends ValidationException {
 
     public UsernamePasswordValidationException(String message) {

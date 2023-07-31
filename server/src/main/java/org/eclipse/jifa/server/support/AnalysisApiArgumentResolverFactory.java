@@ -17,7 +17,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import org.eclipse.jifa.analysis.Api;
 import org.eclipse.jifa.analysis.ApiParameter;
-import org.eclipse.jifa.server.domain.entity.shared.FileEntity;
+import org.eclipse.jifa.server.domain.entity.shared.file.FileEntity;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.ParameterizedType;

@@ -14,7 +14,7 @@ package org.eclipse.jifa.server.task;
 
 import org.eclipse.jifa.server.ConfigurationAccessor;
 import org.eclipse.jifa.server.condition.ConditionalOnRole;
-import org.eclipse.jifa.server.domain.entity.shared.TransferringFileEntity;
+import org.eclipse.jifa.server.domain.entity.shared.file.TransferringFileEntity;
 import org.eclipse.jifa.server.enums.FileTransferState;
 import org.eclipse.jifa.server.enums.Role;
 import org.eclipse.jifa.server.repository.TransferringFileRepo;

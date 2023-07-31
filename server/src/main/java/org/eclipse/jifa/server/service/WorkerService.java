@@ -15,7 +15,7 @@ package org.eclipse.jifa.server.service;
 import org.eclipse.jifa.common.domain.exception.ShouldNotReachHereException;
 import org.eclipse.jifa.server.domain.dto.HttpRequestToWorker;
 import org.eclipse.jifa.server.domain.entity.cluster.WorkerEntity;
-import org.eclipse.jifa.server.domain.entity.shared.FileEntity;
+import org.eclipse.jifa.server.domain.entity.shared.file.FileEntity;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import java.util.concurrent.CompletableFuture;

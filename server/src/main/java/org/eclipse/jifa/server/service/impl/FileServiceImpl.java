@@ -24,10 +24,10 @@ import org.eclipse.jifa.server.domain.converter.FileViewConverter;
 import org.eclipse.jifa.server.domain.dto.FileTransferProgress;
 import org.eclipse.jifa.server.domain.dto.FileTransferRequest;
 import org.eclipse.jifa.server.domain.dto.FileView;
-import org.eclipse.jifa.server.domain.dto.HttpRequestToWorker;
-import org.eclipse.jifa.server.domain.entity.shared.DeletedFileEntity;
-import org.eclipse.jifa.server.domain.entity.shared.FileEntity;
-import org.eclipse.jifa.server.domain.entity.shared.TransferringFileEntity;
+import org.eclipse.jifa.server.domain.entity.shared.file.DeletedFileEntity;
+import org.eclipse.jifa.server.domain.entity.shared.file.FileEntity;
+import org.eclipse.jifa.server.domain.entity.shared.file.TransferringFileEntity;
+import org.eclipse.jifa.server.domain.entity.shared.user.UserEntity;
 import org.eclipse.jifa.server.domain.entity.static_cluster.FileStaticWorkerBind;
 import org.eclipse.jifa.server.domain.entity.static_cluster.StaticWorkerEntity;
 import org.eclipse.jifa.server.enums.FileTransferState;
@@ -47,7 +47,6 @@ import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.TaskScheduler;
@@ -69,6 +68,7 @@ import static org.eclipse.jifa.server.domain.dto.HttpRequestToWorker.createPostR
 import static org.eclipse.jifa.server.enums.Role.ELASTIC_WORKER;
 import static org.eclipse.jifa.server.enums.Role.MASTER;
 import static org.eclipse.jifa.server.enums.Role.STANDALONE_WORKER;
+import static org.eclipse.jifa.server.enums.ServerErrorCode.ACCESS_DENIED;
 import static org.eclipse.jifa.server.enums.ServerErrorCode.FILE_NOT_FOUND;
 import static org.eclipse.jifa.server.enums.ServerErrorCode.FILE_TYPE_MISMATCH;
 import static org.eclipse.jifa.server.enums.ServerErrorCode.UNAVAILABLE;
@@ -255,16 +255,22 @@ public class FileServiceImpl extends ConfigurationAccessor implements FileServic
 
     private FileEntity getFileEntityByIdAndCheckAuthority(long id) {
         FileEntity file = fileRepo.findById(id).orElseThrow((() -> CE(FILE_NOT_FOUND)));
-        long userId = file.getUser().getId();
-        Validate.isTrue(userId == userService.getCurrentUserId() || userService.isCurrentUserAdmin());
+        checkAuthority(file);
         return file;
     }
 
     private FileEntity getFileEntityByUniqueNameAndCheckAuthority(String uniqueName) {
         FileEntity file = fileRepo.findByUniqueName(uniqueName).orElseThrow((() -> CE(FILE_NOT_FOUND)));
-        long userId = file.getUser().getId();
-        Validate.isTrue(userId == userService.getCurrentUserId() || userService.isCurrentUserAdmin());
+        checkAuthority(file);
         return file;
+    }
+
+    private void checkAuthority(FileEntity file) {
+        UserEntity user = file.getUser();
+        Validate.isTrue(user == null
+                        || user.getId().equals(userService.getCurrentUserId())
+                        || userService.isCurrentUserAdmin(),
+                        ACCESS_DENIED);
     }
 
     private String generateFileUniqueName() {
@@ -277,16 +283,12 @@ public class FileServiceImpl extends ConfigurationAccessor implements FileServic
         FileStaticWorkerBind staticBind = isStaticWorker() ? fileStaticWorkerBindRepo.findByFileId(file.getId()).orElseThrow(() -> CE(INTERNAL_ERROR)) : null;
 
         DeletedFileEntity deletedFile = EntityConverter.convert(file);
-        transactionTemplate.execute(new TransactionCallbackWithoutResult() {
-            @Override
-            protected void doInTransactionWithoutResult(@NotNull TransactionStatus status) {
-                // delete the bind relation first
-                if (staticBind != null) {
-                    fileStaticWorkerBindRepo.deleteById(staticBind.getId());
-                }
-                fileRepo.deleteById(file.getId());
-                deletedFileRepo.save(deletedFile);
+        transactionTemplate.executeWithoutResult(status -> {
+            if (staticBind != null) {
+                fileStaticWorkerBindRepo.deleteById(staticBind.getId());
             }
+            fileRepo.deleteById(file.getId());
+            deletedFileRepo.save(deletedFile);
         });
 
         storageService.scavenge(file.getType(), file.getUniqueName());
@@ -364,15 +366,12 @@ public class FileServiceImpl extends ConfigurationAccessor implements FileServic
             }
 
             try {
-                transactionTemplate.execute(new TransactionCallbackWithoutResult() {
-                    @Override
-                    protected void doInTransactionWithoutResult(@NotNull TransactionStatus status) {
-                        transferringFile = transferringFileRepo.save(transferringFile);
-                        FileEntity savedFile = fileRepo.save(file);
-                        if (bind != null) {
-                            bind.setFile(savedFile);
-                            fileStaticWorkerBindRepo.save(bind);
-                        }
+                transactionTemplate.executeWithoutResult(status -> {
+                    transferringFile = transferringFileRepo.save(transferringFile);
+                    FileEntity savedFile = fileRepo.save(file);
+                    if (bind != null) {
+                        bind.setFile(savedFile);
+                        fileStaticWorkerBindRepo.save(bind);
                     }
                 });
             } finally {

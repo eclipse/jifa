@@ -12,9 +12,9 @@
  ********************************************************************************/
 package org.eclipse.jifa.server.domain.converter;
 
-import org.eclipse.jifa.server.domain.entity.shared.DeletedFileEntity;
-import org.eclipse.jifa.server.domain.entity.shared.FileEntity;
-import org.eclipse.jifa.server.domain.entity.shared.TransferringFileEntity;
+import org.eclipse.jifa.server.domain.entity.shared.file.DeletedFileEntity;
+import org.eclipse.jifa.server.domain.entity.shared.file.FileEntity;
+import org.eclipse.jifa.server.domain.entity.shared.file.TransferringFileEntity;
 
 public abstract class EntityConverter {
 

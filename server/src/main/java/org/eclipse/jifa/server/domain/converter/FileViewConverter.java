@@ -13,7 +13,7 @@
 package org.eclipse.jifa.server.domain.converter;
 
 import org.eclipse.jifa.server.domain.dto.FileView;
-import org.eclipse.jifa.server.domain.entity.shared.FileEntity;
+import org.eclipse.jifa.server.domain.entity.shared.file.FileEntity;
 
 public class FileViewConverter {
 

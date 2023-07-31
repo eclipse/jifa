@@ -17,7 +17,7 @@ import org.eclipse.jifa.common.domain.vo.PageView;
 import org.eclipse.jifa.server.domain.dto.FileTransferProgress;
 import org.eclipse.jifa.server.domain.dto.FileTransferRequest;
 import org.eclipse.jifa.server.domain.dto.FileView;
-import org.eclipse.jifa.server.domain.entity.shared.FileEntity;
+import org.eclipse.jifa.server.domain.entity.shared.file.FileEntity;
 import org.eclipse.jifa.server.enums.FileType;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;

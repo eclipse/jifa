@@ -129,6 +129,31 @@ public abstract class Validate {
         isTrue(object != null);
     }
 
+    public static void isNull(Object object, ErrorCode errorCode, Supplier<String> message) {
+        isTrue(object == null, errorCode, message);
+    }
+
+    public static void isNull(Object object, ErrorCode errorCode, String message) {
+        isTrue(object == null, errorCode, message);
+    }
+
+    public static void isNull(Object object, ErrorCode errorCode) {
+        isTrue(object == null, errorCode);
+    }
+
+    public static void isNull(Object object, Supplier<String> message) {
+        isTrue(object == null, message);
+    }
+
+    public static void isNull(Object object, String message) {
+        isTrue(object == null, message);
+    }
+
+    public static void isNull(Object object) {
+        isTrue(object == null);
+    }
+
+
     public static void notBlank(String string, ErrorCode errorCode, Supplier<String> message) {
         isTrue(StringUtils.isNotBlank(string), errorCode, message);
     }

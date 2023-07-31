@@ -12,22 +12,24 @@
  ********************************************************************************/
 package org.eclipse.jifa.server.service;
 
-import org.eclipse.jifa.server.domain.entity.shared.UserEntity;
+import org.eclipse.jifa.server.domain.entity.shared.user.UserEntity;
 import org.eclipse.jifa.server.domain.exception.UsernamePasswordValidationException;
+import org.eclipse.jifa.server.domain.security.JifaAuthenticationToken;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 
 public interface UserService {
 
-    String login(String username, String password) throws UsernamePasswordValidationException;
+    JifaAuthenticationToken login(String username, String password) throws UsernamePasswordValidationException;
 
-    void create(String username, String password, boolean admin);
+    JifaAuthenticationToken handleOauth2Login(OAuth2AuthenticationToken token);
 
-    long getCurrentUserId();
+    void register(String name, String username, String password, boolean admin);
+
+    Long getCurrentUserId();
 
     boolean isCurrentUserAdmin();
 
     String getCurrentUserJwtToken();
 
     UserEntity getCurrentUser();
-
-    long getAnonymousUserId();
 }

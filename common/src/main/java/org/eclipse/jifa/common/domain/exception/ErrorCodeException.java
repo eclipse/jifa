@@ -47,10 +47,22 @@ public class ErrorCodeException extends RuntimeException implements ErrorCodeAcc
      * Create a new ErrorCodeException with a specified error code and a cause
      *
      * @param errorCode error code
-     * @param cause     message
+     * @param cause     cause
      */
     public ErrorCodeException(ErrorCode errorCode, Throwable cause) {
         super(cause);
+        this.errorCode = errorCode;
+    }
+
+    /**
+     * Create a new ErrorCodeException with a specified error code, a message and a cause
+     *
+     * @param errorCode error code
+     * @param message   message
+     * @param cause     cause
+     */
+    public ErrorCodeException(ErrorCode errorCode, String message, Throwable cause) {
+        super(message, cause);
         this.errorCode = errorCode;
     }
 

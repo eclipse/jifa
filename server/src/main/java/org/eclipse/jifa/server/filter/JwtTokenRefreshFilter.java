@@ -16,6 +16,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.eclipse.jifa.server.domain.security.JifaAuthenticationToken;
 import org.eclipse.jifa.server.service.JwtService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,9 +40,9 @@ public class JwtTokenRefreshFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws ServletException, IOException {
         try {
-            String newToken = jwtService.refreshToken();
+            JifaAuthenticationToken newToken = jwtService.refreshToken();
             if (newToken != null) {
-                response.addHeader(HttpHeaders.AUTHORIZATION, newToken);
+                response.addHeader(HttpHeaders.AUTHORIZATION, newToken.getToken());
             }
         } catch (Throwable t) {
             LOGGER.error("Failed to refresh jwt token: {}", t.getMessage());

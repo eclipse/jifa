@@ -16,11 +16,14 @@ import org.eclipse.jifa.common.domain.exception.ErrorCode;
 
 public enum ServerErrorCode implements ErrorCode {
     UNAVAILABLE("Unavailable"),
+    USER_NOT_FOUND("User not found"),
+    USERNAME_EXISTS("Username exists"),
+    INCORRECT_PASSWORD("Incorrect password"),
     ACCESS_DENIED("Access denied"),
-    UNSUPPORTED_NAMESPACE("Unsupported namespace"),
-    UNSUPPORTED_API("Unsupported API"),
     FILE_NOT_FOUND("File not found"),
     FILE_DELETED("File deleted"),
+    UNSUPPORTED_NAMESPACE("Unsupported namespace"),
+    UNSUPPORTED_API("Unsupported API"),
     FILE_TRANSFER_INCOMPLETE("File transfer incomplete"),
     FILE_TYPE_MISMATCH("File type mismatch"),
     STATIC_WORKER_UNAVAILABLE("Static worker Unavailable"),

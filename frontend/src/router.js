@@ -24,8 +24,6 @@ import GCLogCompare from "@/components/gclog/GCLogCompare";
 
 import threadDump from "./components/threaddump/ThreadDump"
 
-import auth from "./components/auth/Auth"
-
 import axios from "axios"
 
 import notFound from "./components/404"
@@ -78,11 +76,6 @@ const routes = [
     name: 'finder',
     path: '/',
     component: finder
-  },
-  {
-    name: 'auth',
-    path: "/auth",
-    component: auth
   },
   {
     name: 'heapDump',
@@ -138,8 +131,8 @@ axios.interceptors.response.use(function (response) {
           });
         }
       } else if (status === 401) {
-        // JifaGlobal.save_back_url(window.location.href)
-        // window.location.href = window.location.protocol + "//" +window.location.host + "/auth"
+        JifaGlobal.save_back_url(window.location.href)
+        window.location.href = window.location.protocol + "//" +window.location.host + "/login"
       }
     }
   }

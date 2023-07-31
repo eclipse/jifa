@@ -10,15 +10,18 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-package org.eclipse.jifa.server.domain.entity.shared;
+package org.eclipse.jifa.server.domain.entity.shared.file;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MappedSuperclass;
 import lombok.Getter;
 import lombok.Setter;
+import org.eclipse.jifa.server.domain.entity.shared.BaseEntity;
+import org.eclipse.jifa.server.domain.entity.shared.user.UserEntity;
 import org.eclipse.jifa.server.enums.FileType;
 
 @MappedSuperclass
@@ -29,7 +32,7 @@ public class BaseFileEntity extends BaseEntity {
     @Column(unique = true, nullable = false, updatable = false, length = 64)
     private String uniqueName;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(fetch = FetchType.LAZY)
     private UserEntity user;
 
     @Column(nullable = false, updatable = false, length = 256)

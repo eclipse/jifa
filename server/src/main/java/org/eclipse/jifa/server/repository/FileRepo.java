@@ -12,7 +12,7 @@
  ********************************************************************************/
 package org.eclipse.jifa.server.repository;
 
-import org.eclipse.jifa.server.domain.entity.shared.FileEntity;
+import org.eclipse.jifa.server.domain.entity.shared.file.FileEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.CrudRepository;
@@ -22,7 +22,7 @@ import java.util.Optional;
 
 @Repository
 public interface FileRepo extends CrudRepository<FileEntity, Long> {
-    Page<FileEntity> findByUserId(long userId, Pageable pageable);
+    Page<FileEntity> findByUserId(Long userId, Pageable pageable);
 
     Optional<FileEntity> findByUniqueName(String uniqueName);
 

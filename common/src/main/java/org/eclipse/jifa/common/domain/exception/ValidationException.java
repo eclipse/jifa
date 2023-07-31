@@ -48,6 +48,16 @@ public class ValidationException extends ErrorCodeException {
     }
 
     /**
+     * Create a new ValidationException with a message and a cause.
+     *
+     * @param message message
+     * @param cause   cause
+     */
+    public ValidationException(String message, Throwable cause) {
+        super(VALIDATION_FAILURE, message, cause);
+    }
+
+    /**
      * Create a new ValidationException.
      */
     public ValidationException() {

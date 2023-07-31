@@ -10,28 +10,16 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-package org.eclipse.jifa.server.enums;
+package org.eclipse.jifa.server.repository;
 
-import org.eclipse.jifa.common.domain.exception.ShouldNotReachHereException;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
+import org.eclipse.jifa.server.domain.entity.shared.user.LoginDataEntity;
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.stereotype.Repository;
 
-public enum AnalysisApiResponseCode {
+import java.util.Optional;
 
-    ACCEPTED,
+@Repository
+public interface LoginDataRepo extends CrudRepository<LoginDataEntity, Long> {
 
-    SUCCESS,
-
-    FAILURE;
-
-    public int httpStatus(HttpMethod method) {
-        if (this == SUCCESS) {
-            return HttpStatus.OK.value();
-        }
-
-        if (this == FAILURE) {
-            return HttpStatus.INTERNAL_SERVER_ERROR.value();
-        }
-        throw new ShouldNotReachHereException();
-    }
+    Optional<LoginDataEntity> findByUsername(String username);
 }

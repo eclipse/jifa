@@ -16,22 +16,30 @@ import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import jakarta.servlet.Filter;
+import jakarta.servlet.http.Cookie;
 import org.eclipse.jifa.server.ConfigurationAccessor;
 import org.eclipse.jifa.server.Constant;
 import org.eclipse.jifa.server.condition.ConditionalOnRole;
+import org.eclipse.jifa.server.domain.security.JifaAuthenticationToken;
 import org.eclipse.jifa.server.filter.JwtTokenRefreshFilter;
 import org.eclipse.jifa.server.service.JwtService;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.eclipse.jifa.server.service.UserService;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.AuthenticationServiceException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtTimestampValidator;
@@ -43,7 +51,9 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.savedrequest.NullRequestCache;
 
 import java.time.Duration;
+import java.util.Collections;
 
+import static org.eclipse.jifa.server.Constant.HTTP_API_PREFIX;
 import static org.eclipse.jifa.server.enums.Role.MASTER;
 import static org.eclipse.jifa.server.enums.Role.STANDALONE_WORKER;
 
@@ -69,29 +79,69 @@ public class SecurityConfigurer extends ConfigurationAccessor {
     }
 
     @Bean
-    public SecurityFilterChain configure(HttpSecurity hs, JwtService jwtService) throws Exception {
-        String adminApiPrefix = Constant.HTTP_API_PREFIX + "/" + Constant.ADMIN_ONLY + "/**";
-
-        hs.cors(customizer -> {
+    public SecurityFilterChain configure(HttpSecurity hs, UserService userService, JwtService jwtService) throws Exception {
+        hs.cors(cors -> {
           })
           .csrf(AbstractHttpConfigurer::disable)
-          .sessionManagement(
-                  customizer -> customizer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-          .authorizeHttpRequests(
-                  customizer -> customizer.requestMatchers(adminApiPrefix).hasRole(Constant.ROLE_ADMIN)
-                                          .requestMatchers(Constant.HTTP_API_PREFIX + "/auth/**").permitAll())
-          .oauth2ResourceServer(customizer -> customizer.jwt(jwtCustomizer -> jwtCustomizer.jwtAuthenticationConverter(jwtService::convert)))
-          .exceptionHandling(
-                  customizer -> customizer.authenticationEntryPoint(new BearerTokenAuthenticationEntryPoint())
-                                          .accessDeniedHandler(new BearerTokenAccessDeniedHandler()))
-          .requestCache(customizer -> customizer.requestCache(new NullRequestCache()));
+          .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+          .requestCache(cache -> cache.requestCache(new NullRequestCache()));
 
-        if (config.isAllowAnonymousAccess()) {
-            hs.anonymous(customizer -> customizer.principal(Constant.ANONYMOUS_USERNAME).key("jifa"))
-              .authorizeHttpRequests(customizer -> customizer.anyRequest().anonymous());
-        } else {
-            hs.authorizeHttpRequests(customizer -> customizer.anyRequest().authenticated());
-        }
+        hs.anonymous(customizer -> customizer.principal(Constant.ANONYMOUS_USERNAME).key("jifa"));
+
+        hs.authorizeHttpRequests(requests -> {
+            String authApiMatchers = HTTP_API_PREFIX + "/auth/**";
+            requests.requestMatchers(authApiMatchers).permitAll();
+            String apiMatchers = HTTP_API_PREFIX + "/**";
+            if (!config.isAllowAnonymousAccess()) {
+                requests.requestMatchers(apiMatchers).authenticated();
+            }
+            requests.anyRequest().permitAll();
+        });
+
+        hs.authenticationProvider(new AuthenticationProvider() {
+            @Override
+            public Authentication authenticate(Authentication authentication) throws AuthenticationException {
+                String username = (String) authentication.getPrincipal();
+                String password = (String) authentication.getCredentials();
+                try {
+                    return userService.login(username, password);
+                } catch (Throwable t) {
+                    throw new AuthenticationServiceException(t.getMessage(), t);
+                }
+            }
+
+            @Override
+            public boolean supports(Class<?> authentication) {
+                return UsernamePasswordAuthenticationToken.class == authentication;
+            }
+        });
+
+        hs.oauth2Login(oauth2 -> oauth2.successHandler((request, response, authentication) -> {
+            Cookie jifaToken = new Cookie("jifa_token", userService.handleOauth2Login((OAuth2AuthenticationToken) authentication).getToken());
+            jifaToken.setPath("/");
+            jifaToken.setHttpOnly(false);
+            response.addCookie(jifaToken);
+            response.sendRedirect("/");
+        })).formLogin(formLogin -> {
+            formLogin.successHandler((request, response, authentication) -> {
+                Cookie jifaToken = new Cookie("jifa_token", ((JifaAuthenticationToken) authentication).getToken());
+                jifaToken.setPath("/");
+                jifaToken.setHttpOnly(false);
+                response.addCookie(jifaToken);
+                response.sendRedirect("/");
+                response.sendRedirect("/");
+            });
+        });
+
+        hs.oauth2ResourceServer(rs -> rs.jwt(jwtConfigurer -> jwtConfigurer.jwtAuthenticationConverter(jwtService::convert)));
+
+        hs.exceptionHandling(eh -> {
+            // We currently don't have a custom login page, and invoking authenticationEntryPoint will disable the login page provided by spring,
+            // hence we call defaultAuthenticationEntryPointFor instead.
+            // eh.authenticationEntryPoint(new BearerTokenAuthenticationEntryPoint());
+            eh.defaultAuthenticationEntryPointFor(new BearerTokenAuthenticationEntryPoint(), (request) -> true);
+            eh.accessDeniedHandler(new BearerTokenAccessDeniedHandler());
+        });
         return hs.build();
     }
 
@@ -100,7 +150,7 @@ public class SecurityConfigurer extends ConfigurationAccessor {
     public FilterRegistrationBean<Filter> refreshJwtTokenFilter(JwtService jwtService) {
         FilterRegistrationBean<Filter> frb = new FilterRegistrationBean<>();
         frb.setFilter(new JwtTokenRefreshFilter(jwtService));
-        frb.addUrlPatterns(Constant.HTTP_API_PREFIX + "/*");
+        frb.addUrlPatterns(HTTP_API_PREFIX + "/*");
         // must be after spring security filter chain
         frb.setOrder(Integer.MAX_VALUE);
         return frb;

@@ -44,7 +44,6 @@ public class HttpConfigurer extends ConfigurationAccessor implements WebMvcConfi
         if (isMaster() || isStandaloneWorker()) {
             String viewName = "forward:index.html";
             registry.addViewController("/").setViewName(viewName);
-            registry.addViewController("/auth").setViewName(viewName);
             registry.addViewController("/heapDump").setViewName(viewName);
             registry.addViewController("/gcLog").setViewName(viewName);
             registry.addViewController("/gcLogCompare").setViewName(viewName);

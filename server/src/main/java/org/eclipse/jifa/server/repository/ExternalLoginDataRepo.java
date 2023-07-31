@@ -12,10 +12,15 @@
  ********************************************************************************/
 package org.eclipse.jifa.server.repository;
 
-import org.eclipse.jifa.server.domain.entity.shared.user.UserEntity;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.eclipse.jifa.server.domain.entity.shared.user.ExternalLoginDataEntity;
+import org.eclipse.jifa.server.domain.entity.shared.user.LoginDataEntity;
+import org.eclipse.jifa.server.enums.ExternalLoginMethod;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
-public interface UserRepo extends JpaRepository<UserEntity, Long> {
+public interface ExternalLoginDataRepo extends CrudRepository<ExternalLoginDataEntity, Long> {
+    Optional<ExternalLoginDataEntity> findByMethodAndProviderAndAndPrincipalName(ExternalLoginMethod method, String provider, String principalName);
 }

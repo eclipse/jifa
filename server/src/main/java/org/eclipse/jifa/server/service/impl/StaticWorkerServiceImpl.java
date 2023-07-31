@@ -13,13 +13,12 @@
 package org.eclipse.jifa.server.service.impl;
 
 import jakarta.servlet.http.HttpServletResponse;
-import org.eclipse.jifa.common.enums.CommonErrorCode;
 import org.eclipse.jifa.common.util.Validate;
 import org.eclipse.jifa.server.condition.Master;
 import org.eclipse.jifa.server.condition.StaticSchedulingStrategy;
 import org.eclipse.jifa.server.domain.dto.FileTransferRequest;
 import org.eclipse.jifa.server.domain.entity.cluster.WorkerEntity;
-import org.eclipse.jifa.server.domain.entity.shared.FileEntity;
+import org.eclipse.jifa.server.domain.entity.shared.file.FileEntity;
 import org.eclipse.jifa.server.domain.entity.static_cluster.StaticWorkerEntity;
 import org.eclipse.jifa.server.enums.FileType;
 import org.eclipse.jifa.server.repository.FileStaticWorkerBindRepo;

@@ -129,6 +129,32 @@ public class TestValidate {
                     VALIDATION_FAILURE,
                     VALIDATION_FAILURE.message());
 
+        testPass(() -> Validate.isNull(null, ILLEGAL_ARGUMENT, () -> "message"));
+        testPass(() -> Validate.isNull(null, ILLEGAL_ARGUMENT, "message"));
+        testPass(() -> Validate.isNull(null, ILLEGAL_ARGUMENT));
+        testPass(() -> Validate.isNull(null, () -> "message"));
+        testPass(() -> Validate.isNull(null, "message"));
+        testPass(() -> Validate.isNull(null));
+
+        testFailure(() -> Validate.isNull(new Object(), ILLEGAL_ARGUMENT, () -> "message"),
+                    ILLEGAL_ARGUMENT,
+                    "message");
+        testFailure(() -> Validate.isNull(new Object(), ILLEGAL_ARGUMENT, "message"),
+                    ILLEGAL_ARGUMENT,
+                    "message");
+        testFailure(() -> Validate.isNull(new Object(), ILLEGAL_ARGUMENT),
+                    ILLEGAL_ARGUMENT,
+                    ILLEGAL_ARGUMENT.message());
+        testFailure(() -> Validate.isNull(new Object(), () -> "message"),
+                    VALIDATION_FAILURE,
+                    "message");
+        testFailure(() -> Validate.isNull(new Object(), "message"),
+                    VALIDATION_FAILURE,
+                    "message");
+        testFailure(() -> Validate.isNull(new Object()),
+                    VALIDATION_FAILURE,
+                    VALIDATION_FAILURE.message());
+
         testPass(() -> Validate.notBlank("1", ILLEGAL_ARGUMENT, () -> "message"));
         testPass(() -> Validate.notBlank("1", ILLEGAL_ARGUMENT, "message"));
         testPass(() -> Validate.notBlank("1", ILLEGAL_ARGUMENT));

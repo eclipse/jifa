@@ -10,44 +10,32 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-package org.eclipse.jifa.server.domain.entity.shared;
+package org.eclipse.jifa.server.domain.entity.shared.user;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
-import org.eclipse.jifa.server.enums.FileTransferState;
+import org.eclipse.jifa.server.domain.entity.shared.BaseEntity;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
 @SuppressWarnings("JpaDataSourceORMInspection")
-@Table(name = "transferring_files")
 @Entity
+@Table(name = "users")
 @Getter
 @Setter
-public class TransferringFileEntity extends BaseFileEntity {
+public class UserEntity extends BaseEntity {
 
-    public static final int MAX_FAILURE_MESSAGE_LENGTH = 1024;
-
-    @Column(nullable = false)
-    @Enumerated(EnumType.STRING)
-    private FileTransferState transferState;
+    @Column(length = 64)
+    private String name;
 
     @Column(nullable = false)
-    private long totalSize;
-
-    @Column(nullable = false)
-    private long transferredSize;
-
-    @Column(length = MAX_FAILURE_MESSAGE_LENGTH)
-    private String failureMessage;
+    private boolean admin;
 
     @Column(nullable = false)
     @UpdateTimestamp
     private LocalDateTime lastModifiedTime;
-
 }

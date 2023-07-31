@@ -10,28 +10,27 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-package org.eclipse.jifa.server.domain.entity.static_cluster;
+package org.eclipse.jifa.server.domain.entity.shared.file;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.MapsId;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
-import org.eclipse.jifa.server.domain.entity.shared.file.FileEntity;
+import org.eclipse.jifa.server.domain.entity.shared.file.BaseFileEntity;
 
-@Entity(name = "file_static_worker_binds")
+import java.time.LocalDateTime;
+
+@SuppressWarnings("JpaDataSourceORMInspection")
+@Table(name = "deleted_files")
+@Entity
 @Getter
 @Setter
-public class FileStaticWorkerBind {
-    @Id
-    private Long id;
+public class DeletedFileEntity extends BaseFileEntity {
 
-    @OneToOne
-    @MapsId
-    private FileEntity file;
+    @Column(nullable = false, updatable = false)
+    private long size;
 
-    @ManyToOne(optional = false)
-    private StaticWorkerEntity staticWorker;
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime originalCreatedTime;
 }

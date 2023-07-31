@@ -12,7 +12,7 @@
  ********************************************************************************/
 package org.eclipse.jifa.server.repository;
 
-import org.eclipse.jifa.server.domain.entity.shared.DeletedFileEntity;
+import org.eclipse.jifa.server.domain.entity.shared.file.DeletedFileEntity;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 

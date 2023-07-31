@@ -12,15 +12,15 @@
  ********************************************************************************/
 package org.eclipse.jifa.server.service;
 
-import org.eclipse.jifa.server.domain.entity.shared.UserEntity;
+import org.eclipse.jifa.server.domain.entity.shared.user.UserEntity;
 import org.eclipse.jifa.server.domain.security.JifaAuthenticationToken;
 import org.springframework.security.oauth2.jwt.Jwt;
 
 public interface JwtService {
 
-    String generateToken(UserEntity user);
+    JifaAuthenticationToken generateToken(UserEntity user);
 
-    String refreshToken();
+    JifaAuthenticationToken refreshToken();
 
     JifaAuthenticationToken convert(Jwt jwt);
 

@@ -44,9 +44,9 @@ public class AuthController extends ConfigurationAccessor {
         return sensitiveDataService.getPublicKeyString();
     }
 
-    @PostMapping(value = "/login")
-    public void login(@RequestParam String username, @RequestParam String password,
-                      HttpServletResponse response) {
-        response.addHeader(HttpHeaders.AUTHORIZATION, userService.login(username, password));
-    }
+//    @PostMapping(value = "/login")
+//    public void login(@RequestParam String username, @RequestParam String password,
+//                      HttpServletResponse response) {
+//        response.addHeader(HttpHeaders.AUTHORIZATION, userService.login(username, password));
+//    }
 }

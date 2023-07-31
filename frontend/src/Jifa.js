@@ -11,6 +11,7 @@
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
 import axios from "axios";
+import Cookies from 'js-cookie'
 
 export default class JifaGlobal {
   static prod() {
@@ -38,7 +39,11 @@ export default class JifaGlobal {
   }
 
   static jifa_token() {
-    return window.localStorage.getItem("jifa_token")
+    let token = window.localStorage.getItem("jifa_token")
+    if (!token) {
+      token = Cookies.get('jifa_token')
+    }
+    return token
   }
 
   static init_authorization_header() {
