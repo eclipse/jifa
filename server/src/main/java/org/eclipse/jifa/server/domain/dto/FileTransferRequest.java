@@ -12,73 +12,193 @@
  ********************************************************************************/
 package org.eclipse.jifa.server.domain.dto;
 
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jifa.server.enums.FileTransferMethod;
-import org.eclipse.jifa.common.domain.exception.ShouldNotReachHereException;
 import org.eclipse.jifa.server.enums.FileType;
 
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
+/**
+ * File Transfer Request
+ */
+@FileTransferRequest.Constraint
 @Getter
 @Setter
 public class FileTransferRequest {
-
-    @NotNull
-    private FileTransferMethod method;
-
-    @NotNull
+    /**
+     * File type, required
+     */
     private FileType type;
 
-    private OSS oss;
+    /**
+     * Transfer method, required
+     */
+    private FileTransferMethod method;
 
-    private S3 s3;
+    /**
+     * Oss endpoint, required if method is OSS
+     */
+    private String ossEndpoint;
 
-    private SCP scp;
+    /**
+     * Oss access key id, required if method is OSS
+     */
+    private String ossAccessKeyId;
 
+    /**
+     * Oss secret access key, required if method is OSS
+     */
+    private String ossSecretAccessKey;
+
+    /**
+     * Oss bucket name, required if method is OSS
+     */
+    private String ossBucketName;
+
+    /**
+     * Oss object key, required if method is OSS
+     */
+    private String ossObjectKey;
+
+    /**
+     * S3 region, required if method is S3
+     */
+    private String s3Region;
+
+    /**
+     * S3 access key, required if method is S3
+     */
+    private String s3AccessKey;
+
+    /**
+     * S3 secret key, required if method is S3
+     */
+    private String s3SecretKey;
+
+    /**
+     * S3 bucket name, required if method is S3
+     */
+    private String s3BucketName;
+
+    /**
+     * S3 object key, required if method is S3
+     */
+    private String s3ObjectKey;
+
+    /**
+     * SCP user, required if method is SCP
+     */
+    private String scpUser;
+
+    /**
+     * SCP hostname, required if method is SCP
+     */
+    private String scpHostname;
+
+    /**
+     * SCP password, optional.
+     * Public key authentication is used if password is not provided.
+     */
+    private String scpPassword;
+
+    /**
+     * SCP source path, required if method is SCP
+     */
+    private String scpSourcePath;
+
+    /**
+     * Url, required if method is URL
+     */
     private String url;
 
-    @Getter
-    @Setter
-    public static class OSS {
-        private String endpoint;
-        private String accessKeyId;
-        private String accessKeySecret;
-        private String bucketName;
-        private String objectName;
+    /**
+     * Constraint of FileTransferRequest
+     */
+    @Target({TYPE})
+    @Retention(RUNTIME)
+    @Documented
+    @jakarta.validation.Constraint(validatedBy = {Validator.class})
+    @interface Constraint {
+        String message() default "";
+
+        Class[] groups() default {};
+
+        Class[] payload() default {};
     }
 
-    @Getter
-    @Setter
-    public static class S3 {
-        private String region;
-        private String accessKey;
-        private String secretKey;
-        private String bucketName;
-        private String objectName;
-    }
+    /**
+     * Validator of FileTransferRequest
+     */
+    private static class Validator implements ConstraintValidator<Constraint, FileTransferRequest> {
 
-    @Getter
-    @Setter
-    public static class SCP {
-        private String hostname;
-        private String user;
-        private String password;
-        private String path;
-    }
+        @Override
+        public boolean isValid(FileTransferRequest request, ConstraintValidatorContext context) {
+            String notNullTemplate = "{jakarta.validation.constraints.NotNull.message}";
+            boolean valid = true;
+            if (request.type == null) {
+                valid = false;
+                context.buildConstraintViolationWithTemplate(notNullTemplate)
+                       .addPropertyNode("type")
+                       .addConstraintViolation();
+            }
 
-    public String extractOriginalName() {
-        String source = switch (method) {
-            case OSS -> oss.getObjectName();
-            case S3 -> s3.getObjectName();
-            case SCP -> scp.getPath();
-            case URL -> url;
-            default -> throw new ShouldNotReachHereException();
-        };
+            if (request.method == null) {
+                context.buildConstraintViolationWithTemplate(notNullTemplate)
+                       .addPropertyNode("method")
+                       .addConstraintViolation();
+                context.disableDefaultConstraintViolation();
+                return false;
+            }
 
-        String name = source.substring(source.lastIndexOf(java.io.File.separatorChar) + 1);
-        if (name.contains("?")) {
-            name = name.substring(0, name.indexOf("?"));
+            switch (request.method) {
+                case OSS -> {
+                    valid &= checkNotBlank(request.ossEndpoint, "ossEndpoint", context);
+                    valid &= checkNotBlank(request.ossAccessKeyId, "ossAccessKeyId", context);
+                    valid &= checkNotBlank(request.ossSecretAccessKey, "ossSecretAccessKey", context);
+                    valid &= checkNotBlank(request.ossBucketName, "ossBucketName", context);
+                    valid &= checkNotBlank(request.ossObjectKey, "ossObjectKey", context);
+                }
+
+                case S3 -> {
+                    valid &= checkNotBlank(request.s3Region, "s3Region", context);
+                    valid &= checkNotBlank(request.s3AccessKey, "s3AccessKey", context);
+                    valid &= checkNotBlank(request.s3SecretKey, "s3SecretKey", context);
+                    valid &= checkNotBlank(request.s3BucketName, "s3BucketName", context);
+                    valid &= checkNotBlank(request.s3ObjectKey, "s3ObjectKey", context);
+                }
+
+                case SCP -> {
+                    valid &= checkNotBlank(request.scpUser, "scpUser", context);
+                    valid &= checkNotBlank(request.scpHostname, "scpHostname", context);
+                    valid &= checkNotBlank(request.scpSourcePath, "scpSourcePath", context);
+                }
+
+                case URL -> valid &= checkNotBlank(request.url, "url", context);
+            }
+
+            if (!valid) {
+                context.disableDefaultConstraintViolation();
+            }
+            return valid;
         }
-        return name.replaceAll("[%\\\\& ]", "_");
+
+        private boolean checkNotBlank(String value, String name, ConstraintValidatorContext context) {
+            if (StringUtils.isBlank(value)) {
+                context.buildConstraintViolationWithTemplate("{jakarta.validation.constraints.NotBlank.message}")
+                       .addPropertyNode(name)
+                       .addConstraintViolation();
+                return false;
+            }
+            return true;
+        }
     }
 }

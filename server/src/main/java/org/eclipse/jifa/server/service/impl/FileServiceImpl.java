@@ -14,7 +14,6 @@ package org.eclipse.jifa.server.service.impl;
 
 import jakarta.annotation.Nullable;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.constraints.NotNull;
 import org.eclipse.jifa.common.domain.vo.PageView;
 import org.eclipse.jifa.common.util.Validate;
 import org.eclipse.jifa.server.ConfigurationAccessor;
@@ -42,6 +41,7 @@ import org.eclipse.jifa.server.service.StorageService;
 import org.eclipse.jifa.server.service.UserService;
 import org.eclipse.jifa.server.service.WorkerService;
 import org.eclipse.jifa.server.support.FileTransferListener;
+import org.eclipse.jifa.server.util.FileTransferUtil;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Page;
@@ -51,8 +51,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -125,7 +123,7 @@ public class FileServiceImpl extends ConfigurationAccessor implements FileServic
 
         Page<FileEntity> files;
         PageRequest pageRequest = PageRequest.of(page - 1, pageSize);
-        files = fileRepo.findByUserId(userService.getCurrentUserId(), pageRequest);
+        files = fileRepo.findByUserIdOrderByCreatedTimeDesc(userService.getCurrentUserId(), pageRequest);
         List<FileView> fileViews = files.getContent().stream().map(FileViewConverter::convert).toList();
         return new PageView<>(page, pageSize, (int) files.getTotalElements(), fileViews);
     }
@@ -175,7 +173,7 @@ public class FileServiceImpl extends ConfigurationAccessor implements FileServic
         TransferringFileEntity transferringFile = new TransferringFileEntity();
         transferringFile.setUniqueName(generateFileUniqueName());
         transferringFile.setUser(userService.getCurrentUser());
-        transferringFile.setOriginalName(request.extractOriginalName());
+        transferringFile.setOriginalName(FileTransferUtil.extractOriginalName(request));
         transferringFile.setType(request.getType());
         transferringFile.setTransferState(FileTransferState.IN_PROGRESS);
         transferringFileRepo.save(transferringFile);

@@ -12,6 +12,9 @@
  ********************************************************************************/
 package org.eclipse.jifa.server.enums;
 
+/**
+ * File Transfer Method
+ */
 public enum FileTransferMethod {
     OSS, S3, SCP, URL
 }

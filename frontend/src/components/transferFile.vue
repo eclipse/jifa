@@ -391,7 +391,9 @@
           if (valid) {
             this.doTransfer({
               'method': 'SCP',
-              'scp': this.scp
+              'scpHostname': this.scp.hostname,
+              'scpPassword': this.scp.password,
+              'scpSourcePath': this.scp.path
             })
           }
         })
@@ -401,7 +403,11 @@
           if (valid) {
             this.doTransfer({
               'method': 'OSS',
-              'oss': this.oss
+              'ossEndpoint': this.oss.endpoint,
+              'ossAccessKeyId': this.oss.accessKeyId,
+              'ossSecretAccessKey': this.oss.accessKeySecret,
+              'ossBucketName': this.oss.bucketName,
+              'ossObjectKey': this.oss.objectName
             })
           }
         })
@@ -411,7 +417,11 @@
           if (valid) {
             this.doTransfer({
               'method': 'S3',
-              's3': this.s3
+              's3Endpoint': this.s3.endpoint,
+              's3AccessKey': this.s3.accessKey,
+              's3SecretKey': this.s3.secretKey,
+              's3BucketName': this.s3.bucketName,
+              's3ObjectKey': this.s3.objectName
             })
           }
         })

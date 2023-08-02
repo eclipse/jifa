@@ -22,7 +22,7 @@ import java.util.Optional;
 
 @Repository
 public interface FileRepo extends CrudRepository<FileEntity, Long> {
-    Page<FileEntity> findByUserId(Long userId, Pageable pageable);
+    Page<FileEntity> findByUserIdOrderByCreatedTimeDesc(Long userId, Pageable pageable);
 
     Optional<FileEntity> findByUniqueName(String uniqueName);
 

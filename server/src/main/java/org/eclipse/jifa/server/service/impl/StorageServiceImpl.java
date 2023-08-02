@@ -28,6 +28,7 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import jakarta.annotation.PostConstruct;
 import net.schmizz.sshj.SSHClient;
+import net.schmizz.sshj.common.KeyType;
 import net.schmizz.sshj.common.StreamCopier;
 import net.schmizz.sshj.userauth.keyprovider.KeyProvider;
 import net.schmizz.sshj.xfer.FileSystemFile;
@@ -35,6 +36,7 @@ import net.schmizz.sshj.xfer.TransferListener;
 import net.schmizz.sshj.xfer.scp.SCPDownloadClient;
 import net.schmizz.sshj.xfer.scp.SCPFileTransfer;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jifa.common.util.ExecutorFactory;
 import org.eclipse.jifa.common.util.Validate;
 import org.eclipse.jifa.server.ConfigurationAccessor;
@@ -56,6 +58,10 @@ import java.io.OutputStream;
 import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.interfaces.RSAPrivateKey;
+import java.security.interfaces.RSAPublicKey;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -78,9 +84,9 @@ public class StorageServiceImpl extends ConfigurationAccessor implements Storage
         static class MasterWithElasticSchedulingStrategy {
         }
 
+        @SuppressWarnings("unused")
         @org.eclipse.jifa.server.condition.Worker
         static class Worker {
-
         }
     }
 
@@ -88,10 +94,31 @@ public class StorageServiceImpl extends ConfigurationAccessor implements Storage
 
     private Path basePath;
 
+    private KeyProvider sshKeyProvider;
+
     @PostConstruct
     private void init() {
         basePath = config.getStoragePath();
         Validate.isTrue(Files.isDirectory(basePath));
+
+        RSAPublicKey publicKey = getPublicKey();
+        RSAPrivateKey privateKey = getPrivateKey();
+        sshKeyProvider = new KeyProvider() {
+            @Override
+            public PrivateKey getPrivate() {
+                return privateKey;
+            }
+
+            @Override
+            public PublicKey getPublic() {
+                return publicKey;
+            }
+
+            @Override
+            public KeyType getType() {
+                return KeyType.RSA;
+            }
+        };
 
         executor = ExecutorFactory.newExecutor("File Transfer");
     }
@@ -114,10 +141,10 @@ public class StorageServiceImpl extends ConfigurationAccessor implements Storage
             try {
                 listener.onStart();
                 switch (request.getMethod()) {
-                    case OSS -> handleOSS(destination, listener, request.getOss());
-                    case S3 -> handleS3(destination, listener, request.getS3());
-                    case SCP -> handleSCP(destination, listener, request.getScp());
-                    case URL -> handleURL(destination, listener, request.getUrl());
+                    case OSS -> transferByOSS(request, destination, listener);
+                    case S3 -> transferByS3(request, destination, listener);
+                    case SCP -> transferBySCP(request, destination, listener);
+                    case URL -> transferByURL(request, destination, listener);
                 }
                 success = true;
             } catch (Throwable t) {
@@ -177,15 +204,16 @@ public class StorageServiceImpl extends ConfigurationAccessor implements Storage
         return directory.resolve(name);
     }
 
-    private void handleOSS(Path destination, FileTransferListener listener, FileTransferRequest.OSS oss) throws Throwable {
-        OSSClient ossClient = new OSSClient(oss.getEndpoint(),
-                                            new DefaultCredentialProvider(oss.getAccessKeyId(), oss.getAccessKeySecret()),
+    private void transferByOSS(FileTransferRequest request, Path destination, FileTransferListener listener) throws Throwable {
+        OSSClient ossClient = new OSSClient(request.getOssEndpoint(),
+                                            new DefaultCredentialProvider(request.getOssAccessKeyId(),
+                                                                          request.getOssSecretAccessKey()),
                                             null);
         try {
-            ObjectMetadata meta = ossClient.getObjectMetadata(oss.getBucketName(), oss.getObjectName());
+            ObjectMetadata meta = ossClient.getObjectMetadata(request.getOssBucketName(), request.getOssObjectKey());
             listener.fireTotalSize(meta.getContentLength());
 
-            DownloadFileRequest downloadFileRequest = new DownloadFileRequest(oss.getBucketName(), oss.getObjectName());
+            DownloadFileRequest downloadFileRequest = new DownloadFileRequest(request.getOssBucketName(), request.getOssObjectKey());
             downloadFileRequest.setDownloadFile(destination.toFile().getAbsolutePath());
             downloadFileRequest.setPartSize(128 * 1024 * 1024);
             downloadFileRequest.setTaskNum(Runtime.getRuntime().availableProcessors());
@@ -204,24 +232,24 @@ public class StorageServiceImpl extends ConfigurationAccessor implements Storage
         }
     }
 
-    private void handleS3(Path destination, FileTransferListener listener, FileTransferRequest.S3 s3) {
-        AWSCredentials credentials = new BasicAWSCredentials(s3.getAccessKey(), s3.getSecretKey());
+    private void transferByS3(FileTransferRequest request, Path destination, FileTransferListener listener) {
+        AWSCredentials credentials = new BasicAWSCredentials(request.getS3AccessKey(), request.getS3SecretKey());
         ClientConfiguration clientConfig = new ClientConfiguration();
         clientConfig.setProtocol(Protocol.HTTPS);
         AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
                                                  .withCredentials(new AWSStaticCredentialsProvider(credentials))
                                                  .withCredentials(new InstanceProfileCredentialsProvider(false))
                                                  .withClientConfiguration(clientConfig)
-                                                 .withRegion(s3.getRegion())
+                                                 .withRegion(request.getS3Region())
                                                  .withPathStyleAccessEnabled(true)
                                                  .build();
         try {
             com.amazonaws.services.s3.model.ObjectMetadata objectMetadata =
-                    s3Client.getObjectMetadata(s3.getBucketName(), s3.getObjectName());
+                    s3Client.getObjectMetadata(request.getS3BucketName(), request.getS3ObjectKey());
             listener.fireTotalSize(objectMetadata.getContentLength());
 
             AtomicLong transferredSize = new AtomicLong(0);
-            GetObjectRequest getObjectRequest = new GetObjectRequest(s3.getBucketName(), s3.getObjectName())
+            GetObjectRequest getObjectRequest = new GetObjectRequest(request.getS3BucketName(), request.getOssObjectKey())
                     .withGeneralProgressListener(progressEvent -> {
                         if (progressEvent.getEventType() == com.amazonaws.event.ProgressEventType.RESPONSE_BYTE_TRANSFER_EVENT) {
                             listener.fireTransferredSize(transferredSize.addAndGet(progressEvent.getBytes()));
@@ -233,14 +261,13 @@ public class StorageServiceImpl extends ConfigurationAccessor implements Storage
         }
     }
 
-    private void handleSCP(Path destination, FileTransferListener listener, FileTransferRequest.SCP scp) throws IOException {
+    private void transferBySCP(FileTransferRequest request, Path destination, FileTransferListener listener) throws IOException {
         try (SSHClient ssh = new SSHClient()) {
-            ssh.connect(scp.getHostname());
-            if (scp.getPassword() != null) {
-                ssh.authPassword(scp.getUser(), scp.getPassword());
+            ssh.connect(request.getScpHostname());
+            if (StringUtils.isNotBlank(request.getScpPassword())) {
+                ssh.authPassword(request.getScpUser(), request.getScpPassword());
             } else {
-                // TODO
-                ssh.authPublickey(scp.getUser(), (KeyProvider) null);
+                ssh.authPublickey(request.getScpUser(), sshKeyProvider);
             }
 
             SCPFileTransfer transfer = ssh.newSCPFileTransfer();
@@ -259,12 +286,12 @@ public class StorageServiceImpl extends ConfigurationAccessor implements Storage
             SCPDownloadClient downloadClient = transfer.newSCPDownloadClient();
             // do not copy dir now
             downloadClient.setRecursiveMode(false);
-            downloadClient.copy(scp.getPath(), new FileSystemFile(destination.toFile().getAbsolutePath()));
+            downloadClient.copy(request.getScpSourcePath(), new FileSystemFile(destination.toFile().getAbsolutePath()));
         }
     }
 
-    private void handleURL(Path destination, FileTransferListener listener, String url) throws IOException {
-        URLConnection conn = new java.net.URL(url).openConnection();
+    private void transferByURL(FileTransferRequest request, Path destination, FileTransferListener listener) throws IOException {
+        URLConnection conn = new java.net.URL(request.getUrl()).openConnection();
         listener.fireTotalSize(Math.max(conn.getContentLengthLong(), 0));
         try (InputStream in = conn.getInputStream();
              OutputStream out = new FileOutputStream(destination.toFile())) {
