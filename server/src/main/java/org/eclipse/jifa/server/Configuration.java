@@ -22,14 +22,12 @@ import lombok.Setter;
 import org.eclipse.jifa.common.util.Validate;
 import org.eclipse.jifa.server.enums.Role;
 import org.eclipse.jifa.server.enums.SchedulingStrategy;
-import org.eclipse.jifa.server.util.KeyPairGenerator;
+import org.eclipse.jifa.server.util.DefaultRSAKeyPair;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.KeyPair;
-import java.security.NoSuchAlgorithmException;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 
@@ -96,7 +94,7 @@ public class Configuration {
     private String rootPassword = "password";
 
     @PostConstruct
-    private void init() throws NoSuchAlgorithmException {
+    private void init() {
         if (role == Role.MASTER) {
             Validate.notNull(schedulingStrategy,
                              "jifa.scheduling-strategy must be set when role is master");
@@ -126,9 +124,8 @@ public class Configuration {
         }
 
         if (publicKey == null || privateKey == null) {
-            KeyPair keyPair = KeyPairGenerator.generateRSAKeyPair();
-            publicKey = (RSAPublicKey) keyPair.getPublic();
-            privateKey = (RSAPrivateKey) keyPair.getPrivate();
+            publicKey = DefaultRSAKeyPair.getPublicKey();
+            privateKey = DefaultRSAKeyPair.getPrivateKey();
         }
     }
 }

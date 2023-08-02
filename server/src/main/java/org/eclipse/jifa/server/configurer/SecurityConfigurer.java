@@ -66,7 +66,7 @@ public class SecurityConfigurer extends ConfigurationAccessor {
 
     @Bean
     public JwtEncoder jwtEncoder() {
-        var jwk = new RSAKey.Builder(getPublicKey()).privateKey(getPrivateKey()).build();
+        RSAKey jwk = new RSAKey.Builder(getPublicKey()).privateKey(getPrivateKey()).build();
         return new NimbusJwtEncoder(new ImmutableJWKSet<>(new JWKSet(jwk)));
     }
 

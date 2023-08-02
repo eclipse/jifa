@@ -83,6 +83,85 @@ tasks.named("processResources") {
     dependsOn(':frontend:build')
 }
 
+// for kryo
+applicationDefaultJvmArgs = ['--add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED']
+
+import org.springframework.boot.gradle.tasks.run.BootRun
+
+import java.nio.file.Files
+import java.security.KeyPair
+import java.security.KeyPairGenerator
+
+static void generateDevKey(File dir) {
+    def pubKeyPath = dir.toPath().resolve('dev_rsa.pub')
+    if (Files.exists(pubKeyPath)) {
+        return
+    }
+    KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
+    generator.initialize(2048);
+    KeyPair keyPair = generator.generateKeyPair();
+
+    String publicKeyEncoded =
+            '-----BEGIN PUBLIC KEY-----\n' + Base64.getEncoder().encodeToString(keyPair.getPublic().getEncoded()) + '\n-----END PUBLIC KEY-----\n'
+    Files.writeString(pubKeyPath, publicKeyEncoded)
+
+    String privateKeyEncoded =
+            '-----BEGIN PRIVATE KEY-----\n' + Base64.getEncoder().encodeToString(keyPair.getPrivate().getEncoded()) + '\n-----END PRIVATE KEY-----\n'
+    Files.writeString(dir.toPath().resolve('dev_rsa'), privateKeyEncoded)
+}
+
+afterEvaluate {
+    generateDevKey(projectDir)
+}
+
+static void setDevKeys(BootRun bootRun) {
+    bootRun.args('--jifa.public-key=file:' + bootRun.project.projectDir.toPath().resolve('dev_rsa.pub').toAbsolutePath().toString())
+    bootRun.args('--jifa.private-key=file:' + bootRun.project.projectDir.toPath().resolve('dev_rsa').toAbsolutePath().toString())
+}
+
+static void setMysqlEnv(BootRun bootRun) {
+    bootRun.environment('MYSQL_HOST', 'localhost:3306')
+    bootRun.environment('MYSQL_DATABASE_NAME', 'jifa')
+    bootRun.environment('MYSQL_USERNAME', 'root')
+    bootRun.environment('MYSQL_PASSWORD', 'password')
+}
+
+tasks.register('runStandaloneWorker', BootRun) {
+    group('jifa')
+    classpath(project.sourceSets.main.runtimeClasspath)
+    mainClass.convention(mainClassName)
+
+    setDevKeys(it)
+}
+
+tasks.register('runStandaloneWorkerWithMysql', BootRun) {
+    group('jifa')
+    classpath(project.sourceSets.main.runtimeClasspath)
+    mainClass.convention(mainClassName)
+
+    setDevKeys(it)
+    setMysqlEnv(it)
+}
+
+tasks.register('runMaster', BootRun) {
+    group('jifa')
+    classpath(project.sourceSets.main.runtimeClasspath)
+    mainClass.convention(mainClassName)
+
+    args('--jifa.role=master', '--jifa.scheduling-strategy=static')
+    setDevKeys(it)
+    setMysqlEnv(it)
+}
+
+tasks.register('runStaticWorker', BootRun) {
+    group('jifa')
+    classpath(project.sourceSets.main.runtimeClasspath)
+    mainClass.convention(mainClassName)
+
+    args('--jifa.role=static-worker')
+    setDevKeys(it)
+    setMysqlEnv(it)
+}
 
 bootJar {
     manifest {
@@ -97,48 +176,4 @@ bootDistTar {
 
 bootDistZip {
     archiveFileName = 'jifa.zip'
-}
-
-// for kryo
-applicationDefaultJvmArgs = ['--add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED']
-
-import org.springframework.boot.gradle.tasks.run.BootRun
-
-tasks.register('runStandaloneWorker', BootRun) {
-    group('jifa')
-    classpath(project.sourceSets.main.runtimeClasspath)
-    mainClass.convention(mainClassName)
-}
-
-static void setMysqlEnv(BootRun bootRun) {
-    bootRun.environment('MYSQL_HOST', 'localhost:3306')
-    bootRun.environment('MYSQL_DATABASE_NAME', 'jifa')
-    bootRun.environment('MYSQL_USERNAME', 'root')
-    bootRun.environment('MYSQL_PASSWORD', 'password')
-}
-
-tasks.register('runStandaloneWorkerWithMysql', BootRun) {
-    group('jifa')
-    classpath(project.sourceSets.main.runtimeClasspath)
-    mainClass.convention(mainClassName)
-
-    setMysqlEnv(it)
-}
-
-tasks.register('runMaster', BootRun) {
-    group('jifa')
-    classpath(project.sourceSets.main.runtimeClasspath)
-    mainClass.convention(mainClassName)
-
-    args('--jifa.role=master', '--jifa.scheduling-strategy=static')
-    setMysqlEnv(it)
-}
-
-tasks.register('runStaticWorker', BootRun) {
-    group('jifa')
-    classpath(project.sourceSets.main.runtimeClasspath)
-    mainClass.convention(mainClassName)
-
-    args('--jifa.role=static-worker')
-    setMysqlEnv(it)
 }

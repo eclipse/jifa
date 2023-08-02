@@ -26,7 +26,7 @@ public class CipherServiceImpl extends ConfigurationAccessor implements CipherSe
 
     public String encrypt(String raw) {
         try {
-            Cipher cipher = Cipher.getInstance("RSA");
+            Cipher cipher = Cipher.getInstance(getPublicKey().getAlgorithm());
             cipher.init(Cipher.ENCRYPT_MODE, getPublicKey());
             byte[] bytes = cipher.doFinal(raw.getBytes(Constant.CHARSET));
             return Base64.getEncoder().encodeToString(bytes);
@@ -39,7 +39,7 @@ public class CipherServiceImpl extends ConfigurationAccessor implements CipherSe
     public String decrypt(String encoded) {
         try {
             byte[] bytes = Base64.getDecoder().decode(encoded);
-            Cipher cipher = Cipher.getInstance("RSA");
+            Cipher cipher = Cipher.getInstance(getPrivateKey().getAlgorithm());
             cipher.init(Cipher.DECRYPT_MODE, getPrivateKey());
             return new String(cipher.doFinal(bytes), Constant.CHARSET);
         } catch (Throwable t) {
