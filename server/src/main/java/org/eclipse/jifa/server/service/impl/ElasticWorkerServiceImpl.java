@@ -141,6 +141,7 @@ public class ElasticWorkerServiceImpl extends AbstractWorkerServiceImpl implemen
                                                Instant.now().plusSeconds(DELETION_DELAY));
                     }
                 } else {
+                    elasticWorker.setHostAddress(hostAddress);
                     elasticWorker.setState(ElasticWorkerState.READY);
                     elasticWorkerRepo.save(elasticWorker);
                 }
