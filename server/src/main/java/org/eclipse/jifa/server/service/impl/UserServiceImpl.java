@@ -167,8 +167,12 @@ public class UserServiceImpl extends ConfigurationAccessor implements UserServic
     }
 
     @Override
-    public String getCurrentUserJwtToken() {
+    public String getCurrentUserJwtTokenOrNull() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null) {
+            return null;
+        }
+
         if (authentication instanceof JifaAuthenticationToken token) {
             return token.getToken();
         }

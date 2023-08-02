@@ -29,7 +29,7 @@ public interface UserService {
 
     boolean isCurrentUserAdmin();
 
-    String getCurrentUserJwtToken();
+    String getCurrentUserJwtTokenOrNull();
 
     UserEntity getCurrentUser();
 }

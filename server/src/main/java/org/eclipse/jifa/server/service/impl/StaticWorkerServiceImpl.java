@@ -106,7 +106,7 @@ public class StaticWorkerServiceImpl extends AbstractWorkerServiceImpl implement
         WebClient.RequestBodySpec spec = webClient.method(HttpMethod.POST)
                                                   .uri(uriBuilder.build());
 
-        String jwtToken = userService.getCurrentUserJwtToken();
+        String jwtToken = userService.getCurrentUserJwtTokenOrNull();
         if (jwtToken != null) {
             spec.header(HttpHeaders.AUTHORIZATION, "Bearer " + jwtToken);
         }
@@ -133,7 +133,7 @@ public class StaticWorkerServiceImpl extends AbstractWorkerServiceImpl implement
                 .execute(uriBuilder.build(),
                          HttpMethod.GET,
                          clientHttpRequest -> {
-                             String jwtToken = userService.getCurrentUserJwtToken();
+                             String jwtToken = userService.getCurrentUserJwtTokenOrNull();
                              if (jwtToken != null) {
                                  clientHttpRequest.getHeaders().add(HttpHeaders.AUTHORIZATION, "Bearer " + jwtToken);
                              }

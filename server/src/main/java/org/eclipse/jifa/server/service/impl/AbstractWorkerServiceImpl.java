@@ -77,7 +77,7 @@ public abstract class AbstractWorkerServiceImpl extends ConfigurationAccessor im
                                                   .uri(uriBuilder.build())
                                                   .accept(MediaType.APPLICATION_JSON);
 
-        String jwtToken = userService.getCurrentUserJwtToken();
+        String jwtToken = userService.getCurrentUserJwtTokenOrNull();
 
         if (jwtToken != null) {
             spec.header(HttpHeaders.AUTHORIZATION, "Bearer " + jwtToken);
