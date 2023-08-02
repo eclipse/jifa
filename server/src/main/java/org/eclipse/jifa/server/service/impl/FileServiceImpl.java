@@ -210,18 +210,25 @@ public class FileServiceImpl extends ConfigurationAccessor implements FileServic
         String originalName = file.getOriginalFilename();
         long size = storageService.handleUpload(type, file, uniqueName);
 
-        FileEntity f = new FileEntity();
-        f.setUniqueName(uniqueName);
-        f.setUser(userService.getCurrentUser());
-        f.setOriginalName(originalName);
-        f.setType(type);
-        f.setSize(size);
-        try {
-            fileRepo.save(f);
-        } catch (Throwable t) {
-            storageService.scavenge(type, uniqueName);
-            throw t;
+        FileStaticWorkerBind bind = isStaticWorker() ? new FileStaticWorkerBind() : null;
+        if (bind != null) {
+            bind.setStaticWorker(currentStaticWorker.getEntity());
         }
+
+        transactionTemplate.executeWithoutResult(status -> {
+            FileEntity newFile = new FileEntity();
+            newFile.setUniqueName(uniqueName);
+            newFile.setUser(userService.getCurrentUser());
+            newFile.setOriginalName(originalName);
+            newFile.setType(type);
+            newFile.setSize(size);
+            FileEntity savedFile = fileRepo.save(newFile);
+            if (bind != null) {
+                bind.setFile(savedFile);
+                fileStaticWorkerBindRepo.save(bind);
+            }
+        });
+
     }
 
     @Override
