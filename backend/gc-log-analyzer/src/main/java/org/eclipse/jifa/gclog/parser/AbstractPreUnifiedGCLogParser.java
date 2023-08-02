@@ -460,10 +460,28 @@ public abstract class AbstractPreUnifiedGCLogParser extends AbstractGCLogParser 
         if (line.charAt(index) == ' ') {
             index++;
         }
-        if (GCLogUtil.isDatestamp(line, index)
-                && GCLogUtil.stringSubEquals(line, index + GCLogUtil.DATESTAMP_LENGTH, ": ")) {
+        if (GCLogUtil.isDatestamp(line, index)) {
             String s = line.substring(index, index + GCLogUtil.DATESTAMP_LENGTH);
-            return new GCLogToken(s, index + GCLogUtil.DATESTAMP_LENGTH + 2);
+            return new GCLogToken(s, newEndAfterPossiblyMeetColunSpace(line,   index + GCLogUtil.DATESTAMP_LENGTH));
+        } else {
+            return null;
+        }
+    };
+
+    private static int newEndAfterPossiblyMeetColunSpace(String line, int index) {
+        if (GCLogUtil.stringSubEquals(line, index, ": ")) {
+            return index + 2;
+        } else {
+            return index;
+        }
+    }
+
+    // ": "
+    protected final static GCLogTokenType TOKEN_COLON_SPACE = (line, index, parser) -> {
+        int end = newEndAfterPossiblyMeetColunSpace(line, index);
+        if (index != end) {
+            String s = line.substring(index, end);
+            return new GCLogToken(s, end);
         } else {
             return null;
         }
@@ -475,9 +493,9 @@ public abstract class AbstractPreUnifiedGCLogParser extends AbstractGCLogParser 
             index++;
         }
         int end = GCLogUtil.isDecimal(line, index, 3);
-        if (end >= 0 && GCLogUtil.stringSubEquals(line, end, ": ")) {
+        if (end >= 0) {
             String s = line.substring(index, end);
-            return new GCLogToken(s, end + 2);
+            return new GCLogToken(s, newEndAfterPossiblyMeetColunSpace(line, end));
         } else {
             return null;
         }
@@ -493,9 +511,9 @@ public abstract class AbstractPreUnifiedGCLogParser extends AbstractGCLogParser 
             if (Character.isDigit(c)) {
                 continue;
             }
-            if (GCLogUtil.stringSubEquals(line, i, ": ")) {
+            if (index != i + 1) {
                 String s = line.substring(index + 1, i);
-                return new GCLogToken(s, i + 2);
+                return new GCLogToken(s, newEndAfterPossiblyMeetColunSpace(line, i));
             } else {
                 return null;
             }
@@ -775,7 +793,12 @@ public abstract class AbstractPreUnifiedGCLogParser extends AbstractGCLogParser 
                 if (sentence != null) {
                     continue;
                 }
-                // should not reach here if we have considered all cases
+                if (checkNextToken(TOKEN_COLON_SPACE)) {
+                    // HACK: when we find ": " and this can not match any other token type, it is likely
+                    // that we meet a concurrent problem of gclog parsing. Just swallow this token.
+                    continue;
+                }
+                // some logs like -XX:+PrintTenuringDistribution, -XX:+PrintHeapAtGC are ignored
                 break;
             }
         }
