@@ -514,14 +514,14 @@ public class TestParser {
         CMSGCModel model = (CMSGCModel) parser.parse(stringToBufferedReader(log));
         model.calculateDerivedInfo(new DefaultProgressListener());
         Assert.assertNotNull(model);
-        Assert.assertEquals(model.getLastEventOfType(GCEventType.CMS_INITIAL_MARK).getCpuTime().getReal(),130, DELTA);
-        Assert.assertEquals(model.getLastEventOfType(GCEventType.CMS_CONCURRENT_MARK).getCpuTime().getUser(),10, DELTA);
-        Assert.assertEquals(model.getLastEventOfType(GCEventType.CMS_CONCURRENT_PRECLEAN).getCpuTime().getReal(),30, DELTA);
-        Assert.assertEquals(model.getLastEventOfType(GCEventType.CMS_CONCURRENT_ABORTABLE_PRECLEAN).getCpuTime().getReal(),4650, DELTA);
-        Assert.assertEquals(model.getLastEventOfType(GCEventType.CMS_FINAL_REMARK).getCpuTime().getReal(),30, DELTA);
-        Assert.assertEquals(model.getLastEventOfType(GCEventType.CMS_CONCURRENT_SWEEP).getCpuTime().getReal(),20, DELTA);
-        Assert.assertEquals(model.getLastEventOfType(GCEventType.CMS_CONCURRENT_RESET).getCpuTime().getReal(),40, DELTA);
-        Assert.assertEquals(model.getLastEventOfType(GCEventType.YOUNG_GC).getCpuTime().getReal(),50, DELTA);
+        Assert.assertEquals(model.getLastEventOfType(GCEventType.CMS_INITIAL_MARK).getCpuTime().getReal(), 130, DELTA);
+        Assert.assertEquals(model.getLastEventOfType(GCEventType.CMS_CONCURRENT_MARK).getCpuTime().getUser(), 10, DELTA);
+        Assert.assertEquals(model.getLastEventOfType(GCEventType.CMS_CONCURRENT_PRECLEAN).getCpuTime().getReal(), 30, DELTA);
+        Assert.assertEquals(model.getLastEventOfType(GCEventType.CMS_CONCURRENT_ABORTABLE_PRECLEAN).getCpuTime().getReal(), 4650, DELTA);
+        Assert.assertEquals(model.getLastEventOfType(GCEventType.CMS_FINAL_REMARK).getCpuTime().getReal(), 30, DELTA);
+        Assert.assertEquals(model.getLastEventOfType(GCEventType.CMS_CONCURRENT_SWEEP).getCpuTime().getReal(), 20, DELTA);
+        Assert.assertEquals(model.getLastEventOfType(GCEventType.CMS_CONCURRENT_RESET).getCpuTime().getReal(), 40, DELTA);
+        Assert.assertEquals(model.getLastEventOfType(GCEventType.YOUNG_GC).getCpuTime().getReal(), 50, DELTA);
     }
 
     @Test
@@ -1912,7 +1912,7 @@ public class TestParser {
                 Assert.assertNotNull(event.getMemoryItem(HEAP));
             }
             if (event.isOldGC()) {
-                Assert.assertTrue( event.getPhases().size() >= 2);
+                Assert.assertTrue(event.getPhases().size() >= 2);
             }
         }
     }
@@ -2059,6 +2059,141 @@ public class TestParser {
             }
             if (event.isOldGC()) {
                 Assert.assertEquals(7, event.getPhases().size());
+            }
+        }
+    }
+
+    @Test
+    public void testJDK8G1LogConcurrencyProblem() throws Exception {
+        String log =
+                "2023-07-25T13:18:01.133+0000: 985158.576: Total time for which application threads were stopped: 0.1797145 seconds, Stopping threads took: 0.0000697 seconds\n" +
+                        "{Heap before GC invocations=162768 (full 0):\n" +
+                        " garbage-first heap   total 8388608K, used 5412863K [0x00000005c0000000, 0x00000005c0404000, 0x00000007c0000000)\n" +
+                        "  region size 4096K, 396 young (1622016K), 27 survivors (110592K)\n" +
+                        " Metaspace       used 104115K, capacity 115446K, committed 115584K, reserved 1150976K\n" +
+                        "  class space    used 12065K, capacity 13637K, committed 13696K, reserved 1048576K\n" +
+                        " 985162.173: [G1Ergonomics (Concurrent Cycles) initiate concurrent cycle, reason: concurrent cycle initiation requested]\n" +
+                        "2023-07-25T13:18:04.730+0000: 985162.173: [GC pause (G1 Evacuation Pause) (young) (initial-mark)\n" +
+                        "Desired survivor size 104857600 bytes, new threshold 15 (max 15)\n" +
+                        "- age   1:   62692328 bytes,   62692328 total\n" +
+                        "- age   2:   41370368 bytes,  104062696 total\n" +
+                        " 985162.173: [G1Ergonomics (CSet Construction) start choosing CSet, _pending_cards: 29094, predicted base time: 22.53 ms, remaining time: 177.47 ms, target pause time: 200.00 ms]\n" +
+                        " 985162.173: [G1Ergonomics (CSet Construction) add young regions to CSet, eden: 369 regions, survivors: 27 regions, predicted young region time: 185.54 ms]\n" +
+                        " 985162.173: [G1Ergonomics (CSet Construction) finish choosing CSet, eden: 369 regions, survivors: 27 regions, old: 0 regions, predicted pause time: 208.07 ms, target pause time: 200.00 ms]\n" +
+                        ", 0.1696146 secs]\n" +
+                        "   [Parallel Time: 167.9 ms, GC Workers: 4]\n" +
+                        "      [GC Worker Start (ms): Min: 985162173.6, Avg: 985162173.7, Max: 985162173.7, Diff: 0.0]\n" +
+                        "      [Ext Root Scanning (ms): Min: 3.4, Avg: 3.6, Max: 3.7, Diff: 0.3, Sum: 14.2]\n" +
+                        "      [Update RS (ms): Min: 18.0, Avg: 18.3, Max: 18.6, Diff: 0.6, Sum: 73.1]\n" +
+                        "         [Processed Buffers: Min: 29, Avg: 32.5, Max: 37, Diff: 8, Sum: 130]\n" +
+                        "      [Scan RS (ms): Min: 0.1, Avg: 0.3, Max: 0.5, Diff: 0.4, Sum: 1.3]\n" +
+                        "      [Code Root Scanning (ms): Min: 0.0, Avg: 0.0, Max: 0.0, Diff: 0.0, Sum: 0.0]\n" +
+                        "      [Object Copy (ms): Min: 144.9, Avg: 145.2, Max: 145.4, Diff: 0.5, Sum: 580.7]\n" +
+                        "      [Termination (ms): Min: 0.0, Avg: 0.0, Max: 0.0, Diff: 0.0, Sum: 0.0]\n" +
+                        "         [Termination Attempts: Min: 1, Avg: 1.0, Max: 1, Diff: 0, Sum: 4]\n" +
+                        "      [GC Worker Other (ms): Min: 0.0, Avg: 0.1, Max: 0.1, Diff: 0.0, Sum: 0.2]\n" +
+                        "      [GC Worker Total (ms): Min: 167.4, Avg: 167.4, Max: 167.4, Diff: 0.1, Sum: 669.5]\n" +
+                        "      [GC Worker End (ms): Min: 985162341.0, Avg: 985162341.0, Max: 985162341.1, Diff: 0.0]\n" +
+                        "   [Code Root Fixup: 0.1 ms]\n" +
+                        "   [Code Root Purge: 0.0 ms]\n" +
+                        "   [Clear CT: 0.3 ms]\n" +
+                        "   [Other: 1.3 ms]\n" +
+                        "      [Choose CSet: 0.0 ms]\n" +
+                        "      [Ref Proc: 0.3 ms]\n" +
+                        "      [Ref Enq: 0.0 ms]\n" +
+                        "      [Redirty Cards: 0.1 ms]\n" +
+                        "      [Humongous Register: 0.0 ms]\n" +
+                        "      [Humongous Reclaim: 0.0 ms]\n" +
+                        "      [Free CSet: 0.4 ms]\n" +
+                        "   [Eden: 1476.0M(1476.0M)->0.0B(1472.0M) Survivors: 108.0M->140.0M Heap: 5286.0M(8192.0M)->3842.0M(8192.0M)]\n" +
+                        "Heap after GC invocations=162769 (full 0):\n" +
+                        " garbage-first heap   total 8388608K, used 3934207K [0x00000005c0000000, 0x00000005c0404000, 0x00000007c0000000)\n" +
+                        "  region size 4096K, 35 young (143360K), 35 survivors (143360K)\n" +
+                        " Metaspace       used 104115K, capacity 115446K, committed 115584K, reserved 1150976K\n" +
+                        "  class space    used 12065K, capacity 13637K, committed 13696K, reserved 1048576K\n" +
+                        "}\n" +
+                        " [Times: user=0.59 sys=0.08, real=0.17 secs] \n" +
+                        "2023-07-25T13:18:04.900+0000: 985162.343: 2023-07-25T13:18:04.900+0000Total time for which application threads were stopped: 0.1701451 seconds, Stopping threads took: 0.0000861 seconds\n" +
+                        ": 985162.343: [GC concurrent-root-region-scan-start]\n" +
+                        "2023-07-25T13:18:05.074+0000: 985162.517: Total time for which application threads were stopped: 0.0004160 seconds, Stopping threads took: 0.0000960 seconds\n" +
+                        "2023-07-25T13:18:05.074+0000: 985162.517: Total time for which application threads were stopped: 0.0002714 seconds, Stopping threads took: 0.0000473 seconds\n" +
+                        "2023-07-25T13:18:05.150+0000: 985162.592: [GC concurrent-root-region-scan-end, 0.2497555 secs]\n" +
+                        "2023-07-25T13:18:05.150+0000: 985162.592: [GC concurrent-mark-start]\n" +
+                        "{Heap before GC invocations=162769 (full 0):\n" +
+                        " garbage-first heap   total 8388608K, used 5441535K [0x00000005c0000000, 0x00000005c0404000, 0x00000007c0000000)\n" +
+                        "  region size 4096K, 403 young (1650688K), 35 survivors (143360K)\n" +
+                        " Metaspace       used 104115K, capacity 115446K, committed 115584K, reserved 1150976K\n" +
+                        "  class space    used 12065K, capacity 13637K, committed 13696K, reserved 1048576K\n" +
+                        "2023-07-25T13:18:09.879+0000: 985167.321: [GC pause (G1 Evacuation Pause) (young)\n" +
+                        "Desired survivor size 106954752 bytes, new threshold 3 (max 15)\n" +
+                        "- age   1:   68236112 bytes,   68236112 total\n" +
+                        "- age   2:   38021144 bytes,  106257256 total\n" +
+                        "- age   3:   32498880 bytes,  138756136 total\n" +
+                        " 985167.321: [G1Ergonomics (CSet Construction) start choosing CSet, _pending_cards: 5429, predicted base time: 8.11 ms, remaining time: 191.89 ms, target pause time: 200.00 ms]\n" +
+                        " 985167.321: [G1Ergonomics (CSet Construction) add young regions to CSet, eden: 368 regions, survivors: 35 regions, predicted young region time: 175.85 ms]\n" +
+                        " 985167.321: [G1Ergonomics (CSet Construction) finish choosing CSet, eden: 368 regions, survivors: 35 regions, old: 0 regions, predicted pause time: 183.96 ms, target pause time: 200.00 ms]\n" +
+                        ", 0.2025873 secs]\n" +
+                        "   [Parallel Time: 200.5 ms, GC Workers: 4]\n" +
+                        "      [GC Worker Start (ms): Min: 985167321.5, Avg: 985167323.6, Max: 985167329.9, Diff: 8.4]\n" +
+                        "      [Ext Root Scanning (ms): Min: 0.0, Avg: 1.5, Max: 2.1, Diff: 2.1, Sum: 6.0]\n" +
+                        "      [Update RS (ms): Min: 0.0, Avg: 3.8, Max: 5.2, Diff: 5.2, Sum: 15.3]\n" +
+                        "         [Processed Buffers: Min: 0, Avg: 9.2, Max: 15, Diff: 15, Sum: 37]\n" +
+                        "      [Scan RS (ms): Min: 0.0, Avg: 0.1, Max: 0.2, Diff: 0.1, Sum: 0.3]\n" +
+                        "      [Code Root Scanning (ms): Min: 0.0, Avg: 0.0, Max: 0.0, Diff: 0.0, Sum: 0.0]\n" +
+                        "      [Object Copy (ms): Min: 192.0, Avg: 192.9, Max: 193.3, Diff: 1.4, Sum: 771.5]\n" +
+                        "      [Termination (ms): Min: 0.0, Avg: 0.0, Max: 0.0, Diff: 0.0, Sum: 0.0]\n" +
+                        "         [Termination Attempts: Min: 1, Avg: 1.0, Max: 1, Diff: 0, Sum: 4]\n" +
+                        "      [GC Worker Other (ms): Min: 0.0, Avg: 0.0, Max: 0.1, Diff: 0.0, Sum: 0.2]\n" +
+                        "      [GC Worker Total (ms): Min: 192.1, Avg: 198.4, Max: 200.5, Diff: 8.4, Sum: 793.5]\n" +
+                        "      [GC Worker End (ms): Min: 985167522.0, Avg: 985167522.0, Max: 985167522.0, Diff: 0.0]\n" +
+                        "   [Code Root Fixup: 0.1 ms]\n" +
+                        "   [Code Root Purge: 0.0 ms]\n" +
+                        "   [Clear CT: 0.2 ms]\n" +
+                        "   [Other: 1.7 ms]\n" +
+                        "      [Choose CSet: 0.0 ms]\n" +
+                        "      [Ref Proc: 0.8 ms]\n" +
+                        "      [Ref Enq: 0.0 ms]\n" +
+                        "      [Redirty Cards: 0.2 ms]\n" +
+                        "      [Humongous Register: 0.1 ms]\n" +
+                        "      [Humongous Reclaim: 0.0 ms]\n" +
+                        "      [Free CSet: 0.3 ms]\n" +
+                        "   [Eden: 1472.0M(1472.0M)->0.0B(1128.0M) Survivors: 140.0M->140.0M Heap: 5314.0M(8192.0M)->3874.0M(8192.0M)]\n" +
+                        "Heap after GC invocations=162770 (full 0):\n" +
+                        " garbage-first heap   total 8388608K, used 3966947K [0x00000005c0000000, 0x00000005c0404000, 0x00000007c0000000)\n" +
+                        "  region size 4096K, 35 young (143360K), 35 survivors (143360K)\n" +
+                        " Metaspace       used 104115K, capacity 115446K, committed 115584K, reserved 1150976K\n" +
+                        "  class space    used 12065K, capacity 13637K, committed 13696K, reserved 1048576K\n" +
+                        "}\n" +
+                        " [Times: user=0.69 sys=0.00, real=0.21 secs] \n" +
+                        "2023-07-25T13:18:10.081+0000: 985167.524: Total time for which application threads were stopped: 0.2031233 seconds, Stopping threads took: 0.0000777 seconds\n" +
+                        "2023-07-25T13:18:10.087+0000: 985167.530: Total time for which application threads were stopped: 0.0002854 seconds, Stopping threads took: 0.0000517 seconds\n" +
+                        "2023-07-25T13:18:10.101+0000: 985167.544: Total time for which application threads were stopped: 0.0003908 seconds, Stopping threads took: 0.0001074 seconds\n" +
+                        "2023-07-25T13:18:12.062+0000: 985169.504: [GC concurrent-mark-end, 6.9119339 secs]\n" +
+                        "2023-07-25T13:18:12.063+0000: 985169.505: [GC remark 2023-07-25T13:18:12.063+0000: 985169.506: [Finalize Marking, 0.0024793 secs] 2023-07-25T13:18:12.065+0000: 985169.508: [GC ref-proc, 0.0057246 secs] 2023-07-25T13:18:12.071+0000: 985169.514: [Unloading, 0.0814802 secs], 0.0967688 secs]\n" +
+                        " [Times: user=0.29 sys=0.04, real=0.09 secs] \n" +
+                        "2023-07-25T13:18:12.160+0000: 985169.602: Total time for which application threads were stopped: 0.0971229 seconds, Stopping threads took: 0.0000638 seconds\n" +
+                        "2023-07-25T13:18:12.168+0000: 985169.611: [GC cleanup 4513M->4501M(8192M), 0.0186332 secs]\n" +
+                        " [Times: user=0.05 sys=0.01, real=0.02 secs] \n" +
+                        "2023-07-25T13:18:12.187+0000: 985169.630: Total time for which application threads were stopped: 0.0198694 seconds, Stopping threads took: 0.0008214 seconds\n" +
+                        "2023-07-25T13:18:12.187+0000: 985169.630: [GC concurrent-cleanup-start]\n" +
+                        "2023-07-25T13:18:12.187+0000: 985169.630: [GC concurrent-cleanup-end, 0.0000653 secs]";
+
+        GCLogParser parser = new GCLogParserFactory().getParser(stringToBufferedReader(log));
+        G1GCModel model = (G1GCModel) parser.parse(stringToBufferedReader(log));
+        model.calculateDerivedInfo(new DefaultProgressListener());
+
+        Assert.assertEquals(model.getGcEvents().stream().filter(GCEvent::isYoungGC).count(), 2);
+        Assert.assertEquals(model.getGcEvents().stream().filter(GCEvent::isOldGC).count(), 1);
+        Assert.assertEquals(model.getGcEvents().stream().filter(GCEvent::isFullGC).count(), 0);
+        for (GCEvent event : model.getGcEvents()) {
+            Assert.assertTrue(event.getStartTime() > 0);
+            if (event.isYoungGC() || event.isFullGC()) {
+                Assert.assertTrue(event.getDuration() > 0);
+                Assert.assertNotNull(event.getCause());
+                Assert.assertNotNull(event.getMemoryItem(HEAP));
+            }
+            if (event.isOldGC()) {
+                Assert.assertEquals(8, event.getPhases().size());
             }
         }
     }
