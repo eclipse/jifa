@@ -110,7 +110,7 @@ public class K8SWorkerScheduler extends ConfigurationAccessor implements Elastic
                         .addEnvItem(new V1EnvVar().name("MYSQL_USERNAME").value(System.getenv("MYSQL_USERNAME")))
                         .addEnvItem(new V1EnvVar().name("MYSQL_PASSWORD").value(System.getenv("MYSQL_PASSWORD")))
                         .addEnvItem(new V1EnvVar().name(ELASTIC_WORKER_IDENTITY_ENV_KEY).value(Long.toString(identity)))
-                        .command(List.of("/wd/jifa/bin/jifa"))
+                        .command(List.of("java","-jar","/wd/jifa.jar"))
                         .args(List.of("--jifa.role=elastic-worker",
                                       "--jifa.storage-path=" + config.getStoragePath().toString()))
                         .addPortsItem(new V1ContainerPort().containerPort(DEFAULT_WORKER_PORT))

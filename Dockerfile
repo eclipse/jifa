@@ -1,11 +1,8 @@
-FROM centos:centos8
-
+FROM --platform=linux/amd64 eclipse-temurin:17.0.5_8-jdk-alpine
 WORKDIR /wd
 
-RUN cd /etc/yum.repos.d/ && sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-* && sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-* && yum update -y
-RUN yum install -y java-17-openjdk-devel && yum install -y unzip
+ARG BUILD_JAR=jifa.jar
 
-COPY ./server/build/distributions/jifa.zip .
-RUN unzip jifa.zip && rm jifa.zip
+COPY ./server/build/libs/${BUILD_JAR} jifa.jar
 
-CMD ["/wd/jifa/bin/jifa"]
+CMD ["java","-jar","/wd/jifa.jar"]

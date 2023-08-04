@@ -13,7 +13,7 @@
 package org.eclipse.jifa.server.repository;
 
 import org.eclipse.jifa.server.condition.ElasticCluster;
-import org.eclipse.jifa.server.domain.entity.elsatic_cluster.ElasticWorkerEntity;
+import org.eclipse.jifa.server.domain.entity.elastic_cluster.ElasticWorkerEntity;
 import org.eclipse.jifa.server.enums.ElasticWorkerPurpose;
 import org.eclipse.jifa.server.enums.ElasticWorkerState;
 import org.springframework.data.repository.CrudRepository;

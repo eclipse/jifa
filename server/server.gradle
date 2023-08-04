@@ -21,6 +21,10 @@ buildscript {
     }
 }
 
+plugins {
+    id "com.bmuschko.docker-spring-boot-application" version "9.3.1"
+}
+
 apply from: "$rootDir/gradle/java.gradle"
 apply from: "$rootDir/gradle/lombok.gradle"
 
@@ -36,9 +40,12 @@ dependencies {
     implementation project(':common')
     implementation project(':analysis')
 
-    runtimeOnly project(':analysis:heap-dump:provider')
-    runtimeOnly project(':analysis:gc-log')
-    runtimeOnly project(':analysis:thread-dump')
+    if (gradle.startParameter.taskNames.size() > 0 &&
+            !(gradle.startParameter.taskNames[0].toLowerCase().contains("master"))) {
+        runtimeOnly project(':analysis:heap-dump:provider')
+        runtimeOnly project(':analysis:gc-log')
+        runtimeOnly project(':analysis:thread-dump')
+    }
 
     implementation 'io.kubernetes:client-java:18.0.1'
 
@@ -132,6 +139,52 @@ tasks.register('runStandaloneWorker', BootRun) {
     mainClass.convention(mainClassName)
 
     setDevKeys(it)
+}
+
+import org.springframework.boot.gradle.tasks.bundling.BootJar
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+
+def masterArchive = 'jifa-master.jar'
+def workerArchive = 'jifa-worker.jar'
+
+tasks.register("masterJar", BootJar) {
+    group('jifa')
+    classpath(project.sourceSets.main.runtimeClasspath)
+    mainClass.convention(mainClassName)
+    targetJavaVersion.convention(JavaVersion.VERSION_17)
+
+    manifest {
+        attributes('Implementation-Title': 'Eclipse Jifa')
+    }
+    archiveFileName = masterArchive
+}
+
+tasks.register("workerJar", BootJar) {
+    group('jifa')
+    classpath(project.sourceSets.main.runtimeClasspath)
+    mainClass.convention(mainClassName)
+    targetJavaVersion.convention(JavaVersion.VERSION_17)
+
+    manifest {
+        attributes('Implementation-Title': 'Eclipse Jifa')
+    }
+    archiveFileName = workerArchive
+}
+
+tasks.register("masterDocker", DockerBuildImage) {
+    group('jifa')
+    inputDir = project.projectDir.getParentFile()
+    images = ['jifadocker/jifa-master:latest']
+    buildArgs=['BUILD_JAR':masterArchive]
+    dependsOn("masterJar")
+}
+
+tasks.register("workerDocker", DockerBuildImage) {
+    group('jifa')
+    inputDir = project.projectDir.getParentFile()
+    images = ['jifadocker/jifa-worker:latest']
+    buildArgs=['BUILD_JAR':workerArchive]
+    dependsOn("workerJar")
 }
 
 tasks.register('runStandaloneWorkerWithMysql', BootRun) {
