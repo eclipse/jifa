@@ -42,7 +42,6 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
-import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtTimestampValidator;
@@ -56,6 +55,7 @@ import org.springframework.security.web.savedrequest.NullRequestCache;
 import java.time.Duration;
 
 import static org.eclipse.jifa.server.Constant.HTTP_API_PREFIX;
+import static org.eclipse.jifa.server.Constant.HTTP_HEALTH_CHECK_MAPPING;
 import static org.eclipse.jifa.server.enums.Role.MASTER;
 import static org.eclipse.jifa.server.enums.Role.STANDALONE_WORKER;
 
@@ -94,6 +94,7 @@ public class SecurityConfigurer extends ConfigurationAccessor {
         hs.authorizeHttpRequests(requests -> {
             String authApiMatchers = HTTP_API_PREFIX + "/auth/**";
             requests.requestMatchers(authApiMatchers).permitAll();
+            requests.requestMatchers(HTTP_API_PREFIX + HTTP_HEALTH_CHECK_MAPPING).permitAll();
             String apiMatchers = HTTP_API_PREFIX + "/**";
             if (!config.isAllowAnonymousAccess()) {
                 requests.requestMatchers(apiMatchers).authenticated();

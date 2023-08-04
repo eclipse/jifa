@@ -13,16 +13,23 @@
 package org.eclipse.jifa.common.util;
 
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.lang.invoke.MethodHandles;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TestExecutorFactory {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
     @Test
     public void test() throws InterruptedException {
         Executor executor = ExecutorFactory.newExecutor("test1");
@@ -54,5 +61,20 @@ public class TestExecutorFactory {
             }
         }, 100, TimeUnit.MILLISECONDS);
         assertTrue(countDownLatch3.await(1, TimeUnit.SECONDS));
+
+        ExecutorFactory.printStatistic(LOGGER);
+    }
+
+    @Test
+    public void testThrows() {
+        assertThrows(IllegalStateException.class, () -> {
+            ExecutorFactory.initialize(8);
+            ExecutorFactory.initialize(8);
+        });
+
+        assertThrows(IllegalArgumentException.class, () -> ExecutorFactory.newExecutor(null, 1, 1));
+        assertThrows(IllegalArgumentException.class, () -> ExecutorFactory.newExecutor("prefix", 0, 1));
+        assertThrows(IllegalArgumentException.class, () -> ExecutorFactory.newScheduledExecutorService(null, 1));
+        assertThrows(IllegalArgumentException.class, () -> ExecutorFactory.newScheduledExecutorService("prefix", 0));
     }
 }

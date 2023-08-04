@@ -14,10 +14,21 @@ package org.eclipse.jifa.common.util;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.JsonSerializer;
 import com.google.gson.TypeAdapter;
 import com.google.gson.TypeAdapterFactory;
 import com.google.gson.reflect.TypeToken;
 import org.eclipse.jifa.common.annotation.UseAccessor;
+
+import java.lang.reflect.Type;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 /**
  * Gson instance Holder
@@ -28,6 +39,7 @@ public interface GsonHolder {
      * The gson instance used by all jifa java code
      */
     Gson GSON = new GsonBuilder().registerTypeAdapterFactory(new TypeFactory())
+                                 .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeTypeAdapter())
                                  .serializeSpecialFloatingPointValues()
                                  .create();
 
@@ -47,5 +59,21 @@ public interface GsonHolder {
                 return null;
             }
         }
+    }
+
+    class LocalDateTimeTypeAdapter implements JsonSerializer<LocalDateTime>, JsonDeserializer<LocalDateTime> {
+
+        private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+        @Override
+        public JsonElement serialize(LocalDateTime src, Type typeOfSrc, JsonSerializationContext context) {
+            return new JsonPrimitive(FORMATTER.format(src));
+        }
+
+        @Override
+        public LocalDateTime deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+            return LocalDateTime.parse(json.getAsString(), FORMATTER);
+        }
+
     }
 }

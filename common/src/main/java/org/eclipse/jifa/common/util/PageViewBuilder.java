@@ -105,7 +105,6 @@ public class PageViewBuilder<ST, TT> {
     private Predicate<TT> filter;
 
     private PageViewBuilder() {
-
     }
 
     public static <A, B> PageViewBuilder<A, B> fromList(List<A> list) {

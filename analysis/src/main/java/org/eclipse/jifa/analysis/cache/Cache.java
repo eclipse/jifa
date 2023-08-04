@@ -26,7 +26,7 @@ class Cache {
 
     private final com.google.common.cache.Cache<CacheKey, Object> cache;
 
-    public Cache() {
+    Cache() {
         cache = CacheBuilder
                 .newBuilder()
                 .softValues()
@@ -36,7 +36,7 @@ class Cache {
     }
 
     @SuppressWarnings("unchecked")
-    public <V> V load(CacheKey key, Callable<V> loader) {
+    <V> V load(CacheKey key, Callable<V> loader) {
         try {
             return (V) cache.get(key, loader);
         } catch (ExecutionException e) {

@@ -18,6 +18,9 @@ import java.lang.annotation.Target;
 
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
+/**
+ * Indicate the annotated method should be excluded.
+ */
 @Retention(value = RUNTIME)
 @Target(ElementType.METHOD)
 public @interface Exclude {

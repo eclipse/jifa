@@ -19,6 +19,9 @@ import java.lang.annotation.Target;
 
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
+/**
+ * Indicate that the result of the annotated method should be cached.
+ */
 @Retention(value = RUNTIME)
 @Target(ElementType.METHOD)
 public @interface Cacheable {

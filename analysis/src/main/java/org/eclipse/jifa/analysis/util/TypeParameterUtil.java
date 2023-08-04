@@ -16,9 +16,18 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 
+/**
+ * Type parameter util
+ */
 public abstract class TypeParameterUtil {
 
-    // ref: io.netty.util.internal.TypeParameterMatcher
+    /**
+     * The implementation references io.netty.util.internal.TypeParameterMatcher
+     *
+     * @param obj           the object instance
+     * @param typeParamName the name of the type parameter
+     * @return the type
+     */
     public static Class<?> extractActualType(Object obj, String typeParamName) {
         Class<?> thisClass = obj.getClass();
         int typeParamIndex = -1;

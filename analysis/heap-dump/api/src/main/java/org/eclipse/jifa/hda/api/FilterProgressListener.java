@@ -25,8 +25,8 @@ public class FilterProgressListener implements ProgressListener {
     }
 
     @Override
-    public void beginTask(String s, int i) {
-        listener.beginTask(s, i);
+    public void beginTask(String name, int workload) {
+        listener.beginTask(name, workload);
     }
 
     @Override
@@ -40,8 +40,8 @@ public class FilterProgressListener implements ProgressListener {
     }
 
     @Override
-    public void sendUserMessage(Level level, String s, Throwable throwable) {
-        listener.sendUserMessage(level, s, throwable);
+    public void sendUserMessage(Level level, String message, Throwable throwable) {
+        listener.sendUserMessage(level, message, throwable);
     }
 
     @Override

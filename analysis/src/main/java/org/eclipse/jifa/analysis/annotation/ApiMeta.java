@@ -18,12 +18,22 @@ import java.lang.annotation.Target;
 
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
+/**
+ * Analysis api meta information
+ */
 @Retention(value = RUNTIME)
 @Target(ElementType.METHOD)
 public @interface ApiMeta {
 
+    /**
+     * The method name will be used if empty
+     *
+     * @return api name
+     */
     String value() default "";
 
+    /**
+     * @return aliases of this api
+     */
     String[] aliases() default {};
-
 }

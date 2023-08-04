@@ -17,24 +17,15 @@ import org.eclipse.jifa.analysis.listener.ProgressListener;
 import java.nio.file.Path;
 import java.util.Map;
 
-public class DummyAnalysisApiExecutor extends AbstractApiExecutor<DummyAnalyzer> {
+public class TextAnalysisApiExecutor extends AbstractApiExecutor<TextAnalyzer> {
 
     @Override
-    protected DummyAnalyzer buildAnalyzer(Path target, Map<String, String> options, ProgressListener listener) throws Throwable {
-        return new DummyAnalyzer() {
-            @Override
-            public String echo(String message) {
-                return message;
-            }
-
-            @Override
-            public void send(String arg0) {
-            }
-        };
+    protected TextAnalyzer buildAnalyzer(Path target, Map<String, String> options, ProgressListener listener) throws Throwable {
+        return new TextAnalyzer(target, listener);
     }
 
     @Override
     public String namespace() {
-        return "dummy";
+        return "text";
     }
 }

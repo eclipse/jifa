@@ -17,12 +17,28 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * Api service entry
+ */
 public interface ApiService {
 
+    /**
+     * @return supported api map
+     */
     Map<String, Set<Api>> supportedApis();
 
+    /**
+     * @param target    analysis target
+     * @param namespace api namespace
+     * @param api       api name or alias
+     * @param arguments api arguments
+     * @return api execution result
+     */
     CompletableFuture<?> execute(Path target, String namespace, String api, Object[] arguments);
 
+    /**
+     * @return the instance of api service implementation
+     */
     static ApiService getInstance() {
         return ApiServiceImpl.instance();
     }

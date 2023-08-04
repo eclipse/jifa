@@ -14,5 +14,12 @@ package org.eclipse.jifa.analysis;
 
 import java.lang.reflect.Type;
 
+/**
+ * @param name                 the parameter name
+ * @param type                 tpe parameter type
+ * @param required             whether the parameter is required
+ * @param targetPath           whether the parameter is the target path
+ * @param comparisonTargetPath whether the parameter is the comparison target path
+ */
 public record ApiParameter(String name, Type type, boolean required, boolean targetPath, boolean comparisonTargetPath) {
 }

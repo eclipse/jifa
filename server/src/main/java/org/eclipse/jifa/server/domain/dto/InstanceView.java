@@ -14,8 +14,6 @@ package org.eclipse.jifa.server.domain.dto;
 
 import org.eclipse.jifa.server.enums.Role;
 
-import java.time.LocalDateTime;
-
-public record InstanceView(LocalDateTime startTime, Role role) {
-
+public record InstanceView(Role role,
+                           long uptime /* in minutes */) {
 }

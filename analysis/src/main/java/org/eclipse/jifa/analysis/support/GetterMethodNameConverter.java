@@ -12,6 +12,9 @@
  ********************************************************************************/
 package org.eclipse.jifa.analysis.support;
 
+/**
+ * Converter that strips the "get" prefix from the method name.
+ */
 public class GetterMethodNameConverter implements MethodNameConverter {
     @Override
     public String convert(String name) {

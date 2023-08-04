@@ -23,6 +23,7 @@ import org.eclipse.jifa.server.domain.converter.FileViewConverter;
 import org.eclipse.jifa.server.domain.dto.FileTransferProgress;
 import org.eclipse.jifa.server.domain.dto.FileTransferRequest;
 import org.eclipse.jifa.server.domain.dto.FileView;
+import org.eclipse.jifa.server.domain.dto.WrappedResource;
 import org.eclipse.jifa.server.domain.entity.shared.file.DeletedFileEntity;
 import org.eclipse.jifa.server.domain.entity.shared.file.FileEntity;
 import org.eclipse.jifa.server.domain.entity.shared.file.TransferringFileEntity;
@@ -186,14 +187,12 @@ public class FileServiceImpl extends ConfigurationAccessor implements FileServic
     @Override
     public FileTransferProgress getTransferProgress(long transferringFileId) {
         mustBe(MASTER, STANDALONE_WORKER);
-
         TransferringFileEntity transferringFile = transferringFileRepo.findById(transferringFileId).orElseThrow(() -> CE(UNAVAILABLE));
-        FileTransferProgress progress = new FileTransferProgress();
-        progress.setState(transferringFile.getTransferState());
-        progress.setTotalSize(transferringFile.getTotalSize());
-        progress.setTransferredSize(transferringFile.getTransferredSize());
-        progress.setFailureMessage(transferringFile.getFailureMessage());
-        return progress;
+        return new FileTransferProgress(transferringFile.getTransferState(),
+                                        transferringFile.getTotalSize(),
+                                        transferringFile.getTransferredSize(),
+                                        transferringFile.getFailureMessage());
+
     }
 
     @Override
@@ -232,7 +231,7 @@ public class FileServiceImpl extends ConfigurationAccessor implements FileServic
     }
 
     @Override
-    public ResponseEntity<Resource> handleDownloadRequest(long fileId, HttpServletResponse response) throws Throwable {
+    public WrappedResource handleDownloadRequest(long fileId, HttpServletResponse response) throws Throwable {
         mustNotBe(ELASTIC_WORKER);
 
         FileEntity file = getFileEntityByIdAndCheckAuthority(fileId);
@@ -240,17 +239,12 @@ public class FileServiceImpl extends ConfigurationAccessor implements FileServic
             // forward the request to the static worker
             FileStaticWorkerBind bind = fileStaticWorkerBindRepo.findByFileId(file.getId()).orElseThrow(() -> CE(INTERNAL_ERROR));
             workerService.asStaticWorkerService().handleDownloadRequest(bind.getStaticWorker(), file.getId(), response);
-            return null;
+            return new WrappedResource(null, null);
         }
 
         UrlResource resource = new UrlResource(storageService.locationOf(file.getType(), file.getUniqueName()).toUri());
         Validate.isTrue(resource.exists());
-        String contentType = "application/octet-stream";
-        return ResponseEntity.ok()
-                             .contentType(MediaType.parseMediaType(contentType))
-                             .header(HttpHeaders.CONTENT_DISPOSITION,
-                                     "attachment; filename=\"" + file.getOriginalName() + "\"")
-                             .body(resource);
+        return new WrappedResource(file.getOriginalName(), resource);
     }
 
     @Override

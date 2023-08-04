@@ -15,6 +15,9 @@ package org.eclipse.jifa.analysis.cache;
 
 import net.sf.cglib.proxy.Enhancer;
 
+/**
+ * Proxy builder for building a proxy for a class that has cacheable methods.
+ */
 public class ProxyBuilder {
 
     private static <T> Enhancer buildEnhancer(Class<T> clazz) {
@@ -24,11 +27,23 @@ public class ProxyBuilder {
         return e;
     }
 
+    /**
+     * @param clazz the class
+     * @param <T>   the type
+     * @return the proxy
+     */
     @SuppressWarnings("unchecked")
     public static <T> T build(Class<T> clazz) {
         return (T) buildEnhancer(clazz).create();
     }
 
+    /**
+     * @param clazz    the class
+     * @param argTypes the argument types
+     * @param args     the arguments
+     * @param <T>      the type
+     * @return proxy
+     */
     @SuppressWarnings("unchecked")
     public static <T> T build(Class<T> clazz, Class<?>[] argTypes, Object[] args) {
         return (T) buildEnhancer(clazz).create(argTypes, args);

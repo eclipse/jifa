@@ -20,7 +20,6 @@ import org.eclipse.jifa.common.util.Validate;
  * Paging request
  */
 @Getter
-@Setter
 public class PagingRequest {
 
     // page index starts with 1

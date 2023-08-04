@@ -16,7 +16,7 @@ package org.eclipse.jifa.analysis.listener;
 class NoOpProgressListener implements ProgressListener {
 
     @Override
-    public void beginTask(String s, int i) {}
+    public void beginTask(String name, int workload) {}
 
     @Override
     public void subTask(String s) {}
@@ -25,7 +25,7 @@ class NoOpProgressListener implements ProgressListener {
     public void worked(int i) {}
 
     @Override
-    public void sendUserMessage(Level level, String s, Throwable throwable) {}
+    public void sendUserMessage(Level level, String message, Throwable throwable) {}
 
     @Override
     public String log() {

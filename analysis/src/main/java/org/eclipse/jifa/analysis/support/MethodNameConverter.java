@@ -12,8 +12,15 @@
  ********************************************************************************/
 package org.eclipse.jifa.analysis.support;
 
+/**
+ * Converter that converts method name to api name
+ */
 public interface MethodNameConverter {
 
+    /**
+     * @param name source method name
+     * @return api name
+     */
     String convert(String name);
 
     GetterMethodNameConverter GETTER_METHOD = new GetterMethodNameConverter();

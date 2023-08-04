@@ -15,11 +15,26 @@ package org.eclipse.jifa.analysis;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * Analysis api executor
+ */
 public interface ApiExecutor {
 
+    /**
+     * @return the namespace supported by this executor
+     */
     String namespace();
 
+    /**
+     * @return the apis supported by this executor
+     */
     Set<Api> apis();
 
+    /**
+     * Execute the api specified by the context
+     *
+     * @param context the execution context
+     * @return result
+     */
     CompletableFuture<?> execute(ExecutionContext context);
 }

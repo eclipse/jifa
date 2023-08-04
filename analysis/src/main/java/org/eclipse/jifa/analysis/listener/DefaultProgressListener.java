@@ -32,9 +32,9 @@ public class DefaultProgressListener implements ProgressListener {
     }
 
     @Override
-    public void beginTask(String s, int i) {
-        total += i;
-        append(String.format("[Begin task] %s", s));
+    public void beginTask(String name, int workload) {
+        total += workload;
+        append(String.format("[Begin task] %s", name));
     }
 
     @Override
@@ -51,7 +51,7 @@ public class DefaultProgressListener implements ProgressListener {
     }
 
     @Override
-    public void sendUserMessage(Level level, String s, Throwable throwable) {
+    public void sendUserMessage(Level level, String message, Throwable throwable) {
         StringWriter sw = new StringWriter();
         switch (level) {
             case INFO -> sw.append("[INFO] ");
@@ -60,7 +60,7 @@ public class DefaultProgressListener implements ProgressListener {
             default -> sw.append("[UNKNOWN] ");
         }
 
-        sw.append(s);
+        sw.append(message);
 
         if (throwable != null) {
             sw.append(System.lineSeparator());

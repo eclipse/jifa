@@ -3,18 +3,19 @@ jifa:
   storage-path: ${user.home}/jifa-storage
 
 spring:
-  task.scheduling.pool.size: 8
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: false
   servlet:
     multipart:
       max-request-size: 512MB
       max-file-size: 512MB
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+  task.scheduling.pool.size: 8
 
 server:
   tomcat:
     relaxed-query-chars:
       - '['
       - ']'
+

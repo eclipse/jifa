@@ -13,22 +13,56 @@
 
 package org.eclipse.jifa.analysis.listener;
 
+/**
+ * Progress listener of the analysis.
+ * Currently, it is only used for the fist analysis.
+ */
 public interface ProgressListener {
 
+    /**
+     * NoOp
+     */
     ProgressListener NoOpProgressListener = new NoOpProgressListener();
 
-    void beginTask(String s, int i);
+    /**
+     * begin task
+     *
+     * @param name     task name
+     * @param workload the workload
+     */
+    void beginTask(String name, int workload);
 
-    void subTask(String s);
+    /**
+     * @param name the name of the sub-task
+     */
+    void subTask(String name);
 
-    void worked(int i);
+    /**
+     * @param workload the finished workload
+     */
+    void worked(int workload);
 
-    void sendUserMessage(Level level, String s, Throwable throwable);
+    /**
+     * @param level     the level
+     * @param message   the message
+     * @param throwable the exception
+     */
+    void sendUserMessage(Level level, String message, Throwable throwable);
 
-    default void reset() {}
+    /**
+     * reset the listener
+     */
+    default void reset() {
+    }
 
+    /**
+     * @return the log
+     */
     String log();
 
+    /**
+     * @return current progress
+     */
     double percent();
 
     enum Level {

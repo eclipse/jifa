@@ -18,15 +18,32 @@ import java.lang.annotation.Target;
 
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
+/**
+ * The parameter meta information of an analysis api
+ */
 @Retention(value = RUNTIME)
 @Target(ElementType.PARAMETER)
 public @interface ApiParameterMeta {
 
+    /**
+     * The parameter name will be used if empty
+     *
+     * @return parameter name
+     */
     String value() default "";
 
+    /**
+     * @return true if this parameter is required, default is true
+     */
     boolean required() default true;
 
+    /**
+     * @return true if this parameter is the path of the analysis target
+     */
     boolean targetPath() default false;
 
+    /**
+     * @return true if this parameter is the path of a comparison analysis target
+     */
     boolean comparisonTargetPath() default false;
 }

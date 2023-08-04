@@ -1,22 +1,15 @@
 /********************************************************************************
-* Copyright (c) 2021 Contributors to the Eclipse Foundation
-*
-* See the NOTICE file(s) distributed with this work for additional
-* information regarding copyright ownership.
-*
-* This program and the accompanying materials are made available under the
-* terms of the Eclipse Public License 2.0 which is available at
-* http://www.eclipse.org/legal/epl-2.0
-*
-* SPDX-License-Identifier: EPL-2.0
-********************************************************************************/
-
-/**
-* @plasma147 provided this solution:
-* https://stackoverflow.com/a/11385215/813561
-* https://creativecommons.org/licenses/by-sa/3.0/
-*/
-
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ ********************************************************************************/
 package org.eclipse.jifa.common.util;
 
 import java.io.IOException;
@@ -30,14 +23,20 @@ import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import org.eclipse.jifa.common.domain.exception.CommonException;
 
+/**
+ * @plasma147 provided this solution:
+ * https://stackoverflow.com/a/11385215/813561
+ * https://creativecommons.org/licenses/by-sa/3.0/
+ */
+@SuppressWarnings({"JavadocDeclaration", "JavadocLinkAsPlainText"})
 public class AccessorBasedTypeAdaptor<T> extends TypeAdapter<T> {
-    private Gson gson;
+    private final Gson gson;
 
     public AccessorBasedTypeAdaptor(Gson gson) {
         this.gson = gson;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     public void write(JsonWriter out, T value) throws IOException {
         out.beginObject();
@@ -49,7 +48,7 @@ public class AccessorBasedTypeAdaptor<T> extends TypeAdapter<T> {
                     String name = method.getName().substring(nonBooleanAccessor ? 3 : 2);
                     name = CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_CAMEL, name);
                     Object returnValue = method.invoke(value);
-                    if(returnValue != null) {
+                    if (returnValue != null) {
                         TypeToken<?> token = TypeToken.get(returnValue.getClass());
                         TypeAdapter adapter = gson.getAdapter(token);
                         out.name(name);
@@ -64,7 +63,7 @@ public class AccessorBasedTypeAdaptor<T> extends TypeAdapter<T> {
     }
 
     @Override
-    public T read(JsonReader in) throws IOException {
+    public T read(JsonReader in) {
         throw new UnsupportedOperationException("Only supports writes.");
     }
 }

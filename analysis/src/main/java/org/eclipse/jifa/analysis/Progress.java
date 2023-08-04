@@ -15,6 +15,9 @@ package org.eclipse.jifa.analysis;
 import lombok.Getter;
 import lombok.Setter;
 
+/**
+ * The progress
+ */
 @Getter
 @Setter
 public class Progress {

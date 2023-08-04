@@ -19,10 +19,14 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.lang.management.ManagementFactory;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 
+/**
+ * Health check controller
+ */
 @RestController
 public class HealthCheckController extends ConfigurationAccessor {
 
@@ -30,8 +34,11 @@ public class HealthCheckController extends ConfigurationAccessor {
                                                            .atZone(ZoneId.systemDefault())
                                                            .toLocalDateTime();
 
+    /**
+     * @return InstanceView
+     */
     @GetMapping(Constant.HTTP_HEALTH_CHECK_MAPPING)
     public InstanceView healthCheck() {
-        return new InstanceView(START_TIME, getRole());
+        return new InstanceView(getRole(), Duration.between(START_TIME, LocalDateTime.now()).toMinutes());
     }
 }

@@ -10,13 +10,26 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-package org.eclipse.jifa.analysis;
+package org.eclipse.jifa.analysis.cache;
 
-import org.eclipse.jifa.analysis.annotation.ApiParameterMeta;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-public interface DummyAnalyzer {
+import java.util.UUID;
 
-    String echo(String message);
+public class TestCache {
 
-    void send(@ApiParameterMeta("arg0-key") String arg0);
+    public static class C {
+
+        @Cacheable
+        public String randomString() {
+            return UUID.randomUUID().toString();
+        }
+    }
+
+    @Test
+    public void test() {
+        C c = ProxyBuilder.build(C.class);
+        Assertions.assertEquals(c.randomString(), c.randomString());
+    }
 }

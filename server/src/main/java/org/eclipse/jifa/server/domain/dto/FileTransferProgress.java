@@ -12,19 +12,10 @@
  ********************************************************************************/
 package org.eclipse.jifa.server.domain.dto;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.eclipse.jifa.server.enums.FileTransferState;
 
-@Getter
-@Setter
-public class FileTransferProgress {
-
-    private FileTransferState state;
-
-    private long totalSize;
-
-    private long transferredSize;
-
-    private String failureMessage;
+public record FileTransferProgress(FileTransferState state,
+                                   long totalSize,
+                                   long transferredSize,
+                                   String failureMessage) {
 }

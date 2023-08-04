@@ -65,6 +65,7 @@ public class AnalysisApiStompController {
     @SendToUser(destinations = STOMP_ANALYSIS_API_MAPPING, broadcast = false)
     public AnalysisApiStompResponseMessage
     handleStompRequestException(Throwable throwable, @Header(name = Constant.STOMP_ANALYSIS_API_REQUEST_ID_KEY, required = false, defaultValue = "") String requestId) {
+        throwable.printStackTrace();
         return new AnalysisApiStompResponseMessage(requestId, null, throwable);
     }
 }

@@ -83,14 +83,29 @@ public class Configuration {
     @Min(2)
     private int elasticWorkerIdleThreshold = 5;
 
+    /**
+     * Public key used by Jifa
+     */
     private RSAPublicKey publicKey;
 
+    /**
+     * Private key used by Jifa
+     */
     private RSAPrivateKey privateKey;
 
+    /**
+     * Whether to allow anonymous access, default is true
+     */
     private boolean allowAnonymousAccess = true;
 
+    /**
+     * default root username
+     */
     private String rootUsername = "root";
 
+    /**
+     * default root password
+     */
     private String rootPassword = "password";
 
     @PostConstruct
@@ -110,7 +125,7 @@ public class Configuration {
         }
 
         if (role != Role.MASTER || schedulingStrategy != SchedulingStrategy.STATIC) {
-            Validate.notNull(storagePath, "jifa.storage-path must be set when role is master and scheduling strategy is not static");
+            Validate.notNull(storagePath, "jifa.storage-path must be set");
 
             storagePath = storagePath.toAbsolutePath();
 

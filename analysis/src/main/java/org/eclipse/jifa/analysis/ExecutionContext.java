@@ -16,6 +16,11 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Objects;
 
+/**
+ * @param target the analysis target path
+ * @param api the api
+ * @param arguments the arguments
+ */
 public record ExecutionContext(Path target, String api, Object[] arguments) {
 
     @Override
