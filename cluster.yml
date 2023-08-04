@@ -148,7 +148,7 @@ spec:
       serviceAccountName: jifa-service-account
       containers:
         - name: main-container
-          image: jifadocker/jifa-test
+          image: jifadocker/jifa-master
           imagePullPolicy: Always
           volumeMounts:
             - name: jifa-pv
@@ -162,8 +162,8 @@ spec:
               value: root
             - name: MYSQL_PASSWORD
               value: password
-          command: [ "/wd/jifa/bin/jifa" ]
-          args: [ "--jifa.role=master", "--jifa.scheduling-strategy=elastic", "--jifa.storage-pvc-name=jifa-pvc", "--jifa.storage-path=/jifa-storage", "--jifa.worker-image=jifadocker/jifa-test" ]
+          command: ["java","-jar","/wd/jifa.jar"]
+          args: [ "--jifa.role=master", "--jifa.scheduling-strategy=elastic", "--jifa.storage-pvc-name=jifa-pvc", "--jifa.storage-path=/jifa-storage", "--jifa.worker-image=jifadocker/jifa-worker" ]
           ports:
             - name: jifa-http-port
               containerPort: 9102

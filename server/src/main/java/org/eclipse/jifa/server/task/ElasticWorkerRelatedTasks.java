@@ -15,7 +15,7 @@ package org.eclipse.jifa.server.task;
 import org.eclipse.jifa.server.ConfigurationAccessor;
 import org.eclipse.jifa.server.condition.ElasticSchedulingStrategy;
 import org.eclipse.jifa.server.condition.Master;
-import org.eclipse.jifa.server.domain.entity.elsatic_cluster.ElasticWorkerEntity;
+import org.eclipse.jifa.server.domain.entity.elastic_cluster.ElasticWorkerEntity;
 import org.eclipse.jifa.server.enums.ElasticWorkerState;
 import org.eclipse.jifa.server.repository.ElasticWorkerRepo;
 import org.eclipse.jifa.server.service.ElasticWorkerScheduler;

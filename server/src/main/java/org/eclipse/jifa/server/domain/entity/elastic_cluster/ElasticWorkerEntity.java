@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-package org.eclipse.jifa.server.domain.entity.elsatic_cluster;
+package org.eclipse.jifa.server.domain.entity.elastic_cluster;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

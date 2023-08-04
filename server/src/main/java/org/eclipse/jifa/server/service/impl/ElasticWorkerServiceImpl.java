@@ -15,7 +15,7 @@ package org.eclipse.jifa.server.service.impl;
 import org.eclipse.jifa.server.condition.ElasticSchedulingStrategy;
 import org.eclipse.jifa.server.condition.Master;
 import org.eclipse.jifa.server.domain.entity.cluster.WorkerEntity;
-import org.eclipse.jifa.server.domain.entity.elsatic_cluster.ElasticWorkerEntity;
+import org.eclipse.jifa.server.domain.entity.elastic_cluster.ElasticWorkerEntity;
 import org.eclipse.jifa.server.domain.entity.shared.file.FileEntity;
 import org.eclipse.jifa.server.domain.entity.shared.file.TransferringFileEntity;
 import org.eclipse.jifa.server.domain.exception.ElasticWorkerNotReadyException;
