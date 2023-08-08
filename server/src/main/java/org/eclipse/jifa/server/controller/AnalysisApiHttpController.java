@@ -13,6 +13,7 @@
 package org.eclipse.jifa.server.controller;
 
 import com.google.gson.JsonObject;
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jifa.common.domain.exception.ShouldNotReachHereException;
 import org.eclipse.jifa.common.util.ExecutorFactory;
 import org.eclipse.jifa.common.util.Validate;
@@ -21,8 +22,6 @@ import org.eclipse.jifa.server.Constant;
 import org.eclipse.jifa.server.domain.dto.AnalysisApiRequest;
 import org.eclipse.jifa.server.service.AnalysisApiService;
 import org.eclipse.jifa.server.util.ControllerUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
@@ -50,10 +49,9 @@ import static org.eclipse.jifa.server.Constant.ANALYSIS_API_REQUEST_API_KEY;
 import static org.eclipse.jifa.server.Constant.ANALYSIS_API_REQUEST_NAMESPACE_KEY;
 import static org.eclipse.jifa.server.Constant.ANALYSIS_API_REQUEST_TARGET_KEY;
 
+@Slf4j
 @RestController
 public class AnalysisApiHttpController extends ConfigurationAccessor {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final AnalysisApiService apiService;
 
@@ -129,7 +127,7 @@ public class AnalysisApiHttpController extends ConfigurationAccessor {
                     emitter.send(SseEmitter.event().name(Constant.SSE_EVENT_ERROR_RESPONSE).data(r, MediaType.APPLICATION_JSON));
                 }
             } catch (Throwable throwable) {
-                LOGGER.error("Error occurred when sending response to SSE emitter", throwable);
+                log.error("Error occurred when sending response to SSE emitter", throwable);
             } finally {
                 emitter.complete();
             }
@@ -189,7 +187,7 @@ public class AnalysisApiHttpController extends ConfigurationAccessor {
         synchronized void disableHeartbeat() {
             shouldHeartbeat = false;
             if (!future.cancel(true)) {
-                LOGGER.error("Failed to cancel heartbeat task");
+                log.error("Failed to cancel heartbeat task");
             }
         }
     }

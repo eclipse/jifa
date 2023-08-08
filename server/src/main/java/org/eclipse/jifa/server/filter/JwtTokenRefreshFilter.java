@@ -16,19 +16,16 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jifa.server.domain.security.JifaAuthenticationToken;
 import org.eclipse.jifa.server.service.JwtService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.lang.invoke.MethodHandles;
 
+@Slf4j
 public class JwtTokenRefreshFilter extends OncePerRequestFilter {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final JwtService jwtService;
 
@@ -45,7 +42,7 @@ public class JwtTokenRefreshFilter extends OncePerRequestFilter {
                 response.addHeader(HttpHeaders.AUTHORIZATION, newToken.getToken());
             }
         } catch (Throwable t) {
-            LOGGER.error("Failed to refresh jwt token: {}", t.getMessage());
+            log.error("Failed to refresh jwt token: {}", t.getMessage());
         }
         chain.doFilter(request, response);
     }

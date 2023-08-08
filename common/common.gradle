@@ -15,7 +15,6 @@ plugins {
 }
 
 apply from: "$rootDir/gradle/java.gradle"
-apply from: "$rootDir/gradle/lombok.gradle"
 
 dependencies {
     api "org.apache.logging.log4j:log4j-slf4j-impl:2.17.1"

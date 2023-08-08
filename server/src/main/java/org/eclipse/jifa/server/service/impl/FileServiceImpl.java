@@ -14,6 +14,7 @@ package org.eclipse.jifa.server.service.impl;
 
 import jakarta.annotation.Nullable;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jifa.common.domain.vo.PageView;
 import org.eclipse.jifa.common.enums.CommonErrorCode;
 import org.eclipse.jifa.common.util.Validate;
@@ -73,6 +74,7 @@ import static org.eclipse.jifa.server.enums.ServerErrorCode.FILE_TYPE_MISMATCH;
 import static org.eclipse.jifa.server.enums.ServerErrorCode.UNAVAILABLE;
 
 @Component
+@Slf4j
 public class FileServiceImpl extends ConfigurationAccessor implements FileService {
 
     private final TransactionTemplate transactionTemplate;
@@ -199,6 +201,7 @@ public class FileServiceImpl extends ConfigurationAccessor implements FileServic
     public void handleUploadRequest(FileType type, MultipartFile file) throws Throwable {
         mustNotBe(ELASTIC_WORKER);
 
+        log.info(file.getOriginalFilename());
         if (isMaster() && getSchedulingStrategy() == SchedulingStrategy.STATIC) {
             StaticWorkerEntity worker = workerService.asStaticWorkerService().selectForFileUpload(type, file);
             workerService.asStaticWorkerService().handleUploadRequest(worker, type, file);

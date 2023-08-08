@@ -13,27 +13,24 @@
 package org.eclipse.jifa.server.component;
 
 import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jifa.server.ConfigurationAccessor;
 import org.eclipse.jifa.server.condition.StaticWorker;
 import org.eclipse.jifa.server.domain.entity.static_cluster.StaticWorkerEntity;
 import org.eclipse.jifa.server.repository.StaticWorkerRepo;
 import org.eclipse.jifa.server.service.StorageService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.lang.invoke.MethodHandles;
 import java.net.InetAddress;
 import java.time.Duration;
 import java.time.Instant;
 
 @StaticWorker
 @Component
+@Slf4j
 public class CurrentStaticWorker extends ConfigurationAccessor {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final StaticWorkerRepo staticWorkerRepo;
 
@@ -67,7 +64,7 @@ public class CurrentStaticWorker extends ConfigurationAccessor {
             try {
                 updateStorageSpace();
             } catch (Throwable t) {
-                LOGGER.warn("Failed to update static worker space value", t);
+                log.warn("Failed to update static worker space value", t);
             }
         }, Instant.now().plusSeconds(60), Duration.ofSeconds(60));
     }

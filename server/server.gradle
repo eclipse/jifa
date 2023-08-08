@@ -22,7 +22,6 @@ plugins {
 }
 
 apply from: "$rootDir/gradle/java.gradle"
-apply from: "$rootDir/gradle/lombok.gradle"
 
 apply plugin: 'application'
 apply plugin: 'org.springframework.boot'
@@ -30,6 +29,11 @@ apply plugin: 'io.spring.dependency-management'
 
 springBoot {
     applicationName = 'jifa'
+}
+
+configurations {
+    all*.exclude module: 'spring-boot-starter-logging'
+    all*.exclude module: "logback-classic"
 }
 
 dependencies {
@@ -46,6 +50,7 @@ dependencies {
     implementation 'io.kubernetes:client-java:18.0.1'
 
     implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-log4j2'
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-security'

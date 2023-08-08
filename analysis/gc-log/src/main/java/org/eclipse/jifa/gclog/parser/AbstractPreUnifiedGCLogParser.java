@@ -14,6 +14,7 @@
 package org.eclipse.jifa.gclog.parser;
 
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jifa.common.domain.exception.ShouldNotReachHereException;
 import org.eclipse.jifa.gclog.event.GCEvent;
 import org.eclipse.jifa.gclog.event.evnetInfo.CpuTime;
@@ -45,6 +46,7 @@ import static org.eclipse.jifa.gclog.util.Constant.UNKNOWN_DOUBLE;
  * because they are commonly used, and they will greatly affect parsing. We will continue support for cases in the future.
  */
 
+@Slf4j
 public abstract class AbstractPreUnifiedGCLogParser extends AbstractGCLogParser {
 
     private LinkedList<List<GCLogToken>> sentenceToParseQueue = new LinkedList<>();
@@ -286,7 +288,7 @@ public abstract class AbstractPreUnifiedGCLogParser extends AbstractGCLogParser 
                 }
             }
         } catch (Exception e) {
-            LOGGER.debug(e.getMessage());
+            log.debug(e.getMessage());
         }
     }
 

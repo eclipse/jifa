@@ -13,21 +13,19 @@
 
 package org.eclipse.jifa.gclog.parser;
 
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jifa.common.domain.exception.CommonException;
 import org.eclipse.jifa.analysis.listener.DefaultProgressListener;
 import org.eclipse.jifa.analysis.listener.ProgressListener;
 import org.eclipse.jifa.gclog.model.GCModel;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 
+@Slf4j
 public class GCLogAnalyzer {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(GCLogAnalyzer.class);
     private File file;
     private ProgressListener listener;
 
@@ -78,7 +76,7 @@ public class GCLogAnalyzer {
 
             return model;
         } catch (Exception e) {
-            LOGGER.info("fail to parse gclog {}: {}", file.getName(), e.getMessage());
+            log.info("fail to parse gclog {}: {}", file.getName(), e.getMessage());
             throw e;
         } finally {
             if (br != null) {

@@ -14,6 +14,7 @@
 package org.eclipse.jifa.gclog.model;
 
 import com.google.common.util.concurrent.AtomicDouble;
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jifa.gclog.event.GCEvent;
 import org.eclipse.jifa.gclog.event.evnetInfo.GCEventBooleanType;
 import org.eclipse.jifa.gclog.model.modeInfo.GCCollectorType;
@@ -27,6 +28,7 @@ import static org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea.METASPACE;
 import static org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea.OLD;
 import static org.eclipse.jifa.gclog.model.GCEventType.*;
 
+@Slf4j
 public class CMSGCModel extends GenerationalGCModel {
     private static GCCollectorType collector = GCCollectorType.CMS;
 
