@@ -24,3 +24,13 @@ dependencies {
 }
 
 processResources.dependsOn(':analysis:heap-dump:impl:installJar')
+
+jacocoTestReport {
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: [
+                    "mat-deps"
+            ])
+        }))
+    }
+}

@@ -47,6 +47,7 @@ dependencies {
 }
 
 compileJava.dependsOn(':analysis:heap-dump:hook:hookPreferences')
+compileTestJava.mustRunAfter(':analysis:heap-dump:impl:installJar')
 
 task installJar(type: Copy, dependsOn: jar) {
     from "${buildDir}/libs"

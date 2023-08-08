@@ -10,13 +10,15 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-version = '0.2.0-SNAPSHOT'
+package org.eclipse.jifa.hda.impl;
 
-repositories {
-    maven {
-        url "https://plugins.gradle.org/m2/"
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+public class TestReflectionUtil {
+
+    @Test
+    public void test() {
+        Assertions.assertNull(ReflectionUtil.getFieldValueOrNull("aa", "abc"));
     }
-    mavenCentral()
 }
-
-apply plugin: 'idea'

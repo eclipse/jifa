@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -17,7 +17,7 @@ import org.eclipse.jifa.analysis.listener.ProgressListener;
 
 public class FilterProgressListener implements ProgressListener {
 
-    ProgressListener listener;
+    private final ProgressListener listener;
 
     public FilterProgressListener(ProgressListener listener) {
         assert listener != null;
@@ -42,6 +42,11 @@ public class FilterProgressListener implements ProgressListener {
     @Override
     public void sendUserMessage(Level level, String message, Throwable throwable) {
         listener.sendUserMessage(level, message, throwable);
+    }
+
+    @Override
+    public void reset() {
+        listener.reset();
     }
 
     @Override

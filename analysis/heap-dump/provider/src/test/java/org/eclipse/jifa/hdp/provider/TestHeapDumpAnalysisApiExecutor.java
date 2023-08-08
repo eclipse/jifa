@@ -10,13 +10,16 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-version = '0.2.0-SNAPSHOT'
+package org.eclipse.jifa.hdp.provider;
 
-repositories {
-    maven {
-        url "https://plugins.gradle.org/m2/"
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+public class TestHeapDumpAnalysisApiExecutor {
+
+    @Test
+    public void test() {
+        HeapDumpAnalysisApiExecutor executor = new HeapDumpAnalysisApiExecutor();
+        Assertions.assertEquals("heap-dump", executor.namespace());
     }
-    mavenCentral()
 }
-
-apply plugin: 'idea'

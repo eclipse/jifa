@@ -17,13 +17,13 @@ import java.lang.reflect.Field;
 public class ReflectionUtil {
 
     @SuppressWarnings("unchecked")
-    public static <T> T getFieldValueOrNull(Object node, String fieldName) {
+    public static <T> T getFieldValueOrNull(Object object, String fieldName) {
         try {
-            Field field = node.getClass().getDeclaredField(fieldName);
+            Field field = object.getClass().getDeclaredField(fieldName);
             field.setAccessible(true);
-            return (T) field.get(node);
+            return (T) field.get(object);
         } catch (NoSuchFieldException | IllegalAccessException ignored) {
+            return null;
         }
-        return null;
     }
 }

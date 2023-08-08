@@ -39,6 +39,6 @@ task("build") {
 task("clean") {
     doFirst(() -> {
         delete 'build'
-        into project(':server').projectDir.toPath().resolve('src/main/resources/static')
+        delete project(':server').projectDir.toPath().resolve('src/main/resources/static')
     })
 }
