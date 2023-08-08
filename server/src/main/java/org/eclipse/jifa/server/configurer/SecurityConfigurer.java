@@ -17,7 +17,11 @@ import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import jakarta.annotation.Nullable;
 import jakarta.servlet.Filter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.eclipse.jifa.server.ConfigurationAccessor;
 import org.eclipse.jifa.server.Constant;
 import org.eclipse.jifa.server.condition.ConditionalOnRole;
@@ -29,6 +33,7 @@ import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2Clien
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -48,12 +53,18 @@ import org.springframework.security.oauth2.jwt.JwtTimestampValidator;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.oauth2.server.resource.web.BearerTokenAuthenticationEntryPoint;
+import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
+import org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver;
 import org.springframework.security.oauth2.server.resource.web.access.BearerTokenAccessDeniedHandler;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.savedrequest.NullRequestCache;
+import org.springframework.web.filter.OncePerRequestFilter;
 
+import java.io.IOException;
 import java.time.Duration;
+import java.util.List;
 
+import static org.eclipse.jifa.server.Constant.COOKIE_JIFA_TOKEN_KEY;
 import static org.eclipse.jifa.server.Constant.HTTP_API_PREFIX;
 import static org.eclipse.jifa.server.Constant.HTTP_HEALTH_CHECK_MAPPING;
 import static org.eclipse.jifa.server.enums.Role.MASTER;
@@ -120,19 +131,17 @@ public class SecurityConfigurer extends ConfigurationAccessor {
             }
         });
 
-        hs.formLogin(formLogin -> {
-            formLogin.successHandler((request, response, authentication) -> {
-                Cookie jifaToken = new Cookie("jifa_token", ((JifaAuthenticationToken) authentication).getToken());
-                jifaToken.setPath("/");
-                jifaToken.setHttpOnly(false);
-                response.addCookie(jifaToken);
-                response.sendRedirect("/");
-            });
-        });
+        hs.formLogin(formLogin -> formLogin.successHandler((request, response, authentication) -> {
+            Cookie jifaToken = new Cookie(COOKIE_JIFA_TOKEN_KEY, ((JifaAuthenticationToken) authentication).getToken());
+            jifaToken.setPath("/");
+            jifaToken.setHttpOnly(false);
+            response.addCookie(jifaToken);
+            response.sendRedirect("/");
+        }));
 
         if (oauth2ClientProperties != null && !oauth2ClientProperties.getRegistration().isEmpty()) {
             hs.oauth2Login(oauth2 -> oauth2.successHandler((request, response, authentication) -> {
-                Cookie jifaToken = new Cookie("jifa_token", userService.handleOauth2Login((OAuth2AuthenticationToken) authentication).getToken());
+                Cookie jifaToken = new Cookie(COOKIE_JIFA_TOKEN_KEY, userService.handleOauth2Login((OAuth2AuthenticationToken) authentication).getToken());
                 jifaToken.setPath("/");
                 jifaToken.setHttpOnly(false);
                 response.addCookie(jifaToken);
@@ -140,7 +149,24 @@ public class SecurityConfigurer extends ConfigurationAccessor {
             }));
         }
 
-        hs.oauth2ResourceServer(rs -> rs.jwt(jwtConfigurer -> jwtConfigurer.jwtAuthenticationConverter(jwtService::convert)));
+        DefaultBearerTokenResolver defaultBearerTokenResolver = new DefaultBearerTokenResolver();
+        hs.oauth2ResourceServer(rs -> rs.jwt(jwtConfigurer -> jwtConfigurer.jwtAuthenticationConverter(jwtService::convert))
+                                        .bearerTokenResolver(request -> {
+                                            String token = defaultBearerTokenResolver.resolve(request);
+                                            if (token == null) {
+                                                if (request.getRequestURI().matches(HTTP_API_PREFIX + "/files/\\d+/download")) {
+                                                    Cookie[] cookies = request.getCookies();
+                                                    if (cookies != null) {
+                                                        for (Cookie cookie : cookies) {
+                                                            if (COOKIE_JIFA_TOKEN_KEY.equals(cookie.getName())) {
+                                                                token = cookie.getValue();
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            return token;
+                                        }));
 
         hs.exceptionHandling(eh -> {
             // We currently don't have a custom login page, and invoking authenticationEntryPoint will disable the login page provided by spring,

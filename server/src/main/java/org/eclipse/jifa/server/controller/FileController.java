@@ -18,7 +18,7 @@ import org.eclipse.jifa.common.domain.vo.PageView;
 import org.eclipse.jifa.server.domain.dto.FileTransferProgress;
 import org.eclipse.jifa.server.domain.dto.FileTransferRequest;
 import org.eclipse.jifa.server.domain.dto.FileView;
-import org.eclipse.jifa.server.domain.dto.WrappedResource;
+import org.eclipse.jifa.server.domain.dto.NamedResource;
 import org.eclipse.jifa.server.enums.FileType;
 import org.eclipse.jifa.server.service.FileService;
 import org.springframework.core.io.Resource;
@@ -121,23 +121,18 @@ public class FileController {
     /**
      * Download a file by id
      *
-     * @param fileId   the file id
-     * @param response the http response
+     * @param fileId the file id
      * @return Resource
      * @throws Throwable the exception
      */
     @GetMapping("/files/{file-id}/download")
-    public ResponseEntity<Resource> download(@PathVariable("file-id") long fileId,
-                                             HttpServletResponse response) throws Throwable {
-        WrappedResource resource = fileService.handleDownloadRequest(fileId, response);
-        if (resource.resource() != null) {
-            String contentType = "application/octet-stream";
-            return ResponseEntity.ok()
-                                 .contentType(MediaType.parseMediaType(contentType))
-                                 .header(HttpHeaders.CONTENT_DISPOSITION,
-                                         "attachment; filename=\"" + resource.name() + "\"")
-                                 .body(resource.resource());
-        }
-        return null;
+    public ResponseEntity<Resource> download(@PathVariable("file-id") long fileId) throws Throwable {
+        NamedResource resource = fileService.handleDownloadRequest(fileId);
+        String contentType = "application/octet-stream";
+        return ResponseEntity.ok()
+                             .contentType(MediaType.parseMediaType(contentType))
+                             .header(HttpHeaders.CONTENT_DISPOSITION,
+                                     "attachment; filename=\"" + resource.name() + "\"")
+                             .body(resource.resource());
     }
 }

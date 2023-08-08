@@ -43,7 +43,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler
     @ResponseBody
     public void handleHttpRequestException(Throwable throwable, HttpServletRequest request, HttpServletResponse response) throws IOException {
-        throwable.printStackTrace();
         if (throwable instanceof MissingServletRequestParameterException ||
             throwable instanceof IllegalArgumentException ||
             throwable instanceof AuthenticationException ||

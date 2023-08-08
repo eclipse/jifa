@@ -15,6 +15,7 @@ package org.eclipse.jifa.server.service.impl;
 import jakarta.annotation.Nullable;
 import jakarta.servlet.http.HttpServletResponse;
 import org.eclipse.jifa.common.domain.vo.PageView;
+import org.eclipse.jifa.common.enums.CommonErrorCode;
 import org.eclipse.jifa.common.util.Validate;
 import org.eclipse.jifa.server.ConfigurationAccessor;
 import org.eclipse.jifa.server.component.CurrentStaticWorker;
@@ -23,7 +24,7 @@ import org.eclipse.jifa.server.domain.converter.FileViewConverter;
 import org.eclipse.jifa.server.domain.dto.FileTransferProgress;
 import org.eclipse.jifa.server.domain.dto.FileTransferRequest;
 import org.eclipse.jifa.server.domain.dto.FileView;
-import org.eclipse.jifa.server.domain.dto.WrappedResource;
+import org.eclipse.jifa.server.domain.dto.NamedResource;
 import org.eclipse.jifa.server.domain.entity.shared.file.DeletedFileEntity;
 import org.eclipse.jifa.server.domain.entity.shared.file.FileEntity;
 import org.eclipse.jifa.server.domain.entity.shared.file.TransferringFileEntity;
@@ -33,6 +34,7 @@ import org.eclipse.jifa.server.domain.entity.static_cluster.StaticWorkerEntity;
 import org.eclipse.jifa.server.enums.FileTransferState;
 import org.eclipse.jifa.server.enums.FileType;
 import org.eclipse.jifa.server.enums.SchedulingStrategy;
+import org.eclipse.jifa.server.enums.ServerErrorCode;
 import org.eclipse.jifa.server.repository.DeletedFileRepo;
 import org.eclipse.jifa.server.repository.FileRepo;
 import org.eclipse.jifa.server.repository.FileStaticWorkerBindRepo;
@@ -43,13 +45,11 @@ import org.eclipse.jifa.server.service.UserService;
 import org.eclipse.jifa.server.service.WorkerService;
 import org.eclipse.jifa.server.support.FileTransferListener;
 import org.eclipse.jifa.server.util.FileTransferUtil;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -231,20 +231,22 @@ public class FileServiceImpl extends ConfigurationAccessor implements FileServic
     }
 
     @Override
-    public WrappedResource handleDownloadRequest(long fileId, HttpServletResponse response) throws Throwable {
+    public NamedResource handleDownloadRequest(long fileId) throws Throwable {
         mustNotBe(ELASTIC_WORKER);
 
         FileEntity file = getFileEntityByIdAndCheckAuthority(fileId);
+        Resource resource;
         if (isMaster() && getSchedulingStrategy() == SchedulingStrategy.STATIC) {
             // forward the request to the static worker
-            FileStaticWorkerBind bind = fileStaticWorkerBindRepo.findByFileId(file.getId()).orElseThrow(() -> CE(INTERNAL_ERROR));
-            workerService.asStaticWorkerService().handleDownloadRequest(bind.getStaticWorker(), file.getId(), response);
-            return new WrappedResource(null, null);
+            FileStaticWorkerBind bind = fileStaticWorkerBindRepo.findByFileId(file.getId())
+                                                                .orElseThrow(() -> CE(INTERNAL_ERROR));
+            resource = workerService.asStaticWorkerService()
+                                    .handleDownloadRequest(bind.getStaticWorker(), file.getId());
+        } else {
+            resource = new FileSystemResource(storageService.locationOf(file.getType(), file.getUniqueName()));
+            Validate.isTrue(resource.exists(), INTERNAL_ERROR);
         }
-
-        UrlResource resource = new UrlResource(storageService.locationOf(file.getType(), file.getUniqueName()).toUri());
-        Validate.isTrue(resource.exists());
-        return new WrappedResource(file.getOriginalName(), resource);
+        return new NamedResource(file.getOriginalName(), resource);
     }
 
     @Override

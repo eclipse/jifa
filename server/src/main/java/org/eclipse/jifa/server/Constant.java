@@ -21,6 +21,8 @@ public interface Constant extends org.eclipse.jifa.common.Constant {
 
     int DEFAULT_WORKER_PORT = 8102;
 
+    String COOKIE_JIFA_TOKEN_KEY = "jifa_token";
+
     String HTTP_API_PREFIX = "/jifa-api";
 
     String HTTP_ANALYSIS_API_MAPPING = "/analysis";

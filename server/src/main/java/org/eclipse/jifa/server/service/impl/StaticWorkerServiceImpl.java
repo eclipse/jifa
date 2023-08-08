@@ -25,7 +25,10 @@ import org.eclipse.jifa.server.repository.FileStaticWorkerBindRepo;
 import org.eclipse.jifa.server.repository.StaticWorkerRepo;
 import org.eclipse.jifa.server.service.StaticWorkerService;
 import org.eclipse.jifa.server.service.UserService;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
@@ -40,6 +43,9 @@ import org.springframework.web.util.DefaultUriBuilderFactory;
 import org.springframework.web.util.UriBuilder;
 
 import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URI;
 
 import static org.eclipse.jifa.common.domain.exception.CommonException.CE;
 import static org.eclipse.jifa.common.enums.CommonErrorCode.INTERNAL_ERROR;
@@ -122,28 +128,22 @@ public class StaticWorkerServiceImpl extends AbstractWorkerServiceImpl implement
     }
 
     @Override
-    public void handleDownloadRequest(WorkerEntity worker, long fileId, HttpServletResponse response) {
+    public Resource handleDownloadRequest(WorkerEntity worker, long fileId) throws MalformedURLException {
         Validate.isTrue(isMaster(), INTERNAL_ERROR);
         UriBuilder uriBuilder = new DefaultUriBuilderFactory().builder()
                                                               .scheme("http")
                                                               .host(worker.getHostAddress())
                                                               .port(worker.getPort())
                                                               .path(HTTP_API_PREFIX + "/files/" + fileId + "/download");
-        new RestTemplate()
-                .execute(uriBuilder.build(),
-                         HttpMethod.GET,
-                         clientHttpRequest -> {
-                             String jwtToken = userService.getCurrentUserJwtTokenOrNull();
-                             if (jwtToken != null) {
-                                 clientHttpRequest.getHeaders().add(HttpHeaders.AUTHORIZATION, "Bearer " + jwtToken);
-                             }
-                         },
-                         responseExtractor -> {
-                             response.setHeader(HttpHeaders.CONTENT_DISPOSITION,
-                                                responseExtractor.getHeaders().getFirst(HttpHeaders.CONTENT_DISPOSITION));
-                             StreamUtils.copy(responseExtractor.getBody(), response.getOutputStream());
-                             return null;
-                         });
-
+        return new UrlResource(uriBuilder.build()) {
+            @Override
+            protected void customizeConnection(@NotNull HttpURLConnection con) throws IOException {
+                super.customizeConnection(con);
+                String jwtToken = userService.getCurrentUserJwtTokenOrNull();
+                if (jwtToken != null) {
+                    con.setRequestProperty(HttpHeaders.AUTHORIZATION, "Bearer " + userService.getCurrentUserJwtTokenOrNull());
+                }
+            }
+        };
     }
 }

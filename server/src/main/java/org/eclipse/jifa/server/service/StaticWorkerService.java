@@ -17,7 +17,10 @@ import org.eclipse.jifa.server.domain.dto.FileTransferRequest;
 import org.eclipse.jifa.server.domain.entity.cluster.WorkerEntity;
 import org.eclipse.jifa.server.domain.entity.static_cluster.StaticWorkerEntity;
 import org.eclipse.jifa.server.enums.FileType;
+import org.springframework.core.io.Resource;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.net.MalformedURLException;
 
 public interface StaticWorkerService extends WorkerService {
 
@@ -27,7 +30,7 @@ public interface StaticWorkerService extends WorkerService {
 
     void handleUploadRequest(WorkerEntity worker, FileType type, MultipartFile file) throws Throwable;
 
-    void handleDownloadRequest(WorkerEntity worker, long fileId, HttpServletResponse response);
+    Resource handleDownloadRequest(WorkerEntity worker, long fileId) throws MalformedURLException;
 
     @Override
     default StaticWorkerService asStaticWorkerService() {

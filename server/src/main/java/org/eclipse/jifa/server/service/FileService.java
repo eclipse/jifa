@@ -17,11 +17,9 @@ import org.eclipse.jifa.common.domain.vo.PageView;
 import org.eclipse.jifa.server.domain.dto.FileTransferProgress;
 import org.eclipse.jifa.server.domain.dto.FileTransferRequest;
 import org.eclipse.jifa.server.domain.dto.FileView;
-import org.eclipse.jifa.server.domain.dto.WrappedResource;
+import org.eclipse.jifa.server.domain.dto.NamedResource;
 import org.eclipse.jifa.server.domain.entity.shared.file.FileEntity;
 import org.eclipse.jifa.server.enums.FileType;
-import org.springframework.core.io.Resource;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface FileService {
@@ -38,7 +36,7 @@ public interface FileService {
 
     void handleUploadRequest(FileType type, MultipartFile file) throws Throwable;
 
-    WrappedResource handleDownloadRequest(long fileId, HttpServletResponse response) throws Throwable;
+    NamedResource handleDownloadRequest(long fileId) throws Throwable;
 
     FileEntity getFileByUniqueName(String uniqueName, FileType expectedFileType);
 

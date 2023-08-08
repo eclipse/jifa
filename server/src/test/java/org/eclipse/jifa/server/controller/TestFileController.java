@@ -8,7 +8,7 @@ import org.eclipse.jifa.server.Constant;
 import org.eclipse.jifa.server.domain.dto.FileTransferProgress;
 import org.eclipse.jifa.server.domain.dto.FileTransferRequest;
 import org.eclipse.jifa.server.domain.dto.FileView;
-import org.eclipse.jifa.server.domain.dto.WrappedResource;
+import org.eclipse.jifa.server.domain.dto.NamedResource;
 import org.eclipse.jifa.server.enums.FileTransferMethod;
 import org.eclipse.jifa.server.enums.FileTransferState;
 import org.eclipse.jifa.server.enums.FileType;
@@ -20,12 +20,10 @@ import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfi
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.core.io.FileSystemResource;
-import org.springframework.http.HttpHeaders;
+import org.springframework.core.io.UrlResource;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -40,7 +38,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.request;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(value = FileController.class, excludeAutoConfiguration = {SecurityAutoConfiguration.class})
@@ -137,8 +134,8 @@ public class TestFileController {
         tempFile.deleteOnExit();
         String content = UUID.randomUUID().toString();
         FileUtils.writeStringToFile(tempFile, content, StandardCharsets.UTF_8);
-        Mockito.when(fileService.handleDownloadRequest(Mockito.eq(1L), Mockito.any()))
-               .thenReturn(new WrappedResource("test.txt", new FileSystemResource(tempFile)));
+        Mockito.when(fileService.handleDownloadRequest(Mockito.eq(1L)))
+               .thenReturn(new NamedResource("test.txt", new FileSystemResource(tempFile.toPath().toAbsolutePath())));
 
         mvc.perform(get(Constant.HTTP_API_PREFIX + "/files/1/download"))
            .andExpect(content().string(content))
