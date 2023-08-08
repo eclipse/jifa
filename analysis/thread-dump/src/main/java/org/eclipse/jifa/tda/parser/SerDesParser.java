@@ -16,12 +16,9 @@ package org.eclipse.jifa.tda.parser;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jifa.analysis.listener.ProgressListener;
-import org.eclipse.jifa.tda.model.CallSiteTree;
 import org.eclipse.jifa.tda.model.Snapshot;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -29,9 +26,8 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+@Slf4j
 public class SerDesParser implements Parser {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(SerDesParser.class);
 
     private static final ThreadLocal<Kryo> KRYO;
 
@@ -64,7 +60,7 @@ public class SerDesParser implements Parser {
                 listener.worked(100);
                 return snapshot;
             } catch (Throwable t) {
-                LOGGER.error("Deserialize thread dump snapshot failed", t);
+                log.error("Deserialize thread dump snapshot failed", t);
                 listener.sendUserMessage(ProgressListener.Level.WARNING, "Deserialize thread dump snapshot failed", t);
                 listener.reset();
             }
@@ -76,7 +72,7 @@ public class SerDesParser implements Parser {
             serialize(snapshot, storage);
             listener.worked(5);
         } catch (Throwable t) {
-            LOGGER.error("Serialize snapshot failed", t);
+            log.error("Serialize snapshot failed", t);
         }
         return snapshot;
     }

@@ -13,10 +13,6 @@
 package org.eclipse.jifa.common.util;
 
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.lang.invoke.MethodHandles;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
@@ -27,8 +23,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TestExecutorFactory {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     @Test
     public void test() throws InterruptedException {
@@ -62,7 +56,7 @@ public class TestExecutorFactory {
         }, 100, TimeUnit.MILLISECONDS);
         assertTrue(countDownLatch3.await(1, TimeUnit.SECONDS));
 
-        ExecutorFactory.printStatistic(LOGGER);
+        ExecutorFactory.printStatistic();
     }
 
     @Test

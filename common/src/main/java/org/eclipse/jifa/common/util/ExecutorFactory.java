@@ -12,7 +12,7 @@
  ********************************************************************************/
 package org.eclipse.jifa.common.util;
 
-import org.slf4j.Logger;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -27,6 +27,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Executor factory
  */
+@Slf4j
 public class ExecutorFactory {
 
     private static final int DEFAULT_COMMON_THREAD_POOL_SIZE = Runtime.getRuntime().availableProcessors() * 2;
@@ -125,12 +126,11 @@ public class ExecutorFactory {
     /**
      * Print the statistic of all executors created by this factory
      *
-     * @param logger the logger
      */
-    public static void printStatistic(Logger logger) {
+    public static void printStatistic() {
         for (Map.Entry<ThreadPoolExecutor, String> entry : EXECUTORS.entrySet()) {
             ThreadPoolExecutor pool = entry.getKey();
-            logger.info("{}[{}]: active thread count = {}, total thread count = {}, queue size = {}, queue remaining capacity = {}, completed task count = {}",
+            log.info("{}[{}]: active thread count = {}, total thread count = {}, queue size = {}, queue remaining capacity = {}, completed task count = {}",
                         pool instanceof ScheduledExecutorService ? "Scheduled Executor" : "Executor",
                         entry.getValue(),
                         pool.getActiveCount(),

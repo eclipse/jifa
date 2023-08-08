@@ -16,6 +16,7 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.RemovalListener;
 import com.github.benmanes.caffeine.cache.Scheduler;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jifa.analysis.annotation.ApiMeta;
@@ -27,14 +28,11 @@ import org.eclipse.jifa.analysis.support.MethodNameConverter;
 import org.eclipse.jifa.common.util.ExecutorFactory;
 import org.eclipse.jifa.analysis.util.TypeParameterUtil;
 import org.eclipse.jifa.common.util.Validate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
@@ -54,9 +52,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.eclipse.jifa.analysis.listener.ProgressListener.NoOpProgressListener;
 
+@Slf4j
 public abstract class AbstractApiExecutor<Analyzer> implements ApiExecutor {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private Set<Api> apis;
 
@@ -291,7 +288,7 @@ public abstract class AbstractApiExecutor<Analyzer> implements ApiExecutor {
                 try {
                     if (throwable != null) {
                         try {
-                            LOGGER.error("Error occurred while building Analyzer: {}", throwable.getMessage());
+                            log.error("Error occurred while building Analyzer: {}", throwable.getMessage());
 
                             File log = errorLogFile(target);
                             FileUtils.writeStringToFile(log, progressListener.log(), StandardCharsets.UTF_8, false);
@@ -342,7 +339,7 @@ public abstract class AbstractApiExecutor<Analyzer> implements ApiExecutor {
         File errorLog = errorLogFile(target);
         if (errorLog.exists()) {
             if (!errorLog.delete()) {
-                LOGGER.warn("Failed to delete error log file: {}", errorLog.getAbsolutePath());
+                log.warn("Failed to delete error log file: {}", errorLog.getAbsolutePath());
             }
         }
     }

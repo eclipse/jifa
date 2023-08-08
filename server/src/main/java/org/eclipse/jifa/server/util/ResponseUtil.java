@@ -13,19 +13,16 @@
 package org.eclipse.jifa.server.util;
 
 import io.netty.handler.timeout.ReadTimeoutException;
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jifa.common.util.GsonHolder;
 import org.eclipse.jifa.server.Constant;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
-import java.lang.invoke.MethodHandles;
 
 import static org.eclipse.jifa.common.util.GsonHolder.GSON;
 
+@Slf4j
 public class ResponseUtil {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private ResponseUtil() {
     }
@@ -38,7 +35,7 @@ public class ResponseUtil {
         try {
             return GsonHolder.GSON.toJson(o).getBytes(Constant.CHARSET);
         } catch (Throwable t) {
-            LOGGER.error("Error occurred while converting response to data", t);
+            log.error("Error occurred while converting response to data", t);
             return null;
         }
     }
@@ -73,7 +70,7 @@ public class ResponseUtil {
                 return null;
             }
         } catch (Throwable t) {
-            LOGGER.error("Error occurred while converting throwable to data", t);
+            log.error("Error occurred while converting throwable to data", t);
             return null;
         }
     }

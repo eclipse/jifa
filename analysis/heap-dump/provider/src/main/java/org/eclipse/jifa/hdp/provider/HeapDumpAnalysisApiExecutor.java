@@ -12,6 +12,7 @@
  ********************************************************************************/
 package org.eclipse.jifa.hdp.provider;
 
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jifa.analysis.AbstractApiExecutor;
 import org.eclipse.jifa.analysis.listener.ProgressListener;
 import org.eclipse.jifa.analysis.support.MethodNameConverter;
@@ -20,13 +21,10 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.Constants;
 import org.osgi.framework.launch.Framework;
 import org.osgi.framework.launch.FrameworkFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
-import java.lang.invoke.MethodHandles;
 import java.net.URL;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -36,10 +34,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
 
+@Slf4j
 public class HeapDumpAnalysisApiExecutor extends AbstractApiExecutor<HeapDumpAnalyzer> {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
 
     static {
         Map<String, String> config = new HashMap<>();
@@ -100,7 +96,7 @@ public class HeapDumpAnalysisApiExecutor extends AbstractApiExecutor<HeapDumpAna
 
             for (Bundle bundle : bundles) {
                 if (validNames.contains(bundle.getSymbolicName())) {
-                    LOGGER.debug("starting bundle: {}", bundle);
+                    log.debug("starting bundle: {}", bundle);
                     bundle.start();
                 }
             }
@@ -135,7 +131,7 @@ public class HeapDumpAnalysisApiExecutor extends AbstractApiExecutor<HeapDumpAna
         File index = indexFile(target);
         if (index.exists()) {
             if (!index.delete()) {
-                LOGGER.warn("Failed to delete index file: {}", index.getAbsolutePath());
+                log.warn("Failed to delete index file: {}", index.getAbsolutePath());
             }
         }
     }

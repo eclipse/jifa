@@ -13,16 +13,14 @@
 
 package org.eclipse.jifa.hda.api;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
+@Slf4j
 public class SearchPredicate {
-    private static final Logger LOGGER = LoggerFactory.getLogger(SearchPredicate.class);
-
     public static <T extends Searchable> Predicate<T> createPredicate(String searchText, SearchType searchType) {
         if (searchText == null || searchType == null || searchText.isEmpty()) {
             return (T record) -> true;
@@ -98,7 +96,7 @@ public class SearchPredicate {
                 }
             }
         } catch (RuntimeException ignored) {
-            LOGGER.debug("unexpected exception generating search `" + searchText + "` with type " + searchType.name());
+            log.debug("unexpected exception generating search `" + searchText + "` with type " + searchType.name());
             pred = (T record) -> false;
         }
 
@@ -108,7 +106,7 @@ public class SearchPredicate {
             try {
                 return unwrapped.test(record);
             } catch (Throwable ignored) {
-                LOGGER.debug("unexpected exception when search `" + searchText + "` with type " + searchType.name());
+                log.debug("unexpected exception when search `" + searchText + "` with type " + searchType.name());
                 return false;
             }
         };

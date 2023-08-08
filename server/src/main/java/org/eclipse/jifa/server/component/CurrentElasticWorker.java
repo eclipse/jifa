@@ -12,26 +12,23 @@
  ********************************************************************************/
 package org.eclipse.jifa.server.component;
 
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jifa.server.ConfigurationAccessor;
 import org.eclipse.jifa.server.Constant;
 import org.eclipse.jifa.server.condition.ElasticWorker;
 import org.eclipse.jifa.server.repository.ElasticWorkerRepo;
 import org.eclipse.jifa.server.service.ElasticWorkerScheduler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.lang.invoke.MethodHandles;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @ElasticWorker
 @Component
+@Slf4j
 public class CurrentElasticWorker extends ConfigurationAccessor {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final ElasticWorkerRepo elasticWorkerRepo;
 
@@ -57,7 +54,7 @@ public class CurrentElasticWorker extends ConfigurationAccessor {
         lastAccessTime = System.currentTimeMillis();
         int count = activeCount.decrementAndGet();
         if (count < 0) {
-            LOGGER.error("activeCount is negative: {}", activeCount.get());
+            log.error("activeCount is negative: {}", activeCount.get());
         }
     }
 
@@ -73,10 +70,10 @@ public class CurrentElasticWorker extends ConfigurationAccessor {
                 elasticWorkerRepo.deleteById(identity);
                 elasticWorkerScheduler.terminate(identity);
             } catch (Throwable t) {
-                LOGGER.error("Failed to terminate this elastic worker", t);
+                log.error("Failed to terminate this elastic worker", t);
             }
         } else {
-            LOGGER.info("This elastic worker is currently idle and will be deleted if still not accessed by {}", new Date(lastAccessTime + thresholdInMillis));
+            log.info("This elastic worker is currently idle and will be deleted if still not accessed by {}", new Date(lastAccessTime + thresholdInMillis));
         }
     }
 }

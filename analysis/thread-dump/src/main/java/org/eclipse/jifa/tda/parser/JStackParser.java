@@ -13,6 +13,7 @@
 
 package org.eclipse.jifa.tda.parser;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jifa.analysis.listener.ProgressListener;
 import org.eclipse.jifa.tda.enums.JavaThreadState;
@@ -30,8 +31,6 @@ import org.eclipse.jifa.tda.model.Snapshot;
 import org.eclipse.jifa.tda.model.Thread;
 import org.eclipse.jifa.tda.model.Trace;
 import org.eclipse.jifa.tda.util.Converter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -50,9 +49,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@Slf4j
 public class JStackParser implements Parser {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(JStackParser.class);
 
     private static final BlockingDeque<ParserImpl.RawJavaThread> QUEUE;
 
@@ -72,7 +70,7 @@ public class JStackParser implements Parser {
                     try {
                         QUEUE.take().parse();
                     } catch (Throwable t) {
-                        LOGGER.error("Parse one thread error", t);
+                        log.error("Parse one thread error", t);
                     }
                 }
             });
@@ -249,7 +247,7 @@ public class JStackParser implements Parser {
         void parseByElementPattern(Element element, Action action, boolean stepOnFailed) throws Exception {
             String line = input.currentLine();
             if (line == null) {
-                LOGGER.warn("Skip parsing {} caused by EOF", element.description);
+                log.warn("Skip parsing {} caused by EOF", element.description);
                 return;
             }
             Matcher matcher = PATTERNS.patternOf(element).matcher(line);
@@ -260,7 +258,7 @@ public class JStackParser implements Parser {
                     step();
                 }
             } else {
-                LOGGER.warn("Parse {} failed: {}", element.description, line);
+                log.warn("Parse {} failed: {}", element.description, line);
                 if (stepOnFailed) {
                     step();
                 }

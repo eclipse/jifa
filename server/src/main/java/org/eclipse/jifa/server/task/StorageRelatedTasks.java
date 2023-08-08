@@ -12,28 +12,25 @@
  ********************************************************************************/
 package org.eclipse.jifa.server.task;
 
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jifa.server.ConfigurationAccessor;
 import org.eclipse.jifa.server.enums.FileType;
 import org.eclipse.jifa.server.repository.FileRepo;
 import org.eclipse.jifa.server.service.FileService;
 import org.eclipse.jifa.server.service.StorageService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.lang.invoke.MethodHandles;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 @ConditionalOnBean(StorageService.class)
 @Component
+@Slf4j
 public class StorageRelatedTasks extends ConfigurationAccessor {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final LockSupport lockSupport;
 
@@ -89,7 +86,7 @@ public class StorageRelatedTasks extends ConfigurationAccessor {
             long totalSpace = storageService.getTotalSpace();
             return availableSpace * 1.0 / totalSpace <= THRESHOLD;
         } catch (IOException e) {
-            LOGGER.error("Failed to get storage space", e);
+            log.error("Failed to get storage space", e);
             return false;
         }
     }

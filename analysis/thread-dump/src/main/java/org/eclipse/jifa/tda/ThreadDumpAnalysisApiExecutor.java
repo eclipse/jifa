@@ -12,19 +12,16 @@
  ********************************************************************************/
 package org.eclipse.jifa.tda;
 
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jifa.analysis.AbstractApiExecutor;
 import org.eclipse.jifa.analysis.listener.ProgressListener;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.lang.invoke.MethodHandles;
 import java.nio.file.Path;
 import java.util.Map;
 
+@Slf4j
 public class ThreadDumpAnalysisApiExecutor extends AbstractApiExecutor<ThreadDumpAnalyzer> {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     @Override
     protected ThreadDumpAnalyzer buildAnalyzer(Path target, Map<String, String> options, ProgressListener listener) {
@@ -37,7 +34,7 @@ public class ThreadDumpAnalysisApiExecutor extends AbstractApiExecutor<ThreadDum
         File kryo = target.resolveSibling(target.toFile().getName() + ".kryo").toFile();
         if (kryo.exists()) {
             if (!kryo.delete()) {
-                LOGGER.warn("Failed to delete kryo file: {}", kryo.getAbsolutePath());
+                log.warn("Failed to delete kryo file: {}", kryo.getAbsolutePath());
             }
         }
     }

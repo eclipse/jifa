@@ -18,6 +18,7 @@ import com.google.common.cache.CacheBuilder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jifa.analysis.annotation.ApiMeta;
 import org.eclipse.jifa.analysis.listener.ProgressListener;
 import org.eclipse.jifa.common.domain.request.PagingRequest;
@@ -51,8 +52,6 @@ import org.eclipse.jifa.gclog.vo.PhaseStatistics;
 import org.eclipse.jifa.gclog.vo.PhaseStatistics.ParentStatisticsInfo;
 import org.eclipse.jifa.gclog.vo.PhaseStatistics.PhaseStatisticItem;
 import org.eclipse.jifa.gclog.vo.TimeRange;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -98,9 +97,8 @@ import static org.eclipse.jifa.gclog.model.modeInfo.GCCollectorType.ZGC;
 /**
  * GCModel contains all direct information from log and analysed data for query
  */
+@Slf4j
 public abstract class GCModel {
-    protected static final Logger LOGGER = LoggerFactory.getLogger(GCModel.class);
-
     // These 3 event lists below are used to support events like young/mixed/old/full. Other events. like
     // safepoint, allocation stall will be save in other lists. gcEvents and allEvents may be used in parsing.
     // When calculating derived info, gcEvents may be transformed, and allEvents and gcCollectionEvents will be

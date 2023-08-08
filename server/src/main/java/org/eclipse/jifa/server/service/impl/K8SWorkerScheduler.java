@@ -34,17 +34,15 @@ import io.kubernetes.client.openapi.models.V1ResourceRequirements;
 import io.kubernetes.client.openapi.models.V1Volume;
 import io.kubernetes.client.openapi.models.V1VolumeMount;
 import io.kubernetes.client.util.Config;
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jifa.common.util.Validate;
 import org.eclipse.jifa.server.ConfigurationAccessor;
 import org.eclipse.jifa.server.condition.ElasticCluster;
 import org.eclipse.jifa.server.repository.ElasticWorkerRepo;
 import org.eclipse.jifa.server.service.ElasticWorkerScheduler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.lang.invoke.MethodHandles;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
@@ -59,9 +57,8 @@ import static org.eclipse.jifa.server.Constant.WORKER_CONTAINER_NAME;
 
 @ElasticCluster
 @Service
+@Slf4j
 public class K8SWorkerScheduler extends ConfigurationAccessor implements ElasticWorkerScheduler {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
     private final ElasticWorkerRepo elasticWorkerRepo;
 
@@ -151,9 +148,9 @@ public class K8SWorkerScheduler extends ConfigurationAccessor implements Elastic
             } catch (Throwable t) {
                 if (t instanceof ApiException apiException) {
                     System.out.println(apiException.getResponseBody());
-                    LOGGER.error("Failed to start elastic worker, response body: {}", apiException.getResponseBody());
+                    log.error("Failed to start elastic worker, response body: {}", apiException.getResponseBody());
                 } else {
-                    LOGGER.error("Failed to start elastic worker", t);
+                    log.error("Failed to start elastic worker", t);
                 }
                 callback.accept(null, t);
                 return;
@@ -183,11 +180,11 @@ public class K8SWorkerScheduler extends ConfigurationAccessor implements Elastic
                         terminate(identity);
                     }
                 } catch (Throwable t) {
-                    LOGGER.error("Error occurred when processing pod");
+                    log.error("Error occurred when processing pod");
                 }
             }
         } catch (Throwable t) {
-            LOGGER.error("Error occurred when terminating inconsistent instances", t);
+            log.error("Error occurred when terminating inconsistent instances", t);
         }
     }
 
