@@ -10,6 +10,9 @@
 
     SPDX-License-Identifier: EPL-2.0
  -->
+# Eclipse Jifa
+[![Eclipse License](https://img.shields.io/github/license/eclipse/jifa?label=License)](https://github.com/eclipse/jifa/blob/main/LICENSE)
+![CI Status](https://github.com/eclipse/jifa/actions/workflows/ci.yml/badge.svg?branch=main)
 
 This branch contains the latest version of the Eclipse Jifa project and is still under development and testing. We will
 replace the current master branch with this branch in the future.
