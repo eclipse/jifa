@@ -11,12 +11,9 @@
 # SPDX-License-Identifier: EPL-2.0
 #
 
-name: test main
+name: ci
 
-on:
-  push:
-    branches:
-      - main
+on: [push, pull_request]
 
 jobs:
   test:
@@ -30,9 +27,6 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 16
-      - name: build Jifa
+      - name: ci
         run: |
-          bash gradlew testCodeCoverageReport
-      - uses: codecov/codecov-action@v3
-        with:
-          files: "'build/testCodeCoverageReport.xml'"
+          bash gradlew build
