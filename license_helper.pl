@@ -112,6 +112,8 @@ sub callback {
     } elsif ($name =~ /\.sh\z/) {
       # skip first line
       prepend_licence($name, $license_2, 2);
+    } elsif ($name =~ /\.yml\z/ || $name =~ /.yaml\z/) {
+      prepend_licence($name, $license_2, 1);
     } elsif ($name =~ /\.vue\z/) {
       prepend_licence($name, $license_3, 1);
     } else {
