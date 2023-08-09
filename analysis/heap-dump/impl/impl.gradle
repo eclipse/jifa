@@ -44,13 +44,16 @@ dependencies {
         include "org.eclipse.mat.api_*.jar"
         include "org.eclipse.mat.hprof_*.jar"
     }
+
+    testImplementation project(':analysis:heap-dump:provider')
 }
 
 compileJava.dependsOn(':analysis:heap-dump:hook:hookPreferences')
-compileTestJava.mustRunAfter(':analysis:heap-dump:impl:installJar')
 
 task installJar(type: Copy, dependsOn: jar) {
     from "${buildDir}/libs"
     into "${mat_deps_dir_path}"
     include "*${project.version}.jar"
 }
+
+compileTestJava.dependsOn installJar

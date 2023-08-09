@@ -23,6 +23,7 @@ dependencies {
     implementation files("${mat_deps_dir_path}/${osgi_jar}")
 }
 
+compileJava.dependsOn(':analysis:heap-dump:impl:installJar')
 processResources.dependsOn(':analysis:heap-dump:impl:installJar')
 
 jacocoTestReport {
