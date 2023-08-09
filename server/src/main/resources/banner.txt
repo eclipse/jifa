@@ -1,9 +1,7 @@
-
-     ,--.  ,--.  ,------.   ,---.
-     |  |  |  |  |  .---'  /  O  \
-,--. |  |  |  |  |  `--,  |  .-.  |
-|  '-'  /  |  |  |  |`    |  | |  |
- `-----'   `--'  `--'     `--' `--'
-
-${application.title} ${application.version}
+${AnsiStyle.BOLD}${AnsiColor.BRIGHT_CYAN}     ,--.  ,--.  ,------.   ,---.
+${AnsiStyle.BOLD}${AnsiColor.BRIGHT_CYAN}     |  |  |  |  |  .---'  /  O  \
+${AnsiStyle.BOLD}${AnsiColor.BRIGHT_CYAN},--. |  |  |  |  |  `--,  |  .-.  |
+${AnsiStyle.BOLD}${AnsiColor.BRIGHT_CYAN}|  '-'  /  |  |  |  |`    |  | |  |
+${AnsiStyle.BOLD}${AnsiColor.BRIGHT_CYAN} `-----'   `--'  `--'     `--' `--'${AnsiStyle.NORMAL}${AnsiColor.DEFAULT}
+Eclipse Jifa ${application.version}
 Powered by Spring Boot ${spring-boot.version}
