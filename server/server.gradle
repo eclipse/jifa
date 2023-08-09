@@ -31,11 +31,6 @@ springBoot {
     applicationName = 'jifa'
 }
 
-configurations {
-    all*.exclude module: 'spring-boot-starter-logging'
-    all*.exclude module: "logback-classic"
-}
-
 dependencies {
     implementation project(':common')
     implementation project(':analysis')
@@ -50,7 +45,6 @@ dependencies {
     implementation 'io.kubernetes:client-java:18.0.1'
 
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    implementation 'org.springframework.boot:spring-boot-starter-log4j2'
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-security'

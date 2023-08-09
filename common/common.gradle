@@ -17,13 +17,8 @@ plugins {
 apply from: "$rootDir/gradle/java.gradle"
 
 dependencies {
-    api "org.apache.logging.log4j:log4j-slf4j-impl:2.17.1"
-
     api 'org.apache.commons:commons-lang3:3.12.0'
-
     api 'commons-io:commons-io:2.13.0'
-
     api 'com.google.guava:guava:30.0-jre'
-
     api 'com.google.code.gson:gson:2.8.9'
 }
