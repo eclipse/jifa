@@ -27,8 +27,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.eclipse.jifa.gclog.model.GCEventType.ZGC_CONCURRENT_MARK;
+import static org.eclipse.jifa.gclog.model.GCEventType.ZGC_CONCURRENT_NONREF;
+import static org.eclipse.jifa.gclog.model.GCEventType.ZGC_CONCURRENT_PREPARE_RELOC_SET;
+import static org.eclipse.jifa.gclog.model.GCEventType.ZGC_CONCURRENT_RELOCATE;
+import static org.eclipse.jifa.gclog.model.GCEventType.ZGC_CONCURRENT_SELECT_RELOC_SET;
+import static org.eclipse.jifa.gclog.model.GCEventType.ZGC_GARBAGE_COLLECTION;
+import static org.eclipse.jifa.gclog.model.GCEventType.ZGC_PAUSE_MARK_END;
+import static org.eclipse.jifa.gclog.model.GCEventType.ZGC_PAUSE_MARK_START;
+import static org.eclipse.jifa.gclog.model.GCEventType.ZGC_PAUSE_RELOCATE_START;
 import static org.eclipse.jifa.gclog.util.Constant.UNKNOWN_INT;
-import static org.eclipse.jifa.gclog.model.GCEventType.*;
 
 public class ZGCModel extends GCModel {
 

@@ -13,7 +13,6 @@
 package org.eclipse.jifa.common.domain.request;
 
 import lombok.Getter;
-import lombok.Setter;
 import org.eclipse.jifa.common.util.Validate;
 
 /**

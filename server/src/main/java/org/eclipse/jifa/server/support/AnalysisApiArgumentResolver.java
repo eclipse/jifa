@@ -12,8 +12,6 @@
  ********************************************************************************/
 package org.eclipse.jifa.server.support;
 
-import com.google.gson.JsonObject;
-
 public interface AnalysisApiArgumentResolver {
 
     AnalysisApiArgumentResolver NO_ARGS = new AnalysisApiArgumentResolver() {

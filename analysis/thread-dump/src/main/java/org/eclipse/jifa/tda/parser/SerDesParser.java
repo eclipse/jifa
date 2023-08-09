@@ -19,6 +19,7 @@ import com.esotericsoftware.kryo.io.Output;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jifa.analysis.listener.ProgressListener;
 import org.eclipse.jifa.tda.model.Snapshot;
+
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;

@@ -14,21 +14,28 @@
 package org.eclipse.jifa.gclog;
 
 import org.eclipse.jifa.analysis.listener.DefaultProgressListener;
-import org.eclipse.jifa.gclog.diagnoser.*;
+import org.eclipse.jifa.gclog.diagnoser.AbnormalType;
+import org.eclipse.jifa.gclog.diagnoser.AnalysisConfig;
+import org.eclipse.jifa.gclog.diagnoser.EventAbnormalSet;
+import org.eclipse.jifa.gclog.diagnoser.EventDiagnoseInfo;
+import org.eclipse.jifa.gclog.diagnoser.GlobalDiagnoseInfo;
+import org.eclipse.jifa.gclog.diagnoser.GlobalDiagnoser;
 import org.eclipse.jifa.gclog.event.GCEvent;
 import org.eclipse.jifa.gclog.model.GCEventType;
 import org.eclipse.jifa.gclog.model.GCModel;
 import org.eclipse.jifa.gclog.parser.GCLogParser;
 import org.eclipse.jifa.gclog.parser.GCLogParserFactory;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
 import static org.eclipse.jifa.gclog.TestUtil.stringToBufferedReader;
-import static org.eclipse.jifa.gclog.diagnoser.AbnormalType.*;
+import static org.eclipse.jifa.gclog.diagnoser.AbnormalType.BAD_DURATION;
+import static org.eclipse.jifa.gclog.diagnoser.AbnormalType.BAD_EVENT_TYPE;
+import static org.eclipse.jifa.gclog.diagnoser.AbnormalType.BAD_PROMOTION;
+import static org.eclipse.jifa.gclog.diagnoser.AbnormalType.TO_SPACE_EXHAUSTED;
 
 
 public class TestEventDiagnoser {

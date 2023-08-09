@@ -13,13 +13,14 @@
 
 package org.eclipse.jifa.hda.impl;
 
+import org.eclipse.jifa.common.annotation.UseAccessor;
+import org.eclipse.jifa.hda.api.AnalysisException;
 import org.eclipse.mat.SnapshotException;
 import org.eclipse.mat.query.Bytes;
 import org.eclipse.mat.query.IStructuredResult;
 import org.eclipse.mat.snapshot.ISnapshot;
 import org.eclipse.mat.snapshot.model.IObject;
-import org.eclipse.jifa.common.annotation.UseAccessor;
-import org.eclipse.jifa.hda.api.AnalysisException;
+
 import static org.eclipse.jifa.hda.api.Model.DominatorTree;
 
 @UseAccessor

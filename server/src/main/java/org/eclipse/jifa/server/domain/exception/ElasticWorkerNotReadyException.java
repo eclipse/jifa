@@ -12,8 +12,8 @@
  ********************************************************************************/
 package org.eclipse.jifa.server.domain.exception;
 
-import org.eclipse.jifa.server.enums.ServerErrorCode;
 import org.eclipse.jifa.common.domain.exception.ErrorCodeAccessor;
+import org.eclipse.jifa.server.enums.ServerErrorCode;
 
 public class ElasticWorkerNotReadyException extends RuntimeException implements ErrorCodeAccessor {
 

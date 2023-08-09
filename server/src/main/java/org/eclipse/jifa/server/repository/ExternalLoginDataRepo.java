@@ -13,7 +13,6 @@
 package org.eclipse.jifa.server.repository;
 
 import org.eclipse.jifa.server.domain.entity.shared.user.ExternalLoginDataEntity;
-import org.eclipse.jifa.server.domain.entity.shared.user.LoginDataEntity;
 import org.eclipse.jifa.server.enums.ExternalLoginMethod;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;

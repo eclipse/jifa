@@ -21,7 +21,14 @@ import org.eclipse.jifa.gclog.model.modeInfo.GCLogStyle;
 
 import java.io.BufferedReader;
 
-import static org.eclipse.jifa.gclog.model.modeInfo.GCCollectorType.*;
+import static org.eclipse.jifa.gclog.model.modeInfo.GCCollectorType.CMS;
+import static org.eclipse.jifa.gclog.model.modeInfo.GCCollectorType.EPSILON;
+import static org.eclipse.jifa.gclog.model.modeInfo.GCCollectorType.G1;
+import static org.eclipse.jifa.gclog.model.modeInfo.GCCollectorType.GENZ;
+import static org.eclipse.jifa.gclog.model.modeInfo.GCCollectorType.PARALLEL;
+import static org.eclipse.jifa.gclog.model.modeInfo.GCCollectorType.SERIAL;
+import static org.eclipse.jifa.gclog.model.modeInfo.GCCollectorType.SHENANDOAH;
+import static org.eclipse.jifa.gclog.model.modeInfo.GCCollectorType.ZGC;
 import static org.eclipse.jifa.gclog.model.modeInfo.GCLogStyle.PRE_UNIFIED;
 import static org.eclipse.jifa.gclog.model.modeInfo.GCLogStyle.UNIFIED;
 

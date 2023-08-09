@@ -21,7 +21,17 @@ import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
 
-import static org.eclipse.jifa.gclog.diagnoser.SuggestionType.*;
+import static org.eclipse.jifa.gclog.diagnoser.SuggestionType.CHECK_EVACUATION_FAILURE;
+import static org.eclipse.jifa.gclog.diagnoser.SuggestionType.DECREASE_CMSIOF;
+import static org.eclipse.jifa.gclog.diagnoser.SuggestionType.DECREASE_IHOP;
+import static org.eclipse.jifa.gclog.diagnoser.SuggestionType.ENLARGE_HEAP;
+import static org.eclipse.jifa.gclog.diagnoser.SuggestionType.EXPAND_YOUNG_GEN;
+import static org.eclipse.jifa.gclog.diagnoser.SuggestionType.EXPAND_YOUNG_GEN_G1;
+import static org.eclipse.jifa.gclog.diagnoser.SuggestionType.OLD_SYSTEM_GC;
+import static org.eclipse.jifa.gclog.diagnoser.SuggestionType.SHRINK_YOUNG_GEN;
+import static org.eclipse.jifa.gclog.diagnoser.SuggestionType.SHRINK_YOUNG_GEN_G1;
+import static org.eclipse.jifa.gclog.diagnoser.SuggestionType.UPGRADE_TO_11_G1_FULL_GC;
+import static org.eclipse.jifa.gclog.diagnoser.SuggestionType.USE_MORE_DETAILED_LOGGING_UNIFIED;
 import static org.eclipse.jifa.gclog.util.Constant.UNKNOWN_INT;
 
 public abstract class SuggestionGenerator {

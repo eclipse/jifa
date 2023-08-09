@@ -16,7 +16,6 @@ import jakarta.annotation.Nullable;
 import jakarta.annotation.PostConstruct;
 import org.eclipse.jifa.analysis.Api;
 import org.eclipse.jifa.analysis.ApiService;
-import org.eclipse.jifa.common.util.Validate;
 import org.eclipse.jifa.server.ConfigurationAccessor;
 import org.eclipse.jifa.server.Constant;
 import org.eclipse.jifa.server.component.CurrentElasticWorker;

@@ -17,7 +17,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
-import org.eclipse.jifa.server.domain.entity.shared.file.BaseFileEntity;
 
 import java.time.LocalDateTime;
 

@@ -12,7 +12,6 @@
  ********************************************************************************/
 package org.eclipse.jifa.server.service.impl;
 
-import jakarta.servlet.http.HttpServletResponse;
 import org.eclipse.jifa.common.util.Validate;
 import org.eclipse.jifa.server.condition.Master;
 import org.eclipse.jifa.server.condition.StaticSchedulingStrategy;
@@ -34,8 +33,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StreamUtils;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -45,7 +42,6 @@ import org.springframework.web.util.UriBuilder;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
-import java.net.URI;
 
 import static org.eclipse.jifa.common.domain.exception.CommonException.CE;
 import static org.eclipse.jifa.common.enums.CommonErrorCode.INTERNAL_ERROR;

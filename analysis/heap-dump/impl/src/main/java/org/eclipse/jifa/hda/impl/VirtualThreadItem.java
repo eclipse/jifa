@@ -13,9 +13,9 @@
 
 package org.eclipse.jifa.hda.impl;
 
+import org.eclipse.jifa.common.annotation.UseAccessor;
 import org.eclipse.mat.query.Bytes;
 import org.eclipse.mat.query.IResultTree;
-import org.eclipse.jifa.common.annotation.UseAccessor;
 
 import static org.eclipse.jifa.hda.api.Model.Thread;
 

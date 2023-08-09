@@ -12,7 +12,6 @@
  ********************************************************************************/
 package org.eclipse.jifa.server.controller;
 
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.eclipse.jifa.common.domain.vo.PageView;
 import org.eclipse.jifa.server.domain.dto.FileTransferProgress;

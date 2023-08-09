@@ -13,10 +13,8 @@
 package org.eclipse.jifa.server.service.impl;
 
 import jakarta.annotation.Nullable;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jifa.common.domain.vo.PageView;
-import org.eclipse.jifa.common.enums.CommonErrorCode;
 import org.eclipse.jifa.common.util.Validate;
 import org.eclipse.jifa.server.ConfigurationAccessor;
 import org.eclipse.jifa.server.component.CurrentStaticWorker;
@@ -35,7 +33,6 @@ import org.eclipse.jifa.server.domain.entity.static_cluster.StaticWorkerEntity;
 import org.eclipse.jifa.server.enums.FileTransferState;
 import org.eclipse.jifa.server.enums.FileType;
 import org.eclipse.jifa.server.enums.SchedulingStrategy;
-import org.eclipse.jifa.server.enums.ServerErrorCode;
 import org.eclipse.jifa.server.repository.DeletedFileRepo;
 import org.eclipse.jifa.server.repository.FileRepo;
 import org.eclipse.jifa.server.repository.FileStaticWorkerBindRepo;
@@ -48,7 +45,6 @@ import org.eclipse.jifa.server.support.FileTransferListener;
 import org.eclipse.jifa.server.util.FileTransferUtil;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.TaskScheduler;

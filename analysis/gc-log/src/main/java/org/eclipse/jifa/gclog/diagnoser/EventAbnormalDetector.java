@@ -13,10 +13,11 @@
 
 package org.eclipse.jifa.gclog.diagnoser;
 
-
 import org.eclipse.jifa.gclog.event.GCEvent;
-
-import org.eclipse.jifa.gclog.event.evnetInfo.*;
+import org.eclipse.jifa.gclog.event.evnetInfo.CpuTime;
+import org.eclipse.jifa.gclog.event.evnetInfo.GCEventBooleanType;
+import org.eclipse.jifa.gclog.event.evnetInfo.GCMemoryItem;
+import org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea;
 import org.eclipse.jifa.gclog.model.GCEventType;
 import org.eclipse.jifa.gclog.model.GCModel;
 
@@ -24,11 +25,29 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.eclipse.jifa.gclog.diagnoser.AbnormalType.*;
+import static org.eclipse.jifa.gclog.diagnoser.AbnormalType.BAD_CAUSE_FULL_GC;
+import static org.eclipse.jifa.gclog.diagnoser.AbnormalType.BAD_DURATION;
+import static org.eclipse.jifa.gclog.diagnoser.AbnormalType.BAD_EVENT_TYPE;
+import static org.eclipse.jifa.gclog.diagnoser.AbnormalType.BAD_HEAP_USED;
+import static org.eclipse.jifa.gclog.diagnoser.AbnormalType.BAD_HUMONGOUS_USED;
+import static org.eclipse.jifa.gclog.diagnoser.AbnormalType.BAD_INTERVAL;
+import static org.eclipse.jifa.gclog.diagnoser.AbnormalType.BAD_METASPACE_USED;
+import static org.eclipse.jifa.gclog.diagnoser.AbnormalType.BAD_OLD_GEN_CAPACITY;
+import static org.eclipse.jifa.gclog.diagnoser.AbnormalType.BAD_OLD_USED;
+import static org.eclipse.jifa.gclog.diagnoser.AbnormalType.BAD_PROMOTION;
+import static org.eclipse.jifa.gclog.diagnoser.AbnormalType.BAD_SYS;
+import static org.eclipse.jifa.gclog.diagnoser.AbnormalType.BAD_USR;
+import static org.eclipse.jifa.gclog.diagnoser.AbnormalType.BAD_YOUNG_GEN_CAPACITY;
 import static org.eclipse.jifa.gclog.diagnoser.AbnormalType.TO_SPACE_EXHAUSTED;
-import static org.eclipse.jifa.gclog.event.evnetInfo.GCEventBooleanType.*;
-import static org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea.*;
-import static org.eclipse.jifa.gclog.util.Constant.*;
+import static org.eclipse.jifa.gclog.event.evnetInfo.GCEventBooleanType.GC_AFTER_REMARK;
+import static org.eclipse.jifa.gclog.event.evnetInfo.GCEventBooleanType.GC_AT_END_OF_OLD_CYCLE;
+import static org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea.HEAP;
+import static org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea.HUMONGOUS;
+import static org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea.METASPACE;
+import static org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea.OLD;
+import static org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea.YOUNG;
+import static org.eclipse.jifa.gclog.util.Constant.UNKNOWN_DOUBLE;
+import static org.eclipse.jifa.gclog.util.Constant.UNKNOWN_INT;
 
 // This class detects abnormals that will be displayed in gc detail in frontend. Their cause and suggestion will
 // be found in the next step in EventSuggestionGenerator.

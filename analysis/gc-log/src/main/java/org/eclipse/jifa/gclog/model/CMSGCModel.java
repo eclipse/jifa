@@ -13,7 +13,6 @@
 
 package org.eclipse.jifa.gclog.model;
 
-import com.google.common.util.concurrent.AtomicDouble;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jifa.gclog.event.GCEvent;
 import org.eclipse.jifa.gclog.event.evnetInfo.GCEventBooleanType;
@@ -23,10 +22,17 @@ import org.eclipse.jifa.gclog.vo.TimeRange;
 
 import java.util.List;
 
-import static org.eclipse.jifa.gclog.util.Constant.UNKNOWN_LONG;
 import static org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea.METASPACE;
 import static org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea.OLD;
-import static org.eclipse.jifa.gclog.model.GCEventType.*;
+import static org.eclipse.jifa.gclog.model.GCEventType.CMS_CONCURRENT_ABORTABLE_PRECLEAN;
+import static org.eclipse.jifa.gclog.model.GCEventType.CMS_CONCURRENT_FAILURE;
+import static org.eclipse.jifa.gclog.model.GCEventType.CMS_CONCURRENT_INTERRUPTED;
+import static org.eclipse.jifa.gclog.model.GCEventType.CMS_CONCURRENT_MARK_SWEPT;
+import static org.eclipse.jifa.gclog.model.GCEventType.CMS_CONCURRENT_SWEEP;
+import static org.eclipse.jifa.gclog.model.GCEventType.CMS_FINAL_REMARK;
+import static org.eclipse.jifa.gclog.model.GCEventType.CMS_INITIAL_MARK;
+import static org.eclipse.jifa.gclog.model.GCEventType.FULL_GC;
+import static org.eclipse.jifa.gclog.model.GCEventType.YOUNG_GC;
 
 @Slf4j
 public class CMSGCModel extends GenerationalGCModel {

@@ -19,8 +19,8 @@ import lombok.NoArgsConstructor;
 
 import java.util.Objects;
 
-import static org.eclipse.jifa.gclog.util.Constant.UNKNOWN_INT;
 import static org.eclipse.jifa.gclog.util.Constant.KB2MB;
+import static org.eclipse.jifa.gclog.util.Constant.UNKNOWN_INT;
 
 @Data
 @AllArgsConstructor

@@ -12,9 +12,6 @@
  ********************************************************************************/
 package org.eclipse.jifa.common.util;
 
-import java.io.IOException;
-import java.lang.reflect.Method;
-
 import com.google.common.base.CaseFormat;
 import com.google.gson.Gson;
 import com.google.gson.TypeAdapter;
@@ -22,6 +19,9 @@ import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import org.eclipse.jifa.common.domain.exception.CommonException;
+
+import java.io.IOException;
+import java.lang.reflect.Method;
 
 /**
  * @plasma147 provided this solution:

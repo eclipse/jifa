@@ -13,8 +13,8 @@
 
 package org.eclipse.jifa.hda.impl;
 
-import org.eclipse.jifa.hda.api.FilterProgressListener;
 import org.eclipse.jifa.analysis.listener.ProgressListener;
+import org.eclipse.jifa.hda.api.FilterProgressListener;
 import org.eclipse.mat.util.IProgressListener;
 
 public class ProgressListenerImpl extends FilterProgressListener implements IProgressListener {

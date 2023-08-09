@@ -19,7 +19,6 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
-import org.eclipse.jifa.server.domain.entity.shared.file.BaseFileEntity;
 import org.eclipse.jifa.server.enums.FileTransferState;
 import org.hibernate.annotations.UpdateTimestamp;
 

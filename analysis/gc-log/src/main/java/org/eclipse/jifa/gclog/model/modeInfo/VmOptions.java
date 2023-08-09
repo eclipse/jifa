@@ -25,8 +25,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
-import static org.eclipse.jifa.gclog.util.Constant.UNKNOWN_INT;
 import static org.eclipse.jifa.gclog.util.Constant.KB2MB;
+import static org.eclipse.jifa.gclog.util.Constant.UNKNOWN_INT;
 
 public class VmOptions {
     private Map<String, VmOption> options = new LinkedHashMap<>(); // use LinkedHashMap to preserve option order

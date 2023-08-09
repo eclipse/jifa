@@ -25,8 +25,8 @@ import org.eclipse.jifa.analysis.annotation.Exclude;
 import org.eclipse.jifa.analysis.listener.DefaultProgressListener;
 import org.eclipse.jifa.analysis.listener.ProgressListener;
 import org.eclipse.jifa.analysis.support.MethodNameConverter;
-import org.eclipse.jifa.common.util.ExecutorFactory;
 import org.eclipse.jifa.analysis.util.TypeParameterUtil;
+import org.eclipse.jifa.common.util.ExecutorFactory;
 import org.eclipse.jifa.common.util.Validate;
 
 import java.io.File;

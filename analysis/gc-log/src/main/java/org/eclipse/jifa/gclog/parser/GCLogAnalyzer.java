@@ -14,9 +14,9 @@
 package org.eclipse.jifa.gclog.parser;
 
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.jifa.common.domain.exception.CommonException;
 import org.eclipse.jifa.analysis.listener.DefaultProgressListener;
 import org.eclipse.jifa.analysis.listener.ProgressListener;
+import org.eclipse.jifa.common.domain.exception.CommonException;
 import org.eclipse.jifa.gclog.model.GCModel;
 
 import java.io.BufferedReader;

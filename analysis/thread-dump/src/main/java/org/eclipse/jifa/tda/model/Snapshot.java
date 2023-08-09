@@ -14,8 +14,8 @@
 package org.eclipse.jifa.tda.model;
 
 import lombok.Data;
-import org.eclipse.jifa.tda.util.CollectionUtil;
 import org.eclipse.jifa.tda.enums.MonitorState;
+import org.eclipse.jifa.tda.util.CollectionUtil;
 
 import java.util.ArrayList;
 import java.util.Comparator;

@@ -23,7 +23,9 @@ import java.util.List;
 
 import static org.eclipse.jifa.gclog.event.evnetInfo.GCEventLevel.EVENT;
 import static org.eclipse.jifa.gclog.event.evnetInfo.GCEventLevel.PHASE;
-import static org.eclipse.jifa.gclog.event.evnetInfo.GCPause.*;
+import static org.eclipse.jifa.gclog.event.evnetInfo.GCPause.CONCURRENT;
+import static org.eclipse.jifa.gclog.event.evnetInfo.GCPause.PARTIAL;
+import static org.eclipse.jifa.gclog.event.evnetInfo.GCPause.PAUSE;
 
 /*
  * store all info that may affect the way model is organized and explained

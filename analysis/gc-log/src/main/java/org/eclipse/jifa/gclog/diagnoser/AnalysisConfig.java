@@ -12,9 +12,7 @@
  ********************************************************************************/
 package org.eclipse.jifa.gclog.diagnoser;
 
-
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import org.eclipse.jifa.gclog.model.GCModel;

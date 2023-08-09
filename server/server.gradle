@@ -94,6 +94,9 @@ tasks.named("processResources") {
 // for kryo
 applicationDefaultJvmArgs = ['--add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED']
 
+
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+import org.springframework.boot.gradle.tasks.bundling.BootJar
 import org.springframework.boot.gradle.tasks.run.BootRun
 
 import java.nio.file.Files
@@ -141,9 +144,6 @@ tasks.register('runStandaloneWorker', BootRun) {
 
     setDevKeys(it)
 }
-
-import org.springframework.boot.gradle.tasks.bundling.BootJar
-import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
 
 def masterArchive = 'jifa-master.jar'
 def workerArchive = 'jifa-worker.jar'

@@ -18,7 +18,6 @@ import org.eclipse.jifa.common.util.GsonHolder;
 import org.eclipse.jifa.server.Constant;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
-
 import static org.eclipse.jifa.common.util.GsonHolder.GSON;
 
 @Slf4j

@@ -12,7 +12,6 @@
  ********************************************************************************/
 package org.eclipse.jifa.server.service;
 
-import jakarta.servlet.http.HttpServletResponse;
 import org.eclipse.jifa.server.domain.dto.FileTransferRequest;
 import org.eclipse.jifa.server.domain.entity.cluster.WorkerEntity;
 import org.eclipse.jifa.server.domain.entity.static_cluster.StaticWorkerEntity;

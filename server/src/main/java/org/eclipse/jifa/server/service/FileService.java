@@ -12,7 +12,6 @@
  ********************************************************************************/
 package org.eclipse.jifa.server.service;
 
-import jakarta.servlet.http.HttpServletResponse;
 import org.eclipse.jifa.common.domain.vo.PageView;
 import org.eclipse.jifa.server.domain.dto.FileTransferProgress;
 import org.eclipse.jifa.server.domain.dto.FileTransferRequest;

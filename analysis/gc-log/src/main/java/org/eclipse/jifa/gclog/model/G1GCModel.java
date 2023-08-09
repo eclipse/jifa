@@ -15,8 +15,8 @@ package org.eclipse.jifa.gclog.model;
 
 import org.eclipse.jifa.gclog.event.GCEvent;
 import org.eclipse.jifa.gclog.event.evnetInfo.GCEventBooleanType;
-import org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea;
 import org.eclipse.jifa.gclog.event.evnetInfo.GCMemoryItem;
+import org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea;
 import org.eclipse.jifa.gclog.model.modeInfo.GCCollectorType;
 import org.eclipse.jifa.gclog.model.modeInfo.GCLogStyle;
 import org.eclipse.jifa.gclog.util.LongData;
@@ -25,10 +25,26 @@ import org.eclipse.jifa.gclog.vo.TimeRange;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.eclipse.jifa.gclog.event.evnetInfo.GCEventBooleanType.*;
-import static org.eclipse.jifa.gclog.util.Constant.*;
-import static org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea.*;
-import static org.eclipse.jifa.gclog.model.GCEventType.*;
+import static org.eclipse.jifa.gclog.event.evnetInfo.GCEventBooleanType.GC_AFTER_REMARK;
+import static org.eclipse.jifa.gclog.event.evnetInfo.GCEventBooleanType.GC_AT_END_OF_OLD_CYCLE;
+import static org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea.ARCHIVE;
+import static org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea.EDEN;
+import static org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea.HEAP;
+import static org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea.HUMONGOUS;
+import static org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea.METASPACE;
+import static org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea.OLD;
+import static org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea.SURVIVOR;
+import static org.eclipse.jifa.gclog.model.GCEventType.FULL_GC;
+import static org.eclipse.jifa.gclog.model.GCEventType.G1_CONCURRENT_CYCLE;
+import static org.eclipse.jifa.gclog.model.GCEventType.G1_CONCURRENT_MARK;
+import static org.eclipse.jifa.gclog.model.GCEventType.G1_CONCURRENT_MARK_ABORT;
+import static org.eclipse.jifa.gclog.model.GCEventType.G1_CONCURRENT_REBUILD_REMEMBERED_SETS;
+import static org.eclipse.jifa.gclog.model.GCEventType.G1_CONCURRENT_UNDO_CYCLE;
+import static org.eclipse.jifa.gclog.model.GCEventType.G1_MIXED_GC;
+import static org.eclipse.jifa.gclog.model.GCEventType.G1_PAUSE_CLEANUP;
+import static org.eclipse.jifa.gclog.model.GCEventType.G1_REMARK;
+import static org.eclipse.jifa.gclog.model.GCEventType.YOUNG_GC;
+import static org.eclipse.jifa.gclog.util.Constant.UNKNOWN_INT;
 
 public class G1GCModel extends GCModel {
     private long heapRegionSize = UNKNOWN_INT;   // in b

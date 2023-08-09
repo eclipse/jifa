@@ -13,14 +13,15 @@
 
 package org.eclipse.jifa.hda.impl;
 
+import org.eclipse.jifa.common.annotation.UseAccessor;
 import org.eclipse.mat.query.Bytes;
 import org.eclipse.mat.query.IContextObjectSet;
 import org.eclipse.mat.query.IStructuredResult;
 import org.eclipse.mat.snapshot.ISnapshot;
-import org.eclipse.jifa.common.annotation.UseAccessor;
-import static org.eclipse.jifa.hda.api.Model.DominatorTree;
 
 import java.util.Map;
+
+import static org.eclipse.jifa.hda.api.Model.DominatorTree;
 
 @UseAccessor
 public class VirtualPackageItem extends DominatorTree.PackageItem {
