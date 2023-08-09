@@ -17,6 +17,8 @@ import org.eclipse.jifa.analysis.AbstractApiExecutor;
 import org.eclipse.jifa.analysis.listener.ProgressListener;
 import org.eclipse.jifa.analysis.support.MethodNameConverter;
 import org.eclipse.jifa.hda.api.HeapDumpAnalyzer;
+import org.eclipse.osgi.internal.location.EquinoxLocations;
+import org.eclipse.osgi.service.datalocation.Location;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.Constants;
 import org.osgi.framework.launch.Framework;
@@ -26,6 +28,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -70,6 +73,14 @@ public class HeapDumpAnalysisApiExecutor extends AbstractApiExecutor<HeapDumpAna
         };
         config.put(Constants.FRAMEWORK_SYSTEMPACKAGES_EXTRA, String.join(",", extras));
         try {
+            String path = System.getProperty("java.io.tmpdir");
+            File dir = new File(path);
+            if (!dir.exists()) {
+                Files.createDirectory(Path.of(path));
+            }
+            config.put(EquinoxLocations.PROP_INSTANCE_AREA_DEFAULT, path + "/osgi_workspace");
+            config.put(Location.CONFIGURATION_AREA_TYPE, path + "/osgi_configuration");
+
             Framework framework = ServiceLoader.load(FrameworkFactory.class).iterator().next().newFramework(config);
             framework.start();
 
