@@ -133,7 +133,7 @@
           address = parseInt(address, 16);
           axios.get(heapDumpService(this.file, "inspector/addressToId"), {
             params: {
-              objectAddress: address
+              address: address
             }
           }).then(resp => {
             this.$emit('setSelectedObjectId', resp.data)
