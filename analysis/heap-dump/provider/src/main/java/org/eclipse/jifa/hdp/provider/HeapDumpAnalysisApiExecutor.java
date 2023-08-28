@@ -96,7 +96,12 @@ public class HeapDumpAnalysisApiExecutor extends AbstractApiExecutor<HeapDumpAna
                 // org.eclipse.osgi is the system bundle
                 if (!dependency.startsWith("org.eclipse.osgi-")) {
                     URL resource = HeapDumpAnalysisApiExecutor.class.getClassLoader().getResource("mat-deps/" + dependency);
-                    bundles.add(framework.getBundleContext().installBundle(resource.toString()));
+                    try {
+                        bundles.add(framework.getBundleContext().installBundle(resource.toString()));
+                    } catch (Throwable t) {
+                        log.error("Failed to install bundle: {}", dependency);
+                        throw  t;
+                    }
                 }
             }
 
