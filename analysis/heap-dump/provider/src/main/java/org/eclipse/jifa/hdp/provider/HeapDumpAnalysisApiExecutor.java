@@ -50,6 +50,7 @@ public class HeapDumpAnalysisApiExecutor extends AbstractApiExecutor<HeapDumpAna
         String[] extras = {
                 apiBase,
                 commonBase,
+                commonBase + ".annotation",
                 commonBase + ".domain.exception",
                 commonBase + ".domain.request",
                 commonBase + ".domain.vo",
