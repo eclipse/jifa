@@ -29,4 +29,4 @@ jobs:
           node-version: 16
       - name: build
         run: |
-          bash gradlew build --stacktrace
+          bash gradlew build --info --stacktrace
