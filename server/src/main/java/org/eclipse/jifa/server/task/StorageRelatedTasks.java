@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jifa.server.ConfigurationAccessor;
 import org.eclipse.jifa.server.enums.FileType;
 import org.eclipse.jifa.server.repository.FileRepo;
+import org.eclipse.jifa.server.repository.TransferringFileRepo;
 import org.eclipse.jifa.server.service.FileService;
 import org.eclipse.jifa.server.service.StorageService;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -36,6 +37,8 @@ public class StorageRelatedTasks extends ConfigurationAccessor {
 
     private final FileRepo fileRepo;
 
+    private final TransferringFileRepo transferringFileRepo;
+
     private final FileService fileService;
 
     private final StorageService storageService;
@@ -44,10 +47,12 @@ public class StorageRelatedTasks extends ConfigurationAccessor {
 
     public StorageRelatedTasks(LockSupport lockSupport,
                                FileRepo fileRepo,
+                               TransferringFileRepo transferringFileRepo,
                                FileService fileService,
                                StorageService storageService) {
         this.lockSupport = lockSupport;
         this.fileRepo = fileRepo;
+        this.transferringFileRepo = transferringFileRepo;
         this.fileService = fileService;
         this.storageService = storageService;
     }
@@ -72,9 +77,11 @@ public class StorageRelatedTasks extends ConfigurationAccessor {
             for (Map.Entry<FileType, Set<String>> entry : map.entrySet()) {
                 FileType type = entry.getKey();
                 for (String name : entry.getValue()) {
-                    if (fileRepo.findByUniqueName(name).isEmpty()) {
-                        storageService.scavenge(type, name);
+                    if (transferringFileRepo.findByUniqueName(name).isPresent() ||
+                        fileRepo.findByUniqueName(name).isPresent()) {
+                        continue;
                     }
+                    storageService.scavenge(type, name);
                 }
             }
         }, this.getClass().getSimpleName());
