@@ -1,0 +1,34 @@
+Thread Dump for PID 78789
+Taken on (ISO/UTC) 2023-07-18T13:09:57.166Z
+Thread Count: 816
+Thread Peak Count: 1060
+Deadlocked Threads: none
+
+Thread Stack Traces:
+
+"Thread-5980 (HornetQ-remoting-threads-HornetQServerImpl::serverUUID=a866a1bd-a922-11e7-8b97-0050569e60a9-2139288264-2029178161)" Id=385123 in TIMED_WAITING on lock=java.util.concurrent.SynchronousQueue$TransferStack@3642e5e3
+    at sun.misc.Unsafe.park(Native Method)
+    at java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:215)
+    at java.util.concurrent.SynchronousQueue$TransferStack.awaitFulfill(SynchronousQueue.java:460)
+    at java.util.concurrent.SynchronousQueue$TransferStack.transfer(SynchronousQueue.java:362)
+    at java.util.concurrent.SynchronousQueue.poll(SynchronousQueue.java:941)
+    at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1073)
+    at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1134)
+    at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+    at java.lang.Thread.run(Thread.java:748)
+
+    Locked synchronizers: count = 0
+
+"Thread-5979 (HornetQ-remoting-threads-HornetQServerImpl::serverUUID=a866a1bd-a922-11e7-8b97-0050569e60a9-2139288264-2029178161)" Id=385122 in TIMED_WAITING on lock=java.util.concurrent.SynchronousQueue$TransferStack@3642e5e3
+    at sun.misc.Unsafe.park(Native Method)
+    at java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:215)
+    at java.util.concurrent.SynchronousQueue$TransferStack.awaitFulfill(SynchronousQueue.java:460)
+    at java.util.concurrent.SynchronousQueue$TransferStack.transfer(SynchronousQueue.java:362)
+    at java.util.concurrent.SynchronousQueue.poll(SynchronousQueue.java:941)
+    at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:1073)
+    at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1134)
+    at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+    at java.lang.Thread.run(Thread.java:748)
+
+    Locked synchronizers: count = 0
+

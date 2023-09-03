@@ -162,6 +162,14 @@ de.undercouch.download (3.4.3)
 
 * License: Apache License 2.0
 
+d3 (7.8.5)
+
+* License: ISC
+
+mockito-core (5.4.0)
+
+* License: MIT
+
 ## Cryptography
 
 Content may contain encryption software. The country in which you are currently

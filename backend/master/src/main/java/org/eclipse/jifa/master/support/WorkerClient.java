@@ -102,7 +102,12 @@ public class WorkerClient {
             return request.rxSendForm(params);
         }
         if (params != null) {
-            request.queryParams().addAll(params);
+            params.entries().forEach(e -> {
+                if(!request.queryParams().contains(e.getKey(), e.getValue(), true)) {
+                    // only add, if not already contained, otherwise parameters can get duplicated
+                    request.queryParams().add(e.getKey(), e.getValue());
+                }
+            });
         }
         return request.rxSend();
     }

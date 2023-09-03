@@ -98,6 +98,8 @@ public interface Constant extends org.eclipse.jifa.common.Constant {
      * THREAD DUMP URL
      */
     String THREAD_DUMP_RELEASE = "/thread-dump/:file/release";
+    String THREAD_DUMP_SEARCH = "/thread-dump/searchThreads";
+    String THREAD_DUMP_COMPARE = "/thread-dump/compare/*";
     String THREAD_DUMP_COMMON = "/thread-dump/:file/*";
 
     /**

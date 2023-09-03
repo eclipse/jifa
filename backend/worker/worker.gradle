@@ -38,6 +38,7 @@ dependencies {
     implementation("com.github.ben-manes.caffeine:jcache:3.1.4")
 
     testImplementation 'junit:junit:4.12'
+    testImplementation 'org.mockito:mockito-core:5.4.0'
     testImplementation group: 'io.vertx', name: 'vertx-unit', version: "${vertx_version}"
 }
 

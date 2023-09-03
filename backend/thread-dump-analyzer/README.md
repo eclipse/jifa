@@ -21,12 +21,18 @@ Analyzing thread dump can help troubleshoot problems like thread leaks, deadlock
 
 - Output of `jstack` command
   - the format with `-m` option is not supported now
+- Output of Thread MX Bean
 
 ### Feature List
 
 - Basic Information
+- Diagnosis
+- Blocked Thread Analysis
+- CPU Consumption
 - Thread Overview
 - Thread Group Overview
 - Java Monitor
 - Stack Trace
 - Raw content
+- Full Text Search
+- Compare over Thread Dump series 

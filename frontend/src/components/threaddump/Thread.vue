@@ -13,7 +13,7 @@
 
 <template>
   <div>
-    <div style="margin-bottom: 15px" v-if="!groupName">
+    <div style="margin-bottom: 15px" v-if="!groupName && !id">
       <el-input size="medium" style="width: 360px" v-model="inputName" v-on:change="name = inputName">
         <template slot="prepend">{{ $t("jifa.threadDump.threadNameLabel") }}</template>
       </el-input>
@@ -57,7 +57,7 @@ import axios from "axios";
 import {threadDumpService} from "@/util";
 
 export default {
-  props: ['file', 'groupName', 'type'],
+  props: ['file', 'groupName', 'type', 'id', 'state', 'idList'],
   data() {
     return {
       cellStyle: {padding: '8px'},
@@ -70,6 +70,7 @@ export default {
       inputName: '',
     }
   },
+
   methods: {
     loadThreadContent(row) {
       if (row.contentLoaded) {
@@ -97,6 +98,9 @@ export default {
       if (this.groupName) {
         return "threadsOfGroup"
       }
+      if (this.id) {
+        return "thread"
+      }
       return "threads"
     },
 
@@ -114,14 +118,29 @@ export default {
         if (this.type) {
           params.type = this.type
         }
+        if (this.state) {
+          params.state = this.state;
+        }
+        if (Array.isArray(this.idList)) {
+          params.id = this.idList;
+        }
+        if (this.id) {
+          params.id = this.id
+          params.page = null
+          params.pageSize = null
+        }
       }
       return params
     },
 
     loadData(page) {
       this.loading = true
-
-      axios.get(threadDumpService(this.file, this.api()), {params: this.params(page)})
+      axios.get(threadDumpService(this.file, this.api()), {
+          params: this.params(page),
+          paramsSerializer: {
+            indexes: null, // no brackets for multi-value params
+          }
+        })
           .then(resp => {
             let data = resp.data
             let loaded = this.tableData
@@ -130,17 +149,31 @@ export default {
               loaded.splice(loaded.length - 1, 1)
             }
 
-            let threads = data.data
-            threads.forEach(thread => {
+            if(this.id != null ) {
+              // with id, we get a single result instead of paging
               loaded.push({
                 dataRow: true,
-                id: thread.id,
-                name: thread.name,
+                id: data.id,
+                name: data.name,
                 content: '',
                 contentLoaded: false,
                 contentVisible: false,
               })
-            })
+              this.loadThreadContent(loaded[0])
+            }
+            else {
+              let threads = data.data
+              threads.forEach(thread => {
+                loaded.push({
+                  dataRow: true,
+                  id: thread.id,
+                  name: thread.name,
+                  content: '',
+                  contentLoaded: false,
+                  contentVisible: false,
+                })
+              })
+            }
 
             if (data.totalSize > 1) {
               loaded.push({
@@ -164,13 +197,17 @@ export default {
       this.loadData(1)
     }
   },
+
   computed: {
     conditions() {
-      const {groupName, name, type} = this
+      const {groupName, name, type, id, state, idList} = this
       return {
         groupName,
         name,
-        type
+        type,
+        id,
+        state,
+        idList
       }
     }
   },
@@ -183,6 +220,7 @@ export default {
       immediate: true
     }
   }
+  
 }
 </script>
 

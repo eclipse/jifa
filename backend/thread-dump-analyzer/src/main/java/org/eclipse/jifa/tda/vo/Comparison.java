@@ -10,25 +10,21 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-package org.eclipse.jifa.worker.route.threaddump;
 
-import org.eclipse.jifa.worker.route.BaseRoute;
-import org.eclipse.jifa.worker.route.MappingPrefix;
+package org.eclipse.jifa.tda.vo;
+
 import java.util.ArrayList;
 import java.util.List;
 
-@MappingPrefix("/thread-dump")
-public class ThreadDumpBaseRoute extends BaseRoute {
+import org.eclipse.jifa.common.vo.FileInfo;
 
-    private static List<Class<? extends ThreadDumpBaseRoute>> ROUTES = new ArrayList<>();
+import lombok.Data;
 
-    static {
-        ROUTES.add(ThreadDumpCompareRoute.class);
-        ROUTES.add(ThreadDumpRoute.class);
-        ROUTES.add(ThreadDumpSearchRoute.class);
-    }
+@Data
+public class Comparison {
+    
+    List<Overview> overviews = new ArrayList<>();
 
-    public static List<Class<? extends ThreadDumpBaseRoute>> routes() {
-        return ROUTES;
-    }
+    List<FileInfo> fileInfos = new ArrayList<>();
+
 }

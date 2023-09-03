@@ -297,6 +297,8 @@ exports.default = {
         metaspaceCapacity: 'Metaspace Capacuty',
         reclamation: 'Reclamation',
         promotion: 'Promotion',
+        time: 'Time',
+        memory: 'Memory',
       },
 
       cause: {
@@ -431,6 +433,8 @@ exports.default = {
 
     threadDump: {
       title: "Thread Dump Analysis",
+      navigation: "Navigation",
+      navToTop: "Top",
       addFile: "Add Thread Dump File",
       overview: 'Overview',
       lockView: 'Lock View',
@@ -448,11 +452,69 @@ exports.default = {
       gcThread: "GC Thread",
       otherThread: "Other Thread",
       total: "Total",
+      monitors: "Java Monitors",
       callSiteTree: "Call Site Tree",
       fileContent: "File Content",
       loadFileContent: "Load",
       loadMoreFileContent: "Load More",
       threadNameLabel: "Thread Name",
-    }
-  }
-};
+      blockedThreadsLabel: "Blocked Threads",
+
+      blockedThreads: {
+        title: "{blocker} is blocking one other thread | {blocker} is blocking {count} other threads"
+      },
+      cpuConsumingThreadsLabel: "CPU Consumption",
+      cpuConsumingThreads: {
+        title: "Displays which threads consume the most CPU",
+        cpuConsumptionLabel: "CPU Consumption",
+        hours: "Hours",
+        minutes: "Minutes",
+        seconds: "Seconds",
+        milliseconds: "Milliseconds",
+      },
+      threadDumpCompare: 'Compare Thread Dumps',
+      threadDumpFilePlaceholder: 'Fill with the URL of the analyis page of another thread dump',
+      diagnosis: {
+        title: "Diagnosis",
+        examine: "Examine",
+        messageColumn: "Message",
+        fileColumn: "File",
+        suggestionColumn: "Suggestion",
+      },
+    },
+
+    threadDumpCompare: {
+      title: "Thread Dump Compare",
+      navigation: "Navigation",
+      navToTop: "Top",
+      stateCompare: "Thread State Compare",
+      stateCompareDescription: "Displays the distribution of Java thread states across dumps",
+      threadGroupCompare: "Thread Group Compare",
+      threadGroupCompareDescription: "If the amount of threads per group changes a lot between dumps, that group may be worth investigating",
+      cpuConsumingTitle: "CPU Consuming Threads",
+      cpuConsumingDescription: "Displays the threads that consumed the most amount of CPU between the dumps. The threads are matched by tid, the thread name can change between dumps.",
+      cpuConsumingDatasetLabel: "CPU Consumption in {unit}",
+      diagnosisTitle: "Diagnosis",
+      diagnosisDescription: "Provides an overview over any identified issues within the thread dumps",
+    },
+
+    threadDumpSearch: {
+      loadingPlaceholder: "Searching...",
+      menuThreadsTitle: "Threads", 
+      searchTitle: "Search",  
+      resultsHeader: "1 thread is matching the search | {count} threads are matching the search",
+      threadStatesChartTitle: "Thread States of the search results",
+      advancedToggle: "Show Advanced",
+      searchFields: "Search in",
+      searchOptions: "Search Options",
+      searchInput: "Search Terms",     
+      searchFieldName: "Thread Names",
+      searchFieldState: "Thread State",
+      searchFieldStack: "Thread Stacks",
+      searchOptionRegex: "Regular Expression",
+      searchOptionMatchCase: "Match Case",
+      searchOptionThreadStates: "Thread States",
+      searchOptionThreadStatesPlaceholder: "Any",
+    },
+  },
+}

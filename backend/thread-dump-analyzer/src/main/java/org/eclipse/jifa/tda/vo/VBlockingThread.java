@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -10,20 +10,18 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-package org.eclipse.jifa.worker.route;
+package org.eclipse.jifa.tda.vo;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.util.List;
 
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.PARAMETER)
-public @interface ParamKey {
+import lombok.Data;
 
-    String value();
-
-    boolean mandatory() default true;
-
-    String defaultValue() default "<null>";
+/**
+ * represents a thread that blocks other threads
+ */
+@Data
+public class VBlockingThread {
+    private VMonitor heldLock;
+    private VThread blockingThread;
+    private List<VThread> blockedThreads;
 }

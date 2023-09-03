@@ -65,6 +65,9 @@ public class Snapshot {
 
     // -1 means unknown
     private int jniWeakRefs = -1;
+    
+    // -1 means unknown
+    private int pid = -1;
 
     private Map<String, List<Thread>> threadGroup;
 

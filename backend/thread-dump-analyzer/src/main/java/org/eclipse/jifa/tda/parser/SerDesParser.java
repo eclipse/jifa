@@ -93,4 +93,9 @@ public class SerDesParser implements Parser {
             return kryo.readObject(input, Snapshot.class);
         }
     }
+
+    @Override
+    public boolean canParse(Path path) {
+        return this.parser.canParse(path);
+    }
 }

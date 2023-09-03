@@ -18,7 +18,7 @@
     </el-dialog>
 
     <el-dialog :visible.sync="threadTableVisible" width="60%" top="5vh">
-      <thread :file="file" :group-name="selectedGroupName" :type="selectedThreadType"/>
+      <thread :file="file" :group-name="selectedGroupName" :type="selectedThreadType" :state="selectedThreadState"/>
     </el-dialog>
 
     <el-alert
@@ -27,7 +27,9 @@
         type="error"
         :closable="false">
     </el-alert>
-    <el-collapse v-model="activeNames" style="width: 100%">
+    
+    
+    <el-collapse v-model="activeNames" style="width: 90%" id="overview">
       <!-- basic info -->
       <el-collapse-item v-loading="loading" :title="$t('jifa.threadDump.basicInfo')" name="basicInfo">
         <el-table v-loading="loading"
@@ -48,17 +50,34 @@
           </el-table-column>
         </el-table>
       </el-collapse-item>
+      
+     <!-- Diagnose-->
+     <el-collapse-item :title="$t('jifa.threadDump.diagnosis.title')" name="diagnosis" id="diagnosis">
+        <diagnose :file="file"/>
+      </el-collapse-item>
+
+      <!-- Blocked Threads-->
+      <el-collapse-item :title="$t('jifa.threadDump.blockedThreadsLabel')" name="blockedThreads" id="blockedThreads">
+        <blocked-threads :file="file"/>
+      </el-collapse-item>
+
+     <!-- CPU consuming threads-->
+     <el-collapse-item :title="$t('jifa.threadDump.cpuConsumingThreadsLabel')" name="cpuConsumingThreads" id="cpuConsumingThreads">
+        <cpu-consuming-threads :file="file"/>
+      </el-collapse-item>
 
       <!-- threads -->
-      <el-collapse-item v-loading="loading" :title="$t('jifa.threadDump.threadSummary')" name="threadSummary">
+      <el-collapse-item v-loading="loading" :title="$t('jifa.threadDump.threadSummary')" name="threadSummary" id="threadSummary">
         <el-table v-loading="loading"
                   :data="threadStats"
                   :show-header="false"
+                  row-key="key"
+                  :expand-row-keys="expandedThreadKeys"
                   stripe
                   :cell-style='cellStyle'>
           <el-table-column type="expand">
             <template slot-scope="scope">
-              <doughnut-chart :chart-data="scope.row.chartData" :options="chartOptions"/>
+              <doughnut-chart :chart-data="scope.row.chartData" :options="scopeChartOptions(scope.row)" />
             </template>
           </el-table-column>
 
@@ -77,7 +96,7 @@
 
       <!-- thread groups -->
       <el-collapse-item v-loading="loading" v-if="threadGroupStats && threadGroupStats.length > 0"
-                        :title="$t('jifa.threadDump.threadGroupSummary')" name="threadGroupSummary">
+                        :title="$t('jifa.threadDump.threadGroupSummary')" name="threadGroupSummary" id="threadGroupSummary">
         <el-table v-loading="loading"
                   :data="threadGroupStats"
                   :show-header="false"
@@ -105,17 +124,17 @@
         </el-table>
       </el-collapse-item>
 
-      <!-- call site tree -->
-      <el-collapse-item title="Java Monitors" name="monitors">
+      <!-- monitors -->
+      <el-collapse-item :title="$t('jifa.threadDump.monitors')" name="monitors" id="monitors">
         <monitor :file="file"/>
       </el-collapse-item>
 
       <!-- call site tree -->
-      <el-collapse-item :title="$t('jifa.threadDump.callSiteTree')" name="callSiteTree">
+      <el-collapse-item :title="$t('jifa.threadDump.callSiteTree')" name="callSiteTree" id="callSiteTree">
         <call-site-tree :file="file"/>
       </el-collapse-item>
 
-      <el-collapse-item :title="$t('jifa.threadDump.fileContent')" name="fileContent">
+      <el-collapse-item :title="$t('jifa.threadDump.fileContent')" name="fileContent" id="fileContent">
         <file-content :file="file"/>
       </el-collapse-item>
     </el-collapse>
@@ -129,20 +148,26 @@ import Reference from "@/components/reference";
 import Thread from "@/components/threaddump/Thread";
 import Monitor from "@/components/threaddump/Monitor";
 import CallSiteTree from "@/components/threaddump/CallSiteTree";
+import BlockedThreads from "@/components/threaddump/BlockedThreads";
+import CpuConsumingThreads from "@/components/threaddump/CpuConsumingThreads"
 import FileContent from "@/components/threaddump/Content";
 
 import {formatTime, threadDumpService} from '@/util'
+import Diagnose from './Diagnose.vue';
 
 export default {
   props: ['file'],
   components: {
     DoughnutChart,
+    BlockedThreads,
     Reference,
     Thread,
     Monitor,
     CallSiteTree,
+    CpuConsumingThreads,
     FileContent,
-  },
+    Diagnose
+},
   data() {
     return {
       cellStyle: {padding: '8px'},
@@ -153,12 +178,14 @@ export default {
 
       selectedGroupName: null,
       selectedThreadType: null,
+      selectedThreadState: null, 
       threadTableVisible: false,
-
+      
+      expandedThreadKeys: null,
       basicInfo: null,
       threadStats: null,
       threadGroupStats: null,
-      activeNames: ['basicInfo', 'threadSummary', 'threadGroupSummary', 'monitors', 'callSiteTree'],
+      activeNames: ['basicInfo', 'diagnosis', 'threadSummary', 'blockedThreads', 'cpuConsumingThreads', 'threadGroupSummary'],
       deadLockCount: 0,
       errorCount: 0,
 
@@ -189,6 +216,17 @@ export default {
     }
   },
   methods: {
+    // creates a copy of chartOptions that has an action scoped to the given threadStats
+    scopeChartOptions(threadStats) {
+      let self = this;
+      let scopedChartOptions = { ...this.chartOptions };
+      // doesn't work for the total
+      if(null != threadStats.threadType) {
+        scopedChartOptions.onClick =  (e,data) =>  self.selectThreadState(threadStats.states[data[0]._index],threadStats.threadType);
+      }
+      return scopedChartOptions;
+    },
+
     sum(arr) {
       let s = 0;
       for (let i = 0; i < arr.length; i++) {
@@ -215,14 +253,23 @@ export default {
     selectThreadType(type) {
       this.selectedGroupName = null
       this.selectedThreadType = type
+      this.selectedThreadState = null
       this.threadTableVisible = true
     },
 
     selectThreadGroupName(name) {
-      this.selectedThreadType = null
       this.selectedGroupName = name
+      this.selectedThreadType = null
+      this.selectedThreadState = null
       this.threadTableVisible = true
-    }
+    },
+
+    selectThreadState(state, type) {
+      this.selectedGroupName = null
+      this.selectedThreadType = type;
+      this.selectedThreadState = state
+      this.threadTableVisible = true
+    },
   },
   mounted() {
     this.loading = true
@@ -336,6 +383,7 @@ export default {
         states: overview.states,
         counts: overview.threadStat.counts,
         icon: 'el-icon-s-data',
+        threadType: null,
         chartData: {
           labels: overview.states,
           datasets: [
@@ -346,6 +394,9 @@ export default {
           ]
         },
       })
+      //expand the first threadSummary row on the next tick
+      this.expandedThreadKeys = [this.threadStats[0].key]
+
       this.loading = false
     })
   }

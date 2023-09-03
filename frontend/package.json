@@ -10,7 +10,7 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
-    "axios": "^0.21.1",
+    "axios": "^1.4.0",
     "axios-retry": "^3.2.4",
     "bootstrap-vue": "^2.0.0-rc.19",
     "chart.js": "^2.9.4",
@@ -32,7 +32,8 @@
     "vue-cookies": "^1.5.13",
     "vue-i18n": "^8.9.0",
     "vue-router": "^3.0.2",
-    "vue-runtime-helpers": "^1.1.2"
+    "vue-runtime-helpers": "^1.1.2",
+    "d3": "^7.8.5"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "^3.5.0",

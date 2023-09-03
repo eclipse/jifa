@@ -52,8 +52,22 @@
       <i class="el-icon-collection" style="margin-right: 3px"/> {{$t("jifa.gclog.gclogCompare")}}
     </b-nav-item>
 
+    <b-nav-item href="#" @click="$emit('threadDumpCompareConfig')" v-if="analysisState === 'SUCCESS' && type === 'THREAD_DUMP'">
+      <i class="el-icon-collection" style="margin-right: 3px"/> {{$t("jifa.threadDump.threadDumpCompare")}}
+    </b-nav-item>
+
     <b-nav-item href="#" @click="doUnlock" v-if="$jifa.fileManagement && !$jifa.workerOnly && showUnlockOpt">
       <i class="el-icon-folder-opened" style="margin-right: 3px"/> {{$t("jifa.unlockFile")}}
+    </b-nav-item>
+
+    <b-nav-item href="#" v-if="analysisState === 'SUCCESS' && searchEnabled.includes(type)" @keyup.enter="$emit('search', searchInput)">
+      <el-input
+        clearable
+        v-model="searchInput"
+        :placeholder="$t('jifa.threadDumpSearch.searchTitle')"
+        prefix-icon="el-icon-search"
+        size="small"
+      />
     </b-nav-item>
   </b-navbar-nav>
 </template>
@@ -68,6 +82,8 @@
       return {
         showUnlockOpt: false,
         showDownloadOpt: false,
+        searchInput: '',
+        searchEnabled: ['THREAD_DUMP','THREAD_DUMP_COMPARE'],
       }
     },
 

@@ -65,6 +65,10 @@ export function threadDumpService(file, api) {
   return SERVICE_PREFIX + '/thread-dump/' + file + '/' + api;
 }
 
+export function threadDumpBase() {
+  return SERVICE_PREFIX + '/thread-dump/';
+}
+
 export function matchSearch(data,val){
   let temp = [];
   for(let index in data){
@@ -100,4 +104,32 @@ export function formatTime (number, format) {
 function formatNumber (n) {
   n = n.toString()
   return n[1] ? n : '0' + n;
+}
+
+// e.g. determineTimeUnit(10000) -> seconds
+export function determineTimeUnit(milliseconds) {
+  if(milliseconds>(1000*60*60)) {
+    return 'hours'
+  }
+  if(milliseconds>(1000*60)) {
+    return 'minutes'
+  }
+  if(milliseconds>1000) {
+    return 'seconds'
+  }
+  return 'milliseconds'
+}
+
+// e.g. formatTimeDuration(10000, 'seconds') -> 10
+export function formatTimeDuration(milliseconds, unit) {
+  if(unit=='hours') {
+    return milliseconds / (1000.0*60*60)
+  }
+  if(unit=='minutes') {
+    return milliseconds / (1000.0*60)
+  }
+  if(unit=='seconds') {
+    return milliseconds / (1000.0)
+  }
+  return milliseconds
 }

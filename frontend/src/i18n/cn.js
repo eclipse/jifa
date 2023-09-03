@@ -295,6 +295,8 @@ exports.default = {
         metaspaceCapacity: '元空间容量',
         reclamation: '内存回收',
         promotion: '对象晋升',
+        time: '时间',
+        memory: '内存',
       },
 
       cause: {
