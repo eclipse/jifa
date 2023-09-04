@@ -14,7 +14,10 @@
 package org.eclipse.jifa.tda.diagnoser;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -31,10 +34,15 @@ import org.eclipse.jifa.tda.vo.VThread;
  */
 public class ThreadDumpDiagnoser {
 
+    private static final String KEY_THREAD_NAME = "name";
+    private static final String KEY_THREAD_COUNT = "count";
+    private static final String KEY_THRESHOLD = "threshold";
+
     /**
      * returns a (potentially empty) list of diagnostics based on the given config
+     * 
      * @param snapshot the thread dump snapshot
-     * @param config the analyzer config
+     * @param config   the analyzer config
      * @return list of issues found
      */
     public List<Diagnostic> analyze(Snapshot snapshot, ThreadDumpAnalysisConfig config) {
@@ -49,82 +57,85 @@ public class ThreadDumpDiagnoser {
     }
 
     private void analyzeDeadlock(Snapshot snapshot, ThreadDumpAnalysisConfig config, List<Diagnostic> results) {
-        if(snapshot.getDeadLockThreads() == null) {
+        if (snapshot.getDeadLockThreads() == null) {
             return;
         }
         List<JavaThread> deadlockThreads = new ArrayList<>();
         snapshot.getDeadLockThreads().forEach(deadlockThreads::addAll);
-        if(deadlockThreads.size() > 0) {
-            String message = String.format("%s threads are in a deadlock", deadlockThreads.size());
-            String suggestion = "Deadlocks if two or more threads are waiting for each other indefinetly. They are caused by incorrect ordering of resource locking.";
-            results.add(new Diagnostic(Severity.ERROR, Diagnostic.CODE_DEADLOCK, message, suggestion, toVThread(deadlockThreads)));
+        if (deadlockThreads.size() > 0) {
+            results.add(new Diagnostic(Severity.ERROR, Diagnostic.Type.DEADLOCK, createParams(deadlockThreads),
+                    toVThread(deadlockThreads)));
         }
     }
 
     private void analyzeBlockedThreads(Snapshot snapshot, ThreadDumpAnalysisConfig config, List<Diagnostic> results) {
-        List<JavaThread> blockedThreads = snapshot.getJavaThreads().stream().filter(t -> t.getJavaThreadState()==JavaThreadState.BLOCKED_ON_MONITOR_ENTER).collect(Collectors.toList());
-        if(blockedThreads.size() > config.getHighBlockedThreadsThreshold()) {
-            String message = blockedThreads.size() == 1 ? "One thread is blocked" : String.format("%s threads are blocked", blockedThreads.size());
-            String suggestion = "A large amount of blocked threads often indicate a bottleneck in the software. Examine the stacktraces and check the locking and synchronization.";
-            results.add(new Diagnostic(Severity.ERROR, Diagnostic.CODE_HIGH_BLOCKED_THREAD_COUNT, message, suggestion, toVThread(blockedThreads)));
+        List<JavaThread> blockedThreads = snapshot.getJavaThreads().stream()
+                .filter(t -> t.getJavaThreadState() == JavaThreadState.BLOCKED_ON_MONITOR_ENTER)
+                .collect(Collectors.toList());
+        if (blockedThreads.size() > config.getHighBlockedThreadsThreshold()) {
+            results.add(new Diagnostic(Severity.ERROR, Diagnostic.Type.HIGH_BLOCKED_THREAD_COUNT,
+                    createParams(blockedThreads), toVThread(blockedThreads)));
         }
     }
 
-
     private void analyzeThreadCount(Snapshot snapshot, ThreadDumpAnalysisConfig config, List<Diagnostic> results) {
-        if(config.getHighThreadsThreshold()<=0) {
+        if (config.getHighThreadsThreshold() <= 0) {
             return;
         }
         int count = snapshot.getThreadMap().size();
-        if(count>=config.getHighThreadsThreshold()) {
-            String message = String.format("%s is a high thread count", count);
-            String suggestion = "Such high thread counts can lead to memory exhaustion and thread starvation. Look for thread leaks or consider using ThreadPools to reduce thread creation and limit their amount.";
-            results.add(new Diagnostic(Severity.WARNING, Diagnostic.CODE_HIGH_THREAD_COUNT, message, suggestion, null));
+        if (count >= config.getHighThreadsThreshold()) {
+            results.add(new Diagnostic(Severity.WARNING, Diagnostic.Type.HIGH_THREAD_COUNT,
+                    createParams(snapshot.getThreadMap().values()), null));
         }
     }
 
     private void analyzeLargeStackSize(Snapshot snapshot, ThreadDumpAnalysisConfig config, List<Diagnostic> results) {
-        if(config.getHighStackSizeThreshold()<=0)
+        if (config.getHighStackSizeThreshold() <= 0)
             return;
-        List<JavaThread> threads = snapshot.getJavaThreads().stream().filter(t-> Optional.ofNullable(t.getTrace()).map(trace -> trace.getFrames()).map(frames -> frames.length).orElse(0) > config.getHighStackSizeThreshold()).collect(Collectors.toList());
-        if(!threads.isEmpty()) {
-            String message = threads.size() == 1 ? String.format("%s has a very large stack", threads.get(0).getName()) : String.format("%s threads have a very large stack size (> %s)", threads.size(), config.getHighStackSizeThreshold());
-            String suggestion = "Large stack sizes can lead to stack overflow errors and decrease performance. Check for too deep recursions";
-            results.add(new Diagnostic(Severity.WARNING, Diagnostic.CODE_HIGH_STACK_SIZE, message, suggestion, toVThread(threads)));
+        List<JavaThread> threads = snapshot.getJavaThreads().stream()
+                .filter(t -> Optional.ofNullable(t.getTrace()).map(trace -> trace.getFrames())
+                        .map(frames -> frames.length).orElse(0) > config.getHighStackSizeThreshold())
+                .collect(Collectors.toList());
+        if (!threads.isEmpty()) {
+            Map<String, Object> params = createParams(threads);
+            params.put(KEY_THRESHOLD, config.getHighStackSizeThreshold());
+            results.add(new Diagnostic(Severity.WARNING, Diagnostic.Type.HIGH_STACK_SIZE, params, toVThread(threads)));
         }
     }
 
     private void analyzeCpuRatio(Snapshot snapshot, ThreadDumpAnalysisConfig config, List<Diagnostic> results) {
-        if(config.getHighCpuConsumedRatio()<=0)
+        if (config.getHighCpuConsumedRatio() <= 0)
             return;
-        List<JavaThread> threads = snapshot.getJavaThreads().stream().filter(t-> t.getCpu()>0 && t.getElapsed()>0).filter(t -> (t.getCpu()/t.getElapsed()) >= config.getHighCpuConsumedRatio()).collect(Collectors.toList());
-        if(!threads.isEmpty()) {
-            String message = threads.size() == 1 ? String.format("%s has a high CPU ratio", threads.get(0).getName()) : String.format("%s threads have a high CPU ratio", threads.size());
-            String suggestion = "If the CPU ratio of a thread is high, it is consuming large amounts of CPU over the lifetime of the thread. That is not necessarily bad, but marks very active threads.";
-            results.add(new Diagnostic(Severity.WARNING, Diagnostic.CODE_HIGH_CPU_RATIO, message, suggestion, toVThread(threads)));
+        List<JavaThread> threads = snapshot.getJavaThreads().stream().filter(t -> t.getCpu() > 0 && t.getElapsed() > 0)
+                .filter(t -> (t.getCpu() / t.getElapsed()) >= config.getHighCpuConsumedRatio())
+                .collect(Collectors.toList());
+        if (!threads.isEmpty()) {
+            results.add(new Diagnostic(Severity.WARNING, Diagnostic.Type.HIGH_CPU_RATIO, createParams(threads),
+                    toVThread(threads)));
         }
     }
 
     private void analyzeExceptionThread(Snapshot snapshot, ThreadDumpAnalysisConfig config, List<Diagnostic> results) {
-        if(!config.isReportThrowingException())
+        if (!config.isReportThrowingException())
             return;
-        List<JavaThread> threads = snapshot.getJavaThreads().stream().filter(this::isThrowingException).collect(Collectors.toList());
-        if(!threads.isEmpty()) {
-            String message = threads.size() == 1 ? String.format("%s is throwing an exception", threads.get(0).getName()) : String.format("%s threads are throwing an exception", threads.size());
-            String suggestion = "A thread throwing an exception may indicate an issue in the application. Keep in mind that creating stack traces can be expensive, so if an application often throws exceptions, it can impace performance.";
-            results.add(new Diagnostic(Severity.WARNING, Diagnostic.CODE_THREAD_THROWING_EXCEPTION, message, suggestion, toVThread(threads)));
+        List<JavaThread> threads = snapshot.getJavaThreads().stream().filter(this::isThrowingException)
+                .collect(Collectors.toList());
+        if (!threads.isEmpty()) {
+            results.add(new Diagnostic(Severity.WARNING, Diagnostic.Type.THREAD_THROWING_EXCEPTION,
+                    createParams(threads), toVThread(threads)));
         }
     }
 
     private boolean isThrowingException(JavaThread thread) {
-        if(thread.getTrace()==null || thread.getTrace().getFrames()==null)
+        if (thread.getTrace() == null || thread.getTrace().getFrames() == null)
             return false;
         String throwableName = Throwable.class.getName();
         Frame[] frames = thread.getTrace().getFrames();
-        for (int i = 0; i < Math.min(frames.length,5); i++) {
-            //check at most 5 frames back
+        for (int i = 0; i < Math.min(frames.length, 5); i++) {
+            // check at most 5 frames back
             Frame frame = frames[i];
-            if(throwableName.equals(frame.getClazz()) && frame.getMethod()!=null && frame.getMethod().contains("fillInStackTrace")) {
+            if (throwableName.equals(frame.getClazz()) && frame.getMethod() != null
+                    && frame.getMethod().contains("fillInStackTrace")) {
                 return true;
             }
         }
@@ -135,4 +146,13 @@ public class ThreadDumpDiagnoser {
         return threads.stream().map(t -> new VThread(t.getId(), t.getName(), null, null)).collect(Collectors.toList());
     }
 
+    private Map<String, Object> createParams(Collection<? extends Thread> threads) {
+        Map<String, Object> params = new HashMap<>();
+        params.put(KEY_THREAD_COUNT, threads.size());
+
+        if (threads.size() == 1) {
+            params.put(KEY_THREAD_NAME, threads.stream().findFirst().get().getName());
+        }
+        return params;
+    }
 }

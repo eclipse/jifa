@@ -19,7 +19,7 @@
         <el-table :data="diagnostics" style="width: 100%" v-loading="loading" :default-sort = "{prop: 'file', order: 'ascending'}">
           <el-table-column :label="$t('jifa.threadDump.diagnosis.messageColumn')" width="500" sortable prop="severity">
             <template slot-scope="scope">
-              <i :style="computeColor(scope.row.severity)" :class="computeClass(scope.row.severity)" :title="scope.row.severity"></i> <span style="margin-left: 10px">{{ scope.row.message }}</span>
+              <i :style="computeColor(scope.row.severity)" :class="computeClass(scope.row.severity)" :title="scope.row.severity"></i> <span style="margin-left: 10px">{{ $tc('jifa.threadDump.diagnosis.type.'+scope.row.type, scope.row.params.count, scope.row.params) }}</span>
             </template>
           </el-table-column>
           <el-table-column :label="$t('jifa.threadDump.diagnosis.fileColumn')" width="300" v-if="Array.isArray(file) && file.length > 1" sortable prop="file">
@@ -27,9 +27,9 @@
               <a :href='"../threadDump?file=" + scope.row.file' target="_blank" rel="noopener">{{truncate(scope.row.file, 40)}}</a>
             </template>
           </el-table-column>
-          <el-table-column :label="$t('jifa.threadDump.diagnosis.suggestionColumn')" sortable prop="suggestion">
+          <el-table-column :label="$t('jifa.threadDump.diagnosis.suggestionColumn')" sortable property="type">
             <template slot-scope="scope">
-              {{ scope.row.suggestion }}
+              {{ $t('jifa.threadDump.diagnosis.type.'+scope.row.type +'_SUGGESTION') }}
               <span>  </span>
               <el-button v-if="Array.isArray(scope.row.threads)" @click="selectThreads(scope.row.threads, scope.row.file)" type="text">{{$t('jifa.threadDump.diagnosis.examine')}} <i class="el-icon-question el-icon-right"></i></el-button>
             </template>

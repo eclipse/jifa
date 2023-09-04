@@ -82,8 +82,8 @@ public class ThreadDumpAnalyzer {
      */
     public static ThreadDumpAnalyzer build(Path path, ProgressListener listener) {
         return ProxyBuilder.build(ThreadDumpAnalyzer.class,
-                                  new Class[]{Path.class, ProgressListener.class},
-                                  new Object[]{path, listener});
+                new Class[] { Path.class, ProgressListener.class },
+                new Object[] { path, listener });
     }
 
     private void computeThreadState(Overview o, Thread thread) {
@@ -119,12 +119,12 @@ public class ThreadDumpAnalyzer {
         CollectionUtil.forEach(t -> computeThreadState(o, t), snapshot.getJavaThreads(), snapshot.getNonJavaThreads());
 
         snapshot.getThreadGroup().forEach(
-            (p, l) -> {
-                for (Thread t : l) {
-                    o.getThreadGroupStat().computeIfAbsent(p, i -> new Overview.ThreadStat()).inc(t.getOsThreadState());
-                }
-            }
-        );
+                (p, l) -> {
+                    for (Thread t : l) {
+                        o.getThreadGroupStat().computeIfAbsent(p, i -> new Overview.ThreadStat())
+                                .inc(t.getOsThreadState());
+                    }
+                });
         o.setTimestamp(snapshot.getTimestamp());
         o.setVmInfo(snapshot.getVmInfo());
         o.setJniRefs(snapshot.getJniRefs());
@@ -170,8 +170,8 @@ public class ThreadDumpAnalyzer {
                     RawMonitor rm = monitor.getRawMonitor();
                     clazz = rm.getClazz();
                     vMonitors.add(new VMonitor(rm.getId(), rm.getAddress(), rm.isClassInstance(),
-                                               clazz,
-                                               monitor.getState()));
+                            clazz,
+                            monitor.getState()));
                 }
                 vFrame.setMonitors(vMonitors);
             }
@@ -187,24 +187,25 @@ public class ThreadDumpAnalyzer {
         VThread vThread = new VThread();
         vThread.setId(thread.getId());
         vThread.setName(thread.getName());
-        if(thread.getElapsed()>0) {
+        if (thread.getElapsed() > 0) {
             vThread.setElapsed(thread.getElapsed());
         }
-        if(thread.getCpu()>0) {
+        if (thread.getCpu() > 0) {
             vThread.setCpu(thread.getCpu());
         }
         return vThread;
     }
 
     /**
-     * @param name   the thread name
-     * @param type   the thread type
+     * @param name        the thread name
+     * @param type        the thread type
      * @param threadState the thread state
-     * @param ids list of thread ids
-     * @param paging paging request
+     * @param ids         list of thread ids
+     * @param paging      paging request
      * @return the threads filtered by name, state, type and id
      */
-    public PageView<VThread> threads(String name, ThreadType type, String threadState, List<Integer> ids, PagingRequest paging) {
+    public PageView<VThread> threads(String name, ThreadType type, String threadState, List<Integer> ids,
+            PagingRequest paging) {
         List<Thread> threads = new ArrayList<>();
         CollectionUtil.forEach(t -> {
             if (type != null && t.getType() != type) {
@@ -213,10 +214,10 @@ public class ThreadDumpAnalyzer {
             if (StringUtils.isNotBlank(name) && !t.getName().contains(name)) {
                 return;
             }
-            if (StringUtils.isNotBlank(threadState) && !getThreadState(t).equals(threadState) ) {
+            if (StringUtils.isNotBlank(threadState) && !getThreadState(t).equals(threadState)) {
                 return;
             }
-            if(ids != null && !ids.isEmpty() && !ids.contains(t.getId())) {
+            if (ids != null && !ids.isEmpty() && !ids.contains(t.getId())) {
                 return;
             }
             threads.add(t);
@@ -227,15 +228,15 @@ public class ThreadDumpAnalyzer {
 
     private String getThreadState(Thread t) {
         if (t instanceof JavaThread) {
-            JavaThread jt = (JavaThread)t;
+            JavaThread jt = (JavaThread) t;
             if (jt.getJavaThreadState() != null)
                 return String.valueOf(jt.getJavaThreadState());
         }
         return String.valueOf(t.getOsThreadState());
     }
 
- /**
-     * @param id   the thread id
+    /**
+     * @param id the thread id
      * @return the thread
      */
     public VThread thread(int id) {
@@ -325,7 +326,7 @@ public class ThreadDumpAnalyzer {
     public PageView<VMonitor> monitors(PagingRequest paging) {
         IdentityPool<RawMonitor> monitors = snapshot.getRawMonitors();
         return PageViewBuilder.build(monitors.objects(), paging,
-                                     m -> new VMonitor(m.getId(), m.getAddress(), m.isClassInstance(), m.getClazz()));
+                m -> new VMonitor(m.getId(), m.getAddress(), m.isClassInstance(), m.getClazz()));
     }
 
     /**
@@ -362,80 +363,91 @@ public class ThreadDumpAnalyzer {
      * @return the threads that block one or more other threads
      */
     public List<VBlockingThread> blockingThreads() {
-       
+
         List<VBlockingThread> result = new ArrayList<>();
-        
-        Map<Integer,Map<MonitorState, List<Thread>>> allMonitors = snapshot.getMonitorThreads();
-        for (Entry<Integer,Map<MonitorState, List<Thread>>> monitorEntry : allMonitors.entrySet()) {
+
+        Map<Integer, Map<MonitorState, List<Thread>>> allMonitors = snapshot.getMonitorThreads();
+        for (Entry<Integer, Map<MonitorState, List<Thread>>> monitorEntry : allMonitors.entrySet()) {
             Map<MonitorState, List<Thread>> monitorMap = monitorEntry.getValue();
-            if(!monitorMap.keySet().contains(MonitorState.LOCKED))
+            if (!monitorMap.keySet().contains(MonitorState.LOCKED))
                 continue;
             Thread blockingThread = monitorMap.get(MonitorState.LOCKED).stream().findFirst().orElse(null);
             List<Thread> blockedThreads = new ArrayList<>();
-            if(monitorMap.keySet().contains(MonitorState.WAITING_TO_LOCK))
+            if (monitorMap.keySet().contains(MonitorState.WAITING_TO_LOCK))
                 blockedThreads.addAll(monitorMap.get(MonitorState.WAITING_TO_LOCK));
-            if(monitorMap.keySet().contains(MonitorState.WAITING_TO_RE_LOCK))
+            if (monitorMap.keySet().contains(MonitorState.WAITING_TO_RE_LOCK))
                 blockedThreads.addAll(monitorMap.get(MonitorState.WAITING_TO_RE_LOCK));
-            if(!blockedThreads.isEmpty() && blockingThread!=null)
-            {
+            if (!blockedThreads.isEmpty() && blockingThread != null) {
                 VBlockingThread r = new VBlockingThread();
                 r.setBlockedThreads(blockedThreads.stream().map(this::convertToVThread).collect(Collectors.toList()));
                 r.setBlockingThread(convertToVThread(blockingThread));
                 Monitor mon = findBlockingMonitor(blockedThreads.get(0));
-                if(mon!=null) {
-                    r.setHeldLock(new VMonitor(mon.getRawMonitor().getId(), mon.getRawMonitor().getAddress(),mon.getRawMonitor().isClassInstance(), mon.getRawMonitor().getClazz(), mon.getState()));
+                if (mon != null) {
+                    r.setHeldLock(new VMonitor(mon.getRawMonitor().getId(), mon.getRawMonitor().getAddress(),
+                            mon.getRawMonitor().isClassInstance(), mon.getRawMonitor().getClazz(), mon.getState()));
                 }
                 result.add(r);
             }
-           
+
         }
-        Comparator<VBlockingThread> comparator = Comparator.<VBlockingThread>comparingInt(m ->  m.getBlockedThreads().size()).reversed().thenComparing(m -> m.getBlockingThread().getName());
+        Comparator<VBlockingThread> comparator = Comparator
+                .<VBlockingThread>comparingInt(m -> m.getBlockedThreads().size()).reversed()
+                .thenComparing(m -> m.getBlockingThread().getName());
         result.sort(comparator);
         return result;
     }
 
     /**
      * creates a list of the top most CPU consuming threads
-     * @param type only include threads of the given type. All threads will be considered if type is <code>null</code>
-     * @param max the max amount of threads to return. If max is <code>-1</code> all threads will be returned
+     * 
+     * @param type only include threads of the given type. All threads will be
+     *             considered if type is <code>null</code>
+     * @param max  the max amount of threads to return. If max is <code>-1</code>
+     *             all threads will be returned
      * @return list of CPU consuming threads from most expensive, to least expensive
      */
     public List<VThread> cpuConsumingThreads(ThreadType type, int max) {
-        Stream<Thread> stream = snapshot.getThreadMap().values().stream().filter(t -> type == null || t.getType()==type);
-        stream = stream.sorted(Comparator.comparingDouble(Thread::getCpu).reversed()).limit(max < 0 ? Integer.MAX_VALUE : max);
+        Stream<Thread> stream = snapshot.getThreadMap().values().stream()
+                .filter(t -> type == null || t.getType() == type);
+        stream = stream.sorted(Comparator.comparingDouble(Thread::getCpu).reversed())
+                .limit(max < 0 ? Integer.MAX_VALUE : max);
         return stream.map(this::convertToVThread).collect(Collectors.toList());
-    } 
+    }
 
     /**
      * computes which threads consumed the most CPU between 2 thread dumps
+     * 
      * @param other the other (later) thread dump result
-     * @param max the maximum amount of threads to return (-1 for unlimited)
+     * @param max   the maximum amount of threads to return (-1 for unlimited)
      * @return a list of the top cpu consuming threads between both dumps
      */
     public List<VThread> cpuConsumingThreadsCompare(ThreadDumpAnalyzer other, int max, ThreadType type) {
         max = max < 0 ? Integer.MAX_VALUE : max;
         Map<Thread, Double> cpuConsumingThreads = new HashMap<>();
-        for(Thread first : snapshot.getThreadMap().values()) {
-            if(type!=null && first.getType()!=type) {
+        for (Thread first : snapshot.getThreadMap().values()) {
+            if (type != null && first.getType() != type) {
                 continue;
             }
-            Thread second = other.snapshot.getThreadMap().values().stream().filter(t -> t.getTid()==first.getTid()).findFirst().orElse(null);
-            if(second != null && second.getCpu()>0 ) {
+            Thread second = other.snapshot.getThreadMap().values().stream().filter(t -> t.getTid() == first.getTid())
+                    .findFirst().orElse(null);
+            if (second != null && second.getCpu() > 0) {
                 cpuConsumingThreads.put(first, second.getCpu() - first.getCpu());
             }
         }
         List<VThread> result = new ArrayList<VThread>();
-        cpuConsumingThreads.entrySet().stream().sorted(Collections.reverseOrder(Map.Entry.comparingByValue())).limit(max).forEach(e -> {
-            Thread thread = e.getKey();
-            VThread vthread = convertToVThread(thread);
-            vthread.setCpu(e.getValue());
-            result.add(vthread);
-        });
+        cpuConsumingThreads.entrySet().stream().sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
+                .limit(max).forEach(e -> {
+                    Thread thread = e.getKey();
+                    VThread vthread = convertToVThread(thread);
+                    vthread.setCpu(e.getValue());
+                    result.add(vthread);
+                });
         return result;
     }
 
     /**
-     * analyzes the thread dump for potential issues based on the given configuration and returns any issues found
+     * analyzes the thread dump for potential issues based on the given
+     * configuration and returns any issues found
      * 
      * @param config the config to use for the analyzer
      * @return potentially empty list of diagnostic issues found
@@ -444,30 +456,30 @@ public class ThreadDumpAnalyzer {
         return new ThreadDumpDiagnoser().analyze(snapshot, config);
     }
 
-    private Monitor findBlockingMonitor(Thread thread) 
-    {
+    private Monitor findBlockingMonitor(Thread thread) {
         List<Monitor> candidates = new ArrayList<>();
-        if(thread instanceof JavaThread)
-        {
-            JavaThread blockedThread = (JavaThread)thread;
-            if(blockedThread.getMonitors()!=null)
-                candidates.addAll(blockedThread.getMonitors()); //not sure if this is needed
+        if (thread instanceof JavaThread) {
+            JavaThread blockedThread = (JavaThread) thread;
+            if (blockedThread.getMonitors() != null)
+                candidates.addAll(blockedThread.getMonitors()); // not sure if this is needed
             Frame[] frames = blockedThread.getTrace().getFrames();
             for (Frame frame : frames) {
-                if(frame.getMonitors()!=null)
-                {
+                if (frame.getMonitors() != null) {
                     Arrays.stream(frame.getMonitors()).forEach(candidates::add);
-                    //only need the first frame really
+                    // only need the first frame really
                     break;
                 }
             }
         }
-        return candidates.stream().filter(m -> m.getState()==MonitorState.WAITING_TO_LOCK || m.getState()==MonitorState.WAITING_TO_RE_LOCK).findFirst().orElse(null);
-    }  
+        return candidates.stream().filter(
+                m -> m.getState() == MonitorState.WAITING_TO_LOCK || m.getState() == MonitorState.WAITING_TO_RE_LOCK)
+                .findFirst().orElse(null);
+    }
 
     /**
      * searches threads based on the given criteria. See SearchQuery for
-     * details on how to create the predicate 
+     * details on how to create the predicate
+     * 
      * @param searchFilter
      * @return list of search results
      */
@@ -478,16 +490,15 @@ public class ThreadDumpAnalyzer {
             result.setElapsed(t.getElapsed());
             result.setId(t.getId());
             result.setOsState(t.getOsThreadState());
-            if(t instanceof JavaThread) {
-                result.setJavaState((((JavaThread)t).getJavaThreadState()));
-            } 
+            if (t instanceof JavaThread) {
+                result.setJavaState((((JavaThread) t).getJavaThreadState()));
+            }
             result.setName(t.getName());
             result.setFilename(Path.of((snapshot.getPath())).getFileName().toString());
             try {
                 result.setLines(rawContentOfThread(t.getId()));
-            }
-            catch(IOException e) {
-                LOGGER.error("Failed to load raw content of thread {}",t.getName(), e);
+            } catch (IOException e) {
+                LOGGER.error("Failed to load raw content of thread {}", t.getName(), e);
                 result.setLines(Arrays.asList("Failed to load"));
             }
             return result;

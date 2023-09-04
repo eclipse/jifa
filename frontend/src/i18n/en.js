@@ -480,6 +480,20 @@ exports.default = {
         messageColumn: "Message",
         fileColumn: "File",
         suggestionColumn: "Suggestion",
+        type: {
+          DEADLOCK: "{count} threads are in a deadlock",
+          DEADLOCK_SUGGESTION: "Deadlocks happen, if two or more threads are waiting for each other indefinetly. They are caused by incorrect ordering of resource locking.",
+          HIGH_BLOCKED_THREAD_COUNT: "One thread is blocked | {count} threads are blocked",
+          HIGH_BLOCKED_THREAD_COUNT_SUGGESTION: "A large amount of blocked threads often indicate a bottleneck in the software. Examine the stacktraces and check the locking and synchronization.",
+          HIGH_THREAD_COUNT: "{count} is a high thread count",
+          HIGH_THREAD_COUNT_SUGGESTION: "Such high thread counts can lead to memory exhaustion and thread starvation. Look for thread leaks or consider using ThreadPools to reduce thread creation and limit their amount.",
+          HIGH_STACK_SIZE: "{name} has a very large stack (> {threshold}) | {count} threads have a very large stack size (> {threshold})",
+          HIGH_STACK_SIZE_SUGGESTION: "Large stack sizes can lead to stack overflow errors and decrease performance. Check for too deep recursions",
+          HIGH_CPU_RATIO: "{name} has a high CPU ratio | {count} threads have a high CPU ratio",
+          HIGH_CPU_RATIO_SUGGESTION: "If the CPU ratio of a thread is high, it is consuming large amounts of CPU over the lifetime of the thread. That is not necessarily bad, but marks very active threads.",
+          THREAD_THROWING_EXCEPTION: "{name} is throwing an exception | {count} threads are throwing an exception",
+          THREAD_THROWING_EXCEPTION_SUGGESTION: "A thread throwing an exception may indicate an issue in the application. Keep in mind that creating stack traces can be expensive, so if an application often throws exceptions, it can impace performance.",
+        }
       },
     },
 

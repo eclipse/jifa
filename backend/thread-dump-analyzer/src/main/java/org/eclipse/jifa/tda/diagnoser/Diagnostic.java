@@ -14,6 +14,7 @@
 package org.eclipse.jifa.tda.diagnoser;
 
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.jifa.tda.vo.VThread;
 
@@ -28,21 +29,22 @@ import lombok.ToString;
 @NoArgsConstructor
 public class Diagnostic {
 
-    public static final int CODE_HIGH_THREAD_COUNT = 10;
-    public static final int CODE_DEADLOCK = 20;
-    public static final int CODE_HIGH_BLOCKED_THREAD_COUNT = 30;
-    public static final int CODE_HIGH_STACK_SIZE = 40;
-    public static final int CODE_HIGH_CPU_RATIO = 50;
-    public static final int CODE_THREAD_THROWING_EXCEPTION = 60;  
-
     private Severity severity;
-    private int code;
-    private String message;
-    private String suggestion;
+    private Type type;
+    private Map<String, Object> params;
     private List<VThread> threads;
 
     public enum Severity {
         OK, INFO, WARNING, ERROR;
     }
-    
+
+    public enum Type {
+        HIGH_THREAD_COUNT,
+        DEADLOCK,
+        HIGH_BLOCKED_THREAD_COUNT,
+        HIGH_STACK_SIZE,
+        HIGH_CPU_RATIO,
+        THREAD_THROWING_EXCEPTION;
+    }
+
 }

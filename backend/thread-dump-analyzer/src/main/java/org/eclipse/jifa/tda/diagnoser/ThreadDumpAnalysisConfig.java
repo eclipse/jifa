@@ -29,11 +29,14 @@ public class ThreadDumpAnalysisConfig {
 
     /** issue a warning if at least that many threads are blocked */
     private int highBlockedThreadsThreshold = 3;
-    
+
     /** issue a warning if a thread has at least that large a stack */
     private int highStackSizeThreshold = 200;
 
-    /** issue a warning if the ratio between cpu time and elapsed time is at least this value */
+    /**
+     * issue a warning if the ratio between cpu time and elapsed time is at least
+     * this value
+     */
     private double highCpuConsumedRatio = 0.5;
 
     /** issue a warning if a thread is currently throwing an exception */
