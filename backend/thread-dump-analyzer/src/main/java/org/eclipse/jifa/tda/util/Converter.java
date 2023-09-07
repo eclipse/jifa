@@ -19,6 +19,8 @@ public class Converter {
         if (str == null) {
             return -1;
         }
+        // in some locales, the decimal seperator in the dump will be ',''
+        str = str.replace(',', '.');
         int length = str.length();
         if (str.endsWith("ms")) {
             return Double.parseDouble(str.substring(0, length - 2));

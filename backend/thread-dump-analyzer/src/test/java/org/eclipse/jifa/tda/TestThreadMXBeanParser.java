@@ -32,10 +32,10 @@ public class TestThreadMXBeanParser extends TestBase {
     @Test
     public void testCanParse() throws ParserException, URISyntaxException {
         Assert.assertFalse(analyzer.canParse(pathOfResource("jstack_8.log")));
-        Assert.assertFalse(analyzer.canParse(pathOfResource("jstack_11_large_with_blocked.log")));
         Assert.assertFalse(analyzer.canParse(pathOfResource("jstack_11_with_deadlocks.log")));
         Assert.assertFalse(analyzer.canParse(pathOfResource("jstack_17_log_with_pid.log")));
-
+        Assert.assertFalse(analyzer.canParse(pathOfResource("jstack_17_with_blocked.log")));
+        
         Assert.assertTrue(analyzer.canParse(pathOfResource("thread_mx.log")));
         Assert.assertTrue(analyzer.canParse(pathOfResource("thread_mx_karaf.log")));
     }
