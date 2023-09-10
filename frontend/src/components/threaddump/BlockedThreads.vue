@@ -188,18 +188,18 @@ export default {
 
 };
 </script>
-<style>
-.node circle {
+<style scoped>
+svg::v-deep .node circle {
   fill: #fff;
   stroke: steelblue;
   stroke-width: 1px;
 }
 
-.node text {
+svg::v-deep .node text {
   font: 16px sans-serif;
 }
 
-.node:hover {
+svg::v-deep .node:hover {
   stroke: #007bff;
   background-color: #007bff;
   stroke-width: 1px;
@@ -207,12 +207,12 @@ export default {
   font-weight: bold;
 }
 
-.link {
+svg::v-deep .link {
   fill: none;
   stroke: #ccc;
   stroke-width: 1px;
 }
-.link:hover {
+svg::v-deep .link:hover {
   fill: none;
   stroke: black;
   stroke-width: 2px;

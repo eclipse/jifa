@@ -477,6 +477,20 @@ exports.default = {
         messageColumn: "消息",
         fileColumn: "文件",
         suggestionColumn: "建议",
+        type: {
+          DEADLOCK: "{count} 线程死锁",
+          DEADLOCK_SUGGESTION: "发生死锁, 如果两个以上线程不确定性的等待对方，那么可能因为加锁顺序错误发生发生死锁",
+          HIGH_BLOCKED_THREAD_COUNT: "一个线程阻塞 | {count} 个线程阻塞",
+          HIGH_BLOCKED_THREAD_COUNT_SUGGESTION: "大量线程阻塞意味着系统存在瓶颈。请检查调用栈和同步加锁等代码",
+          HIGH_THREAD_COUNT: "高负载线程数量{count} ",
+          HIGH_THREAD_COUNT_SUGGESTION: "如此高的线程数可能导致内存耗尽和线程饥饿。查找线程泄漏或考虑使用 ThreadPools 减少线程创建并限制其数量。",
+          HIGH_STACK_SIZE: "{name}有一个非常大的堆栈（> {threshold}）|{count}线程有一个非常大的堆栈大小（> {threshold}）",
+          HIGH_STACK_SIZE_SUGGESTION: "堆栈过大可能导致堆栈溢出错误并降低性能。检查递归是否过深",
+          HIGH_CPU_RATIO:"{name}的 CPU 占用率较高|{count}线程的 CPU 占用率较高",
+          HIGH_CPU_RATIO_SUGGESTION: "如果某个线程的 CPU 比率很高，说明该线程在整个生命周期中消耗了大量 CPU。这不一定是坏事，但标志着线程非常活跃",
+          THREAD_THROWING_EXCEPTION:"{name}抛出异常 | {count}线程抛出异常",
+          THREAD_THROWING_EXCEPTION_SUGGESTION:"抛出异常的线程可能表明应用程序中存在问题。请记住，创建堆栈跟踪的成本很高，因此如果应用程序经常抛出异常，就会影响性能。",
+        }
       },
     },
 
