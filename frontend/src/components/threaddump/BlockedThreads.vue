@@ -55,11 +55,11 @@ export default {
         params: {
         }
       }).then(resp => {
-        let data = resp.data
-        let loaded = this.treeData
+        let data = resp.data;
+        let loaded = this.treeData;
         if (loaded.length > 0) {
           // the last is summary row
-          loaded.splice(loaded.length - 1, 1)
+          loaded.splice(loaded.length - 1, 1);
         }
         data.forEach(blockingThread => {
           loaded.push({
@@ -78,14 +78,14 @@ export default {
     },
 
     selectThreadId(id) {
-      this.selectedThreadId = id
-      this.selectedThreadName = null
-      this.threadTableVisible = true
+      this.selectedThreadId = id;
+      this.selectedThreadName = null;
+      this.threadTableVisible = true;
     },
     selectThreadName(name) {
-      this.selectedThreadId = null
-      this.selectedThreadName = name
-      this.threadTableVisible = true
+      this.selectedThreadId = null;
+      this.selectedThreadName = name;
+      this.threadTableVisible = true;
     },
 
     transformChildNodes(blockedThreads) {
@@ -103,7 +103,7 @@ export default {
     },
 
     initTree() {
-      let self = this
+      let self = this;
 
       this.treeData.forEach(function (value, i) {
         self.renderGraph(value, i)
@@ -112,13 +112,13 @@ export default {
     },
 
     renderGraph(treeRoot, index) {
-      let self = this
+      let self = this;
       // set the dimensions and margins of the diagram
       //const margin = { top: 20, right: 90, bottom: 30, left: 90 }
-      const margin = { top: 0, right: 0, bottom: 0, left: 40 }
+      const margin = { top: 0, right: 0, bottom: 0, left: 40 };
 
-      const neededHeight = Math.max(60, (treeRoot.children.length * 25))
-      const width = 660 - margin.left - margin.right
+      const neededHeight = Math.max(60, (treeRoot.children.length * 25));
+      const width = 660 - margin.left - margin.right;
       const height = neededHeight - margin.top - margin.bottom;
 
       // declares a tree layout and assigns the size
@@ -166,7 +166,6 @@ export default {
         .style("fill", d => d.data.level)
         .on("click", function (e, d) {
           self.selectThreadId(d.data.id);
-          //self.selectThreadName(d.data.name)
         });
 
       // adds the text to the node
@@ -178,12 +177,11 @@ export default {
         .text(d => d.data.name)
         .on("click", function (e, d) {
           self.selectThreadId(d.data.id);
-          //self.selectThreadName(d.data.name);
         });
     },
   },
   mounted() {
-    this.loadData()
+    this.loadData();
   },
 
 };

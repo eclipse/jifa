@@ -109,27 +109,27 @@ function formatNumber (n) {
 // e.g. determineTimeUnit(10000) -> seconds
 export function determineTimeUnit(milliseconds) {
   if(milliseconds>(1000*60*60)) {
-    return 'hours'
+    return 'hours';
   }
   if(milliseconds>(1000*60)) {
-    return 'minutes'
+    return 'minutes';
   }
   if(milliseconds>1000) {
-    return 'seconds'
+    return 'seconds';
   }
-  return 'milliseconds'
+  return 'milliseconds';
 }
 
 // e.g. formatTimeDuration(10000, 'seconds') -> 10
 export function formatTimeDuration(milliseconds, unit) {
   if(unit=='hours') {
-    return milliseconds / (1000.0*60*60)
+    return milliseconds / (1000.0*60*60);
   }
   if(unit=='minutes') {
-    return milliseconds / (1000.0*60)
+    return milliseconds / (1000.0*60);
   }
   if(unit=='seconds') {
-    return milliseconds / (1000.0)
+    return milliseconds / (1000.0);
   }
-  return milliseconds
+  return milliseconds;
 }

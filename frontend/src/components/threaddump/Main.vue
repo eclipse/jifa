@@ -251,24 +251,24 @@ export default {
     },
 
     selectThreadType(type) {
-      this.selectedGroupName = null
-      this.selectedThreadType = type
-      this.selectedThreadState = null
-      this.threadTableVisible = true
+      this.selectedGroupName = null;
+      this.selectedThreadType = type;
+      this.selectedThreadState = null;
+      this.threadTableVisible = true;
     },
 
     selectThreadGroupName(name) {
-      this.selectedGroupName = name
-      this.selectedThreadType = null
-      this.selectedThreadState = null
-      this.threadTableVisible = true
+      this.selectedGroupName = name;
+      this.selectedThreadType = null;
+      this.selectedThreadState = null;
+      this.threadTableVisible = true;
     },
 
     selectThreadState(state, type) {
-      this.selectedGroupName = null
+      this.selectedGroupName = null;
       this.selectedThreadType = type;
-      this.selectedThreadState = state
-      this.threadTableVisible = true
+      this.selectedThreadState = state;
+      this.threadTableVisible = true;
     },
   },
   mounted() {
@@ -395,9 +395,9 @@ export default {
         },
       })
       //expand the first threadSummary row on the next tick
-      this.expandedThreadKeys = [this.threadStats[0].key]
+      this.expandedThreadKeys = [this.threadStats[0].key];
 
-      this.loading = false
+      this.loading = false;
     })
   }
 }

@@ -97,10 +97,10 @@ export default {
                         new RegExp(this.search.term);
                     } catch(e) {
                         callback(new Error(e));
-                        return
+                        return;
                     }
                 }
-                callback()
+                callback();
             },
             threadStateOptions: ['RUNNABLE','SLEEPING','IN_OBJECT_WAIT','IN_OBJECT_WAIT_TIMED','PARKED','PARKED_TIMED','BLOCKED_ON_MONITOR_ENTER','TERMINATED']
         }
@@ -109,12 +109,12 @@ export default {
     methods: {
         
         submitSearchForm() {
-            let form = this.$refs['formRef']
+            let form = this.$refs['formRef'];
             form.validate((valid) => {
                 if (valid) {
-                    this.$emit('submit', this.search)
+                    this.$emit('submit', this.search);
                 } else {
-                    return false
+                    return false;
                 }
             })
         },
@@ -126,24 +126,24 @@ export default {
             if(value === 'false') {
                 return false;
             }
-            return defaultValue
+            return defaultValue;
         }
     },
     mounted() {
-        let query = this.$route.query
-        let term = query.term
+        let query = this.$route.query;
+        let term = query.term;
         if(Array.isArray(term)) {
-            term = term.join(" ")
+            term = term.join(" ");
         }
-        this.search.term = term
-        this.search.advancedVisible = this.toBoolean(query.advancedVisible, false)
-        this.search.searchState = this.toBoolean(query.searchState, true)
-        this.search.searchStack = this.toBoolean(query.searchStack, true)
-        this.search.searchName = this.toBoolean(query.searchName, true)
-        this.search.regex = this.toBoolean(query.regex, false)
-        this.search.matchCase = this.toBoolean(query.matchCase, false)
+        this.search.term = term;
+        this.search.advancedVisible = this.toBoolean(query.advancedVisible, false);
+        this.search.searchState = this.toBoolean(query.searchState, true);
+        this.search.searchStack = this.toBoolean(query.searchStack, true);
+        this.search.searchName = this.toBoolean(query.searchName, true);
+        this.search.regex = this.toBoolean(query.regex, false);
+        this.search.matchCase = this.toBoolean(query.matchCase, false);
         if(query.allowedJavaStates) {
-            this.search.allowedJavaStates = query.allowedJavaStates
+            this.search.allowedJavaStates = query.allowedJavaStates;
         }
     },
 

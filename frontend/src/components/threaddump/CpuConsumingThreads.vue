@@ -77,17 +77,17 @@ export default {
   },
   methods: {
     loadData() {
-      let self = this
+      let self = this;
       axios.get(threadDumpService(this.file, "cpuConsumingThreads"), {
         params: {
           max: 10,
         }
       }).then(resp => {
-        let data = resp.data
-        let datasets = []
-        let unit = 'seconds'
+        let data = resp.data;
+        let datasets = [];
+        let unit = 'seconds';
         if(data.length > 0) {
-            unit = determineTimeUnit(data[0].cpu)
+            unit = determineTimeUnit(data[0].cpu);
         }
         data.forEach((thread, index) => {
           datasets.push({
@@ -106,10 +106,10 @@ export default {
         }
 
         this.threadChartOptions.onClick = function (e) {
-            var node = this.getElementsAtEventForMode(e,"dataset",{ intersect: true }, true)
+            var node = this.getElementsAtEventForMode(e,"dataset",{ intersect: true }, true);
             if(node) {
-              let datasetIndex = node[0]._datasetIndex
-              self.onCickChart(datasetIndex)
+              let datasetIndex = node[0]._datasetIndex;
+              self.onCickChart(datasetIndex);
             } 
           }
       })
@@ -117,17 +117,17 @@ export default {
 
     // opens the thread at the given dataset index
     onCickChart(index) {
-      let dataset = this.threadChartData.datasets[index]
-      this.selectThreadId(dataset.data[0].id)
+      let dataset = this.threadChartData.datasets[index];
+      this.selectThreadId(dataset.data[0].id);
     },
 
     selectThreadId(id) {
-      this.selectedThreadId = id
-      this.threadTableVisible = true
+      this.selectedThreadId = id;
+      this.threadTableVisible = true;
     },
   },
   mounted() {
-    this.loadData()
+    this.loadData();
   },
 
 };

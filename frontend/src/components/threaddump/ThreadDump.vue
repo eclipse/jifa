@@ -173,7 +173,7 @@ export default {
           file1: null,
           file2: null,
         }
-        this.compareConfigVisible = true
+        this.compareConfigVisible = true;
       },
       doCompare() {
         this.$refs['compareForm'].validate((valid) => {
@@ -182,23 +182,23 @@ export default {
               file: []
             }
             for (let i = 0; i <= 2; i++) {
-              const file = this.compareConfigModel["file" + i]
+              const file = this.compareConfigModel["file" + i];
               if(file==null || file=='') {
                 continue
               }
               if (file.indexOf('/threadDump?') >= 0 && file.indexOf('file=') >= 0) {
                 const params = getUrlParams(file);
-                query.file.push(params.file)
+                query.file.push(params.file);
               } else {
-                query.file.push(file)
+                query.file.push(file);
               }
             }
             const url = this.$router.resolve({
               name: 'threadDumpCompare',
               query: query
-            })
-            window.open(url.href)
-            this.compareConfigVisible = false
+            });
+            window.open(url.href);
+            this.compareConfigVisible = false;
           }
         })
       },
@@ -210,8 +210,8 @@ export default {
         const url = this.$router.resolve({
           name: 'threadDumpSearch',
           query: query
-        })
-        window.open(url.href)
+        });
+        window.open(url.href);
       },
   },
   mounted() {

@@ -63,8 +63,8 @@ export default {
   },
   methods: {
     loadData() {
-      let files = []
-      this.diagnostics = []
+      let files = [];
+      this.diagnostics = [];
       if(Array.isArray(this.file)) {
         files = this.file;
       }
@@ -82,45 +82,45 @@ export default {
               severity: "OK",
               message: "No issues found",
               file: file,
-            })
+            });
           }
           else {
             resp.data.forEach(diagnostic => {
               diagnostic.file = file
               this.diagnostics.push(diagnostic)
-            })
+            });
           }
           if(file===files[files.length-1]) {
             // last file
-            this.loading = false
+            this.loading = false;
           }
         })
       })
     },
     computeColor(severity) {
-      if(severity==='ERROR') return "color: #F56C6C"
-      if(severity==='WARNING') return "color: #E6A23C"
-      if(severity==='OK') return "color: #67C23A"
-      return "color: #909399"
+      if(severity==='ERROR') return "color: #F56C6C";
+      if(severity==='WARNING') return "color: #E6A23C";
+      if(severity==='OK') return "color: #67C23A";
+      return "color: #909399";
     },
     computeClass(severity) {
-      if(severity==='ERROR') return "el-icon-error"
-      if(severity==='WARNING') return "el-icon-warning"
-      if(severity==='OK') return "el-icon-success"
-      return "el-icon-info"
+      if(severity==='ERROR') return "el-icon-error";
+      if(severity==='WARNING') return "el-icon-warning";
+      if(severity==='OK') return "el-icon-success";
+      return "el-icon-info";
     },
 
     selectThreads(threads, file) {
-      this.selectedThreadIds = threads.map(t => t.id)
-      this.selectedFile = file
-      this.threadTableVisible = true
+      this.selectedThreadIds = threads.map(t => t.id);
+      this.selectedFile = file;
+      this.threadTableVisible = true;
     },
     truncate(str, n){
         return (str.length > n) ? str.slice(0, n-1) + '...' : str;
     },
   },
   mounted() {
-    this.loadData()
+    this.loadData();
   },
 
 };

@@ -137,23 +137,23 @@
         return thread.javaState != null ? thread.javaState : thread.osState;
       },
       selectThreadId(id) {
-        this.selectedThreadId = id
-        this.threadTableVisible = true
+        this.selectedThreadId = id;
+        this.threadTableVisible = true;
       },
       searchSubmitted(search) {
-        this.search = search
-        search.file = this.file,
-        this.$router.replace({ query: search })
-        this.doSearch(search)
+        this.search = search;
+        search.file = this.file;
+        this.$router.replace({ query: search });
+        this.doSearch(search);
       },
       doSearch(search) {
         this.analysisState = "IN_PROGRESS";
-        this.loading = true
+        this.loading = true;
         if(search.term == null) {
-          return
+          return;
         }
         if(!Array.isArray(search.term)) {
-          search.term = search.term.split(" ")
+          search.term = search.term.split(" ");
         }
         search.file = this.file
         axios.get(threadDumpBase() + 'searchThreads', {
@@ -162,15 +162,15 @@
             indexes: null, // no brackets for multi-value params
           }
         }).then(resp => {
-          this.searchResult = resp.data
+          this.searchResult = resp.data;
 
           //search hits chart
-          let hitsPerFile = []
-          let allFiles = Array.isArray(this.file) ? this.file : [this.file]
+          let hitsPerFile = [];
+          let allFiles = Array.isArray(this.file) ? this.file : [this.file];
           allFiles.forEach(currentFile => {
-            let result = resp.data.filter(hit => hit.filename === currentFile)
-            hitsPerFile.push(result.length)
-          })
+            let result = resp.data.filter(hit => hit.filename === currentFile);
+            hitsPerFile.push(result.length);
+          });
           this.chartHitsData = {
             labels: allFiles,
             datasets: [
@@ -182,11 +182,11 @@
           }
 
           //thread states
-          let allStates = Array.from(new Set(resp.data.filter(hit => hit.javaState != null).map(hit => hit.javaState)))
-          let hitsPerState = []
+          let allStates = Array.from(new Set(resp.data.filter(hit => hit.javaState != null).map(hit => hit.javaState)));
+          let hitsPerState = [];
           allStates.forEach(currentState => {
-            let result = resp.data.filter(hit => hit.javaState === currentState)
-            hitsPerState.push(result.length)
+            let result = resp.data.filter(hit => hit.javaState === currentState);
+            hitsPerState.push(result.length);
           })
           this.chartThreadStatesData = {
             labels: allStates,
@@ -197,8 +197,8 @@
               }
             ]
           }
-          this.loading = false
-          this.analysisState = "SUCCESS"
+          this.loading = false;
+          this.analysisState = "SUCCESS";
         })  
       },
 
@@ -206,13 +206,13 @@
         return (str.length > n) ? str.slice(0, n-1) + '...' : str;
       },
       scrollToThread(thread, index) {
-        let element = this.$refs[index][0]
+        let element = this.$refs[index][0];
         if(element != null) {
           element.$el.scrollIntoView({ behavior: 'smooth' });
         }
       },
       scrollToRef(ref) {
-        let element = this.$refs[ref]
+        let element = this.$refs[ref];
         if(element != null) {
           element.$el.scrollIntoView({ behavior: 'smooth' });
         }
@@ -220,36 +220,36 @@
       renderThreadContent(thread) {
         
         let content = "";
-        let terms = Array.isArray(this.search.term) ? this.search.term : this.search.term.split(" ")
-        let patterns = []
+        let terms = Array.isArray(this.search.term) ? this.search.term : this.search.term.split(" ");
+        let patterns = [];
         terms.forEach(t => {
           if(!this.search.regex) {
             //if it's not a regex, special characters must be escaped
-            t = t.replace(/[-[\]{}()*+?.,\\^$|]/g, "\\$&")
+            t = t.replace(/[-[\]{}()*+?.,\\^$|]/g, "\\$&");
           }
 
-          let flags = "g"
+          let flags = "g";
           if(!this.search.matchCase) {
-            flags = flags + "i"
+            flags = flags + "i";
           }
-          patterns.push(new RegExp('('+t+')',flags))
+          patterns.push(new RegExp('('+t+')',flags));
         })
         
         thread.lines.slice(1).forEach(line => {
-          let modified = line.replace("<","&lt;").replace(">","&gt;")+"\n" //sanitize
+          let modified = line.replace("<","&lt;").replace(">","&gt;")+"\n"; //sanitize
           patterns.forEach(pattern => {
-            modified = modified.replaceAll(pattern,'<span class="search-hit">$1</span>')
+            modified = modified.replaceAll(pattern,'<span class="search-hit">$1</span>');
           })
-          content +=modified
+          content +=modified;
         })
-        return content
+        return content;
       }
     },
 
     
     mounted() {
-      this.file = this.$route.query.file
-      this.search = this.$route.query
+      this.file = this.$route.query.file;
+      this.search = this.$route.query;
       this.doSearch(this.search);
     }
   }

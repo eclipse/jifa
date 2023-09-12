@@ -74,23 +74,23 @@ export default {
   methods: {
     loadThreadContent(row) {
       if (row.contentLoaded) {
-        row.contentVisible = !row.contentVisible
-        return
+        row.contentVisible = !row.contentVisible;
+        return;
       }
       this.loading = true
       axios.get(threadDumpService(this.file, "rawContentOfThread"), {params: {id: row.id}})
           .then(resp => {
-            let content = ''
+            let content = '';
             for (let i = 0; i < resp.data.length; i++) {
-              content += resp.data[i]
+              content += resp.data[i];
               if (i !== resp.data.length - 1) {
-                content += "\n"
+                content += "\n";
               }
             }
-            row.content = content
-            row.contentVisible = true
-            row.contentLoaded = true
-            this.loading = false
+            row.content = content;
+            row.contentVisible = true;
+            row.contentLoaded = true;
+            this.loading = false;
           })
     },
 
@@ -162,7 +162,7 @@ export default {
               this.loadThreadContent(loaded[0])
             }
             else {
-              let threads = data.data
+              let threads = data.data;
               threads.forEach(thread => {
                 loaded.push({
                   dataRow: true,

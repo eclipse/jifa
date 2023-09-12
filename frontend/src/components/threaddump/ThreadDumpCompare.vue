@@ -232,32 +232,32 @@
               indexes: null, // no brackets for multi-value params
             } 
            })]).then(axios.spread((resp1, resp2) => {
-          let summary = resp1.data
-          self.comparison = summary
+          let summary = resp1.data;
+          self.comparison = summary;
         
           //create chart data
-          this.createThreadStateChartData(summary)
-          this.createThreadGroupStats(summary)
+          this.createThreadStateChartData(summary);
+          this.createThreadGroupStats(summary);
 
           //create the CPU consumption chart data
-          this.createCpuConsumingStats(resp2.data)
-          this.loading = false
-          this.analysisState = "SUCCESS"
+          this.createCpuConsumingStats(resp2.data);
+          this.loading = false;
+          this.analysisState = "SUCCESS";
         }))        
       },
       createThreadGroupStats(summary) {
         //creates bar chart groups for the largest thread groups (based on the first dump)  
-        let firstStats = summary.overviews[0].threadGroupStat
-        let candidates = []
+        let firstStats = summary.overviews[0].threadGroupStat;
+        let candidates = [];
 
         for (let k in firstStats) {
           candidates.push({
             key: k,
             value: this.sum(summary.overviews[0].threadGroupStat[k].counts),
-          })
+          });
         }
-        candidates.sort((i, j) => j.value - i.value)
-        candidates = candidates.slice(0,8) //only the top most interesting
+        candidates.sort((i, j) => j.value - i.value);
+        candidates = candidates.slice(0,8); //only the top most interesting
        
         this.threadGroupChartData = {     
           //the labels are names of the thread groups we will. Each thread group will be a group of bar charts (one bar per dump)                     
@@ -267,11 +267,11 @@
 
         //for each dump, we need to private a data[] containing as many int values, as there is thread groups
         summary.overviews.forEach( (overview, index) => {
-          let groupData = []
+          let groupData = [];
           candidates.forEach(threadGroup => {
-            let currentStat = overview.threadGroupStat[threadGroup.key]
+            let currentStat = overview.threadGroupStat[threadGroup.key];
             if(currentStat!=null) {
-              groupData.push(this.sum(currentStat.counts))
+              groupData.push(this.sum(currentStat.counts));
             }
           });
           this.threadGroupChartData.datasets.push({
@@ -285,41 +285,41 @@
 
       createThreadStateChartData(summary) {
         let self = this;
-        self.threadsChartData.data.labels = []
+        self.threadsChartData.data.labels = [];
         summary.fileInfos.forEach(fileInfo => {
-          self.threadsChartData.data.labels.push(self.computeFilename(fileInfo))
+          self.threadsChartData.data.labels.push(self.computeFilename(fileInfo));
         })
-        self.threadsChartData.data.datasets = []
+        self.threadsChartData.data.datasets = [];
         //one dataset per thread state kind, one data point per dump
-        let states = summary.overviews[0].javaStates
+        let states = summary.overviews[0].javaStates;
         for (let i = 0; i < states.length; i++) {
-          let stateData = []
+          let stateData = [];
           summary.overviews.forEach(overview => {
             stateData.push({
               y: overview.javaThreadStat.javaCounts[i],
-            })
-          })
+            });
+          });
           self.threadsChartData.data.datasets.push({
             data: stateData,
             backgroundColor: self.color[i],
             label: states[i],
-          })
+          });
         }
       },
 
       computeThreadCountDiff(comparison, overviewIndex, stateIndex) {
-        let value = comparison.overviews[overviewIndex].javaThreadStat.javaCounts[stateIndex]
-        if (overviewIndex==0)
-          return value
-        let baseValue = comparison.overviews[0].javaThreadStat.javaCounts[stateIndex]
-        let diff = value - baseValue
-        return diff
+        let value = comparison.overviews[overviewIndex].javaThreadStat.javaCounts[stateIndex];
+        if (overviewIndex===0)
+          return value;
+        let baseValue = comparison.overviews[0].javaThreadStat.javaCounts[stateIndex];
+        let diff = value - baseValue;
+        return diff;
       },
 
       sum(arr) {
         let s = 0;
         for (let i = 0; i < arr.length; i++) {
-          s += arr[i]
+          s += arr[i];
         }
         return s
       },
@@ -343,8 +343,8 @@
       },
 
       selectThreadId(id) {
-        this.selectedThreadId = id
-        this.threadTableVisible = true
+        this.selectedThreadId = id;
+        this.threadTableVisible = true;
       },
       doSearch(searchText) {
         const query = {
@@ -354,14 +354,14 @@
         const url = this.$router.resolve({
           name: 'threadDumpSearch',
           query: query
-        })
-        window.open(url.href)
+        });
+        window.open(url.href);
       },
       computeFilename(fileInfo) {
         if(fileInfo.originalName != null && fileInfo.originalName.length<fileInfo.name) {
-          return this.truncate(fileInfo.originalName, 40)
+          return this.truncate(fileInfo.originalName, 40);
         }
-        return this.truncate(fileInfo.name, 40)
+        return this.truncate(fileInfo.name, 40);
       },
       truncate(str, n){
         return (str.length > n) ? str.slice(0, n-1) + '...' : str;
@@ -370,7 +370,7 @@
 
     
     mounted() {
-      this.file = this.$route.query.file
+      this.file = this.$route.query.file;
       this.analyzeThreadDump();
     }
   }
