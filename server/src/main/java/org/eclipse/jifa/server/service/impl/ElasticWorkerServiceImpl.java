@@ -17,7 +17,6 @@ import org.eclipse.jifa.server.condition.Master;
 import org.eclipse.jifa.server.domain.entity.cluster.WorkerEntity;
 import org.eclipse.jifa.server.domain.entity.elastic_cluster.ElasticWorkerEntity;
 import org.eclipse.jifa.server.domain.entity.shared.file.FileEntity;
-import org.eclipse.jifa.server.domain.entity.shared.file.TransferringFileEntity;
 import org.eclipse.jifa.server.domain.exception.ElasticWorkerNotReadyException;
 import org.eclipse.jifa.server.enums.ElasticWorkerPurpose;
 import org.eclipse.jifa.server.enums.ElasticWorkerState;
@@ -42,6 +41,7 @@ import java.util.function.Supplier;
 
 import static org.eclipse.jifa.common.domain.exception.CommonException.CE;
 import static org.eclipse.jifa.common.enums.CommonErrorCode.INTERNAL_ERROR;
+import static org.eclipse.jifa.server.domain.entity.elastic_cluster.ElasticWorkerEntity.MAX_FAILURE_MESSAGE_LENGTH;
 import static org.eclipse.jifa.server.enums.ElasticWorkerPurpose.FILE_ANALYSIS;
 
 @Master
@@ -131,8 +131,8 @@ public class ElasticWorkerServiceImpl extends AbstractWorkerServiceImpl implemen
                     try {
                         elasticWorker.setState(ElasticWorkerState.FAILURE);
                         String failureMessage = throwable.getMessage();
-                        if (failureMessage.length() > TransferringFileEntity.MAX_FAILURE_MESSAGE_LENGTH) {
-                            failureMessage = failureMessage.substring(0, TransferringFileEntity.MAX_FAILURE_MESSAGE_LENGTH);
+                        if (failureMessage.length() > MAX_FAILURE_MESSAGE_LENGTH) {
+                            failureMessage = failureMessage.substring(0, MAX_FAILURE_MESSAGE_LENGTH);
                         }
                         elasticWorker.setFailureMessage(failureMessage);
                         elasticWorkerRepo.save(elasticWorker);
