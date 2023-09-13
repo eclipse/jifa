@@ -20,10 +20,7 @@ import org.eclipse.mat.query.refined.RefinedTable;
 import org.eclipse.mat.snapshot.ISnapshot;
 
 import java.lang.ref.SoftReference;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 public class AnalysisContext {
 
@@ -64,15 +61,13 @@ public class AnalysisContext {
                 "SELECT s.@displayName as label, s.position as position, s.limit as limit, s.capacity as " +
                         "capacity FROM java.nio.DirectByteBuffer s";
 
-        static final Map<String, Object> JDK_MANAGED_BUFFER_ARGS = new HashMap<>(1);
-        static final Map<String, Object> JNI_ALLOC_BUFFER_ARGS = new HashMap<>(1);
-        static final Map<String, Object> ALL_BUFFER_ARGS = new HashMap<>(1);
+        static final Map<String, Object> JDK_MANAGED_BUFFER_ARGS =
+                Collections.singletonMap("queryString", JDK_MANAGED_BUFFER_OQL);
+        static final Map<String, Object> JNI_ALLOC_BUFFER_ARGS =
+                Collections.singletonMap("queryString", JNI_ALLOCATED_BUFFER_OQL);
+        static final Map<String, Object> ALL_BUFFER_ARGS =
+                Collections.singletonMap("queryString", ALL_BUFFER_OQL);
 
-        static {
-            JDK_MANAGED_BUFFER_ARGS.put("queryString", JDK_MANAGED_BUFFER_OQL);
-            JNI_ALLOC_BUFFER_ARGS.put("queryString", JNI_ALLOCATED_BUFFER_OQL);
-            ALL_BUFFER_ARGS.put("queryString", ALL_BUFFER_OQL);
-        }
 
         RefinedTable resultContext;
 

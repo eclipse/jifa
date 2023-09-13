@@ -500,7 +500,7 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer {
     public Model.VMBoard.Summary getSummaryOfVMBoard() {
         Map<String, Object> queryVMOptions = new HashMap<>();
         Map<String, Object> queryGc = new HashMap<>();
-        queryVMOptions.put("queryString", "SELECT toString(x) AS VMOptions FROM OBJECTS ( SELECT OBJECTS s.vmArgs.list.a[0:-1] FROM sun.management.VMManagementImpl s  ) x ");
+        queryVMOptions.put("queryString", "SELECT toString(x) AS VMOptions FROM OBJECTS (SELECT OBJECTS s.vmArgs.list.a[0:-1] FROM sun.management.VMManagementImpl s) x");
         queryGc.put("queryString", "SELECT toString(g.name) AS GC FROM sun.management.GarbageCollectorImpl g");
         return $(() -> {
             List<String> options = new ArrayList<>();
@@ -639,7 +639,7 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer {
     private DirectByteBufferData queryDirectByteBufferData(
             AnalysisContext context, String mode) throws SnapshotException {
         DirectByteBufferData data = new DirectByteBufferData();
-        Map<String, Object> queryArg;
+        final Map<String, Object> queryArg;
         switch (mode) {
             case "jniAlloc":
                 queryArg = DirectByteBufferData.JNI_ALLOC_BUFFER_ARGS;
@@ -754,7 +754,7 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer {
 
         return $(() -> {
             if(type == Model.Histogram.ItemType.PACKAGE){
-                IResult result = queryByCommand(context, "histogram -groupBy " + "BY_PACKAGE");
+                IResult result = queryByCommand(context, "histogram -groupBy BY_PACKAGE");
                 Histogram.PackageTree pt = (Histogram.PackageTree) result;
                 Object targetParentNode = new ExoticTreeFinder(pt)
                         .setGetChildrenCallback(node -> {
