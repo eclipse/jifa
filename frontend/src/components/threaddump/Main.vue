@@ -181,9 +181,9 @@ export default {
       selectedThreadState: null, 
       threadTableVisible: false,
       
-      expandedThreadKeys: null,
+      expandedThreadKeys: [],
       basicInfo: null,
-      threadStats: null,
+      threadStats: [],
       threadGroupStats: null,
       activeNames: ['basicInfo', 'diagnosis', 'threadSummary', 'blockedThreads', 'cpuConsumingThreads', 'threadGroupSummary'],
       deadLockCount: 0,

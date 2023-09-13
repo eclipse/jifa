@@ -25,8 +25,8 @@
                             <el-col :span="6">
                                 <el-button type="success" icon="el-icon-search"
                                     @click="submitSearchForm()">{{ $t('jifa.threadDumpSearch.searchTitle') }}</el-button>
-                                <el-checkbox-button style="margin-left: 0px; " border icon="el-icon-edit"
-                                    v-model="search.advancedVisible">{{ $t('jifa.threadDumpSearch.advancedToggle') }}</el-checkbox-button>
+                                <el-checkbox style="margin-left: 0px; " border icon="el-icon-edit"
+                                    v-model="search.advancedVisible">{{ $t('jifa.threadDumpSearch.advancedToggle') }}</el-checkbox>
                             </el-col>
                         </el-row>
                         <el-row :gutter="20" style="width: 100%;" v-if="search.advancedVisible">

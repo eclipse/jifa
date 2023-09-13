@@ -40,5 +40,5 @@ public class ThreadDumpAnalysisConfig {
     private double highCpuConsumedRatio = 0.5;
 
     /** issue a warning if a thread is currently throwing an exception */
-    boolean reportThrowingException = true;
+    private boolean reportThrowingException = true;
 }

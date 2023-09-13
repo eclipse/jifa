@@ -60,15 +60,16 @@
       <i class="el-icon-folder-opened" style="margin-right: 3px"/> {{$t("jifa.unlockFile")}}
     </b-nav-item>
 
-    <b-nav-item href="#" v-if="analysisState === 'SUCCESS' && searchEnabled.includes(type)" @keyup.enter="$emit('search', searchInput)">
+    <b-nav-form v-if="analysisState === 'SUCCESS' && searchEnabled.includes(type)" @submit.stop.prevent=''>
       <el-input
         clearable
         v-model="searchInput"
         :placeholder="$t('jifa.threadDumpSearch.searchTitle')"
         prefix-icon="el-icon-search"
         size="small"
+        @change="$emit('search', searchInput)"
       />
-    </b-nav-item>
+    </b-nav-form>
   </b-navbar-nav>
 </template>
 <script>

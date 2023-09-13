@@ -478,6 +478,8 @@ exports.default = {
         fileColumn: "文件",
         suggestionColumn: "建议",
         type: {
+          NO_ISSUES: "没有发现问题",
+          NO_ISSUES_SUGGESTION: "",
           DEADLOCK: "{count} 线程死锁",
           DEADLOCK_SUGGESTION: "发生死锁, 如果两个以上线程不确定性的等待对方，那么可能因为加锁顺序错误发生发生死锁",
           HIGH_BLOCKED_THREAD_COUNT: "一个线程阻塞 | {count} 个线程阻塞",

@@ -80,8 +80,9 @@ export default {
           if(resp.data == null || resp.data.length===0) {
             this.diagnostics.push({
               severity: "OK",
-              message: "No issues found",
+              type: "NO_ISSUES",
               file: file,
+              params: {}
             });
           }
           else {
@@ -125,13 +126,13 @@ export default {
 
 };
 </script>
-<style>
+<style scoped>
   
-  .el-table .cell {
+  div::v-deep .el-table .cell {
     word-break: break-word !important;
     font-size: larger;
   }
-  .el-table .el-button {
+  div::v-deep .el-table .el-button {
     font-size: medium;
   }
 </style>

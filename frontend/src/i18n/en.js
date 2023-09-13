@@ -481,6 +481,8 @@ exports.default = {
         fileColumn: "File",
         suggestionColumn: "Suggestion",
         type: {
+          NO_ISSUES: "No issues found",
+          NO_ISSUES_SUGGESTION: "",
           DEADLOCK: "{count} threads are in a deadlock",
           DEADLOCK_SUGGESTION: "Deadlocks happen, if two or more threads are waiting for each other indefinetly. They are caused by incorrect ordering of resource locking.",
           HIGH_BLOCKED_THREAD_COUNT: "One thread is blocked | {count} threads are blocked",
