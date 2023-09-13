@@ -54,6 +54,8 @@ public interface HeapDumpAnalyzer {
     @ApiMeta(aliases = "inspector.value")
     String getObjectValue(int objectId);
 
+    @ApiMeta(aliases = "vmBoard.summary")
+    VMBoard.Summary getSummaryOfVMBoard();
     @ApiMeta(aliases = "classLoaderExplorer.summary")
     ClassLoader.Summary getSummaryOfClassLoaders();
 
@@ -71,10 +73,13 @@ public interface HeapDumpAnalyzer {
     PageView<UnreachableObject.Item> getUnreachableObjects(int page, int pageSize);
 
     @ApiMeta(aliases = "directByteBuffer.summary")
-    DirectByteBuffer.Summary getSummaryOfDirectByteBuffers();
+    DirectByteBuffer.Summary getSummaryOfDirectByteBuffers(String mode);
 
     @ApiMeta(aliases = "directByteBuffer.records")
-    PageView<DirectByteBuffer.Item> getDirectByteBuffers(int page, int pageSize);
+    PageView<DirectByteBuffer.Item> getDirectByteBuffers(String mode, int page, int pageSize);
+
+    @ApiMeta(aliases = "listObjects")
+    PageView<JavaObject> getListObjects(String objectLabel, int objectId, int type, int page, int pageSize);
 
     @ApiMeta(aliases = "outbounds")
     PageView<JavaObject> getOutboundOfObject(int objectId, int page, int pageSize);

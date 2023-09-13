@@ -537,6 +537,15 @@ public interface Model {
 
     }
 
+    interface VMBoard {
+        @Data
+        class Summary{
+            public String requestId;
+            public List<String> vmOptions;
+            public List<String> gc;
+        }
+    }
+
     interface GCRootPath {
 
         List<String> EXCLUDES = Arrays.asList("java.lang.ref.WeakReference:referent",

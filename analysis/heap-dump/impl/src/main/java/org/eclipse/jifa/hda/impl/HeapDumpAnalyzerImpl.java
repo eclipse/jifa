@@ -497,6 +497,40 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer {
     }
 
     @Override
+    public Model.VMBoard.Summary getSummaryOfVMBoard() {
+        Map<String, Object> queryVMOptions = new HashMap<>();
+        Map<String, Object> queryGc = new HashMap<>();
+        queryVMOptions.put("queryString", "SELECT toString(x) AS VMOptions FROM OBJECTS ( SELECT OBJECTS s.vmArgs.list.a[0:-1] FROM sun.management.VMManagementImpl s  ) x ");
+        queryGc.put("queryString", "SELECT toString(g.name) AS GC FROM sun.management.GarbageCollectorImpl g");
+        return $(() -> {
+            List<String> options = new ArrayList<>();
+            List<String> gc  =new ArrayList<>();
+            IResultTable result = null;
+            IResult r = queryByCommand(context, "oql", queryVMOptions);
+            if (r instanceof IResultTable) {
+                // In case we get IResultText, i.e. empty result
+                result = (IResultTable) r;
+                for (int i = 0; i < result.getRowCount(); i++) {
+                    Object row = result.getRow(i);
+                    options.add((String) result.getColumnValue(row, 0));
+                }
+            }
+            r = queryByCommand(context, "oql", queryGc);
+            if (r instanceof IResultTable) {
+                result = (IResultTable) r;
+                for (int i = 0; i < result.getRowCount(); i++) {
+                    Object row = result.getRow(i);
+                    gc.add((String) result.getColumnValue(row, 0));
+                }
+            }
+            Model.VMBoard.Summary vmBoard = new Model.VMBoard.Summary();
+            vmBoard.setVmOptions(options);
+            vmBoard.setGc(gc);
+            return vmBoard;
+        });
+    }
+
+    @Override
     public Model.ClassLoader.Summary getSummaryOfClassLoaders() {
         return $(() -> {
             ClassLoaderExplorerData data = queryClassLoader(context);
@@ -603,56 +637,55 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer {
     }
 
     private DirectByteBufferData queryDirectByteBufferData(
-            AnalysisContext context) throws SnapshotException {
-        DirectByteBufferData data = context.directByteBufferData.get();
-        if (data != null) {
-            return data;
+            AnalysisContext context, String mode) throws SnapshotException {
+        DirectByteBufferData data = new DirectByteBufferData();
+        Map<String, Object> queryArg;
+        switch (mode) {
+            case "jniAlloc":
+                queryArg = DirectByteBufferData.JNI_ALLOC_BUFFER_ARGS;
+                break;
+            case "jvmManaged":
+                queryArg = DirectByteBufferData.JDK_MANAGED_BUFFER_ARGS;
+                break;
+            case "all":
+            default:
+                queryArg = DirectByteBufferData.ALL_BUFFER_ARGS;
+                break;
         }
+        IResult result = queryByCommand(context, "oql", queryArg);
+        IResultTable table;
+        if (result instanceof IResultTable) {
+            table = (IResultTable) result;
 
-        //noinspection SynchronizationOnLocalVariableOrMethodParameter
-        synchronized (context) {
-            data = context.directByteBufferData.get();
-            if (data != null) {
-                return data;
+            RefinedResultBuilder builder =
+                    new RefinedResultBuilder(new SnapshotQueryContext(context.snapshot), table);
+            builder.setSortOrder(3, Column.SortDirection.DESC);
+            data.resultContext = (RefinedTable) builder.build();
+            DirectByteBuffer.Summary summary = new DirectByteBuffer.Summary();
+            summary.totalSize = data.resultContext.getRowCount();
+
+            for (int i = 0; i < summary.totalSize; i++) {
+                Object row = data.resultContext.getRow(i);
+                summary.position += data.position(row);
+                summary.limit += data.limit(row);
+                summary.capacity += data.capacity(row);
             }
-
-            data = new DirectByteBufferData();
-            IResult result = queryByCommand(context, "oql", DirectByteBufferData.ARGS);
-            IResultTable table;
-            if (result instanceof IResultTable) {
-                table = (IResultTable) result;
-
-                RefinedResultBuilder builder =
-                        new RefinedResultBuilder(new SnapshotQueryContext(context.snapshot), table);
-                builder.setSortOrder(3, Column.SortDirection.DESC);
-                data.resultContext = (RefinedTable) builder.build();
-                DirectByteBuffer.Summary summary = new DirectByteBuffer.Summary();
-                summary.totalSize = data.resultContext.getRowCount();
-
-                for (int i = 0; i < summary.totalSize; i++) {
-                    Object row = data.resultContext.getRow(i);
-                    summary.position += data.position(row);
-                    summary.limit += data.limit(row);
-                    summary.capacity += data.capacity(row);
-                }
-                data.summary = summary;
-            } else {
-                data.summary = new DirectByteBuffer.Summary();
-            }
-            context.directByteBufferData = new SoftReference<>(data);
-            return data;
+            data.summary = summary;
+        } else {
+            data.summary = new DirectByteBuffer.Summary();
         }
+        return data;
     }
 
     @Override
-    public DirectByteBuffer.Summary getSummaryOfDirectByteBuffers() {
-        return $(() -> queryDirectByteBufferData(context).summary);
+    public DirectByteBuffer.Summary getSummaryOfDirectByteBuffers(String mode) {
+        return $(() -> queryDirectByteBufferData(context, mode).summary);
     }
 
     @Override
-    public PageView<DirectByteBuffer.Item> getDirectByteBuffers(int page, int pageSize) {
+    public PageView<DirectByteBuffer.Item> getDirectByteBuffers(String mode, int page, int pageSize) {
         return $(() -> {
-            DirectByteBufferData data = queryDirectByteBufferData(context);
+            DirectByteBufferData data = queryDirectByteBufferData(context, mode);
             RefinedTable resultContext = data.resultContext;
             return PageViewBuilder.build(new PageViewBuilder.Callback<Object>() {
                 @Override
@@ -698,6 +731,69 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer {
                 return o;
             } catch (Exception e) {
                 throw new RuntimeException(e);
+            }
+        });
+    }
+
+    @Override
+    public PageView<JavaObject> getListObjects(String objectLabel, int objectId, int type, int page, int pageSize) {
+        Map<String, Object> args = new HashMap<>();
+        if (type == JavaObject.ARRAY_TYPE || type == JavaObject.NORMAL_TYPE) {
+            objectLabel = String.valueOf(objectId);
+        }
+        String query = "list_objects " + objectLabel;
+        if (type == Model.Histogram.ItemType.SUPER_CLASS) {
+            query += " -include_subclasses";
+        }
+        if (type == Model.Histogram.ItemType.CLASS_LOADER) {
+            query = "oql";
+            String oql = "SELECT * FROM (SELECT * FROM java.lang.Class c WHERE c implements org.eclipse.mat.snapshot.model.IClass and c.@classLoaderId = " + objectId + ")";
+            args.put("queryString", oql);
+        }
+        String finalQuery = query;
+
+        return $(() -> {
+            if(type == Model.Histogram.ItemType.PACKAGE){
+                IResult result = queryByCommand(context, "histogram -groupBy " + "BY_PACKAGE");
+                Histogram.PackageTree pt = (Histogram.PackageTree) result;
+                Object targetParentNode = new ExoticTreeFinder(pt)
+                        .setGetChildrenCallback(node -> {
+                            Map<String, ?> subPackages = ReflectionUtil.getFieldValueOrNull(node, "subPackages");
+                            if (subPackages != null) {
+                                return new ArrayList<>(subPackages.values());
+                            } else {
+                                return null;
+                            }
+                        })
+                        .setPredicate((theTree, theNode) -> {
+                            if (!(theNode instanceof XClassHistogramRecord)) {
+                                try {
+                                    java.lang.reflect.Field
+                                            field = theNode.getClass().getSuperclass().getDeclaredField("label");
+                                    field.setAccessible(true);
+                                    String labelName = (String) field.get(theNode);
+                                    return labelName.hashCode();
+                                } catch (Throwable e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                            return null;
+                        })
+                        .findTargetParentNode(objectId);
+                IContextObject c = pt.getContext(targetParentNode);
+                if (c instanceof IContextObjectSet) {
+                    int[] objectIds = ((IContextObjectSet) c).getObjectIds();
+                    return PageViewBuilder.build(objectIds, new PagingRequest(page, pageSize), this::getObjectInfo);
+                }
+                return PageView.empty();
+            }else{
+                IResultTree tree = queryByCommand(context, finalQuery, args);
+                List<?> objectIds = tree.getElements();
+
+                return PageViewBuilder.build(objectIds, new PagingRequest(page, pageSize), node -> {
+                    int id = tree.getContext(node).getObjectId();
+                    return getObjectInfo(id);
+                });
             }
         });
     }

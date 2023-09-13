@@ -54,13 +54,24 @@ public class AnalysisContext {
     }
 
     static class DirectByteBufferData {
-        static final String OQL =
-            "SELECT s.@displayName as label, s.position as position, s.limit as limit, s.capacity as " +
-            "capacity FROM java.nio.DirectByteBuffer s where s.cleaner != null";
+        static final String JDK_MANAGED_BUFFER_OQL =
+                "SELECT s.@displayName as label, s.position as position, s.limit as limit, s.capacity as " +
+                        "capacity FROM java.nio.DirectByteBuffer s where s.cleaner != null";
+        static final String JNI_ALLOCATED_BUFFER_OQL =
+                "SELECT s.@displayName as label, s.position as position, s.limit as limit, s.capacity as " +
+                        "capacity FROM java.nio.DirectByteBuffer s where s.cleaner = null and s.att = null";
+        static final String ALL_BUFFER_OQL =
+                "SELECT s.@displayName as label, s.position as position, s.limit as limit, s.capacity as " +
+                        "capacity FROM java.nio.DirectByteBuffer s";
 
-        static final Map<String, Object> ARGS = new HashMap<>(1);
+        static final Map<String, Object> JDK_MANAGED_BUFFER_ARGS = new HashMap<>(1);
+        static final Map<String, Object> JNI_ALLOC_BUFFER_ARGS = new HashMap<>(1);
+        static final Map<String, Object> ALL_BUFFER_ARGS = new HashMap<>(1);
+
         static {
-            ARGS.put("queryString", OQL);
+            JDK_MANAGED_BUFFER_ARGS.put("queryString", JDK_MANAGED_BUFFER_OQL);
+            JNI_ALLOC_BUFFER_ARGS.put("queryString", JNI_ALLOCATED_BUFFER_OQL);
+            ALL_BUFFER_ARGS.put("queryString", ALL_BUFFER_OQL);
         }
 
         RefinedTable resultContext;
