@@ -375,7 +375,7 @@
     }
   }
   </script>
-  <style>
+  <style scoped>
   .data-positive {
     color: green;
     font-weight: bold;

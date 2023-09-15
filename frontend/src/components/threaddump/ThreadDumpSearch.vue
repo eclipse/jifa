@@ -254,7 +254,7 @@
     }
   }
   </script>
-  <style>
+  <style scoped>
   .thread-content {
     margin-top: 15px;
     background-color: #343a40;
@@ -265,12 +265,12 @@
     font-family: monospace;
   }
 
-  .el-progress-bar__innerText {
+  div::v-deep .el-progress-bar__innerText {
     font-weight: bold;
     color: #343a40 !important;
   }
 
-  .search-hit {
+  div::v-deep .search-hit {
     color: red;
     background-color: white;
     font-weight: bold;
