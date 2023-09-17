@@ -1,0 +1,25 @@
+7692:
+2023-07-24 08:54:13
+Full thread dump OpenJDK 64-Bit Server VM (17.0.7+7-LTS mixed mode):
+
+Threads class SMR info:
+_java_thread_list=0x00000286097bf420, length=2488, elements={
+0x000002862c9400f0, 0x000002864fa4f260, 0x000002864fa4fcf0, 0x000002864fa97650,
+0x000002860deb8180, 0x00000286692fb730, 0x00000286086a9ca0, 0x00000286086abe50
+}
+
+"main" #1 prio=5 os_prio=0 cpu=4250.00ms elapsed=693.52s tid=0x000002862c9400f0 nid=0x4fd8 in Object.wait()  [0x0000009ca08ff000]
+   java.lang.Thread.State: WAITING (on object monitor)
+	at java.lang.Object.wait(java.base@17.0.7/Native Method)
+	- waiting on <no object reference available>
+	at org.apache.felix.framework.util.ThreadGate.await(ThreadGate.java:79)
+	- locked <0x00000006cfb020a8> (a org.apache.felix.framework.util.ThreadGate)
+	at org.apache.felix.framework.Felix.waitForStop(Felix.java:1195)
+	at org.apache.karaf.main.Main.awaitShutdown(Main.java:704)
+	at org.apache.karaf.main.Main.main(Main.java:193)
+
+"Reference Handler" #2 daemon prio=10 os_prio=2 cpu=171.88ms elapsed=693.45s tid=0x000002864fa4f260 nid=0x4a00 waiting on condition  [0x0000009ca0fff000]
+   java.lang.Thread.State: RUNNABLE
+	at java.lang.ref.Reference.waitForReferencePendingList(java.base@17.0.7/Native Method)
+	at java.lang.ref.Reference.processPendingReferences(java.base@17.0.7/Reference.java:253)
+	at java.lang.ref.Reference$ReferenceHandler.run(java.base@17.0.7/Reference.java:215)

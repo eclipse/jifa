@@ -17,6 +17,7 @@ import lombok.Data;
 import org.eclipse.jifa.tda.enums.OSTreadState;
 import org.eclipse.jifa.tda.enums.ThreadType;
 
+import java.util.List;
 import java.util.Objects;
 
 @Data
@@ -46,6 +47,8 @@ public class Thread extends Identity {
 
     // include
     private int lineEnd;
+
+    private List<Monitor> monitors;
 
     @Override
     public boolean equals(Object o) {

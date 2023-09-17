@@ -12,7 +12,7 @@
  -->
 <template>
   <div style="height: 100vh; display: flex; flex-direction: column; overflow: hidden">
-    <div style="flex-grow: 1; overflow: scroll">
+    <div style="flex-grow: 1; overflow: auto">
       <router-view/>
     </div>
     <div style="flex-shrink: 0; height: 30px; line-height: 30px; text-align: center;">

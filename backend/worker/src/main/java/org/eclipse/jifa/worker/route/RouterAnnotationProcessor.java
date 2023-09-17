@@ -25,10 +25,13 @@ import org.eclipse.jifa.gclog.diagnoser.AnalysisConfig;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static org.eclipse.jifa.common.util.Assertion.ASSERT;
 
@@ -59,10 +62,45 @@ class RouterAnnotationProcessor {
             String value = context.request().getParam(paramKey.value());
             ASSERT.isTrue(!paramKey.mandatory() || value != null, ErrorCode.ILLEGAL_ARGUMENT,
                           () -> "Miss request parameter, key = " + paramKey.value());
-            arguments.add(value != null ? convert(method, param, context.request().getParam(paramKey.value())) : null);
+            Class<?> type = param.getType();
+            if (type == List.class) {
+                processListParam(arguments, context, method, param, paramKey);
+            }
+            else {
+                if(value == null) {
+                    String defaultValue = "<null>".equals(paramKey.defaultValue()) ? null : paramKey.defaultValue(); 
+                    if(defaultValue == null) {
+                        arguments.add(null);
+                    }
+                    else {
+                        arguments.add(convert(method, param, defaultValue));
+                    }
+                }
+                else {
+                    arguments.add(convert(method, param, context.request().getParam(paramKey.value())));
+                }
+            }
             return true;
         }
         return false;
+    }
+
+    static void processListParam(List<Object> arguments, RoutingContext context, Method method, Parameter param, ParamKey paramKey) {
+        ParameterizedType paramType = (ParameterizedType) param.getParameterizedType();
+        Type[] genericTypes = paramType.getActualTypeArguments();
+        // special handling for repeated query keys (list types)
+        ASSERT.isTrue(genericTypes.length == 1,
+                () -> "Unsupported parameter type. List types need a single type variable. Method = " + method
+                        + ", parameter = " + param);
+        ASSERT.isTrue(genericTypes[0] instanceof Class<?>,
+                () -> "Unsupported parameter type. List types need a single type variable representing an concrete class. Method = "
+                        + method + ", parameter = " + param);
+        Class<?> expectedType = (Class<?>) genericTypes[0];
+        List<String> rawValues = context.request().params().getAll(paramKey.value());
+        Function<String, ?> f = converter.get(expectedType);
+        ASSERT.notNull(f, () -> "Unsupported parameter type, method = " + method + ", parameter = " + param);
+        List<?> convertedValues = rawValues.stream().map(f::apply).collect(Collectors.toList());
+        arguments.add(convertedValues);
     }
 
     static boolean processParamMap(List<Object> arguments, RoutingContext context, Method method, Parameter param) {

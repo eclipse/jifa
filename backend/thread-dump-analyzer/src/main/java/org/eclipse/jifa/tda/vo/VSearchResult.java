@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -10,8 +10,12 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-
 package org.eclipse.jifa.tda.vo;
+
+import java.util.List;
+
+import org.eclipse.jifa.tda.enums.JavaThreadState;
+import org.eclipse.jifa.tda.enums.OSTreadState;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -20,14 +24,12 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class VThread {
+public class VSearchResult extends VThread {
+    private List<String> lines;
 
-    private int id;
+    private String filename;
 
-    private String name;
+    private JavaThreadState javaState;
 
-    /** time in ms, null for unknown */
-    private Double elapsed;
-    /** cpu consumption time in ms, null for unknown */
-    private Double cpu;
+    private OSTreadState osState;
 }

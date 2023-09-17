@@ -18,6 +18,8 @@ import org.eclipse.jifa.tda.parser.ParserException;
 import org.junit.Assert;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.text.ParseException;
@@ -56,5 +58,13 @@ public class TestJStackParser extends TestBase {
     public void testJDK11Log() throws ParserException, URISyntaxException {
         Snapshot snapshot = parseFile("jstack_11_with_deadlocks.log");
         Assert.assertTrue(snapshot.getErrors().isEmpty());
+    }
+
+    @Test
+    public void testJDK17WithPidLog() throws ParserException, URISyntaxException {
+        Snapshot snapshot = parseFile("jstack_17_log_with_pid.log");
+        Assert.assertTrue(snapshot.getErrors().isEmpty());
+        assertEquals(2, snapshot.getJavaThreads().size());
+        assertEquals(7692, snapshot.getPid());
     }
 }

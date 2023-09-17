@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -11,23 +11,40 @@
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
 
-package org.eclipse.jifa.tda.vo;
+package org.eclipse.jifa.tda.diagnoser;
+
+import java.util.List;
+import java.util.Map;
+
+import org.eclipse.jifa.tda.vo.VThread;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Data
+@ToString
 @AllArgsConstructor
 @NoArgsConstructor
-public class VThread {
+public class Diagnostic {
 
-    private int id;
+    private Severity severity;
+    private Type type;
+    private Map<String, Object> params;
+    private List<VThread> threads;
 
-    private String name;
+    public enum Severity {
+        OK, INFO, WARNING, ERROR;
+    }
 
-    /** time in ms, null for unknown */
-    private Double elapsed;
-    /** cpu consumption time in ms, null for unknown */
-    private Double cpu;
+    public enum Type {
+        HIGH_THREAD_COUNT,
+        DEADLOCK,
+        HIGH_BLOCKED_THREAD_COUNT,
+        HIGH_STACK_SIZE,
+        HIGH_CPU_RATIO,
+        THREAD_THROWING_EXCEPTION;
+    }
+
 }

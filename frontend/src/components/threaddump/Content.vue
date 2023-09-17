@@ -15,7 +15,7 @@
   <b-card class="mt-3" bg-variant="dark" text-variant="white">
     <b-card-text style="white-space: pre;">{{ content }}</b-card-text>
     <div class="d-flex justify-content-center mb-3" v-if="!end">
-      <b-button pill variant="primary" size="sm" squared="false" @click="loadContent">
+      <b-button pill variant="primary" size="sm" :squared=false @click="loadContent">
         {{ content.length === 0 ? $t('jifa.threadDump.loadFileContent') : $t('jifa.threadDump.loadMoreFileContent') }}
       </b-button>
     </div>

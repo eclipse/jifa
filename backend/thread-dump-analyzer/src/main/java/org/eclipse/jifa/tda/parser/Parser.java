@@ -32,4 +32,12 @@ public interface Parser {
      * @throws ParserException the exception occurred during parsing
      */
     Snapshot parse(Path path, ProgressListener listener) throws ParserException;
+
+    /**
+     * tell if this parser can parse the file format given
+     * 
+     * @param path the path of thread dump
+     * @return true if this parser can parse this file
+     */
+    boolean canParse(Path path);
 }

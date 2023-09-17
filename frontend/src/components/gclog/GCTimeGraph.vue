@@ -173,7 +173,7 @@ export default {
         yAxis: [{
           type: 'value',
           id: 'memory',
-          name: '内存',
+          name: this.$t('jifa.gclog.timeGraph.memory'),
           position: 'left',
           z: 0,
           min: 0,
@@ -186,7 +186,7 @@ export default {
           },
         }, {
           type: 'value',
-          name: '时间',
+          name: this.$t('jifa.gclog.timeGraph.time'),
           id: 'time',
           z: 1,
           min: 0,

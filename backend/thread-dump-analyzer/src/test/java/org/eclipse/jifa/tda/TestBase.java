@@ -16,6 +16,7 @@ package org.eclipse.jifa.tda;
 import org.apache.commons.io.IOUtils;
 import org.eclipse.jifa.tda.model.Snapshot;
 import org.eclipse.jifa.tda.parser.JStackParser;
+import org.eclipse.jifa.tda.parser.Parser;
 import org.eclipse.jifa.tda.parser.ParserException;
 
 import java.io.FileOutputStream;
@@ -29,7 +30,7 @@ import java.nio.file.Paths;
 import static org.eclipse.jifa.common.listener.ProgressListener.NoOpProgressListener;
 
 public class TestBase {
-    protected final JStackParser analyzer = new JStackParser();
+    protected Parser analyzer = new JStackParser();
 
     protected Path pathOfResource(String name) throws URISyntaxException {
         return Paths.get(this.getClass().getClassLoader().getResource(name).toURI());
