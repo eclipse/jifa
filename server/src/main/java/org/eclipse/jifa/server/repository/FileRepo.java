@@ -13,6 +13,7 @@
 package org.eclipse.jifa.server.repository;
 
 import org.eclipse.jifa.server.domain.entity.shared.file.FileEntity;
+import org.eclipse.jifa.server.enums.FileType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.CrudRepository;
@@ -23,6 +24,8 @@ import java.util.Optional;
 @Repository
 public interface FileRepo extends CrudRepository<FileEntity, Long> {
     Page<FileEntity> findByUserIdOrderByCreatedTimeDesc(Long userId, Pageable pageable);
+
+    Page<FileEntity> findByUserIdAndTypeOrderByCreatedTimeDesc(Long userId, FileType type, Pageable pageable);
 
     Optional<FileEntity> findByUniqueName(String uniqueName);
 

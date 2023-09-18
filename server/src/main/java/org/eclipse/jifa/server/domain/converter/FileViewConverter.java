@@ -15,7 +15,7 @@ package org.eclipse.jifa.server.domain.converter;
 import org.eclipse.jifa.server.domain.dto.FileView;
 import org.eclipse.jifa.server.domain.entity.shared.file.FileEntity;
 
-public class FileViewConverter {
+public abstract class FileViewConverter {
 
     public static FileView convert(FileEntity entity) {
         return new FileView(

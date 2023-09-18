@@ -57,7 +57,7 @@ public class FileController {
      * @return the page view of the files
      */
     @GetMapping("/files")
-    public PageView<FileView> files(@RequestParam FileType type, @RequestParam int page, @RequestParam int pageSize) {
+    public PageView<FileView> files(@RequestParam(required = false) FileType type, @RequestParam int page, @RequestParam int pageSize) {
         return fileService.getUserFileViews(type, page, pageSize);
     }
 
@@ -110,11 +110,12 @@ public class FileController {
      *
      * @param type the file type
      * @param file the file
+     * @return the file id
      * @throws Throwable the exception
      */
     @PostMapping(value = "/files/upload")
-    public void upload(@RequestParam FileType type, @RequestParam MultipartFile file) throws Throwable {
-        fileService.handleUploadRequest(type, file);
+    public long upload(@RequestParam FileType type, @RequestParam MultipartFile file) throws Throwable {
+        return fileService.handleUploadRequest(type, file);
     }
 
     /**

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -25,9 +25,10 @@ public class VirtualThreadItem extends Thread.Item {
     static final int COLUMN_NAME = 1;
     static final int COLUMN_SHALLOW = 2;
     static final int COLUMN_RETAINED = 3;
-    static final int COLUMN_CONTEXT_CLASS_LOADER = 4;
 
     // changes depending on MAT report results
+    final int COLUMN_CONTEXT_CLASS_LOADER;
+
     final int COLUMN_DAEMON;
 
     transient final IResultTree result;
@@ -43,6 +44,7 @@ public class VirtualThreadItem extends Thread.Item {
         // a row was injected at column position 5, so the daemon column may have been
         // pushed out to column 6
         boolean includesMaxLocalRetained = (result.getColumns().length == 10);
+        this.COLUMN_CONTEXT_CLASS_LOADER = includesMaxLocalRetained ? 5 : 4;
         this.COLUMN_DAEMON = includesMaxLocalRetained ? 6 : 5;
     }
 
@@ -78,7 +80,7 @@ public class VirtualThreadItem extends Thread.Item {
 
     @Override
     public boolean isHasStack() {
-        return (Boolean) result.hasChildren(row);
+        return result.hasChildren(row);
     }
 
     @Override

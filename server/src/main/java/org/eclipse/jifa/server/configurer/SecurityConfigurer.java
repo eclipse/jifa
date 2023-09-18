@@ -21,7 +21,6 @@ import jakarta.servlet.http.Cookie;
 import org.eclipse.jifa.server.ConfigurationAccessor;
 import org.eclipse.jifa.server.Constant;
 import org.eclipse.jifa.server.condition.ConditionalOnRole;
-import org.eclipse.jifa.server.domain.security.JifaAuthenticationToken;
 import org.eclipse.jifa.server.filter.JwtTokenRefreshFilter;
 import org.eclipse.jifa.server.service.JwtService;
 import org.eclipse.jifa.server.service.UserService;
@@ -52,12 +51,18 @@ import org.springframework.security.oauth2.server.resource.web.DefaultBearerToke
 import org.springframework.security.oauth2.server.resource.web.access.BearerTokenAccessDeniedHandler;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.savedrequest.NullRequestCache;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.time.Duration;
 
 import static org.eclipse.jifa.server.Constant.COOKIE_JIFA_TOKEN_KEY;
 import static org.eclipse.jifa.server.Constant.HTTP_API_PREFIX;
+import static org.eclipse.jifa.server.Constant.HTTP_HANDSHAKE_MAPPING;
 import static org.eclipse.jifa.server.Constant.HTTP_HEALTH_CHECK_MAPPING;
+import static org.eclipse.jifa.server.Constant.HTTP_LOGIN_MAPPING;
+import static org.eclipse.jifa.server.Constant.HTTP_USER_MAPPING;
 import static org.eclipse.jifa.server.enums.Role.MASTER;
 import static org.eclipse.jifa.server.enums.Role.STANDALONE_WORKER;
 
@@ -91,13 +96,15 @@ public class SecurityConfigurer extends ConfigurationAccessor {
           .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
           .requestCache(cache -> cache.requestCache(new NullRequestCache()));
 
-        hs.anonymous(customizer -> customizer.principal(Constant.ANONYMOUS_USERNAME).key("jifa"));
+        hs.anonymous(customizer -> customizer.principal(Constant.ANONYMOUS_USERNAME).key(Constant.ANONYMOUS_KEY));
 
         hs.authorizeHttpRequests(requests -> {
-            String authApiMatchers = HTTP_API_PREFIX + "/auth/**";
-            requests.requestMatchers(authApiMatchers).permitAll();
-            requests.requestMatchers(HTTP_API_PREFIX + HTTP_HEALTH_CHECK_MAPPING).permitAll();
-            String apiMatchers = HTTP_API_PREFIX + "/**";
+            String prefix = HTTP_API_PREFIX;
+            requests.requestMatchers(prefix + HTTP_HEALTH_CHECK_MAPPING).permitAll();
+            requests.requestMatchers(prefix + HTTP_HANDSHAKE_MAPPING).permitAll();
+            requests.requestMatchers(prefix + HTTP_LOGIN_MAPPING).permitAll();
+            requests.requestMatchers(prefix + HTTP_USER_MAPPING).permitAll();
+            String apiMatchers = prefix + "/**";
             if (!config.isAllowAnonymousAccess()) {
                 requests.requestMatchers(apiMatchers).authenticated();
             }
@@ -121,14 +128,6 @@ public class SecurityConfigurer extends ConfigurationAccessor {
                 return UsernamePasswordAuthenticationToken.class == authentication;
             }
         });
-
-        hs.formLogin(formLogin -> formLogin.successHandler((request, response, authentication) -> {
-            Cookie jifaToken = new Cookie(COOKIE_JIFA_TOKEN_KEY, ((JifaAuthenticationToken) authentication).getToken());
-            jifaToken.setPath("/");
-            jifaToken.setHttpOnly(false);
-            response.addCookie(jifaToken);
-            response.sendRedirect("/");
-        }));
 
         if (oauth2ClientProperties != null && !oauth2ClientProperties.getRegistration().isEmpty()) {
             hs.oauth2Login(oauth2 -> oauth2.successHandler((request, response, authentication) -> {
@@ -160,12 +159,10 @@ public class SecurityConfigurer extends ConfigurationAccessor {
                                         }));
 
         hs.exceptionHandling(eh -> {
-            // We currently don't have a custom login page, and invoking authenticationEntryPoint will disable the login page provided by spring,
-            // hence we call defaultAuthenticationEntryPointFor instead.
-            // eh.authenticationEntryPoint(new BearerTokenAuthenticationEntryPoint());
-            eh.defaultAuthenticationEntryPointFor(new BearerTokenAuthenticationEntryPoint(), (request) -> true);
+            eh.authenticationEntryPoint(new BearerTokenAuthenticationEntryPoint());
             eh.accessDeniedHandler(new BearerTokenAccessDeniedHandler());
         });
+
         return hs.build();
     }
 
@@ -183,5 +180,17 @@ public class SecurityConfigurer extends ConfigurationAccessor {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    CorsConfigurationSource corsConfigurationSource() {
+        final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        final CorsConfiguration configuration = new CorsConfiguration();
+        configuration.addAllowedOrigin("*");
+        configuration.addAllowedMethod("*");
+        configuration.addAllowedHeader("*");
+        configuration.applyPermitDefaultValues();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 }

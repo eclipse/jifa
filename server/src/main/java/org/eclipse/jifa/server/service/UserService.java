@@ -23,7 +23,11 @@ public interface UserService {
 
     JifaAuthenticationToken handleOauth2Login(OAuth2AuthenticationToken token);
 
-    void register(String name, String username, String password, boolean admin);
+    JifaAuthenticationToken register(String name, String username, String password, boolean admin);
+
+    default JifaAuthenticationToken register(String name, String username, String password) {
+        return register(name, username, password, false);
+    }
 
     Long getCurrentUserId();
 

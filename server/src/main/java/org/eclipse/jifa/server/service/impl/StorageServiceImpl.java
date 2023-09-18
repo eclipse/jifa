@@ -30,6 +30,7 @@ import jakarta.annotation.PostConstruct;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.common.KeyType;
 import net.schmizz.sshj.common.StreamCopier;
+import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
 import net.schmizz.sshj.userauth.keyprovider.KeyProvider;
 import net.schmizz.sshj.xfer.FileSystemFile;
 import net.schmizz.sshj.xfer.TransferListener;
@@ -261,8 +262,10 @@ public class StorageServiceImpl extends ConfigurationAccessor implements Storage
         }
     }
 
+
     private void transferBySCP(FileTransferRequest request, Path destination, FileTransferListener listener) throws IOException {
         try (SSHClient ssh = new SSHClient()) {
+            ssh.addHostKeyVerifier(new PromiscuousVerifier());
             ssh.connect(request.getScpHostname());
             if (StringUtils.isNotBlank(request.getScpPassword())) {
                 ssh.authPassword(request.getScpUser(), request.getScpPassword());

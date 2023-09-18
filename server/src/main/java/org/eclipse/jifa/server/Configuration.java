@@ -99,6 +99,11 @@ public class Configuration {
     private boolean allowAnonymousAccess = true;
 
     /**
+     * Whether to allow registration, default is true
+     */
+    private boolean allowRegistration = true;
+
+    /**
      * default root username
      */
     private String rootUsername = "root";

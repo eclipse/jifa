@@ -1,5 +1,5 @@
 <!--
-    Copyright (c) 2020, 2021 Contributors to the Eclipse Foundation
+    Copyright (c) 2020, 2023 Contributors to the Eclipse Foundation
 
     See the NOTICE file(s) distributed with this work for additional
     information regarding copyright ownership.
@@ -564,7 +564,7 @@
         axios.get(heapDumpService(this.file, 'pathToGCRoots'), {
           params: {
             skip: tab.count,
-            origin: tab.origin,
+            objectId: tab.origin,
             count: 10
           }
         }).then((resp) => {
@@ -706,24 +706,22 @@
         let data = null;
         if (mergePathToGCRootsTab.fromHistogram) {
           api = 'mergePathToGCRoots/roots/byClassId';
-          method = 'get';
           params = {
             classId: mergePathToGCRootsTab.classId,
+            grouping: mergePathToGCRootsTab.grouping,
             page: mergePathToGCRootsTab.nextPage,
             pageSize: mergePathToGCRootsTab.pageSize,
-            grouping: mergePathToGCRootsTab.grouping
           }
         } else if (mergePathToGCRootsTab.fromDominatorTree) {
           api = 'mergePathToGCRoots/roots/byObjectIds';
-          method = 'post';
-          data = JSON.stringify(mergePathToGCRootsTab.objectIds);
           params = {
+            objectIds: mergePathToGCRootsTab.objectIds,
+            grouping: mergePathToGCRootsTab.grouping,
             page: mergePathToGCRootsTab.nextPage,
             pageSize: mergePathToGCRootsTab.pageSize,
-            grouping: mergePathToGCRootsTab.grouping
           }
         }
-        axios(heapDumpService(this.file, api), {method: method, data: data, params: params}).then(resp => {
+        axios.post(heapDumpService(this.file, api), params).then(resp => {
           mergePathToGCRootsTab.totalSize = resp.data.totalSize;
           let data = resp.data.data;
           data.forEach(d => {
@@ -767,27 +765,25 @@
         let data = null;
         if (tab.fromHistogram) {
           api = 'mergePathToGCRoots/children/byClassId';
-          method = 'get';
           params = {
             classId: tab.classId,
-            objectIdPathInGCPathTree: JSON.stringify(row.objectIdPathInGCPathTree),
+            objectIdPathInGCPathTree: row.objectIdPathInGCPathTree,
+            grouping: tab.grouping,
             page: page,
             pageSize: tab.pageSize,
-            grouping: tab.grouping
           };
         } else if (tab.fromDominatorTree) {
           api = 'mergePathToGCRoots/children/byObjectIds';
-          method = 'post';
-          data = JSON.stringify(tab.objectIds);
           params = {
-            objectIdPathInGCPathTree: JSON.stringify(row.objectIdPathInGCPathTree),
+            objectIds: tab.objectIds,
+            objectIdPathInGCPathTree: row.objectIdPathInGCPathTree,
+            grouping: tab.grouping,
             page: page,
             pageSize: tab.pageSize,
-            grouping: tab.grouping
           };
         }
 
-        axios(heapDumpService(this.file, api), {method: method, data: data, params: params}).then(resp => {
+        axios.post(heapDumpService(this.file, api), params).then(resp => {
           let loadedLen = 0;
           let loaded = table.store.states.lazyTreeNodeMap[parentRowKey];
           let callResolve = false;

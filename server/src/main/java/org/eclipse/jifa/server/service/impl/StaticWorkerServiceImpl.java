@@ -45,6 +45,7 @@ import java.net.MalformedURLException;
 
 import static org.eclipse.jifa.common.domain.exception.CommonException.CE;
 import static org.eclipse.jifa.common.enums.CommonErrorCode.INTERNAL_ERROR;
+import static org.eclipse.jifa.common.util.GsonHolder.GSON;
 import static org.eclipse.jifa.server.Constant.HTTP_API_PREFIX;
 import static org.eclipse.jifa.server.enums.ServerErrorCode.STATIC_WORKER_UNAVAILABLE;
 
@@ -87,7 +88,7 @@ public class StaticWorkerServiceImpl extends AbstractWorkerServiceImpl implement
     }
 
     @Override
-    public void handleUploadRequest(WorkerEntity worker, FileType type, MultipartFile file) throws Throwable {
+    public long handleUploadRequest(WorkerEntity worker, FileType type, MultipartFile file) throws Throwable {
         Validate.isTrue(isMaster(), INTERNAL_ERROR);
         MultipartBodyBuilder builder = new MultipartBodyBuilder();
         try {
@@ -113,14 +114,14 @@ public class StaticWorkerServiceImpl extends AbstractWorkerServiceImpl implement
             spec.header(HttpHeaders.AUTHORIZATION, "Bearer " + jwtToken);
         }
 
-        spec.contentType(MediaType.MULTIPART_FORM_DATA)
-            .body(BodyInserters.fromMultipartData(builder.build()))
-            .exchangeToMono(response -> {
-                if (!response.statusCode().is2xxSuccessful()) {
-                    return response.createError();
-                }
-                return response.bodyToMono(Void.class);
-            }).toFuture().get();
+        return spec.contentType(MediaType.MULTIPART_FORM_DATA)
+                   .body(BodyInserters.fromMultipartData(builder.build()))
+                   .exchangeToMono(response -> {
+                       if (!response.statusCode().is2xxSuccessful()) {
+                           return response.createError();
+                       }
+                       return response.bodyToMono(String.class).map(s -> GSON.fromJson(s, Long.class));
+                   }).toFuture().get();
     }
 
     @Override

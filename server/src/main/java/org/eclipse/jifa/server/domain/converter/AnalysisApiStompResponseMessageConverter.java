@@ -28,7 +28,7 @@ import static org.eclipse.jifa.server.Constant.STOMP_ANALYSIS_API_REQUEST_ID_KEY
 import static org.eclipse.jifa.server.Constant.STOMP_ANALYSIS_API_RESPONSE_SUCCESS_KEY;
 
 @SuppressWarnings("NullableProblems")
-public class ApiResponseMessageConverter implements MessageConverter {
+public class AnalysisApiStompResponseMessageConverter implements MessageConverter {
 
     private static final String CONTENT_TYPE = new MimeType("application", "json", Constant.CHARSET).toString();
 

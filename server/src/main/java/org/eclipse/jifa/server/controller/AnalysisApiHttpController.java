@@ -65,9 +65,9 @@ public class AnalysisApiHttpController extends ConfigurationAccessor {
             method = {RequestMethod.POST},
             consumes = {MediaType.APPLICATION_JSON_VALUE},
             produces = Constant.APPLICATION_JSON)
-    public Object handleHttpRequest(@RequestHeader(name = HttpHeaders.CONTENT_TYPE) String contentType,
-                                    @RequestHeader(name = Constant.HTTP_HEADER_ENABLE_SSE, required = false, defaultValue = "false") boolean enableSse,
-                                    @RequestBody byte[] body) throws Throwable {
+    public Object handleRequest(@RequestHeader(name = HttpHeaders.CONTENT_TYPE) String contentType,
+                                @RequestHeader(name = Constant.HTTP_HEADER_ENABLE_SSE, required = false, defaultValue = "false") boolean enableSse,
+                                @RequestBody byte[] body) {
 
         JsonObject request = GSON.fromJson(new String(body, ofNullable(MimeTypeUtils.parseMimeType(contentType).getCharset()).orElse(Constant.CHARSET)),
                                            JsonObject.class);
@@ -79,13 +79,13 @@ public class AnalysisApiHttpController extends ConfigurationAccessor {
             method = {RequestMethod.POST, RequestMethod.GET},
             consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE, MediaType.APPLICATION_JSON_VALUE},
             produces = Constant.APPLICATION_JSON)
-    public Object handleHttpRequest(
+    public Object handleRequest(
             @PathVariable String api,
             HttpMethod method,
             @RequestHeader(name = HttpHeaders.CONTENT_TYPE, required = false, defaultValue = Constant.APPLICATION_JSON) String contentType,
             @RequestHeader(name = Constant.HTTP_HEADER_ENABLE_SSE, required = false, defaultValue = "false") boolean enableSse,
             @RequestParam(required = false) MultiValueMap<String, String> params,
-            @RequestBody(required = false) byte[] body) throws Throwable {
+            @RequestBody(required = false) byte[] body) {
 
         if (api == null || !api.startsWith("/")) {
             throw new IllegalArgumentException("Unsupported api: " + api);

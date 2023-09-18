@@ -50,6 +50,8 @@ public interface Model {
         class Item {
             public String label;
 
+            public String prefix;
+
             public String suffix;
 
             public int objectId;
@@ -237,7 +239,7 @@ public interface Model {
                 .add("id", Item::getObjectId)
                 .add("numberOfObjects", Item::getNumberOfObjects)
                 .add("shallowSize", Item::getShallowSize)
-                .add("retainedSize", Item::getRetainedSize)
+                .add("retainedSize", i -> Math.abs(i.getRetainedSize()))
                 .build();
             public long numberOfObjects;
             public long shallowSize;
@@ -285,6 +287,8 @@ public interface Model {
             public String label;
 
             public int count;
+
+            public int index;
 
             @Override
             public Object getBySearchType(SearchType type) {

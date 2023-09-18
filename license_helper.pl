@@ -100,11 +100,11 @@ sub callback {
     my $dir = $File::Find::dir;
     my $path = $File::Find::name;
     my $name = $_;
-    if ($dir =~ /\.git/ || $name eq '.gitignore') {
+    if ($dir =~ /\.git/ || $name eq '.gitignore' || $dir =~ /node_modules/) {
       return;
     }
 
-    if ($name =~ /\.java\z/ || $name =~ /\.gradle\z/) {
+    if ($name =~ /\.java\z/ || $name =~ /\.gradle\z/ || $name =~ /\.ts\z/ || $name =~ /\.ts\z/) {
       prepend_licence($name, $license_1, 1);
     } elsif ($name =~ /\.xml\z/) {
       # skip first line

@@ -12,11 +12,13 @@
  ********************************************************************************/
 package org.eclipse.jifa.server.service;
 
+import org.eclipse.jifa.server.domain.dto.PublicKey;
+
 public interface CipherService {
 
     String encrypt(String plaintext);
 
     String decrypt(String ciphertext);
 
-    String getPublicKeyString();
+    PublicKey getPublicKeyString();
 }

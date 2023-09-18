@@ -18,8 +18,11 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface TransferringFileRepo extends CrudRepository<TransferringFileEntity, Long> {
     List<TransferringFileEntity> findAllByLastModifiedTimeBefore(LocalDateTime localDateTime);
+
+    Optional<TransferringFileEntity> findByUniqueName(String uniqueName);
 }

@@ -35,6 +35,8 @@ public class JwtServiceImpl extends ConfigurationAccessor implements JwtService 
 
     private static final String CLAIM_USER_ID_KEY = "userId";
 
+    private static final String CLAIM_USER_NAME_KEY = "userName";
+
     private static final String CLAIM_ADMIN_KEY = "admin";
 
     private final JwtEncoder jwtEncoder;
@@ -45,7 +47,7 @@ public class JwtServiceImpl extends ConfigurationAccessor implements JwtService 
 
     @Override
     public JifaAuthenticationToken generateToken(UserEntity user) {
-        return generateToken(user.getId(), user.isAdmin());
+        return generateToken(user.getId(), user.getName(), user.isAdmin());
     }
 
     @Override
@@ -58,7 +60,7 @@ public class JwtServiceImpl extends ConfigurationAccessor implements JwtService 
                 Instant expiresAt = jifaToken.getExpiresAt();
                 Instant refreshWindow = expiresAt.minusSeconds(Constant.JWT_REFRESH_WINDOW);
                 if (now.isAfter(refreshWindow) && now.isBefore(expiresAt)) {
-                    return generateToken(jifaToken.getUserId(), jifaToken.isAdmin());
+                    return generateToken(jifaToken.getUserId(), jifaToken.getUserName(), jifaToken.isAdmin());
                 }
             }
         }
@@ -68,12 +70,13 @@ public class JwtServiceImpl extends ConfigurationAccessor implements JwtService 
     @Override
     public JifaAuthenticationToken convert(Jwt jwt) {
         return new JifaAuthenticationToken(jwt.getClaim(CLAIM_USER_ID_KEY),
+                                           jwt.getClaim(CLAIM_USER_NAME_KEY),
                                            jwt.getClaimAsBoolean(CLAIM_ADMIN_KEY),
                                            jwt.getTokenValue(),
                                            jwt.getExpiresAt());
     }
 
-    private JifaAuthenticationToken generateToken(long userId, boolean admin) {
+    private JifaAuthenticationToken generateToken(Long userId, String userName, boolean admin) {
         Instant now = Instant.now();
         Instant expiryAt = now.plusSeconds(Constant.JWT_EXPIRY);
         JwtClaimsSet claimsSet = JwtClaimsSet.builder()
@@ -81,10 +84,10 @@ public class JwtServiceImpl extends ConfigurationAccessor implements JwtService 
                                              .issuedAt(now)
                                              .expiresAt(expiryAt)
                                              .claim(CLAIM_USER_ID_KEY, userId)
+                                             .claim(CLAIM_USER_NAME_KEY, userName)
                                              .claim(CLAIM_ADMIN_KEY, admin)
                                              .build();
         String token = jwtEncoder.encode(JwtEncoderParameters.from(claimsSet)).getTokenValue();
-
-        return new JifaAuthenticationToken(userId, admin, token, expiryAt);
+        return new JifaAuthenticationToken(userId, userName, admin, token, expiryAt);
     }
 }

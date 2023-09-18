@@ -40,6 +40,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler
     @ResponseBody
     public void handleHttpRequestException(Throwable throwable, HttpServletRequest request, HttpServletResponse response) throws IOException {
+        throwable.printStackTrace();
         if (throwable instanceof MissingServletRequestParameterException ||
             throwable instanceof IllegalArgumentException ||
             throwable instanceof AuthenticationException ||
@@ -85,9 +86,7 @@ public class GlobalExceptionHandler {
             return errorCodeAccessor.getErrorCode();
         }
 
-        if (throwable instanceof MissingServletRequestParameterException ||
-            throwable instanceof IllegalArgumentException ||
-            throwable instanceof ValidationException) {
+        if (throwable instanceof MissingServletRequestParameterException || throwable instanceof IllegalArgumentException) {
             return CommonErrorCode.ILLEGAL_ARGUMENT;
         }
 

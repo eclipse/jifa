@@ -17,5 +17,6 @@ import org.eclipse.jifa.server.enums.FileTransferState;
 public record FileTransferProgress(FileTransferState state,
                                    long totalSize,
                                    long transferredSize,
-                                   String failureMessage) {
+                                   String failureMessage,
+                                   Long fileId) {
 }

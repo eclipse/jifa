@@ -95,14 +95,14 @@ public class FileTransferRequest {
     private String s3ObjectKey;
 
     /**
-     * SCP user, required if method is SCP
-     */
-    private String scpUser;
-
-    /**
      * SCP hostname, required if method is SCP
      */
     private String scpHostname;
+
+    /**
+     * SCP user, required if method is SCP
+     */
+    private String scpUser;
 
     /**
      * SCP password, optional.
@@ -177,8 +177,8 @@ public class FileTransferRequest {
                 }
 
                 case SCP -> {
-                    valid &= checkNotBlank(request.scpUser, "scpUser", context);
                     valid &= checkNotBlank(request.scpHostname, "scpHostname", context);
+                    valid &= checkNotBlank(request.scpUser, "scpUser", context);
                     valid &= checkNotBlank(request.scpSourcePath, "scpSourcePath", context);
                 }
 

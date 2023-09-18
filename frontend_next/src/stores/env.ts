@@ -1,0 +1,101 @@
+/********************************************************************************
+ * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ ********************************************************************************/
+import axios from 'axios';
+import { defineStore } from 'pinia';
+// @ts-ignore
+import { useAnalysisStore } from '@/stores/analysis';
+import Cookies from 'js-cookie';
+
+export interface User {
+  name: string;
+  admin: boolean;
+}
+
+export interface PublicKey {
+  pkcs8: string;
+  ssh2: string;
+}
+
+export interface HandshakeResponse {
+  allowAnonymousAccess: boolean;
+  allowRegistration: boolean;
+  publicKey: PublicKey;
+  oauth2LoginLinks: object;
+  user?: User;
+}
+
+const tokenKey = 'jifa-token';
+
+function getToken() {
+  return window.localStorage.getItem(tokenKey) || Cookies.get(tokenKey);
+}
+
+function goHome() {
+  useAnalysisStore().leaveGuard = false;
+  location.assign('/');
+}
+export const useEnv = defineStore('env', {
+  state: () => ({
+    allowAnonymousAccess: false,
+    allowRegistration: false,
+    oauth2LoginLinks: null as object | null,
+
+    loginFormVisible: false,
+
+    user: null as User | null,
+    publicKey: null as PublicKey | null,
+    uploadHeader: {} // used by upload
+  }),
+
+  getters: {
+    loggedIn: (state) => state.user != null,
+    loginRequired: (state) => !state.user && !state.allowAnonymousAccess,
+    supportedOauth2Login: (state) =>
+      state.oauth2LoginLinks && Object.keys(state.oauth2LoginLinks).length > 0,
+    token: () => getToken()
+  },
+
+  actions: {
+    init() {
+      let token = getToken();
+      if (token) {
+        token = 'Bearer ' + token;
+        axios.defaults.headers.common['Authorization'] = token;
+        this.uploadHeader = { Authorization: token };
+      }
+    },
+
+    handleHandshakeData(data: HandshakeResponse) {
+      this.allowAnonymousAccess = data.allowAnonymousAccess;
+      this.allowRegistration = data.allowRegistration;
+      this.oauth2LoginLinks = data.oauth2LoginLinks;
+      this.publicKey = data.publicKey;
+      if (data.user) {
+        this.user = data.user;
+      } else if (!this.allowAnonymousAccess) {
+        this.loginFormVisible = true;
+      }
+    },
+
+    logout() {
+      Cookies.remove(tokenKey);
+      window.localStorage.removeItem(tokenKey);
+      goHome();
+    },
+
+    handleLoginOrSignupResponse(resp: any) {
+      window.localStorage.setItem(tokenKey, resp.headers.authorization);
+      goHome();
+    }
+  }
+});

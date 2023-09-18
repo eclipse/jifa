@@ -1,5 +1,5 @@
 <!--
-    Copyright (c) 2020 Contributors to the Eclipse Foundation
+    Copyright (c) 2020, 2023 Contributors to the Eclipse Foundation
 
     See the NOTICE file(s) distributed with this work for additional
     information regarding copyright ownership.
@@ -207,7 +207,7 @@
         this.loading = true
         axios.get(heapDumpService(this.file, 'histogram'), {
           params: {
-            groupingBy: this.groupingBy,
+            groupBy: this.groupingBy,
             page: this.nextPage,
             pageSize: this.pageSize,
             sortBy: this.sortBy,
@@ -277,7 +277,7 @@
         this.loading = true
         axios.get(heapDumpService(this.file, 'histogram/children'), {
           params: {
-            groupingBy: this.groupingBy,
+            groupBy: this.groupingBy,
             page: page,
             pageSize: this.pageSize,
             sortBy: this.sortBy,

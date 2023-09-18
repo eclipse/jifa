@@ -131,14 +131,6 @@ static void setMysqlEnv(BootRun bootRun) {
     bootRun.environment('MYSQL_PASSWORD', 'password')
 }
 
-tasks.register('runStandaloneWorker', BootRun) {
-    group('jifa')
-    classpath(project.sourceSets.main.runtimeClasspath)
-    mainClass.convention(mainClassName)
-
-    setDevKeys(it)
-}
-
 def masterArchive = 'jifa-master.jar'
 def workerArchive = 'jifa-worker.jar'
 
@@ -170,7 +162,7 @@ tasks.register("masterDocker", DockerBuildImage) {
     group('jifa')
     inputDir = project.projectDir.getParentFile()
     images = ['jifadocker/jifa-master:latest']
-    buildArgs=['BUILD_JAR':masterArchive]
+    buildArgs = ['BUILD_JAR': masterArchive]
     dependsOn("masterJar")
 }
 
@@ -178,8 +170,16 @@ tasks.register("workerDocker", DockerBuildImage) {
     group('jifa')
     inputDir = project.projectDir.getParentFile()
     images = ['jifadocker/jifa-worker:latest']
-    buildArgs=['BUILD_JAR':workerArchive]
+    buildArgs = ['BUILD_JAR': workerArchive]
     dependsOn("workerJar")
+}
+
+tasks.register('runStandaloneWorker', BootRun) {
+    group('jifa')
+    classpath(project.sourceSets.main.runtimeClasspath)
+    mainClass.convention(mainClassName)
+
+    setDevKeys(it)
 }
 
 tasks.register('runStandaloneWorkerWithMysql', BootRun) {

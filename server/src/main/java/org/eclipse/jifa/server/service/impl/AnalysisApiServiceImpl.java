@@ -95,7 +95,7 @@ public class AnalysisApiServiceImpl extends ConfigurationAccessor implements Ana
     }
 
     @Override
-    public final CompletableFuture<?> invoke(AnalysisApiRequest request) throws Throwable {
+    public final CompletableFuture<?> invoke(AnalysisApiRequest request) {
         FileEntity file = fileService.getFileByUniqueName(request.target(), FileType.getByApiNamespace(request.namespace()));
 
         if (isMaster()) {

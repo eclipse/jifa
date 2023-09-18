@@ -1,5 +1,5 @@
 <!--
-    Copyright (c) 2020 Contributors to the Eclipse Foundation
+    Copyright (c) 2020, 2023 Contributors to the Eclipse Foundation
 
     See the NOTICE file(s) distributed with this work for additional
     information regarding copyright ownership.
@@ -194,14 +194,13 @@
         }).then(resp => {
           this.totalSize = resp.data.totalSize
           let res = resp.data.data
-          let index = this.currentSize
           let tmp = []
           for (let i = 0; i < res.length; i++) {
             tmp.push({
               rowKey: rowKey++,
               label: res[i].label,
               icon: this.classIcon,
-              index: index++,
+              index: res[i].index,
               classLoaderCount: res[i].count,
               currentSize: 0,
               hasChildren: res[i].count > 0,

@@ -31,12 +31,9 @@ import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler;
 import org.springframework.util.MimeType;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;
 import org.springframework.web.socket.messaging.WebSocketStompClient;
-import org.springframework.web.socket.sockjs.client.SockJsClient;
-import org.springframework.web.socket.sockjs.client.WebSocketTransport;
 
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -59,10 +56,9 @@ public class TestAnalysisApiStompController {
     private WebSocketStompClient webSocketStompClient;
 
     @BeforeEach
-    public void before() throws Throwable {
+    public void before() {
         Mockito.when(apiService.invoke(Mockito.any())).thenAnswer((Answer<CompletableFuture<?>>) invocation -> CompletableFuture.completedFuture("Hello Jifa"));
-        this.webSocketStompClient = new WebSocketStompClient(new SockJsClient(
-                List.of(new WebSocketTransport(new StandardWebSocketClient()))));
+        this.webSocketStompClient = new WebSocketStompClient(new StandardWebSocketClient());
         this.webSocketStompClient.setMessageConverter(new GsonMessageConverter());
         this.webSocketStompClient.setTaskScheduler(new ConcurrentTaskScheduler());
     }

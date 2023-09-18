@@ -27,7 +27,7 @@ public interface StaticWorkerService extends WorkerService {
 
     StaticWorkerEntity selectForFileUpload(FileType type, MultipartFile file);
 
-    void handleUploadRequest(WorkerEntity worker, FileType type, MultipartFile file) throws Throwable;
+    long handleUploadRequest(WorkerEntity worker, FileType type, MultipartFile file) throws Throwable;
 
     Resource handleDownloadRequest(WorkerEntity worker, long fileId) throws MalformedURLException;
 

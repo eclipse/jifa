@@ -44,7 +44,7 @@ public class TestAnalysisApiHttpController {
     private AnalysisApiService apiService;
 
     @BeforeEach
-    public void before() throws Throwable {
+    public void before() {
         Mockito.when(apiService.invoke(Mockito.any())).thenAnswer((Answer<CompletableFuture<?>>) invocation -> CompletableFuture.completedFuture("Hello Jifa"));
     }
 

@@ -89,10 +89,8 @@ public class UserServiceImpl extends ConfigurationAccessor implements UserServic
     public JifaAuthenticationToken login(String username, String password) {
         LoginDataEntity loginData = loginDataRepo.findByUsername(username).orElse(null);
         Validate.notNull(loginData, USER_NOT_FOUND);
-        // Validate.isTrue(encoder.matches(cipherService.decrypt(password), loginData.getPasswordHash()),
-        //                 INCORRECT_PASSWORD);
-        Validate.isTrue(encoder.matches(password, loginData.getPasswordHash()),
-                        INCORRECT_PASSWORD);
+         Validate.isTrue(encoder.matches(cipherService.decrypt(password), loginData.getPasswordHash()),
+                         INCORRECT_PASSWORD);
         return jwtService.generateToken(loginData.getUser());
     }
 
@@ -125,17 +123,20 @@ public class UserServiceImpl extends ConfigurationAccessor implements UserServic
     }
 
     @Override
-    public void register(String name, String username, String password, boolean admin) {
+    public JifaAuthenticationToken register(String name, String username, String password, boolean admin) {
         Validate.isTrue(loginDataRepo.findByUsername(username).isEmpty(), USERNAME_EXISTS);
 
         LoginDataEntity loginData = new LoginDataEntity();
         loginData.setUsername(username);
         loginData.setPasswordHash(encoder.encode(cipherService.decrypt(password)));
 
-        transactionTemplate.executeWithoutResult(status -> {
+        UserEntity user = transactionTemplate.execute(status -> {
             loginData.setUser(userRepo.save(createUser(name, admin)));
             loginDataRepo.save(loginData);
+            return loginData.getUser();
         });
+
+        return jwtService.generateToken(user);
     }
 
     @Override

@@ -18,5 +18,5 @@ import java.util.concurrent.CompletableFuture;
 
 public interface AnalysisApiService {
 
-    CompletableFuture<?> invoke(AnalysisApiRequest request) throws Throwable;
+    CompletableFuture<?> invoke(AnalysisApiRequest request);
 }

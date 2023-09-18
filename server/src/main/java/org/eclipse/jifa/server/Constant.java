@@ -21,13 +21,19 @@ public interface Constant extends org.eclipse.jifa.common.Constant {
 
     int DEFAULT_WORKER_PORT = 8102;
 
-    String COOKIE_JIFA_TOKEN_KEY = "jifa_token";
+    String COOKIE_JIFA_TOKEN_KEY = "jifa-token";
 
     String HTTP_API_PREFIX = "/jifa-api";
 
     String HTTP_ANALYSIS_API_MAPPING = "/analysis";
 
     String HTTP_HEALTH_CHECK_MAPPING = "/health-check";
+
+    String HTTP_HANDSHAKE_MAPPING = "/handshake";
+
+    String HTTP_LOGIN_MAPPING = "/login";
+
+    String HTTP_USER_MAPPING = "/user";
 
     String STOMP_ENDPOINT = "jifa-stomp";
 
@@ -62,6 +68,8 @@ public interface Constant extends org.eclipse.jifa.common.Constant {
     String ROLE_ADMIN = "ADMIN";
 
     String ANONYMOUS_USERNAME = "Anonymous User";
+
+    String ANONYMOUS_KEY = "Anonymous";
 
     byte[] EMPTY_BYTE_ARRAY = new byte[0];
 

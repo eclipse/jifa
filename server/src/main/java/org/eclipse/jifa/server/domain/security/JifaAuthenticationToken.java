@@ -26,14 +26,18 @@ public class JifaAuthenticationToken extends AbstractAuthenticationToken {
 
     private final long userId;
 
+    private final String userName;
+
     private final boolean admin;
 
     private final String token;
+
     private final Instant expiresAt;
 
-    public JifaAuthenticationToken(long userId, boolean admin, String token, Instant expiresAt) {
+    public JifaAuthenticationToken(long userId, String userName, boolean admin, String token, Instant expiresAt) {
         super(admin ? ADMIN : Collections.emptySet());
         this.userId = userId;
+        this.userName = userName;
         this.admin = admin;
         this.expiresAt = expiresAt;
         this.token = token;
@@ -52,6 +56,10 @@ public class JifaAuthenticationToken extends AbstractAuthenticationToken {
 
     public long getUserId() {
         return userId;
+    }
+
+    public String getUserName() {
+        return userName;
     }
 
     public boolean isAdmin() {

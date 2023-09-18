@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -35,13 +35,13 @@ export default class JifaGlobal {
   }
 
   static save_jifa_token(token) {
-    window.localStorage.setItem("jifa_token", token)
+    window.localStorage.setItem("jifa-token", token)
   }
 
   static jifa_token() {
-    let token = window.localStorage.getItem("jifa_token")
+    let token = window.localStorage.getItem("jifa-token")
     if (!token) {
-      token = Cookies.get('jifa_token')
+      token = Cookies.get('jifa-token')
     }
     return token
   }

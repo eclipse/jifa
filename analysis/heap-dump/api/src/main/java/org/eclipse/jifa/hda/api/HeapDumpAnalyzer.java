@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -131,7 +131,7 @@ public interface HeapDumpAnalyzer {
                                                                                                GCRootPath.Grouping grouping,
                                                                                                int page, int pageSize);
 
-    GCRootPath.Item getPathToGCRoots(int originId, int skip, int count);
+    GCRootPath.Item getPathToGCRoots(int objectId, int skip, int count);
 
     @ApiMeta(aliases = "leak.report")
     LeakReport getLeakReport();
@@ -161,7 +161,7 @@ public interface HeapDumpAnalyzer {
     PageView<DuplicatedClass.ClassLoaderItem> getClassloadersOfDuplicatedClass(int index, int page,
                                                                                int pageSize);
 
-    PageView<Histogram.Item> getHistogram(Histogram.Grouping groupingBy,
+    PageView<Histogram.Item> getHistogram(Histogram.Grouping groupBy,
                                           @ApiParameterMeta(required = false) int[] ids,
                                           String sortBy, boolean ascendingOrder,
                                           String searchText, SearchType searchType, int page, int pageSize);
@@ -170,7 +170,7 @@ public interface HeapDumpAnalyzer {
     PageView<JavaObject> getHistogramObjects(int classId, int page, int pageSize);
 
     @ApiMeta(aliases = "histogram.children")
-    PageView<Histogram.Item> getChildrenOfHistogram(Histogram.Grouping groupBy, int[] ids,
+    PageView<Histogram.Item> getChildrenOfHistogram(Histogram.Grouping groupBy, @ApiParameterMeta(required = false) int[] ids,
                                                     String sortBy, boolean ascendingOrder, int parentObjectId,
                                                     int page, int pageSize);
 

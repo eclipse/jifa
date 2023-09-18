@@ -33,7 +33,7 @@ public interface FileService {
 
     FileTransferProgress getTransferProgress(long transferringFileId);
 
-    void handleUploadRequest(FileType type, MultipartFile file) throws Throwable;
+    long handleUploadRequest(FileType type, MultipartFile file) throws Throwable;
 
     NamedResource handleDownloadRequest(long fileId) throws Throwable;
 

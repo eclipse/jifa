@@ -24,6 +24,7 @@ import org.eclipse.jifa.server.domain.dto.FileTransferProgress;
 import org.eclipse.jifa.server.domain.dto.FileTransferRequest;
 import org.eclipse.jifa.server.domain.dto.FileView;
 import org.eclipse.jifa.server.domain.dto.NamedResource;
+import org.eclipse.jifa.server.domain.entity.shared.file.BaseFileEntity;
 import org.eclipse.jifa.server.domain.entity.shared.file.DeletedFileEntity;
 import org.eclipse.jifa.server.domain.entity.shared.file.FileEntity;
 import org.eclipse.jifa.server.domain.entity.shared.file.TransferringFileEntity;
@@ -122,7 +123,10 @@ public class FileServiceImpl extends ConfigurationAccessor implements FileServic
 
         Page<FileEntity> files;
         PageRequest pageRequest = PageRequest.of(page - 1, pageSize);
-        files = fileRepo.findByUserIdOrderByCreatedTimeDesc(userService.getCurrentUserId(), pageRequest);
+        files = type == null
+                ? fileRepo.findByUserIdOrderByCreatedTimeDesc(userService.getCurrentUserId(), pageRequest)
+                : fileRepo.findByUserIdAndTypeOrderByCreatedTimeDesc(userService.getCurrentUserId(), type, pageRequest);
+
         List<FileView> fileViews = files.getContent().stream().map(FileViewConverter::convert).toList();
         return new PageView<>(page, pageSize, (int) files.getTotalElements(), fileViews);
     }
@@ -186,22 +190,25 @@ public class FileServiceImpl extends ConfigurationAccessor implements FileServic
     public FileTransferProgress getTransferProgress(long transferringFileId) {
         mustBe(MASTER, STANDALONE_WORKER);
         TransferringFileEntity transferringFile = transferringFileRepo.findById(transferringFileId).orElseThrow(() -> CE(UNAVAILABLE));
+        checkAuthority(transferringFile);
+        Long fileId = null;
+        if (transferringFile.getTransferState() == FileTransferState.SUCCESS) {
+            fileId = fileRepo.findByUniqueName(transferringFile.getUniqueName()).orElseThrow(() -> CE(INTERNAL_ERROR)).getId();
+        }
         return new FileTransferProgress(transferringFile.getTransferState(),
                                         transferringFile.getTotalSize(),
                                         transferringFile.getTransferredSize(),
-                                        transferringFile.getFailureMessage());
-
+                                        transferringFile.getFailureMessage(),
+                                        fileId);
     }
 
     @Override
-    public void handleUploadRequest(FileType type, MultipartFile file) throws Throwable {
+    public long handleUploadRequest(FileType type, MultipartFile file) throws Throwable {
         mustNotBe(ELASTIC_WORKER);
 
-        log.info(file.getOriginalFilename());
         if (isMaster() && getSchedulingStrategy() == SchedulingStrategy.STATIC) {
             StaticWorkerEntity worker = workerService.asStaticWorkerService().selectForFileUpload(type, file);
-            workerService.asStaticWorkerService().handleUploadRequest(worker, type, file);
-            return;
+            return workerService.asStaticWorkerService().handleUploadRequest(worker, type, file);
         }
 
         String uniqueName = generateFileUniqueName();
@@ -213,7 +220,7 @@ public class FileServiceImpl extends ConfigurationAccessor implements FileServic
             bind.setStaticWorker(currentStaticWorker.getEntity());
         }
 
-        transactionTemplate.executeWithoutResult(status -> {
+        return transactionTemplate.execute(status -> {
             FileEntity newFile = new FileEntity();
             newFile.setUniqueName(uniqueName);
             newFile.setUser(userService.getCurrentUser());
@@ -225,8 +232,8 @@ public class FileServiceImpl extends ConfigurationAccessor implements FileServic
                 bind.setFile(savedFile);
                 fileStaticWorkerBindRepo.save(bind);
             }
+            return savedFile.getId();
         });
-
     }
 
     @Override
@@ -265,7 +272,7 @@ public class FileServiceImpl extends ConfigurationAccessor implements FileServic
         return file;
     }
 
-    private void checkAuthority(FileEntity file) {
+    private void checkAuthority(BaseFileEntity file) {
         UserEntity user = file.getUser();
         Validate.isTrue(user == null
                         || user.getId().equals(userService.getCurrentUserId())

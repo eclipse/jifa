@@ -12,17 +12,28 @@
  ********************************************************************************/
 package org.eclipse.jifa.server.service.impl;
 
+import jakarta.annotation.PostConstruct;
 import org.eclipse.jifa.common.domain.exception.CommonException;
 import org.eclipse.jifa.server.ConfigurationAccessor;
 import org.eclipse.jifa.server.Constant;
+import org.eclipse.jifa.server.domain.dto.PublicKey;
 import org.eclipse.jifa.server.service.CipherService;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.Cipher;
+import java.io.ByteArrayOutputStream;
+import java.security.interfaces.RSAPublicKey;
 import java.util.Base64;
 
 @Service
 public class CipherServiceImpl extends ConfigurationAccessor implements CipherService {
+
+    private PublicKey key;
+
+    @PostConstruct
+    private void init() {
+        key = new PublicKey(pkcs8(), ssh2());
+    }
 
     public String encrypt(String raw) {
         try {
@@ -48,8 +59,39 @@ public class CipherServiceImpl extends ConfigurationAccessor implements CipherSe
     }
 
     @Override
-    public String getPublicKeyString() {
+    public PublicKey getPublicKeyString() {
+        return key;
+    }
+
+    private String pkcs8() {
         byte[] publicKeyBytes = getPublicKey().getEncoded();
-        return Base64.getEncoder().encodeToString(publicKeyBytes);
+        return """
+                -----BEGIN PUBLIC KEY-----
+                %s
+                -----END PUBLIC KEY-----
+                """.formatted(Base64.getEncoder().encodeToString(publicKeyBytes));
+    }
+
+    private String ssh2() {
+        String prefix = "ssh-rsa";
+
+        RSAPublicKey key = getPublicKey();
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        bos.writeBytes(new byte[]{0, 0, 0, 7});
+        bos.writeBytes(prefix.getBytes());
+
+        byte[] exponent = key.getPublicExponent().toByteArray();
+        bos.writeBytes(toLengthBytes(exponent.length));
+        bos.writeBytes(exponent);
+
+        byte[] module = key.getModulus().toByteArray();
+        bos.writeBytes(toLengthBytes(module.length));
+        bos.writeBytes(module);
+
+        return prefix + " " + Base64.getEncoder().encodeToString(bos.toByteArray());
+    }
+
+    private static byte[] toLengthBytes(int length) {
+        return new byte[]{(byte) (length >> 24), (byte) (length >> 16), (byte) (length >> 8), (byte) length};
     }
 }

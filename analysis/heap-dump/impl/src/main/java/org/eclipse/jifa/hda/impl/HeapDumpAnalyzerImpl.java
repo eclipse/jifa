@@ -983,11 +983,11 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer {
     }
 
     @Override
-    public GCRootPath.Item getPathToGCRoots(int originId, int skip, int count) {
+    public GCRootPath.Item getPathToGCRoots(int objectId, int skip, int count) {
         return $(() -> {
             ISnapshot snapshot = context.snapshot;
             Map<IClass, Set<String>> excludeMap = convert(context, GCRootPath.EXCLUDES);
-            IPathsFromGCRootsComputer computer = snapshot.getPathsFromGCRoots(originId, excludeMap);
+            IPathsFromGCRootsComputer computer = snapshot.getPathsFromGCRoots(objectId, excludeMap);
             List<int[]> paths = new ArrayList<>();
             int index = 0;
             int[] current;
@@ -1006,12 +1006,12 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer {
             item.setCount(paths.size());
             item.setHasMore(hasMore);
             GCRootPath.Node origin = new GCRootPath.Node();
-            IObject object = snapshot.getObject(originId);
+            IObject object = snapshot.getObject(objectId);
             origin.setOrigin(true);
-            origin.setObjectId(originId);
+            origin.setObjectId(objectId);
             origin.setLabel(object.getDisplayName());
-            origin.setSuffix(Helper.suffix(snapshot, originId));
-            origin.setGCRoot(snapshot.isGCRoot(originId));
+            origin.setSuffix(Helper.suffix(snapshot, objectId));
+            origin.setGCRoot(snapshot.isGCRoot(objectId));
             origin.setObjectType(typeOf(object));
             origin.setShallowSize(object.getUsedHeapSize());
             origin.setRetainedSize(object.getRetainedHeapSize());
@@ -1427,11 +1427,13 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer {
             List<?> classes = result.getElements();
             classes.sort((o1, o2) -> ((List<?>) o2).size() - ((List<?>) o1).size());
             PageViewBuilder<?, DuplicatedClass.ClassItem> builder = PageViewBuilder.fromList(classes);
+            AtomicInteger index = new AtomicInteger(0);
             return builder.paging(new PagingRequest(page, pageSize))
                           .map(r -> {
                               DuplicatedClass.ClassItem item = new DuplicatedClass.ClassItem();
                               item.setLabel((String) result.getColumnValue(r, 0));
                               item.setCount((Integer) result.getColumnValue(r, 1));
+                              item.setIndex(index.getAndIncrement());
                               return item;
                           })
                           .filter(SearchPredicate.createPredicate(searchText, searchType))
@@ -1759,10 +1761,10 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer {
                                                                   List<?> elements,
                                                                   boolean ascendingOrder, String sortBy,
                                                                   String searchText, SearchType searchType,
-                                                                  PagingRequest pagingRequest) {
+                                                                  PagingRequest pagingRequest, int parentObjectId) {
         final AtomicInteger afterFilterCount = new AtomicInteger(0);
         List<DominatorTree.DefaultItem> items = elements.stream()
-                                                        .map(e -> $(() -> new VirtualDefaultItem(snapshot, tree, e)))
+                                                        .map(e -> $(() -> new VirtualDefaultItem(snapshot, tree, e, parentObjectId)))
                                                         .filter(SearchPredicate.createPredicate(searchText, searchType))
                                                         .peek(filtered -> afterFilterCount.incrementAndGet())
                                                         .sorted(DominatorTree.DefaultItem.sortBy(sortBy, ascendingOrder))
@@ -1835,7 +1837,7 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer {
                 case NONE:
                     return
                             buildDefaultItems(context.snapshot, tree, tree.getElements(), ascendingOrder, sortBy,
-                                              searchText, searchType, new PagingRequest(page, pageSize));
+                                              searchText, searchType, new PagingRequest(page, pageSize), -1);
                 case BY_CLASS:
                     return buildClassItems(context.snapshot, tree, tree.getElements(), ascendingOrder, sortBy,
                                            searchText, searchType, new PagingRequest(page, pageSize));
@@ -1866,7 +1868,7 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer {
                     Object parent = Helper.fetchObjectInResultTree(tree, idPathInResultTree);
                     return
                             buildDefaultItems(context.snapshot, tree, tree.getChildren(parent), ascendingOrder, sortBy,
-                                              null, null, new PagingRequest(page, pageSize));
+                                              null, null, new PagingRequest(page, pageSize), parentObjectId);
                 case BY_CLASS:
                     Object object = Helper.fetchObjectInResultTree(tree, idPathInResultTree);
                     List<?> elements = object == null ? Collections.emptyList() : tree.getChildren(object);

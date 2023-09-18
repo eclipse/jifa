@@ -121,7 +121,7 @@ public class TestFileController {
 
     @Test
     public void testGetTransferProgress() throws Exception {
-        FileTransferProgress progress = new FileTransferProgress(FileTransferState.SUCCESS, 1024, 1024, "");
+        FileTransferProgress progress = new FileTransferProgress(FileTransferState.SUCCESS, 1024, 1024, "", 1L);
         Mockito.doReturn(progress).when(fileService).getTransferProgress(1);
 
         mvc.perform(get(Constant.HTTP_API_PREFIX + "/files/transfer/1"))
@@ -131,12 +131,13 @@ public class TestFileController {
 
     @Test
     public void testUpload() throws Throwable {
-        Mockito.doNothing().when(fileService).handleUploadRequest(Mockito.eq(FileType.THREAD_DUMP),
-                                                                  Mockito.any(MultipartFile.class));
+        Mockito.when(fileService.handleUploadRequest(Mockito.eq(FileType.THREAD_DUMP),
+                                                     Mockito.any(MultipartFile.class))).thenReturn(1L);
         mvc.perform(multipart(Constant.HTTP_API_PREFIX + "/files/upload")
                             .file(new MockMultipartFile("file", "filename", null, new byte[]{1, 2, 3}))
                             .queryParam("type", FileType.THREAD_DUMP.name()))
-           .andExpect(status().isOk());
+           .andExpect(status().isOk())
+           .andExpect(content().json(Long.toString(1L)));
     }
 
     @Test
