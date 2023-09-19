@@ -27,6 +27,8 @@ public interface FileService {
 
     FileView getFileViewById(long fileId);
 
+    FileView getFileViewByUniqueName(String uniqueName);
+
     void deleteById(long fileId);
 
     long handleTransferRequest(FileTransferRequest request) throws Throwable;

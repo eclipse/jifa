@@ -64,12 +64,17 @@ public class FileController {
     /**
      * Query the file by id.
      *
-     * @param fileId the file id
+     * @param key the id or the unique name
      * @return the file view
      */
-    @GetMapping("/files/{file-id}")
-    public FileView file(@PathVariable("file-id") long fileId) {
-        return fileService.getFileViewById(fileId);
+    @GetMapping("/files/{id-or-unique-name}")
+    public FileView file(@PathVariable("id-or-unique-name") String key) {
+        System.out.println(key);
+        try {
+            return fileService.getFileViewById(Long.parseLong(key));
+        } catch (NumberFormatException e) {
+            return fileService.getFileViewByUniqueName(key);
+        }
     }
 
     /**

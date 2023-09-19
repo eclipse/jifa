@@ -134,8 +134,13 @@ public class FileServiceImpl extends ConfigurationAccessor implements FileServic
     @Override
     public FileView getFileViewById(long fileId) {
         mustBe(MASTER, STANDALONE_WORKER);
-
         return FileViewConverter.convert(getFileEntityByIdAndCheckAuthority(fileId));
+    }
+
+    @Override
+    public FileView getFileViewByUniqueName(String uniqueName) {
+        mustBe(MASTER, STANDALONE_WORKER);
+        return FileViewConverter.convert(getFileEntityByUniqueNameAndCheckAuthority(uniqueName));
     }
 
     @Override

@@ -20,6 +20,7 @@ import { onBeforeRouteLeave } from 'vue-router';
 import { ElMessageBox } from 'element-plus';
 import type { FileType } from '@/composables/file-types';
 import { t } from '@/i18n/i18n';
+import axios from 'axios';
 
 const props = defineProps<{
   target: string;
@@ -137,7 +138,12 @@ async function beforeWindowUnload(e) {
 onMounted(() => {
   window.addEventListener('beforeunload', beforeWindowUnload);
 
-  request('needOptionsForAnalysis')
+  axios
+    .get(`/jifa-api/files/${props.target}`)
+    .then((resp) => {
+      document.title = `${resp.data.originalName} · Eclipse Jifa`;
+      return request('needOptionsForAnalysis');
+    })
     .then((need) => {
       if (need) {
         phase.value = Phase.SETUP;
@@ -149,6 +155,7 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+  document.title = 'Eclipse Jifa';
   window.removeEventListener('beforeunload', beforeWindowUnload);
 });
 </script>
