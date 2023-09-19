@@ -31,6 +31,7 @@ import { MoreFilled } from '@element-plus/icons-vue';
 import { listenAll } from '@/components/heapdump/event-bus';
 import { makeFirstLetterLowercase } from '@/support/utils';
 import { useDebouncedRef } from '@/composables/debounced-ref';
+import {useSelectedObject} from "@/composables/heapdump/selected-object";
 
 const activeTab = ref('Overview');
 const lastActiveTab = ref();
@@ -75,6 +76,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('resize', handleResize);
+  useSelectedObject().reset()
 });
 
 const dynamicTabs = ref();
