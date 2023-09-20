@@ -147,7 +147,6 @@ public class K8SWorkerScheduler extends ConfigurationAccessor implements Elastic
                 }
             } catch (Throwable t) {
                 if (t instanceof ApiException apiException) {
-                    System.out.println(apiException.getResponseBody());
                     log.error("Failed to start elastic worker, response body: {}", apiException.getResponseBody());
                 } else {
                     log.error("Failed to start elastic worker", t);
