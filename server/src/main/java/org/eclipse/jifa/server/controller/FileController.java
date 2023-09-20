@@ -69,7 +69,6 @@ public class FileController {
      */
     @GetMapping("/files/{id-or-unique-name}")
     public FileView file(@PathVariable("id-or-unique-name") String key) {
-        System.out.println(key);
         try {
             return fileService.getFileViewById(Long.parseLong(key));
         } catch (NumberFormatException e) {
