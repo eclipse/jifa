@@ -504,7 +504,7 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer {
         queryGc.put("queryString", "SELECT toString(g.name) AS GC FROM sun.management.GarbageCollectorImpl g");
         return $(() -> {
             List<String> options = new ArrayList<>();
-            List<String> gc  =new ArrayList<>();
+            List<String> gc = new ArrayList<>();
             IResultTable result = null;
             IResult r = queryByCommand(context, "oql", queryVMOptions);
             if (r instanceof IResultTable) {
