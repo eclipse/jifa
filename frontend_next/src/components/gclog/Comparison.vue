@@ -838,6 +838,10 @@ function deleteLog(index) {
   analyzeLogs();
 }
 
+function openLog(log) {
+  window.open(`${log.uniqueName}?start=${log.range.start}&end=${log.range.end}`);
+}
+
 const uniqueNames = ref([]);
 
 function analyzeLogs() {
@@ -968,12 +972,22 @@ onMounted(() => {
       >
         <el-table-column fixed width="280" :label="gct('metric')" prop="metric" />
 
-        <el-table-column v-for="(_, index) in logs" :fixed="index == 0 && logs.length > 1">
+        <el-table-column v-for="(log, index) in logs" :fixed="index == 0 && logs.length > 1">
           <template #header>
-            <span v-if="index === 0">{{ gct('baselineFile') }}</span>
-            <div style="display: flex; align-items: center" v-else>
-              {{ gct('targetFile') + (logs.length > 2 ? ' ' + index : '') }}
-              <el-icon class="close-icon" style="margin-left: 5px" @click="deleteLog(index)">
+            <div style="display: flex; align-items: center">
+              <span class="clickable" @click="openLog(log)">
+                {{
+                  index === 0
+                    ? gct('baselineFile')
+                    : gct('targetFile') + (logs.length > 2 ? ' #' + index : '')
+                }}
+              </span>
+              <el-icon
+                class="close-icon"
+                style="margin-left: 5px"
+                @click="deleteLog(index)"
+                v-if="index !== 0"
+              >
                 <Close />
               </el-icon>
             </div>
