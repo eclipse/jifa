@@ -116,7 +116,7 @@ const tableData = ref();
 
 const timeRangeSelectorVisible = ref(false);
 const timeRangeSelectorTargetIndex = ref(-1);
-const timeRangeSelectorTarget: Ref<Log | undefined> = ref();
+const timeRangeSelectorTarget = ref();
 const timeRangeSelectorTargetUseUptime = ref(false);
 
 const timeRangeStart = ref();
@@ -126,19 +126,18 @@ const timeRange = ref();
 function prepareToUpdateTimeRange(index) {
   let log = logs[index];
   let metadata = log.metadata;
-  let analysisConfig = metadata.analysisConfig;
   timeRangeSelectorTargetIndex.value = index;
   timeRangeSelectorTarget.value = log;
   let useUptime = metadata.timestamp < 0;
   timeRangeSelectorTargetUseUptime.value = useUptime;
 
   if (useUptime) {
-    timeRangeStart.value = Math.floor(analysisConfig.timeRange.start / 1000);
-    timeRangeEnd.value = Math.ceil(analysisConfig.timeRange.end / 1000);
+    timeRangeStart.value = Math.floor(log.range!.start / 1000);
+    timeRangeEnd.value = Math.ceil(log.range!.end / 1000);
   } else {
     timeRange.value = [
-      new Date(metadata.timestamp + analysisConfig.timeRange.start),
-      new Date(metadata.timestamp + analysisConfig.timeRange.end)
+      new Date(metadata.timestamp + log.range!.start),
+      new Date(metadata.timestamp + log.range!.end)
     ];
   }
 
@@ -186,7 +185,7 @@ function applyTimeRange() {
   analyzeLogs();
 }
 
-function disabledData(time: Date) {
+function disabledDate(time: Date) {
   let metadata = timeRangeSelectorTarget.value!.metadata;
   let start = new Date(metadata.timestamp + metadata.startTime);
   start.setHours(0, 0, 0, 0);
@@ -888,6 +887,7 @@ onMounted(() => {
           <div>
             <el-input-number
               controls-position="right"
+              :step="60"
               :placeholder="gct('detail.startTime')"
               :min="Math.floor(timeRangeSelectorTarget!.metadata.startTime / 1000)"
               :max="timeRangeEnd"
@@ -896,6 +896,7 @@ onMounted(() => {
             <span style="margin: 0 12px">-</span>
             <el-input-number
               controls-position="right"
+              :step="60"
               :placeholder="gct('detail.endTime')"
               :min="timeRangeStart"
               :max="Math.ceil(timeRangeSelectorTarget!.metadata.endTime / 1000)"
@@ -909,7 +910,7 @@ onMounted(() => {
           :clearable="false"
           :start-placeholder="gct('detail.startTime')"
           :end-placeholder="gct('detail.endTime')"
-          :disabled-date="disabledData"
+          :disabled-date="disabledDate"
           v-model="timeRange"
           v-else
         />

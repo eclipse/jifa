@@ -39,7 +39,10 @@ const pagination = reactive({
   pageSize: 50
 });
 
-const timeRange = ref();
+const timeRange = ref([
+  new Date(metadata.timestamp + metadata.startTime),
+  new Date(metadata.timestamp + metadata.endTime)
+]);
 const startTimeLow = useDebouncedRef(startTime, 300);
 const startTimeHigh = useDebouncedRef(endTime, 300);
 const tableData = ref([]);
@@ -47,7 +50,7 @@ const totalSize = ref(0);
 const pageSizes = [25, 50, 100];
 const loading = ref(false);
 
-function updateTimeRange(range) {
+function timeRangeChange(range) {
   if (range && range.length === 2) {
     filter.logTimeLow = range[0].getTime() - metadata.timestamp;
     filter.logTimeHigh = range[1].getTime() - metadata.timestamp;
@@ -74,6 +77,14 @@ watch(filter, () => {
   pagination.page = 1;
   load();
 });
+
+function disabledDate(time: Date) {
+  let start = new Date(metadata.timestamp + metadata.startTime);
+  start.setHours(0, 0, 0, 0);
+  let end = new Date(metadata.timestamp + metadata.endTime);
+  end.setHours(0, 0, 0, 0);
+  return !(start <= time && time <= end);
+}
 
 function handleCurrentPageChange() {
   load();
@@ -165,12 +176,13 @@ onMounted(() => {
             <el-space>
               <el-date-picker
                 size="small"
-                v-model="timeRange"
+                type="datetimerange"
+                :clearable="false"
                 :start-placeholder="gct('detail.startTime')"
                 :end-placeholder="gct('detail.endTime')"
-                type="datetimerange"
-                clearable
-                @change="(v) => updateTimeRange(v)"
+                :disabled-date="disabledDate"
+                v-model="timeRange"
+                @change="timeRangeChange"
                 v-if="metadata.timestamp >= 0"
               >
               </el-date-picker>
@@ -178,7 +190,8 @@ onMounted(() => {
               <template v-else>
                 <el-input-number
                   size="small"
-                  :controls="false"
+                  controls-position="right"
+                  :step="60"
                   :placeholder="gct('detail.startTime')"
                   :min="startTime"
                   :max="startTimeHigh"
@@ -187,7 +200,8 @@ onMounted(() => {
                 <span style="margin: 0 12px">-</span>
                 <el-input-number
                   size="small"
-                  :controls="false"
+                  controls-position="right"
+                  :step="60"
                   :placeholder="gct('detail.endTime')"
                   :min="startTimeLow"
                   :max="endTime"

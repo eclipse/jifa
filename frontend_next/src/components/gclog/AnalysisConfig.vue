@@ -40,7 +40,7 @@ function endChange(end) {
   analysisConfig.value.timeRange.end = end * 1000;
 }
 
-function disabledData(time: Date) {
+function disabledDate(time: Date) {
   let start = new Date(metadata.timestamp + metadata.startTime);
   start.setHours(0, 0, 0, 0);
   let end = new Date(metadata.timestamp + metadata.endTime);
@@ -100,6 +100,7 @@ function applyConfig() {
           <template v-if="useUptime">
             <el-input-number
               controls-position="right"
+              :step="60"
               :placeholder="gct('detail.startTime')"
               :min="Math.floor(metadata.startTime / 1000)"
               :max="end"
@@ -109,6 +110,7 @@ function applyConfig() {
             <span style="margin: 0 12px">-</span>
             <el-input-number
               controls-position="right"
+              :step="60"
               :placeholder="gct('detail.endTime')"
               :min="start"
               :max="Math.ceil(metadata.endTime / 1000)"
@@ -122,7 +124,7 @@ function applyConfig() {
             :clearable="false"
             :start-placeholder="gct('detail.startTime')"
             :end-placeholder="gct('detail.endTime')"
-            :disabled-date="disabledData"
+            :disabled-date="disabledDate"
             v-model="timeRange"
             @change="timeRangeChange"
             v-else
