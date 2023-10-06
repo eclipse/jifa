@@ -57,6 +57,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URLConnection;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.PrivateKey;
@@ -146,6 +147,7 @@ public class StorageServiceImpl extends ConfigurationAccessor implements Storage
                     case S3 -> transferByS3(request, destination, listener);
                     case SCP -> transferBySCP(request, destination, listener);
                     case URL -> transferByURL(request, destination, listener);
+                    case TEXT -> transferByText(request, destination, listener);
                 }
                 success = true;
             } catch (Throwable t) {
@@ -262,7 +264,6 @@ public class StorageServiceImpl extends ConfigurationAccessor implements Storage
         }
     }
 
-
     private void transferBySCP(FileTransferRequest request, Path destination, FileTransferListener listener) throws IOException {
         try (SSHClient ssh = new SSHClient()) {
             ssh.addHostKeyVerifier(new PromiscuousVerifier());
@@ -307,5 +308,11 @@ public class StorageServiceImpl extends ConfigurationAccessor implements Storage
                 listener.fireTransferredSize(transferredSize);
             }
         }
+    }
+
+    private void transferByText(FileTransferRequest request, Path destination, FileTransferListener listener) throws IOException {
+        FileUtils.writeStringToFile(destination.toFile(), request.getText(), StandardCharsets.UTF_8);
+        listener.fireTotalSize(request.getText().length());
+        listener.fireTransferredSize(request.getText().length());
     }
 }

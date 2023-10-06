@@ -318,7 +318,7 @@ function hasMore(item: Item) {
       resizable
       empty-text=" "
       size="small"
-      :show-overflow-tooltip="showOverflowTooltip as boolean"
+      :show-overflow-tooltip="showOverflowTooltip ? { showArrow: false } : false"
       highlight-current-row
       :data="filteredTableData"
       lazy
@@ -425,6 +425,12 @@ function hasMore(item: Item) {
 .ej-table :deep(td .cell) {
   display: flex;
   align-items: center;
+}
+
+.ej-table :deep(.el-table__expand-icon),
+.ej-table :deep(.el-table__indent),
+.ej-table :deep(.el-table__placeholder) {
+  flex-shrink: 0;
 }
 
 .ej-table :deep(th .el-space__item:nth-last-child(1)) {

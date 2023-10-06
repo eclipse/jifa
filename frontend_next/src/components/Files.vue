@@ -99,9 +99,9 @@ onMounted(() => {
   <div class="ej-common-view-div ej-file-view-div">
     <!-- Should put the form inside the div or transition is not working -->
     <FileTransferForm
-      v-if="transferFormVisible"
-      v-model:visible="transferFormVisible"
       @transfer-completion-callback="(id) => transferCompletionCallback(id)"
+      v-model:visible="transferFormVisible"
+      v-if="transferFormVisible"
     />
 
     <div class="ej-file-view-bar">
@@ -118,9 +118,9 @@ onMounted(() => {
         </el-select>
       </el-space>
 
-      <el-button style="margin-left: 10px" type="primary" plain @click="transferFormVisible = true"
-        >{{ t('file.new') }}
-        <el-icon class="el-icon--right" size="16">
+      <el-button style="margin-left: 10px" type="primary" plain @click="transferFormVisible = true">
+        {{ t('file.new') }}
+        <el-icon style="margin-left: 5px" size="16">
           <Upload />
         </el-icon>
       </el-button>
@@ -131,7 +131,7 @@ onMounted(() => {
       :header-cell-style="TABLE_HEADER_CELL_STYLE"
       stripe
       size="large"
-      show-overflow-tooltip
+      :show-overflow-tooltip="{ showArrow: false }"
       :data="tableData"
       v-loading="loading"
     >

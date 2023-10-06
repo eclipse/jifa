@@ -11,9 +11,16 @@
     SPDX-License-Identifier: EPL-2.0
  -->
 <script setup lang="ts">
-import { computed, nextTick, reactive, ref, watch } from 'vue';
+import { computed, nextTick, reactive, ref, watch, watchEffect } from 'vue';
 import { useClipboard } from '@vueuse/core';
-import { Connection, CopyDocument, Link, Upload, UploadFilled } from '@element-plus/icons-vue';
+import {
+  Connection,
+  CopyDocument,
+  Document,
+  Link,
+  Upload,
+  UploadFilled
+} from '@element-plus/icons-vue';
 import { fileTypeMap } from '@/composables/file-types';
 import axios from 'axios';
 import { useEnv } from '@/stores/env';
@@ -32,7 +39,7 @@ function _t(key: string) {
 }
 
 const paramTemplate = {
-  method: 'Upload',
+  method: 'UPLOAD',
   type: null,
 
   ossEndpoint: '',
@@ -52,7 +59,10 @@ const paramTemplate = {
   scpPassword: '',
   scpSourcePath: '',
 
-  url: ''
+  url: '',
+
+  filename: '',
+  text: ''
 };
 
 function buildSelectionRequiredRule(name) {
@@ -92,7 +102,9 @@ const rules = {
   scpUser: buildRequiredRule(_t('user')),
   scpPassword: buildRequiredRule(_t('password')),
   scpSourcePath: buildRequiredRule(_t('path')),
-  url: buildRequiredRule('URL')
+  url: buildRequiredRule('URL'),
+  filename: buildRequiredRule(_t('filename')),
+  text: buildRequiredRule(_t('text'))
 };
 
 const form = ref();
@@ -113,11 +125,55 @@ const params = reactive({
   ...paramTemplate
 });
 
-const byUpload = computed(() => params.method === 'Upload');
+const textSample = ref('');
+
+watchEffect(() => {
+  if (params.method === 'TEXT') {
+    let type = params.type as string;
+    switch (type) {
+      case 'HEAP_DUMP': {
+        params.method = 'UPLOAD';
+        break;
+      }
+      case 'GC_LOG': {
+        params.filename = 'gc.log';
+        textSample.value = `[3.779s][info][gc,start      ] GC(10) Pause Young (Normal) (G1 Evacuation Pause)
+[3.779s][info][gc,task       ] GC(10) Using 8 workers of 8 for evacuation
+[3.789s][info][gc,phases     ] GC(10)   Pre Evacuate Collection Set: 0.0ms
+[3.789s][info][gc,phases     ] GC(10)   Evacuate Collection Set: 8.5ms
+[3.789s][info][gc,phases     ] GC(10)   Post Evacuate Collection Set: 1.6ms
+[3.789s][info][gc,phases     ] GC(10)   Other: 0.2ms
+[3.789s][info][gc,heap       ] GC(10) Eden regions: 90->0(113)
+[3.789s][info][gc,heap       ] GC(10) Survivor regions: 2->12(12)
+[3.789s][info][gc,heap       ] GC(10) Old regions: 52->56
+[3.789s][info][gc,heap       ] GC(10) Humongous regions: 2->2
+[3.789s][info][gc,metaspace  ] GC(10) Metaspace: 64964K->64964K(1110016K)
+...`;
+        break;
+      }
+      case 'THREAD_DUMP': {
+        params.filename = 'stack.log';
+        textSample.value = `2023-09-20 11:10:33
+Full thread dump OpenJDK 64-Bit Server VM (17.0.2+8 mixed mode, emulated-client):
+
+"Reference Handler" #2 daemon prio=10 os_prio=31 cpu=3.63ms elapsed=5702.04s tid=0x000000011f008200 nid=0x4a03 waiting on condition  [0x000000016c11a000]
+   java.lang.Thread.State: RUNNABLE
+        at java.lang.ref.Reference.waitForReferencePendingList(java.base@17.0.2/Native Method)
+        at java.lang.ref.Reference.processPendingReferences(java.base@17.0.2/Reference.java:253)
+        at java.lang.ref.Reference$ReferenceHandler.run(java.base@17.0.2/Reference.java:215)
+...`;
+        break;
+      }
+    }
+  }
+});
+
+const byUpload = computed(() => params.method === 'UPLOAD');
 const byOSS = computed(() => params.method === 'OSS');
 const byS3 = computed(() => params.method === 'S3');
 const bySCP = computed(() => params.method === 'SCP');
 const byURL = computed(() => params.method === 'URL');
+const byText = computed(() => params.method === 'TEXT');
 
 const scpAuthentication = ref('Password');
 const usePassword = computed(() => scpAuthentication.value === 'Password');
@@ -213,7 +269,7 @@ function close(done: any) {
     @update:model-value="(newValue: boolean) => $emit('update:visible', newValue)"
     :before-close="close"
     :title="t('file.new')"
-    width="650px"
+    width="700px"
   >
     <el-form
       label-position="right"
@@ -227,7 +283,7 @@ function close(done: any) {
     >
       <el-form-item :label="_t('transferMethod')" prop="method">
         <el-radio-group v-model="params.method">
-          <el-radio-button label="Upload">
+          <el-radio-button label="UPLOAD">
             <div class="ej-file-transfer-method-button">
               <el-icon style="margin-right: 8px" size="14">
                 <Upload />
@@ -265,6 +321,15 @@ function close(done: any) {
                 <Link />
               </el-icon>
               URL
+            </div>
+          </el-radio-button>
+
+          <el-radio-button label="TEXT" :disabled="(params.type as String) === 'HEAP_DUMP'">
+            <div class="ej-file-transfer-method-button">
+              <el-icon style="margin-right: 8px" size="14">
+                <Document />
+              </el-icon>
+              {{ _t('text') }}
             </div>
           </el-radio-button>
         </el-radio-group>
@@ -489,6 +554,33 @@ function close(done: any) {
         </el-input>
       </el-form-item>
       <!-- URL items end -->
+
+      <!-- TEXT items -->
+      <el-form-item :label="_t('filename')" prop="filename" v-if="byText">
+        <el-input
+          v-model="params.filename"
+          :placeholder="_t('filename')"
+          clearable
+          class="ej-file-transfer-form-input"
+          @keydown.enter="(e) => e.preventDefault()"
+        >
+        </el-input>
+      </el-form-item>
+
+      <el-form-item :label="_t('text')" prop="text" v-if="byText">
+        <el-input
+          v-model="params.text"
+          type="textarea"
+          :placeholder="textSample"
+          :rows="12"
+          clearable
+          resize="none"
+          class="ej-file-transfer-form-input"
+          :maxlength="16777216"
+          show-word-limit
+        />
+      </el-form-item>
+      <!-- TEXT items end -->
 
       <el-form-item v-if="!byUpload">
         <el-button type="primary" @click="doTransfer">{{ t('common.submit') }}</el-button>

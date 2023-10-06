@@ -121,6 +121,16 @@ public class FileTransferRequest {
     private String url;
 
     /**
+     * Filename, required if method is TEXT
+     */
+    private String filename;
+
+    /**
+     * Text, required if method is TEXT
+     */
+    private String text;
+
+    /**
      * Constraint of FileTransferRequest
      */
     @Target({TYPE})
@@ -183,6 +193,12 @@ public class FileTransferRequest {
                 }
 
                 case URL -> valid &= checkNotBlank(request.url, "url", context);
+
+                case TEXT -> {
+                    // TODO: should check file type
+                    valid &= checkNotBlank(request.filename, "filename", context);
+                    valid &= checkNotBlank(request.text, "text", context);
+                }
             }
 
             if (!valid) {
@@ -192,6 +208,16 @@ public class FileTransferRequest {
         }
 
         private boolean checkNotBlank(String value, String name, ConstraintValidatorContext context) {
+            if (StringUtils.isBlank(value)) {
+                context.buildConstraintViolationWithTemplate("{jakarta.validation.constraints.NotBlank.message}")
+                       .addPropertyNode(name)
+                       .addConstraintViolation();
+                return false;
+            }
+            return true;
+        }
+
+        private boolean checkTrue(String value, String name, ConstraintValidatorContext context) {
             if (StringUtils.isBlank(value)) {
                 context.buildConstraintViolationWithTemplate("{jakarta.validation.constraints.NotBlank.message}")
                        .addPropertyNode(name)

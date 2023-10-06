@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-import GCLogView from '@/components/gclog/GCLogView.vue';
+import GCLog from '@/components/gclog/GCLog.vue';
 import HeapDump from '@/components/heapdump/HeapDump.vue';
 import HeapDumpSetup from '@/components/heapdump/Setup.vue';
 import ThreadDumpView from '@/components/threaddump/ThreadDumpView.vue';
@@ -40,8 +40,8 @@ function def(
   return new FileType(key, labelKey, namespace, namespace + '-analysis', setupView, analysisView);
 }
 
-def('HEAP_DUMP', 'heapDump', 'heap-dump', HeapDumpSetup, HeapDump);
+export const HEAP_DUMP = def('HEAP_DUMP', 'heapDump', 'heap-dump', HeapDumpSetup, HeapDump);
 
-def('GC_LOG', 'GCLog', 'gc-log', null, GCLogView);
+export const GC_LOG = def('GC_LOG', 'GCLog', 'gc-log', null, GCLog);
 
-def('THREAD_DUMP', 'threadDump', 'thread-dump', null, ThreadDumpView);
+export const THREAD_DUMP = def('THREAD_DUMP', 'threadDump', 'thread-dump', null, ThreadDumpView);

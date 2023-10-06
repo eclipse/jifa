@@ -19,7 +19,7 @@ function selectObjectId(id: number) {
 }
 
 function reset() {
-  selectedObjectId.value = -1
+  selectedObjectId.value = -1;
 }
 
 export function useSelectedObject() {

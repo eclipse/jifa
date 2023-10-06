@@ -10,6 +10,21 @@
 
     SPDX-License-Identifier: EPL-2.0
  -->
+<script setup lang="ts">
+import { t } from '@/i18n/i18n';
+import { useAnalysisStore } from '@/stores/analysis';
+import { Download } from '@element-plus/icons-vue';
+
+const analysis = useAnalysisStore();
+</script>
 <template>
-  <div class="ej-common-view-div">GC Log View</div>
+  <el-button
+    link
+    tag="a"
+    class="ej-header-button"
+    :icon="Download"
+    :href="`/jifa-api/files/${analysis.fileId}/download`"
+    target="_blank"
+    >{{ t('header.download') }}
+  </el-button>
 </template>

@@ -18,13 +18,21 @@ export const useAnalysisStore = defineStore('analysis', {
     fileType: null as FileType | null,
     target: '',
 
+    fileId: -1,
+    filename: '',
+
     leaveGuard: true
   }),
 
   actions: {
-    set(fileType: FileType, target: string) {
+    setTarget(fileType: FileType, target: string) {
       this.fileType = fileType;
       this.target = target;
+    },
+
+    setIdAndFilename(id: number, filename: string) {
+      this.fileId = id;
+      this.filename = filename;
     }
   }
 });

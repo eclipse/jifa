@@ -23,6 +23,7 @@ import eclipseLogoUrl from '@/assets/eclipse_incubation_horizontal.svg';
 import eclipseLogoUrlForDark from '@/assets/eclipse_incubation_horizontal_dark.svg';
 import { t } from '@/i18n/i18n';
 import { useEnv } from '@/stores/env';
+import { useHeaderToolbar } from '@/composables/header-toolbar';
 
 const logo = computed(() => (isDark.value ? eclipseLogoUrlForDark : eclipseLogoUrl));
 
@@ -36,16 +37,23 @@ const localeOptions = computed(() => {
 });
 
 const themeSwitchColor = computed(() => (isDark.value ? '#1a1a1a' : '#ffffff'));
+
+const { toolbar } = useHeaderToolbar();
 </script>
 <template>
-  <header class="ej-header">
-    <div class="ej-header-container">
-      <div class="ej-header-logo">
+  <header class="header">
+    <div class="container">
+      <div class="left-side">
         <img style="height: calc(var(--ej-header-height) - 4px)" alt="" :src="logo" />
-        <span>Jifa</span>
+        <span class="project-name">Jifa</span>
+
+        <template v-if="toolbar">
+          <el-divider direction="vertical" />
+          <component :is="toolbar" />
+        </template>
       </div>
 
-      <div class="ej-header-menu">
+      <div class="right-side">
         <el-popover
           placement="bottom"
           :show-arrow="false"
@@ -56,16 +64,22 @@ const themeSwitchColor = computed(() => (isDark.value ? '#1a1a1a' : '#ffffff'));
             <el-text style="cursor: pointer">{{ env.user?.name }}</el-text>
           </template>
           <template #default>
-            <div class="ej-popover-item" @click="env.logout()">
+            <div class="popover-item" @click="env.logout()">
               <Logout :size="18" style="margin-right: 5px; height: 18px" />
               {{ t('header.logout') }}
             </div>
           </template>
         </el-popover>
 
-        <el-text style="cursor: pointer" @click="env.loginFormVisible = true" v-else>
+        <el-button
+          link
+          tag="a"
+          class="ej-header-button"
+          @click="env.loginFormVisible = true"
+          v-else
+        >
           {{ t('header.login') }}
-        </el-text>
+        </el-button>
 
         <el-divider direction="vertical" />
 
@@ -81,11 +95,7 @@ const themeSwitchColor = computed(() => (isDark.value ? '#1a1a1a' : '#ffffff'));
             />
           </template>
           <template #default>
-            <div
-              class="ej-popover-item"
-              v-for="(label, key) in localeOptions"
-              @click="setLocale(key)"
-            >
+            <div class="popover-item" v-for="(label, key) in localeOptions" @click="setLocale(key)">
               {{ label }}
             </div>
           </template>
@@ -94,7 +104,7 @@ const themeSwitchColor = computed(() => (isDark.value ? '#1a1a1a' : '#ffffff'));
         <el-divider direction="vertical" />
 
         <el-switch
-          class="ej-theme-switch"
+          class="theme-switch"
           v-model="isDark"
           :active-action-icon="Moon"
           :inactive-action-icon="Sun"
@@ -103,7 +113,7 @@ const themeSwitchColor = computed(() => (isDark.value ? '#1a1a1a' : '#ffffff'));
         <el-divider direction="vertical" />
 
         <a href="https://github.com/eclipse/jifa" target="_blank" style="height: 24px">
-          <Github class="ej-github-icon" title="Github" :size="24" />
+          <Github class="github-icon" title="Github" :size="24" />
         </a>
       </div>
     </div>
@@ -111,7 +121,7 @@ const themeSwitchColor = computed(() => (isDark.value ? '#1a1a1a' : '#ffffff'));
 </template>
 
 <style scoped>
-.ej-header {
+.header {
   position: fixed;
   top: 0;
   left: 0;
@@ -122,30 +132,33 @@ const themeSwitchColor = computed(() => (isDark.value ? '#1a1a1a' : '#ffffff'));
   background-color: var(--el-bg-color);
 }
 
-.ej-header-container {
+.container {
   height: 100%;
   display: flex;
   justify-content: space-between;
 }
 
-.ej-header-logo {
+.left-side {
+  display: flex;
+  align-items: center;
+}
+
+.project-name {
   color: var(--el-text-color-primary);
   font-size: 18px;
   font-weight: 600;
-  display: flex;
-  align-items: center;
   letter-spacing: 3px;
   cursor: default;
 }
 
-.ej-header-menu {
+.right-side {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding-right: 14px;
 }
 
-.ej-popover-item {
+.popover-item {
   padding: 5px;
   text-align: center;
   color: var(--el-text-color-regular);
@@ -160,24 +173,24 @@ const themeSwitchColor = computed(() => (isDark.value ? '#1a1a1a' : '#ffffff'));
   margin: 0 14px !important;
 }
 
-.ej-popover-item:hover {
+.popover-item:hover {
   color: var(--el-menu-hover-text-color);
   background-color: var(--el-menu-hover-bg-color);
 }
 
-.ej-theme-switch {
+.theme-switch {
   --el-switch-on-color: #323238;
 }
 
-.ej-theme-switch :deep(.el-switch__action) {
+.theme-switch :deep(.el-switch__action) {
   background-color: v-bind(themeSwitchColor);
 }
 
-.ej-github-icon {
+.github-icon {
   color: var(--el-text-color-regular);
 }
 
-.ej-github-icon:hover {
+.github-icon:hover {
   color: var(--el-text-color-primary);
 }
 </style>

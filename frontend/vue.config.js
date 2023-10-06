@@ -16,7 +16,7 @@ module.exports = {
       disableDotRule: true
     },
     noInfo: true,
-    port: 8089,
+    port: 8090,
     proxy: {
       '/jifa-api': {
         target: 'http://127.0.0.1:' + (process.env.JIFA_API_PORT || 8102)

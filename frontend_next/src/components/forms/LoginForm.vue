@@ -295,7 +295,6 @@ function close(done) {
     </div>
   </el-dialog>
 </template>
-
 <style scoped>
 .el-text {
   cursor: default;

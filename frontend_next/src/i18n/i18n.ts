@@ -35,6 +35,8 @@ const elementLocales = new Map<string, unknown>();
 elementLocales.set('en', ElementEn);
 elementLocales.set('zh', ElementZh);
 
+ElementZh.el.table.emptyText = '没有数据';
+
 export const i18n = createI18n({
   legacy: false,
   allowComposition: true,
@@ -67,5 +69,12 @@ if (saved) {
 }
 
 export function t(key: string, args?: any) {
+  if (key.startsWith('jifa.')) {
+    return i18n.global.t(key, args);
+  }
   return i18n.global.t('jifa.' + key, args);
+}
+
+export function gct(key: string, args?: any) {
+  return i18n.global.t('jifa.gclog.' + key, args);
 }

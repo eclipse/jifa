@@ -53,3 +53,26 @@ export function makeFirstLetterLowercase(str: string) {
   }
   return str.charAt(0).toLowerCase() + str.slice(1);
 }
+
+function prettyTimeNumber(n: number) {
+  let str = n.toString();
+  return str[1] ? str : '0' + n;
+}
+
+export function prettyTime(number: number, format: string) {
+  let time = new Date(number);
+  let newArr = [];
+  let formatArr = ['Y', 'M', 'D', 'h', 'm', 's'];
+  newArr.push(time.getFullYear().toString());
+  newArr.push(prettyTimeNumber(time.getMonth() + 1));
+  newArr.push(prettyTimeNumber(time.getDate()));
+
+  newArr.push(prettyTimeNumber(time.getHours()));
+  newArr.push(prettyTimeNumber(time.getMinutes()));
+  newArr.push(prettyTimeNumber(time.getSeconds()));
+
+  for (let i in newArr) {
+    format = format.replace(formatArr[i], newArr[i]);
+  }
+  return format;
+}

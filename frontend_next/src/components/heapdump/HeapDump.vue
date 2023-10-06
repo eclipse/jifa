@@ -31,7 +31,9 @@ import { MoreFilled } from '@element-plus/icons-vue';
 import { listenAll } from '@/components/heapdump/event-bus';
 import { makeFirstLetterLowercase } from '@/support/utils';
 import { useDebouncedRef } from '@/composables/debounced-ref';
-import {useSelectedObject} from "@/composables/heapdump/selected-object";
+import { useSelectedObject } from '@/composables/heapdump/selected-object';
+import { useHeaderToolbar } from '@/composables/header-toolbar';
+import Toolbar from '@/components/heapdump/Toolbar.vue';
 
 const activeTab = ref('Overview');
 const lastActiveTab = ref();
@@ -71,12 +73,14 @@ function handleResize() {
 }
 
 onMounted(() => {
+  useHeaderToolbar().set(Toolbar);
   window.addEventListener('resize', handleResize);
 });
 
 onUnmounted(() => {
+  useHeaderToolbar().reset();
   window.removeEventListener('resize', handleResize);
-  useSelectedObject().reset()
+  useSelectedObject().reset();
 });
 
 const dynamicTabs = ref();

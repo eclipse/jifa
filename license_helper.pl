@@ -100,7 +100,14 @@ sub callback {
     my $dir = $File::Find::dir;
     my $path = $File::Find::name;
     my $name = $_;
-    if ($dir =~ /\.git/ || $name eq '.gitignore' || $dir =~ /node_modules/) {
+    if ($dir =~ /\.git/ ||
+        $dir =~ /node_modules/ ||
+        $dir =~ /.build/ ||
+        $dir =~ /.gradle/ ||
+        $dir =~ /.vscode/ ||
+        $dir =~ /.idea/ ||
+        $dir =~ /resources/ ||
+        $name eq '.gitignore' ) {
       return;
     }
 

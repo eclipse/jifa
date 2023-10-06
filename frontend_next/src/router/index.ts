@@ -57,12 +57,16 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next) => {
-  NProgress.start();
+  if (from.path !== to.path) {
+    NProgress.start();
+  }
   next();
 });
 
 router.afterEach(() => {
-  NProgress.done();
+  if (NProgress.isStarted()) {
+    NProgress.done();
+  }
 });
 
 export default router;

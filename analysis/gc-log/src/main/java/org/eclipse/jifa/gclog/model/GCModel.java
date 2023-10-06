@@ -15,10 +15,16 @@ package org.eclipse.jifa.gclog.model;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
+import com.google.gson.annotations.JsonAdapter;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jifa.analysis.annotation.ApiMeta;
 import org.eclipse.jifa.analysis.listener.ProgressListener;
 import org.eclipse.jifa.common.domain.request.PagingRequest;
@@ -53,6 +59,7 @@ import org.eclipse.jifa.gclog.vo.PhaseStatistics.ParentStatisticsInfo;
 import org.eclipse.jifa.gclog.vo.PhaseStatistics.PhaseStatisticItem;
 import org.eclipse.jifa.gclog.vo.TimeRange;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -983,6 +990,7 @@ public abstract class GCModel {
     @ToString
     public static class GCDetailFilter {
         private String eventType;
+        @JsonAdapter(GCCauseDeserializer.class)
         private GCCause gcCause;
         //in ms
         private double logTimeLow = -Double.MAX_VALUE ;
@@ -999,10 +1007,17 @@ public abstract class GCModel {
 
         public boolean isFiltered(GCEvent event) {
             return event.getEventType() == SAFEPOINT ||
-                   !((eventType == null || eventType.equals(event.getEventType().getName()))
+                   !((StringUtils.isBlank(eventType) || eventType.equals(event.getEventType().getName()))
                      && (gcCause == null || gcCause == event.getCause())
                      && (logTimeLow <= event.getEndTime() && event.getEndTime() <= logTimeHigh)
                      && (pauseTimeLow <= event.getPause()));
+        }
+
+        static  class GCCauseDeserializer implements JsonDeserializer<GCCause> {
+            @Override
+            public GCCause deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+                return GCCause.getCause(json.getAsString());
+            }
         }
     }
 

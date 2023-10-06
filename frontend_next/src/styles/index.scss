@@ -70,11 +70,25 @@ a {
 }
 
 .ej-icon {
-  color: var(--el-text-color-regular);
+  color: var(--el-text-color-regular) !important;
 }
 
 .ej-icon:hover {
-  color: var(--el-color-primary-light-1);
+  color: var(--el-color-primary-light-1) !important;
+}
+
+.ej-header-button {
+  padding: 0 !important;
+  font-weight: 400 !important;
+  border: 0 !important;
+}
+
+.ej-ellipsis-text {
+  display: inline-block;
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .v-contextmenu {

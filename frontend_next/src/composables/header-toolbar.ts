@@ -10,11 +10,22 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-package org.eclipse.jifa.server.enums;
+import { shallowRef } from 'vue';
 
-/**
- * File Transfer Method
- */
-public enum FileTransferMethod {
-    OSS, S3, SCP, URL, TEXT
+const toolbar = shallowRef();
+
+function set(comp: any) {
+  toolbar.value = comp;
+}
+
+function reset() {
+  toolbar.value = null;
+}
+
+export function useHeaderToolbar() {
+  return {
+    toolbar,
+    set,
+    reset
+  };
 }

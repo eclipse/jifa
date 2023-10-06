@@ -142,7 +142,7 @@ let rp: Promise<Requester> | undefined;
 
 function request(api: string, parameters?: object) {
   if (!rp) {
-    rp = new Promise<Requester>(byStomp);
+    rp = new Promise<Requester>(byAxios);
   }
 
   return rp.then((requester) => {
@@ -156,8 +156,19 @@ function request(api: string, parameters?: object) {
   });
 }
 
+function requestWithTarget(api: string, type: FileType, target: string, parameters?: object) {
+  if (!rp) {
+    rp = new Promise<Requester>(byAxios);
+  }
+
+  return rp.then((requester) => {
+    return requester.request(type.namespace, api, target, parameters);
+  });
+}
+
 export const useAnalysisApiRequester = () => {
   return {
-    request
+    request,
+    requestWithTarget
   };
 };

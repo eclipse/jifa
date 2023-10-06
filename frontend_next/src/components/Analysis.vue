@@ -28,7 +28,7 @@ const props = defineProps<{
 
 const route = useRoute();
 const analysis = useAnalysisStore();
-analysis.set(route.meta.fileType as FileType, props.target);
+analysis.setTarget(route.meta.fileType as FileType, props.target);
 
 const setupView = toRaw(analysis.fileType?.setupComponent);
 const analysisView = toRaw(analysis.fileType?.analysisComponent);
@@ -141,7 +141,14 @@ onMounted(() => {
   axios
     .get(`/jifa-api/files/${props.target}`)
     .then((resp) => {
-      document.title = `${resp.data.originalName} · Eclipse Jifa`;
+      let id = resp.data.id as number;
+      let filename = resp.data.originalName as string;
+      analysis.setIdAndFilename(id, filename);
+      if (filename.length > 12) {
+        document.title = `${filename.substring(0, 12)} ... · Eclipse Jifa`;
+      } else {
+        document.title = `${filename} · Eclipse Jifa`;
+      }
       return request('needOptionsForAnalysis');
     })
     .then((need) => {

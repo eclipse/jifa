@@ -24,6 +24,7 @@ public abstract class FileTransferUtil {
             case S3 -> request.getS3ObjectKey();
             case SCP -> request.getScpSourcePath();
             case URL -> request.getUrl();
+            case TEXT -> request.getFilename();
         };
 
         String name = source.substring(source.lastIndexOf(java.io.File.separatorChar) + 1);

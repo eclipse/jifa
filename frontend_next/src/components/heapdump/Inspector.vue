@@ -124,7 +124,7 @@ onMounted(() => load());
             :data="infoItems"
             size="small"
             stripe
-            show-overflow-tooltip
+            :show-overflow-tooltip="{ showArrow: false }"
             v-loading="loading1"
             v-if="selectedObjectId >= 0"
           >

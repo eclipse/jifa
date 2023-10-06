@@ -244,12 +244,14 @@ public class GlobalDiagnoser {
                 return;
             }
             GCCause cause = event.getCause();
-            if (cause.isMetaspaceFullGCCause()) {
-                addAbnormalPoint(new AbnormalPoint(METASPACE_FULL_GC, event));
-            } else if (shouldAvoidFullGC && cause.isHeapMemoryTriggeredFullGCCause()) {
-                addAbnormalPoint(new AbnormalPoint(HEAP_MEMORY_FULL_GC, event));
-            } else if (cause == GCCause.SYSTEM_GC) {
-                addAbnormalPoint(new AbnormalPoint(AbnormalType.SYSTEM_GC, event));
+            if (cause != null) {
+                if (cause.isMetaspaceFullGCCause()) {
+                    addAbnormalPoint(new AbnormalPoint(METASPACE_FULL_GC, event));
+                } else if (shouldAvoidFullGC && cause.isHeapMemoryTriggeredFullGCCause()) {
+                    addAbnormalPoint(new AbnormalPoint(HEAP_MEMORY_FULL_GC, event));
+                } else if (cause == GCCause.SYSTEM_GC) {
+                    addAbnormalPoint(new AbnormalPoint(AbnormalType.SYSTEM_GC, event));
+                }
             }
         });
     }

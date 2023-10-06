@@ -577,12 +577,7 @@ export default {
     },
     loadDisplayName(i, file) {
       this.doBeforeLoadData()
-      axios.get(service('/file'), {
-        params: {
-          name: file,
-          type: this.type
-        }
-      }).then(resp => {
+      axios.get(service(`/files/${file}`)).then(resp => {
         this.originalData[i].basicInfo.name = resp.data.displayName ? resp.data.displayName : resp.data.originalName
       }).finally(this.doAfterLoadData)
     },
