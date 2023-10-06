@@ -12,7 +12,6 @@
  -->
 <script setup lang="ts">
 import CommonTable from '@/components/heapdump/CommonTable.vue';
-import { ref } from 'vue';
 import { prettyCount, prettySize } from '@/support/utils';
 import { getIcon } from '@/components/heapdump/icon-helper';
 import { commonMenu as menu } from '@/components/heapdump/menu';

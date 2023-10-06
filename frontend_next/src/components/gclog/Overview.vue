@@ -11,7 +11,6 @@
     SPDX-License-Identifier: EPL-2.0
  -->
 <script setup lang="ts">
-import { computed } from 'vue';
 import { useGCLogData } from '@/stores/gc-log-data';
 import { formatTimePeriod, formatTimeRange } from '@/components/gclog/utils';
 import { Brush, Clock, Document, Timer } from '@element-plus/icons-vue';

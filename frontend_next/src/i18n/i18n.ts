@@ -14,7 +14,6 @@
 import ElementEn from 'element-plus/dist/locale/en.min.js';
 // @ts-ignore
 import ElementZh from 'element-plus/dist/locale/zh-cn.min.js';
-import { computed, ref } from 'vue';
 import { createI18n } from 'vue-i18n';
 import en from './en';
 import zh from './zh';

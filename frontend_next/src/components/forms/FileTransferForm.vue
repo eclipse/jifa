@@ -11,7 +11,6 @@
     SPDX-License-Identifier: EPL-2.0
  -->
 <script setup lang="ts">
-import { computed, nextTick, reactive, ref, watch, watchEffect } from 'vue';
 import { useClipboard } from '@vueuse/core';
 import {
   Connection,

@@ -11,7 +11,6 @@
     SPDX-License-Identifier: EPL-2.0
  -->
 <script setup lang="ts">
-import { onMounted, ref, watch, shallowRef } from 'vue';
 import { hdt } from '@/components/heapdump/utils';
 import { useAnalysisApiRequester } from '@/composables/analysis-api-requester';
 import { useSelectedObject } from '@/composables/heapdump/selected-object';

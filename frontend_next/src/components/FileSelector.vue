@@ -11,7 +11,6 @@
     SPDX-License-Identifier: EPL-2.0
  -->
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
 import axios from 'axios';
 import { FileType } from '@/composables/file-types';
 import { TABLE_HEADER_CELL_STYLE } from '@/components/styles';

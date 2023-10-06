@@ -11,7 +11,6 @@
     SPDX-License-Identifier: EPL-2.0
  -->
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { Calendar, Delete, Histogram, MoreFilled, Operation } from '@element-plus/icons-vue';
 import Download from 'vue-material-design-icons/Download.vue';

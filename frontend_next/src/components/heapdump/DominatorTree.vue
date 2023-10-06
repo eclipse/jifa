@@ -11,7 +11,6 @@
     SPDX-License-Identifier: EPL-2.0
  -->
 <script setup lang="ts">
-import { reactive, ref, watchEffect } from 'vue';
 import { prettyCount, prettyPercentage, prettySize } from '@/support/utils';
 import { getIcon, ICONS } from '@/components/heapdump/icon-helper';
 import { Search } from '@element-plus/icons-vue';

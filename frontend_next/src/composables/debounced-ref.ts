@@ -10,7 +10,6 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-import { customRef } from 'vue';
 
 export function useDebouncedRef(value: any, delay = 100) {
   let timeout: any;

@@ -11,7 +11,6 @@
     SPDX-License-Identifier: EPL-2.0
  -->
 <script setup lang="ts">
-import { reactive, ref, watch } from 'vue';
 import { Lock, Message, Postcard, User } from '@element-plus/icons-vue';
 import axios from 'axios';
 import { useCipher } from '@/composables/cipher';

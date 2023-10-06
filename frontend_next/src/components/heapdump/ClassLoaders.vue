@@ -11,7 +11,6 @@
     SPDX-License-Identifier: EPL-2.0
  -->
 <script setup lang="ts">
-import { ref } from 'vue';
 import { prettyCount } from '@/support/utils';
 import { ICONS } from '@/components/heapdump/icon-helper';
 import { useSelectedObject } from '@/composables/heapdump/selected-object';

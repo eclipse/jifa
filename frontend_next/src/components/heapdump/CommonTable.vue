@@ -11,7 +11,6 @@
     SPDX-License-Identifier: EPL-2.0
  -->
 <script setup lang="ts">
-import { computed, nextTick, reactive, ref, watch } from 'vue';
 import { t } from '@/i18n/i18n';
 import { useAnalysisApiRequester } from '@/composables/analysis-api-requester';
 import { ICONS } from '@/components/heapdump/icon-helper';

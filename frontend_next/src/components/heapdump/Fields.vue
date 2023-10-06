@@ -11,11 +11,9 @@
     SPDX-License-Identifier: EPL-2.0
  -->
 <script setup lang="ts">
-import { ref } from 'vue';
 import { useSelectedObject } from '@/composables/heapdump/selected-object';
 import { hdt } from '@/components/heapdump/utils';
 import CommonTable from '@/components/heapdump/CommonTable.vue';
-import type { Item, TableProperty } from '@/components/heapdump/common-table';
 
 const props = defineProps({
   static: {

@@ -11,7 +11,6 @@
     SPDX-License-Identifier: EPL-2.0
  -->
 <script setup lang="ts">
-import { computed, ref, shallowRef } from 'vue';
 import { EventType, listen } from '@/components/heapdump/event-bus';
 import { t } from '@/i18n/i18n';
 import References from '@/components/heapdump/References.vue';

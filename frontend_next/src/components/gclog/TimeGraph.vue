@@ -11,7 +11,6 @@
     SPDX-License-Identifier: EPL-2.0
  -->
 <script setup lang="ts">
-import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useGCLogData } from '@/stores/gc-log-data';
 import { currentLocale, gct } from '@/i18n/i18n';
 import { COLORS, formatTimePeriod, getIthColor } from '@/components/gclog/utils';

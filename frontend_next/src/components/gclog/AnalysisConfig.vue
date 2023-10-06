@@ -11,7 +11,6 @@
     SPDX-License-Identifier: EPL-2.0
  -->
 <script setup lang="ts">
-import { ref } from 'vue';
 import { useGCLogData } from '@/stores/gc-log-data';
 import { cloneDeep } from 'lodash';
 import { gct, t } from '@/i18n/i18n';

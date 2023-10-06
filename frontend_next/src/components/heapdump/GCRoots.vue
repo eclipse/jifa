@@ -11,7 +11,6 @@
     SPDX-License-Identifier: EPL-2.0
  -->
 <script setup lang="ts">
-import { ref } from 'vue';
 import CommonTable from '@/components/heapdump/CommonTable.vue';
 import type { Item } from '@/components/heapdump/common-table';
 import { hdt } from '@/components/heapdump/utils';

@@ -11,7 +11,6 @@
     SPDX-License-Identifier: EPL-2.0
  -->
 <script setup lang="ts">
-import { computed, nextTick, onMounted, onUnmounted, ref, toRaw } from 'vue';
 import { useRoute } from 'vue-router';
 import { useAnalysisStore } from '@/stores/analysis';
 import { useAnalysisApiRequester } from '@/composables/analysis-api-requester';

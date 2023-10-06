@@ -11,7 +11,6 @@
     SPDX-License-Identifier: EPL-2.0
  -->
 <script setup lang="ts">
-import { nextTick, ref, watch, computed } from 'vue';
 import { Search } from '@element-plus/icons-vue';
 import CommonTable from '@/components/heapdump/CommonTable.vue';
 import { hdt } from '@/components/heapdump/utils';

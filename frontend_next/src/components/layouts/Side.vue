@@ -11,7 +11,6 @@
     SPDX-License-Identifier: EPL-2.0
  -->
 <script setup lang="ts">
-import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { DataAnalysis, Files } from '@element-plus/icons-vue';
 import { useAnalysisStore } from '@/stores/analysis';

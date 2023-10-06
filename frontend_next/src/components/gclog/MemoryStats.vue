@@ -11,7 +11,6 @@
     SPDX-License-Identifier: EPL-2.0
  -->
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue';
 import { useAnalysisApiRequester } from '@/composables/analysis-api-requester';
 import { gct } from '@/i18n/i18n';
 import { TABLE_HEADER_CELL_STYLE } from '@/components/styles';

@@ -11,7 +11,6 @@
     SPDX-License-Identifier: EPL-2.0
  -->
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, watchEffect } from 'vue';
 import { hdt } from '@/components/heapdump/utils';
 import Inspector from '@/components/heapdump/Inspector.vue';
 import Overview from '@/components/heapdump/Overview.vue';

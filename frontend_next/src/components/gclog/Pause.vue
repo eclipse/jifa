@@ -11,7 +11,6 @@
     SPDX-License-Identifier: EPL-2.0
  -->
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref, watch } from 'vue';
 import { useAnalysisApiRequester } from '@/composables/analysis-api-requester';
 import { useGCLogData } from '@/stores/gc-log-data';
 import { formatPercentage, formatTimePeriod } from '@/components/gclog/utils';

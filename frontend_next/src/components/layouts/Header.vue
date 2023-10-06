@@ -11,7 +11,6 @@
     SPDX-License-Identifier: EPL-2.0
  -->
 <script setup lang="ts">
-import { computed } from 'vue';
 import { availableLocales, currentLocale, setLocale } from '@/i18n/i18n';
 import { isDark } from '@/composables/theme';
 import Sun from '@/components/icons/Sun.vue';

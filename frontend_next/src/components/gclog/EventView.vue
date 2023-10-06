@@ -11,7 +11,6 @@
     SPDX-License-Identifier: EPL-2.0
  -->
 <script setup lang="ts">
-import { ref, watch } from 'vue';
 import { useGCLogData } from '@/stores/gc-log-data';
 import { prettyTime } from '@/support/utils';
 import { formatTimePeriod, getCauseHint, getPhaseHint } from '@/components/gclog/utils';

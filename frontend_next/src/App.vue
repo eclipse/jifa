@@ -11,7 +11,6 @@
     SPDX-License-Identifier: EPL-2.0
  -->
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
 import { elementLocale, t } from '@/i18n/i18n';
 import Header from '@/components/layouts/Header.vue';
 import Side from '@/components/layouts/Side.vue';

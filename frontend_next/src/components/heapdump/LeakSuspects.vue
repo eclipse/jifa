@@ -11,7 +11,6 @@
     SPDX-License-Identifier: EPL-2.0
  -->
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
 import { useAnalysisApiRequester } from '@/composables/analysis-api-requester';
 import { t } from '@/i18n/i18n';
 import { getIcon } from '@/components/heapdump/icon-helper';

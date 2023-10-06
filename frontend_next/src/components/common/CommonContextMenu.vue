@@ -11,7 +11,6 @@
     SPDX-License-Identifier: EPL-2.0
  -->
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue';
 import type { Menu } from '@/composables/contextmenu';
 import CommonContextMenuContent from '@/components/common/CommonContextMenuContent.vue';
 

@@ -10,7 +10,6 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-import { shallowRef } from 'vue';
 
 const toolbar = shallowRef();
 

@@ -11,7 +11,6 @@
     SPDX-License-Identifier: EPL-2.0
  -->
 <script setup lang="ts">
-import { ref } from 'vue';
 import ThreadIcon from '@/assets/heapdump/thread.gif';
 import FrameIcon from '@/assets/heapdump/stack_frame.gif';
 import { getOutboundIcon } from '@/components/heapdump/icon-helper';

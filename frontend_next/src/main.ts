@@ -16,7 +16,6 @@ import router from '@/router';
 import { useEnv } from '@/stores/env';
 import { createPinia } from 'pinia';
 import VContextmenu from 'v-contextmenu';
-import { createApp } from 'vue';
 
 // css
 import '@/styles/index.scss';
