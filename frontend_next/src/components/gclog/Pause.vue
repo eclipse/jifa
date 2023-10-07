@@ -233,11 +233,11 @@ onUnmounted(() => {
       <template #header>
         <ValueWithHint :value="gct(`pauseInfo.${column}`)" :hint="getColumnHint(column)" />
       </template>
-      <template #default="scope">
+      <template #default="{ row }">
         <ValueWithHint
-          :value="scope.row[column].value"
-          :danger="scope.row[column].bad"
-          :danger-hint="gct(scope.row[column].badHint)"
+          :value="row[column].value"
+          :danger="row[column].bad"
+          :danger-hint="gct(row[column].badHint)"
         />
       </template>
     </el-table-column>

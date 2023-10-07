@@ -100,16 +100,16 @@ onMounted(() => {
       v-loading="loading"
     >
       <el-table-column width="55">
-        <template #default="scope">
-          <template v-if="isChecked(scope.row)">
+        <template #default="{ row }">
+          <template v-if="isChecked(row)">
             <el-checkbox
               checked
-              :disabled="isPreSelected(scope.row)"
-              @change="(b) => handleCheckedChange(scope.row, b)"
+              :disabled="isPreSelected(row)"
+              @change="(b) => handleCheckedChange(row, b)"
             />
           </template>
           <template v-else>
-            <el-checkbox @change="(b) => handleCheckedChange(scope.row, b)" />
+            <el-checkbox @change="(b) => handleCheckedChange(row, b)" />
           </template>
         </template>
       </el-table-column>
@@ -117,8 +117,8 @@ onMounted(() => {
       <el-table-column :label="t('file.name')" prop="originalName" />
 
       <el-table-column width="100" :label="t('file.size')">
-        <template #default="scope">
-          {{ prettySize(scope.row.size) }}
+        <template #default="{ row }">
+          {{ prettySize(row.size) }}
         </template>
       </el-table-column>
 
@@ -128,11 +128,11 @@ onMounted(() => {
     <div class="pagination">
       <el-pagination
         layout="prev, pager, next"
+        background
         :total="totalSize"
         v-model:page-size="pageSize"
         v-model:current-page="page"
         @update:current-page="handleCurrentPageChange"
-        background
       />
 
       <el-button type="primary" @click="confirm">{{ t('common.confirm') }}</el-button>

@@ -349,8 +349,8 @@ function hasMore(item: Item) {
         :header-align="c.align"
         :label="labelOf(c)"
       >
-        <template #default="scope">
-          <template v-if="!scope.row.__meta.summary">
+        <template #default="{ row }">
+          <template v-if="!row.__meta.summary">
             <div
               class="ej-table-content-div"
               :style="{
@@ -359,14 +359,14 @@ function hasMore(item: Item) {
                 overflow: 'hidden'
               }"
             >
-              <img v-if="c.icon" :src="iconOf(c, scope.row)" alt="" class="ej-img" />
+              <img v-if="c.icon" :src="iconOf(c, row)" alt="" class="ej-img" />
               <div class="ej-table-content-div">
-                <span class="ej-prefix" v-if="c.prefix && prefixOf(c, scope.row)">{{
-                  prefixOf(c, scope.row)
+                <span class="ej-prefix" v-if="c.prefix && prefixOf(c, row)">{{
+                  prefixOf(c, row)
                 }}</span
-                >{{ contentOf(c, scope.row)
-                }}<span class="ej-suffix" v-if="c.suffix && suffixOf(c, scope.row)"
-                  >{{ suffixOf(c, scope.row) }}
+                >{{ contentOf(c, row)
+                }}<span class="ej-suffix" v-if="c.suffix && suffixOf(c, row)"
+                  >{{ suffixOf(c, row) }}
                 </span>
               </div>
             </div>
@@ -380,7 +380,7 @@ function hasMore(item: Item) {
                   paddingRight: i == columns.length - 1 && c.align === 'right' ? '5px' : 0
                 }"
               >
-                {{ contentOfSummaryOf(c, scope.row) }}
+                {{ contentOfSummaryOf(c, row) }}
               </div>
             </template>
             <template v-else-if="i === 0">
@@ -388,25 +388,23 @@ function hasMore(item: Item) {
                 placement="right"
                 :content="`『 ${t('common.clickToLoadMore')} 』`"
                 :show-arrow="false"
-                :disabled="!hasMore(scope.row)"
+                :disabled="!hasMore(row)"
               >
                 <div
                   class="ej-table-content-div"
                   style="cursor: pointer"
-                  @click="hasMore(scope.row) ? load(scope.row) : void 0"
+                  @click="hasMore(row) ? load(row) : void 0"
                 >
                   <img
                     alt=""
-                    :src="hasMore(scope.row) ? ICONS.misc.sumPlusIcon : ICONS.misc.sumIcon"
+                    :src="hasMore(row) ? ICONS.misc.sumPlusIcon : ICONS.misc.sumIcon"
                     class="ej-img"
                   />
-                  <span
-                    >{{
-                      scope.row.__meta.pagination.size.toLocaleString()
-                    }}&nbsp;<strong>/</strong>&nbsp;{{
-                      scope.row.__meta.pagination.total.toLocaleString()
-                    }}</span
-                  >
+                  <span>
+                    {{
+                      `${row.__meta.pagination.size.toLocaleString()} / ${row.__meta.pagination.total.toLocaleString()}`
+                    }}
+                  </span>
                 </div>
               </el-tooltip>
             </template>

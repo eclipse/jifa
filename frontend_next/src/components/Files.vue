@@ -139,16 +139,16 @@ onMounted(() => {
       <el-table-column min-width="300" :label="t('file.name')" prop="originalName" />
 
       <el-table-column width="150" :label="t('file.type')">
-        <template #default="scope">
+        <template #default="{ row }">
           <el-tag size="small" type="info" disable-transitions
-            >{{ t(`file.${fileTypeMap.get(scope.row.type).labelKey}`) }}
+            >{{ t(`file.${fileTypeMap.get(row.type).labelKey}`) }}
           </el-tag>
         </template>
       </el-table-column>
 
       <el-table-column width="150" :label="t('file.size')">
-        <template #default="scope">
-          {{ prettySize(scope.row.size) }}
+        <template #default="{ row }">
+          {{ prettySize(row.size) }}
         </template>
       </el-table-column>
 
@@ -172,13 +172,9 @@ onMounted(() => {
             {{ t('file.operations') }}
           </div>
         </template>
-        <template #default="scope">
+        <template #default="{ row }">
           <el-space :size="4">
-            <el-button
-              size="small"
-              type="primary"
-              plain
-              @click="analyze(scope.row.type, scope.row.uniqueName)"
+            <el-button size="small" type="primary" plain @click="analyze(row.type, row.uniqueName)"
               >{{ t('file.analyze') }}
               <el-icon class="el-icon--right">
                 <Histogram />
@@ -198,13 +194,13 @@ onMounted(() => {
               <template #default>
                 <div
                   class="ej-file-operation"
-                  @click="window.open(`/jifa-api/files/${scope.row.id}/download`)"
+                  @click="window.open(`/jifa-api/files/${row.id}/download`)"
                 >
                   <el-icon>
                     <Download style="height: 14px" />
                   </el-icon>
                 </div>
-                <div class="ej-file-operation" @click="deleteFile(scope.row.id)">
+                <div class="ej-file-operation" @click="deleteFile(row.id)">
                   <el-icon>
                     <Delete />
                   </el-icon>
@@ -219,13 +215,13 @@ onMounted(() => {
     <div class="ej-file-tale-pagination">
       <el-pagination
         layout="total, sizes, prev, pager, next, jumper"
+        background
         :total="totalSize"
         v-model:page-size="pageSize"
+        @update:page-size="handlePageSizeChange"
         :page-sizes="pageSizes"
         v-model:current-page="page"
         @update:current-page="handleCurrentPageChange"
-        @update:page-size="handlePageSizeChange"
-        background
       />
     </div>
   </div>

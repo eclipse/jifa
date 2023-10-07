@@ -133,10 +133,10 @@ onMounted(() => {
 <template>
   <el-table :header-cell-style="TABLE_HEADER_CELL_STYLE" :data="tableData" v-loading="loading">
     <el-table-column :label="gct('memoryStats.memoryArea')">
-      <template #default="scope">
+      <template #default="{ row }">
         <ValueWithHint
-          :value="scope.row.generation ? gct(`generation.${scope.row.generation}`) : undefined"
-          :hint="scope.row.hint ? gct(scope.row.hint) : undefined"
+          :value="row.generation ? gct(`generation.${row.generation}`) : undefined"
+          :hint="row.hint ? gct(row.hint) : undefined"
         />
       </template>
     </el-table-column>
@@ -144,12 +144,12 @@ onMounted(() => {
       <template #header>
         <ValueWithHint :value="gct(`memoryStats.${metric}`)" :hint="getMetricHint(metric)" />
       </template>
-      <template #default="scope">
+      <template #default="{ row }">
         <ValueWithHint
-          :value="scope.row[metric].value"
-          :hint="scope.row[metric].hint ? gct(scope.row[metric].hint) : undefined"
-          :danger="scope.row[metric].bad"
-          :danger-hint="scope.row[metric].badHint"
+          :value="row[metric].value"
+          :hint="row[metric].hint ? gct(row[metric].hint) : undefined"
+          :danger="row[metric].bad"
+          :danger-hint="row[metric].badHint"
         />
       </template>
     </el-table-column>

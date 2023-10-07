@@ -110,11 +110,11 @@ onMounted(() => {
 <template>
   <el-table :header-cell-style="TABLE_HEADER_CELL_STYLE" v-loading="loading" :data="tableData">
     <el-table-column v-for="column in columns" :key="column" :label="gct(column)">
-      <template #default="scope">
+      <template #default="{ row }">
         <ValueWithHint
-          :value="scope.row[column].value"
-          :danger="scope.row[column].bad"
-          :dangerHint="gct(scope.row[column].badHint)"
+          :value="row[column].value"
+          :danger="row[column].bad"
+          :dangerHint="gct(row[column].badHint)"
         />
       </template>
     </el-table-column>

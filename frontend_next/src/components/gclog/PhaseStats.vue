@@ -266,9 +266,9 @@ onMounted(() => {
       :label="gct(`phaseStats.${column}`)"
       :width="index === 0 ? 320 : ''"
     >
-      <template #default="scope">
+      <template #default="{ row }">
         <el-tooltip
-          v-if="scope.row[column].pause"
+          v-if="row[column].pause"
           :content="gct('stwTooltip')"
           placement="left"
           :show-arrow="false"
@@ -279,13 +279,11 @@ onMounted(() => {
         </el-tooltip>
 
         <ValueWithHint
-          :value="scope.row[column].value"
-          :hint="scope.row[column].hint ? gct(scope.row[column].hint) : undefined"
-          :danger="scope.row[column].bad"
+          :value="row[column].value"
+          :hint="row[column].hint ? gct(row[column].hint) : undefined"
+          :danger="row[column].bad"
           :danger-hint="
-            scope.row[column].badHint
-              ? gct(scope.row[column].badHint, scope.row[column].badHintArgs)
-              : undefined
+            row[column].badHint ? gct(row[column].badHint, row[column].badHintArgs) : undefined
           "
         >
         </ValueWithHint>

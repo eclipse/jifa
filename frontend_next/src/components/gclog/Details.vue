@@ -227,8 +227,8 @@ onMounted(() => {
       v-loading="loading"
     >
       <el-table-column :label="gct('detail.event')">
-        <template #default="scope">
-          <EventView :gcEvent="scope.row.info" />
+        <template #default="{ row }">
+          <EventView :gcEvent="row.info" />
         </template>
       </el-table-column>
     </el-table>
@@ -236,14 +236,14 @@ onMounted(() => {
     <div class="pagination">
       <el-pagination
         layout="total, sizes, prev, pager, next, jumper"
+        background
         :small="true"
         :total="totalSize"
         v-model:page-size="pagination.pageSize"
+        @update:page-size="handlePageSizeChange"
         :page-sizes="pageSizes"
         v-model:current-page="pagination.page"
         @update:current-page="handleCurrentPageChange"
-        @update:page-size="handlePageSizeChange"
-        background
       />
     </div>
   </div>

@@ -128,18 +128,14 @@ onMounted(() => load());
             v-if="selectedObjectId >= 0"
           >
             <el-table-column>
-              <template #default="scope">
+              <template #default="{ row }">
                 <div style="display: flex; align-items: center">
-                  <el-icon
-                    v-if="typeof scope.row.icon === 'object'"
-                    style="margin-right: 5px"
-                    size="16"
-                  >
-                    <component :is="scope.row.icon" />
+                  <el-icon v-if="typeof row.icon === 'object'" style="margin-right: 5px" size="16">
+                    <component :is="row.icon" />
                   </el-icon>
-                  <img v-else :src="scope.row.icon" alt="" style="margin-right: 5px" />
+                  <img v-else :src="row.icon" alt="" style="margin-right: 5px" />
                   <div class="ej-table-content-div">
-                    {{ scope.row.data }}
+                    {{ row.data }}
                   </div>
                 </div>
               </template>

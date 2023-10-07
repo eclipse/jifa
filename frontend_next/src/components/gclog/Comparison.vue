@@ -997,25 +997,25 @@ onMounted(() => {
             min-width="162"
             :label="gct(index === 0 ? 'metricValueOfBaseline' : 'metricValueOfTarget')"
           >
-            <template #default="scope">
-              <template v-if="scope.row.values && scope.row.values[index]">
+            <template #default="{ row }">
+              <template v-if="row.values && row.values[index]">
                 <span
-                  :class="{ clickable: scope.row.click }"
-                  @click="scope.row.click ? scope.row.click(index) : void 0"
+                  :class="{ clickable: row.click }"
+                  @click="row.click ? row.click(index) : void 0"
                 >
-                  {{ scope.row.values[index].value }}
+                  {{ row.values[index].value }}
                 </span>
               </template>
             </template>
           </el-table-column>
 
           <el-table-column min-width="100" :label="gct('metricValueDifference')" v-if="index > 0">
-            <template #default="scope">
+            <template #default="{ row }">
               <span
-                :class="['metric', scope.row.values[index].compareClass]"
-                v-if="scope.row.values && scope.row.values[index]"
+                :class="['metric', row.values[index].compareClass]"
+                v-if="row.values && row.values[index]"
               >
-                {{ scope.row.values[index].compare }}
+                {{ row.values[index].compare }}
               </span>
             </template>
           </el-table-column>
