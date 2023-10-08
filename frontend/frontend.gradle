@@ -16,23 +16,23 @@ plugins {
 
 apply from: "$rootDir/gradle/base.gradle"
 
-task buildFrontend(type: NpmTask) {
+tasks.register('buildFrontend', NpmTask) {
     dependsOn npmInstall
     args = ['run', 'build-only']
 }
 
-task moveStaticResourcesToServer(type: Copy) {
+tasks.register('moveStaticResourcesToServer', Copy) {
     dependsOn buildFrontend
     from "dist"
     include "**/**"
     into project(':server').projectDir.toPath().resolve('src/main/resources/static')
 }
 
-task("build") {
+tasks.register('build') {
     dependsOn(moveStaticResourcesToServer)
 }
 
-task("clean") {
+tasks.register('clean') {
     doFirst(() -> {
         delete 'build'
         delete project(':server').projectDir.toPath().resolve('src/main/resources/static')

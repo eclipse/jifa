@@ -119,7 +119,8 @@ afterEvaluate {
     generateDevKey(projectDir)
 }
 
-static void setDevKeys(BootRun bootRun) {
+static void setJvmOptionsAndDevKeys(BootRun bootRun) {
+    bootRun.jvmArgs('--add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED')
     bootRun.args('--jifa.public-key=file:' + bootRun.project.projectDir.toPath().resolve('dev_rsa.pub').toAbsolutePath().toString())
     bootRun.args('--jifa.private-key=file:' + bootRun.project.projectDir.toPath().resolve('dev_rsa').toAbsolutePath().toString())
 }
@@ -179,7 +180,7 @@ tasks.register('runStandaloneWorker', BootRun) {
     classpath(project.sourceSets.main.runtimeClasspath)
     mainClass.convention(mainClassName)
 
-    setDevKeys(it)
+    setJvmOptionsAndDevKeys(it)
 }
 
 tasks.register('runStandaloneWorkerWithMysql', BootRun) {
@@ -187,7 +188,7 @@ tasks.register('runStandaloneWorkerWithMysql', BootRun) {
     classpath(project.sourceSets.main.runtimeClasspath)
     mainClass.convention(mainClassName)
 
-    setDevKeys(it)
+    setJvmOptionsAndDevKeys(it)
     setMysqlEnv(it)
 }
 
@@ -197,7 +198,7 @@ tasks.register('runMaster', BootRun) {
     mainClass.convention(mainClassName)
 
     args('--jifa.role=master', '--jifa.scheduling-strategy=static')
-    setDevKeys(it)
+    setJvmOptionsAndDevKeys(it)
     setMysqlEnv(it)
 }
 
@@ -207,7 +208,7 @@ tasks.register('runStaticWorker', BootRun) {
     mainClass.convention(mainClassName)
 
     args('--jifa.role=static-worker')
-    setDevKeys(it)
+    setJvmOptionsAndDevKeys(it)
     setMysqlEnv(it)
 }
 
