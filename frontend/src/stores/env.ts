@@ -10,10 +10,12 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
+import { useAnalysisStore } from '@/stores/analysis';
 import axios from 'axios';
+import axiosRetry from 'axios-retry';
+import { ElNotification } from 'element-plus';
 import { defineStore } from 'pinia';
 // @ts-ignore
-import { useAnalysisStore } from '@/stores/analysis';
 import Cookies from 'js-cookie';
 
 export interface User {
@@ -99,3 +101,50 @@ export const useEnv = defineStore('env', {
     }
   }
 });
+
+axiosRetry(axios, {
+  retries: 60,
+  retryDelay: (retryCount) => {
+    return 2000;
+  },
+  retryCondition: (error) => {
+    let resp = error.response;
+    if (resp) {
+      let status = resp.status;
+      let data: any = resp.data;
+      if (status === 500) {
+        if (data && data.hasOwnProperty('errorCode')) {
+          if (data.errorCode === 'ELASTIC_WORKER_NOT_READY') {
+            return true;
+          }
+        }
+      }
+    }
+    return false;
+  }
+});
+
+axios.interceptors.response.use(
+  function (response) {
+    return response;
+  },
+  function (error) {
+    let resp = error.response;
+    if (resp) {
+      let status = resp.status;
+      let data = resp.data;
+      if (status === 500) {
+        if (data && data.hasOwnProperty('errorCode')) {
+          ElNotification.error({
+            title: data.errorCode,
+            message: data.message,
+            offset: 80,
+            duration: 0,
+            showClose: true
+          });
+        }
+      }
+    }
+    return Promise.reject(error);
+  }
+);

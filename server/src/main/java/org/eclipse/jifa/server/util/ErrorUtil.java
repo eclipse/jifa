@@ -12,36 +12,43 @@
  ********************************************************************************/
 package org.eclipse.jifa.server.util;
 
+import com.google.gson.JsonObject;
 import io.netty.handler.timeout.ReadTimeoutException;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.jifa.common.util.GsonHolder;
+import org.apache.commons.lang3.StringUtils;
+import org.eclipse.jifa.common.domain.exception.ErrorCode;
+import org.eclipse.jifa.common.domain.exception.ErrorCodeAccessor;
+import org.eclipse.jifa.common.enums.CommonErrorCode;
 import org.eclipse.jifa.server.Constant;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
-import static org.eclipse.jifa.common.util.GsonHolder.GSON;
-
 @Slf4j
-public class ResponseUtil {
+public class ErrorUtil {
 
-    private ResponseUtil() {
+    public static byte[] toJson(Throwable throwable) {
+        JsonObject json = new JsonObject();
+        json.addProperty("errorCode", getErrorCodeOf(throwable).name());
+        String message = getMessage(throwable);
+        if (StringUtils.isNotBlank(message)) {
+            json.addProperty("message", message);
+        }
+        return json.toString().getBytes(Constant.CHARSET);
     }
 
-    public static byte[] toBytes(Object o) {
-        if (o == null) {
-            return Constant.EMPTY_BYTE_ARRAY;
+    private static ErrorCode getErrorCodeOf(Throwable throwable) {
+        if (throwable instanceof ErrorCodeAccessor errorCodeAccessor) {
+            return errorCodeAccessor.getErrorCode();
         }
-
-        try {
-            return GsonHolder.GSON.toJson(o).getBytes(Constant.CHARSET);
-        } catch (Throwable t) {
-            log.error("Error occurred while converting response to data", t);
-            return null;
+        if (throwable instanceof MissingServletRequestParameterException || throwable instanceof IllegalArgumentException) {
+            return CommonErrorCode.ILLEGAL_ARGUMENT;
         }
+        return CommonErrorCode.INTERNAL_ERROR;
     }
 
-    public static byte[] toData(Throwable throwable) {
+    private static String getMessage(Throwable throwable) {
         if (throwable instanceof WebClientResponseException e) {
-            return e.getResponseBodyAsByteArray();
+            return e.getResponseBodyAsString(Constant.CHARSET);
         }
 
         Throwable cause = throwable;
@@ -63,11 +70,7 @@ public class ResponseUtil {
         }
 
         try {
-            if (message != null) {
-                return GSON.toJson(message).getBytes(Constant.CHARSET);
-            } else {
-                return null;
-            }
+            return message;
         } catch (Throwable t) {
             log.error("Error occurred while converting throwable to data", t);
             return null;

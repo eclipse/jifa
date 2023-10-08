@@ -12,10 +12,11 @@
  ********************************************************************************/
 import type { FileType } from '@/composables/file-types';
 import { useAnalysisStore } from '@/stores/analysis';
+import { useEnv } from '@/stores/env';
 import { Client } from '@stomp/stompjs';
 import axios from 'axios';
+import { ElNotification } from 'element-plus';
 // @ts-ignore
-import { useEnv } from '@/stores/env';
 import { v4 as uuidv4 } from 'uuid';
 
 interface Requester {
@@ -27,9 +28,11 @@ interface Requester {
 interface ResRej {
   resolve: (value: any) => void;
   reject: (reason?: any) => void;
+  params: any;
+  retries: number;
 }
 
-function byAxios(resolve: (req: Requester) => void, reject: (reason: any) => void) {
+function byAxios(resolve: (req: Requester) => void) {
   resolve({
     request(namespace: string, api: string, target: string, parameters?: object): Promise<any> {
       return axios
@@ -46,9 +49,8 @@ function byAxios(resolve: (req: Requester) => void, reject: (reason: any) => voi
   });
 }
 
-function byStomp(resolve: (req: Requester) => void, reject: (reason: any) => void) {
+function byStomp(resolve: (req: Requester) => void) {
   const resRejMap = new Map<number, ResRej>();
-  const callbackMap = new Map<number, (data: any, error: any) => void>();
 
   const client = new Client({
     brokerURL: `ws://${location.host}/jifa-stomp`,
@@ -77,28 +79,32 @@ function byStomp(resolve: (req: Requester) => void, reject: (reason: any) => voi
 
         if (resRejMap.has(requestId)) {
           let resRej = resRejMap.get(requestId) as ResRej;
-          resRejMap.delete(requestId);
           let success = message.headers['response-success'] === 'true';
-          let result = message.body ? JSON.parse(message.body) : null;
+          let data = message.body ? JSON.parse(message.body) : null;
           if (success) {
-            resRej.resolve(result);
+            resRejMap.delete(requestId);
+            resRej.resolve(data);
           } else {
-            resRej.reject(result);
-          }
-        }
+            if (data && data.hasOwnProperty('errorCode')) {
+              if (data.errorCode === 'ELASTIC_WORKER_NOT_READY') {
+                if (resRej.retries-- > 0) {
+                  setTimeout(() => {
+                    client.publish(resRej.params);
+                  }, 2000);
+                  return;
+                }
+              }
+            }
 
-        if (!callbackMap.has(requestId)) {
-          return;
-        }
-        let callback = callbackMap.get(requestId);
-        if (callback) {
-          callbackMap.delete(requestId);
-          let success = message.headers['response-success'] === 'true';
-          let result = message.body ? JSON.parse(message.body) : null;
-          if (success) {
-            callback(result, null);
-          } else {
-            callback(null, result);
+            resRejMap.delete(requestId);
+            ElNotification.error({
+              title: data.errorCode,
+              message: data.message,
+              offset: 80,
+              duration: 0,
+              showClose: true
+            });
+            resRej.reject(data);
           }
         }
       },
@@ -111,20 +117,20 @@ function byStomp(resolve: (req: Requester) => void, reject: (reason: any) => voi
       resolve({
         request(namespace: string, api: string, target: string, parameters?: object): Promise<any> {
           let id = nextRequestId();
-          let p = new Promise((resolve, reject) => {
-            resRejMap.set(id, { resolve, reject });
-          });
-          let body = {
-            namespace,
-            api,
-            target,
-            parameters
-          };
-          client.publish({
+          let params = {
             destination: '/ad/analysis',
             headers: { 'request-id': id.toString() },
-            body: JSON.stringify(body)
+            body: JSON.stringify({
+              namespace,
+              api,
+              target,
+              parameters
+            })
+          };
+          let p = new Promise((resolve, reject) => {
+            resRejMap.set(id, { resolve, reject, params, retries: 60 });
           });
+          client.publish(params);
           return p;
         },
 
@@ -142,7 +148,7 @@ let rp: Promise<Requester> | undefined;
 
 function request(api: string, parameters?: object) {
   if (!rp) {
-    rp = new Promise<Requester>(byAxios);
+    rp = new Promise<Requester>(byStomp);
   }
 
   return rp.then((requester) => {

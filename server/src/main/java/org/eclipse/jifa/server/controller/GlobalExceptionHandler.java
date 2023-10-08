@@ -12,26 +12,20 @@
  ********************************************************************************/
 package org.eclipse.jifa.server.controller;
 
-import com.google.gson.JsonObject;
-import io.netty.handler.timeout.ReadTimeoutException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.jifa.common.domain.exception.ErrorCode;
 import org.eclipse.jifa.common.domain.exception.ErrorCodeAccessor;
 import org.eclipse.jifa.common.domain.exception.ValidationException;
-import org.eclipse.jifa.common.enums.CommonErrorCode;
-import org.eclipse.jifa.server.Constant;
+import org.eclipse.jifa.server.domain.exception.ElasticWorkerNotReadyException;
 import org.eclipse.jifa.server.enums.ServerErrorCode;
-import org.springframework.http.HttpStatus;
+import org.eclipse.jifa.server.util.ErrorUtil;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
-import org.springframework.web.servlet.NoHandlerFoundException;
 
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
@@ -40,14 +34,25 @@ import java.nio.file.AccessDeniedException;
 @Slf4j
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(NoHandlerFoundException.class)
-    public void handleNotFound() {
-        System.out.println(1);
-    }
-
     @ExceptionHandler
     @ResponseBody
     public void handleHttpRequestException(Throwable throwable, HttpServletRequest request, HttpServletResponse response) throws IOException {
+        log(throwable, request);
+
+        if (throwable instanceof WebClientResponseException e) {
+            response.setStatus(e.getStatusCode().value());
+            response.getOutputStream().write(e.getResponseBodyAsByteArray());
+            return;
+        }
+        response.setStatus(getStatusOf(throwable));
+        response.getOutputStream().write(ErrorUtil.toJson(throwable));
+    }
+
+    private void log(Throwable throwable, HttpServletRequest request) {
+        if (throwable instanceof ElasticWorkerNotReadyException) {
+            return;
+        }
+
         if (throwable instanceof MissingServletRequestParameterException ||
             throwable instanceof IllegalArgumentException ||
             throwable instanceof AuthenticationException ||
@@ -57,84 +62,20 @@ public class GlobalExceptionHandler {
         } else {
             log.error("Error occurred when handling http request '{}'", request.getRequestURI(), throwable);
         }
-        if (throwable instanceof WebClientResponseException e) {
-            response.setStatus(e.getStatusCode().value());
-            response.getOutputStream().write(e.getResponseBodyAsByteArray());
-            return;
-        }
-
-        response.setStatus(getStatusOf(throwable));
-        JsonObject json = new JsonObject();
-        json.addProperty("errorCode", getErrorCodeOf(throwable).name());
-        json.addProperty("message", toMessage(throwable));
-        response.getOutputStream().write(json.toString().getBytes(Constant.CHARSET));
     }
 
     private int getStatusOf(Throwable throwable) {
         if (throwable instanceof MissingServletRequestParameterException) {
             return 400;
         }
-
         if (throwable instanceof AuthenticationException || throwable instanceof AccessDeniedException) {
             return 401;
         }
-
         if (throwable instanceof ErrorCodeAccessor errorCodeAccessor) {
             if (ServerErrorCode.ACCESS_DENIED == errorCodeAccessor.getErrorCode()) {
                 return 401;
             }
         }
-
         return 500;
-    }
-
-    private ErrorCode getErrorCodeOf(Throwable throwable) {
-        if (throwable instanceof ErrorCodeAccessor errorCodeAccessor) {
-            return errorCodeAccessor.getErrorCode();
-        }
-
-        if (throwable instanceof MissingServletRequestParameterException || throwable instanceof IllegalArgumentException) {
-            return CommonErrorCode.ILLEGAL_ARGUMENT;
-        }
-
-        return CommonErrorCode.INTERNAL_ERROR;
-    }
-
-    public static String toMessage(Throwable throwable) {
-        if (throwable instanceof WebClientResponseException e) {
-            return e.getResponseBodyAsString(Constant.CHARSET);
-        }
-
-        Throwable cause = throwable;
-        String message;
-        String fallbackMessage = null;
-        do {
-            message = map(cause);
-            if (cause.getMessage() != null) {
-                fallbackMessage = cause.getMessage();
-            }
-            if (message != null || cause.getCause() == null) {
-                break;
-            }
-            cause = cause.getCause();
-        } while (true);
-
-        if (message == null) {
-            message = fallbackMessage;
-        }
-
-        try {
-            return message;
-        } catch (Throwable t) {
-            log.error("Error occurred while converting throwable to data", t);
-            return null;
-        }
-    }
-
-    private static String map(Throwable t) {
-        if (t instanceof ReadTimeoutException) {
-            return "Timeout";
-        }
-        return null;
     }
 }
