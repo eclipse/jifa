@@ -224,7 +224,7 @@ function load(summaryItem: Item, resolve?) {
       let pv = result as PageView;
       pv.data.forEach((d) => data.push(buildDataItem(d, summaryItem, index++)));
 
-      if (data.length > 1) {
+      if (pv.totalSize > 1) {
         let pagination = summaryItem.__meta.pagination as Pagination;
         pagination.size = data.length;
         pagination.total = pv.totalSize;
