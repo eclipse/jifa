@@ -120,3 +120,8 @@ a {
 .v-contextmenu-divider {
   border-bottom: 1px solid var(--el-border-color) !important;
 }
+
+.clickable {
+  cursor: pointer;
+  color: var(--el-color-primary);
+}

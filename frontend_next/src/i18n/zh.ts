@@ -12,6 +12,7 @@
  ********************************************************************************/
 import heapDump from './heapdump/zh'
 import gclog from './gclog/zh'
+import threadDump from './threaddump/zh'
 
 export default {
   jifa: {
@@ -118,6 +119,7 @@ export default {
     },
 
     heapDump,
-    gclog
+    gclog,
+    threadDump,
   }
 };

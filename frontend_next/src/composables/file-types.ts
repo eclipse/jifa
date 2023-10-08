@@ -13,7 +13,7 @@
 import GCLog from '@/components/gclog/GCLog.vue';
 import HeapDump from '@/components/heapdump/HeapDump.vue';
 import HeapDumpSetup from '@/components/heapdump/Setup.vue';
-import ThreadDumpView from '@/components/threaddump/ThreadDumpView.vue';
+import ThreadDumpView from '@/components/threaddump/ThreadDump.vue';
 
 export const fileTypeMap = new Map<string, FileType>();
 

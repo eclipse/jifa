@@ -75,5 +75,15 @@ export function t(key: string, args?: any) {
 }
 
 export function gct(key: string, args?: any) {
+  if (!key) {
+    return;
+  }
   return i18n.global.t('jifa.gclog.' + key, args);
+}
+
+export function tdt(key: string, args?: any) {
+  if (!key) {
+    return;
+  }
+  return i18n.global.t('jifa.threadDump.' + key, args);
 }

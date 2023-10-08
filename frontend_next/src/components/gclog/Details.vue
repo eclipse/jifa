@@ -264,5 +264,6 @@ onMounted(() => {
   flex-shrink: 0;
   display: flex;
   justify-content: flex-end;
+  overflow: hidden;
 }
 </style>

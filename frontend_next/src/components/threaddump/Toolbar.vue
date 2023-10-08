@@ -10,6 +10,9 @@
 
     SPDX-License-Identifier: EPL-2.0
  -->
+<script setup lang="ts">
+import DownloadLink from '@/components/common/DownloadLink.vue';
+</script>
 <template>
-  <div class="ej-common-view-div">Thread Dump View</div>
+  <DownloadLink />
 </template>

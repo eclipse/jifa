@@ -14,6 +14,7 @@
 package org.eclipse.jifa.tda;
 
 import org.apache.commons.lang3.StringUtils;
+import org.eclipse.jifa.analysis.annotation.ApiParameterMeta;
 import org.eclipse.jifa.analysis.cache.Cacheable;
 import org.eclipse.jifa.analysis.cache.ProxyBuilder;
 import org.eclipse.jifa.analysis.listener.ProgressListener;
@@ -180,7 +181,9 @@ public class ThreadDumpAnalyzer {
      * @param paging paging request
      * @return the threads filtered by name and type
      */
-    public PageView<VThread> threads(String name, ThreadType type, PagingRequest paging) {
+    public PageView<VThread> threads(@ApiParameterMeta(required = false) String name,
+                                     @ApiParameterMeta(required = false) ThreadType type,
+                                     PagingRequest paging) {
         List<Thread> threads = new ArrayList<>();
         CollectionUtil.forEach(t -> {
             if (type != null && t.getType() != type) {

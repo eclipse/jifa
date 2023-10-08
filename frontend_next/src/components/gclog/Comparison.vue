@@ -1042,11 +1042,6 @@ onMounted(() => {
   margin-right: 5px;
 }
 
-.clickable {
-  cursor: pointer;
-  color: var(--el-color-primary);
-}
-
 .better-color-block {
   background-color: var(--el-color-success);
 }

@@ -14,6 +14,7 @@ package org.eclipse.jifa.server.support;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import org.eclipse.jifa.analysis.Api;
 import org.eclipse.jifa.analysis.ApiParameter;
@@ -280,7 +281,7 @@ public class AnalysisApiArgumentResolverFactory {
         @Override
         String resolve(AnalysisApiArgumentContext context) {
             JsonElement element = context.paramJson().get(key);
-            if (element != null) {
+            if (element != null && !(element instanceof JsonNull)) {
                 if (!element.isJsonPrimitive()) {
                     throw new IllegalArgumentException(key + " must be a string");
                 }
@@ -308,7 +309,7 @@ public class AnalysisApiArgumentResolverFactory {
         @Override
         E resolve(AnalysisApiArgumentContext context) {
             JsonElement element = context.paramJson().get(key);
-            if (element != null) {
+            if (element != null && !(element instanceof JsonNull)) {
                 if (!element.isJsonPrimitive()) {
                     throw new IllegalArgumentException(key + " must be a " + enumClass.getName());
                 }
