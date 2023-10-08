@@ -1,5 +1,5 @@
 <!--
-    Copyright (c) 2022 Contributors to the Eclipse Foundation
+    Copyright (c) 2023 Contributors to the Eclipse Foundation
 
     See the NOTICE file(s) distributed with this work for additional
     information regarding copyright ownership.
@@ -10,71 +10,88 @@
 
     SPDX-License-Identifier: EPL-2.0
  -->
+<script setup lang="ts">
+import { gct } from '@/i18n/i18n';
+import { useAnalysisApiRequester } from '@/composables/analysis-api-requester';
+import { Guide } from '@element-plus/icons-vue';
 
-<template>
-  <el-card>
-    <div slot="header">
-      <span>{{ $t('jifa.gclog.vmOptions.vmOptions') }}</span>
-    </div>
-    <div v-if="optionsAvailable" class="options-parent">
-      <div>
-        <span class="vmOption" >{{ $t('jifa.gclog.vmOptions.gcRelatedOptions') + ':'}}</span>
-        <span class="vmOption" v-for="option in options.gcRelated" :key="option.text">{{ option.text }}</span>
-      </div>
-      <el-divider/>
-      <div>
-        <span class="vmOption" >{{ $t('jifa.gclog.vmOptions.otherOptions') + ':'}}</span>
-        <span class="vmOption" v-for="option in options.other" :key="option.text">{{ option.text }}</span>
-      </div>
-    </div>
-    <div v-else>{{ $t('jifa.gclog.vmOptions.unknown') }}</div>
+const props = defineProps({
+  headerBarId: {
+    type: String,
+    required: true
+  }
+});
 
-  </el-card>
-</template>
+const { request } = useAnalysisApiRequester();
 
-<script>
-import {gclogService} from '@/util'
-import axios from "axios";
-
-export default {
-  props: ["file", "metadata"],
-  data() {
-    return {
-      loading: true,
-      options: null,
-      optionsAvailable: false,
-    }
-  },
-  methods: {
-    loadOptions() {
-      this.loading = true
-      axios.get(gclogService(this.file, 'vmOptions')).then(resp => {
-        this.optionsAvailable = !!resp.data
-        if (this.optionsAvailable) {
-          this.options = resp.data
-        }
-        this.loading = false;
-      })
-    },
-  },
-  mounted() {
-    this.loadOptions();
-  },
-  name: "VmOptions"
+interface Options {
+  gcRelated: { text: string }[];
+  other: { text: string }[];
 }
+
+const mounted = ref(false);
+const loading = ref();
+const options = ref<Options>();
+
+function hasGCRelatedOptions() {
+  return options.value && options.value!.gcRelated && options.value!.gcRelated.length > 0;
+}
+
+function hasOtherOptions() {
+  return options.value && options.value!.other && options.value!.other.length > 0;
+}
+
+function hasOptions() {
+  return hasGCRelatedOptions() && hasOtherOptions();
+}
+
+onMounted(() => {
+  loading.value = true;
+  request('vmOptions').then((data) => {
+    options.value = data;
+    loading.value = false;
+  });
+  mounted.value = true;
+});
 </script>
+<template>
+  <teleport :to="`#${headerBarId}`" v-if="mounted">
+    <el-link
+      style="font-size: 14px"
+      :underline="false"
+      href="https://chriswhocodes.com/vm-options-explorer.html"
+      target="_blank"
+    >
+      <el-icon size="16" style="margin-right: 4px"><Guide /></el-icon>
+      VM Options Explorer
+    </el-link>
+  </teleport>
 
-<style scoped>
-.vmOption {
-  display: inline-block;
-  font-size: 14px;
-  height: 18px;
-  margin-right: 8px;
-}
+  <div v-loading="loading">
+    <div v-if="hasOptions()">
+      <template v-if="hasGCRelatedOptions()">
+        <el-text size="large">{{ gct('vmOptions.gcRelatedOptions') }}</el-text>
+        <br />
+        <el-space style="margin-top: 16px" wrap>
+          <el-tag size="large" v-for="option in options!.gcRelated" :key="option.text">
+            {{ option.text }}
+          </el-tag>
+        </el-space>
+      </template>
 
-.options-parent {
-  padding: 5px;
-  display: flex;
-  flex-wrap: wrap;
-}
-</style>
+      <el-divider style="margin: 20px 0" v-if="hasGCRelatedOptions() && hasOptions()" />
+
+      <template v-if="hasOtherOptions">
+        <el-text size="large">{{ gct('vmOptions.otherOptions') }}</el-text>
+        <br />
+        <el-space style="margin-top: 16px" wrap>
+          <el-tag size="large" v-for="option in options!.other" :key="option.text">
+            {{ option.text }}
+          </el-tag>
+        </el-space>
+      </template>
+    </div>
+
+    <el-text v-else>{{ gct('vmOptions.unknown') }}</el-text>
+  </div>
+</template>

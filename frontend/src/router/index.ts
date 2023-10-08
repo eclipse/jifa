@@ -37,7 +37,7 @@ declare module 'vue-router' {
 }
 
 const routes: RouteRecordRaw[] = [
-  { name: 'Files', path: '/', component: Files, alias: '/files' },
+  { name: 'Files', path: '/', component: Files },
   { name: 'NotFound', path: '/:pathMatch(.*)', component: NotFound }
 ];
 

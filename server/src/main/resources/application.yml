@@ -13,6 +13,10 @@ jifa:
   storage-path: ${user.home}/jifa-storage
 
 spring:
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+    throw-exception-if-no-handler-found: on
   servlet:
     multipart:
       max-request-size: 512MB

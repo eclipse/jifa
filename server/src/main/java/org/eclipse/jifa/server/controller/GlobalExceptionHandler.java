@@ -23,12 +23,15 @@ import org.eclipse.jifa.common.domain.exception.ValidationException;
 import org.eclipse.jifa.common.enums.CommonErrorCode;
 import org.eclipse.jifa.server.Constant;
 import org.eclipse.jifa.server.enums.ServerErrorCode;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
+import org.springframework.web.servlet.NoHandlerFoundException;
 
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
@@ -36,6 +39,11 @@ import java.nio.file.AccessDeniedException;
 @ControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(NoHandlerFoundException.class)
+    public void handleNotFound() {
+        System.out.println(1);
+    }
 
     @ExceptionHandler
     @ResponseBody

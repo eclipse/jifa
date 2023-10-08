@@ -1,5 +1,5 @@
 <!--
-    Copyright (c) 2022 Contributors to the Eclipse Foundation
+    Copyright (c) 2023 Contributors to the Eclipse Foundation
 
     See the NOTICE file(s) distributed with this work for additional
     information regarding copyright ownership.
@@ -10,114 +10,94 @@
 
     SPDX-License-Identifier: EPL-2.0
  -->
+<script setup lang="ts">
+import { useAnalysisApiRequester } from '@/composables/analysis-api-requester';
+import { rawMonitorToString } from '@/components/threaddump/util';
+import { Lock } from '@element-plus/icons-vue';
+import MonitorThread from '@/components/threaddump/MonitorThread.vue';
 
+const { request } = useAnalysisApiRequester();
+
+const dialogVisible = ref(false);
+
+const loading = ref(false);
+
+const page = ref(1);
+const pageSize = 8;
+const totalSize = ref(0);
+const moreThanOnePage = computed(() => totalSize.value > pageSize);
+const tableData = ref();
+
+function loadMonitors() {
+  loading.value = true;
+  request('monitors', {
+    page: page.value,
+    pageSize
+  }).then((pageView) => {
+    totalSize.value = pageView.totalSize;
+    tableData.value = pageView.data.map((monitor) => ({
+      ...monitor,
+      content: rawMonitorToString(monitor)
+    }));
+    loading.value = false;
+  });
+}
+
+const selectedMonitorId = ref();
+const dialogTitle = ref('');
+function showMonitorThreadDialog(row) {
+  selectedMonitorId.value = row.id;
+  dialogTitle.value = row.content;
+  dialogVisible.value = true;
+}
+
+onMounted(() => {
+  loadMonitors();
+});
+</script>
 <template>
-  <div>
-    <el-dialog :visible.sync="monitorThreadTableVisible" width="60%" top="5vh">
-      <monitor-thread :file="file" :id="selectedMonitorId" :title="title"/>
-    </el-dialog>
+  <el-dialog v-model="dialogVisible">
+    <MonitorThread :id="selectedMonitorId" :title="dialogTitle" />
+  </el-dialog>
 
-    <el-table
-        ref='table'
-        row-key="rowKey"
-
-        :cell-style='cellStyle'
-        :data="tableData"
-        :show-header="false"
-        stripe
-        v-loading="loading"
-    >
-      <el-table-column>
-        <template slot-scope="scope">
-          <span v-if="scope.row.dataRow">
-            <i class="el-icon-lock" style="color: cornflowerblue"/>
-            <span style="margin-left: 8px; margin-right: 2px; cursor: pointer; color: #409eff;"
-                  @click="selectedMonitorId = scope.row.id; title = scope.row.content; monitorThreadTableVisible=true">
-              {{ scope.row.content }}</span>
-          </span>
-          <span v-if="scope.row.summaryRow" @dblclick="scope.row.dblclick()"
-                :style="scope.row.size < scope.row.totalSize ? 'cursor: pointer': ''">
-            <i v-if="scope.row.size < scope.row.totalSize" class="el-icon-circle-plus"
-               style="color: cornflowerblue; margin-left: 1px;"/>
-            <i v-else class="el-icon-remove" style="color: #909399; margin-left: 1px;"/>
-            <span style="margin-left: 8px">
-              {{ scope.row.size }} <strong> / </strong>  {{ scope.row.totalSize }}
-            </span>
-          </span>
-        </template>
-      </el-table-column>
-    </el-table>
+  <el-table
+    stripe
+    :show-header="false"
+    :style="moreThanOnePage ? { height: `${40 * pageSize}px` } : {}"
+    :data="tableData"
+    v-loading="loading"
+  >
+    <el-table-column>
+      <template #default="{ row }">
+        <div class="clickable" style="display: flex; align-items: center">
+          <el-icon>
+            <Lock />
+          </el-icon>
+          <span style="margin-left: 8px" @click="showMonitorThreadDialog(row)">{{
+            row.content
+          }}</span>
+        </div>
+      </template>
+    </el-table-column>
+  </el-table>
+  <div class="pagination" v-if="moreThanOnePage">
+    <el-pagination
+      layout="total, prev, pager, next"
+      background
+      :total="totalSize"
+      :page-size="pageSize"
+      v-model:current-page="page"
+      @current-change="loadMonitors"
+      :disabled="loading"
+    />
   </div>
 </template>
-
-<script>
-import axios from "axios";
-import {threadDumpService} from "@/util";
-import {rawMonitorToString} from "@/components/threaddump/util";
-import MonitorThread from "@/components/threaddump/MonitorThread";
-
-export default {
-  props: ['file'],
-  components: {
-    MonitorThread
-  },
-  data() {
-    return {
-      cellStyle: {padding: '8px'},
-      loading: false,
-
-      pageSize: 5,
-      tableData: [],
-
-      selectedMonitorId: -1,
-      title: '',
-      monitorThreadTableVisible: false
-    }
-  },
-  methods: {
-    loadData(page) {
-      this.loading = true
-
-      axios.get(threadDumpService(this.file, "monitors"), {
-        params: {
-          page,
-          pageSize: this.pageSize
-        }
-      }).then(resp => {
-        let data = resp.data
-        let loaded = this.tableData
-        if (loaded.length > 0) {
-          // the last is summary row
-          loaded.splice(loaded.length - 1, 1)
-        }
-
-        let monitors = data.data
-        monitors.forEach(monitor => {
-          loaded.push({
-            dataRow: true,
-            id: monitor.id,
-            content: rawMonitorToString(monitor)
-          })
-        })
-
-        if (data.totalSize > 1) {
-          loaded.push({
-            summaryRow: true,
-            size: loaded.length,
-            totalSize: data.totalSize,
-            dblclick: () => {
-              if (loaded.length - 1 /* summary */ < data.totalSize) {
-                this.loadData(page + 1);
-              }
-            }
-          })
-        }
-        this.loading = false
-      })
-    },
-  },
-  mounted() {
-    this.loadData(1)
-  },
+<style scoped>
+.pagination {
+  margin-top: 15px;
+  flex-shrink: 0;
+  display: flex;
+  justify-content: flex-end;
+  overflow: hidden;
 }
-</script>
+</style>

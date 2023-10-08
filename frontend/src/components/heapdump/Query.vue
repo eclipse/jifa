@@ -1,5 +1,5 @@
 <!--
-    Copyright (c) 2020 Contributors to the Eclipse Foundation
+    Copyright (c) 2023 Contributors to the Eclipse Foundation
 
     See the NOTICE file(s) distributed with this work for additional
     information regarding copyright ownership.
@@ -10,416 +10,280 @@
 
     SPDX-License-Identifier: EPL-2.0
  -->
-<template xmlns:v-contextmenu="http://www.w3.org/1999/xhtml">
-  <div style="height: 100%; position: relative">
-    <v-contextmenu ref="contextmenu">
-      <v-contextmenu-submenu :title="$t('jifa.heap.ref.object.label')">
-        <v-contextmenu-item
-                @click="$emit('outgoingRefsOfObj', contextMenuTargetObjectId, contextMenuTargetObjectLabel)">
-          {{$t('jifa.heap.ref.object.outgoing')}}
-        </v-contextmenu-item>
-        <v-contextmenu-item
-                @click="$emit('incomingRefsOfObj', contextMenuTargetObjectId, contextMenuTargetObjectLabel)">
-          {{$t('jifa.heap.ref.object.incoming')}}
-        </v-contextmenu-item>
-      </v-contextmenu-submenu>
-      <v-contextmenu-submenu :title="$t('jifa.heap.ref.type.label')">
-        <v-contextmenu-item
-                @click="$emit('outgoingRefsOfClass', contextMenuTargetObjectId, contextMenuTargetObjectLabel)">
-          {{$t('jifa.heap.ref.type.outgoing')}}
-        </v-contextmenu-item>
-        <v-contextmenu-item
-                @click="$emit('incomingRefsOfClass', contextMenuTargetObjectId, contextMenuTargetObjectLabel)">
-          {{$t('jifa.heap.ref.type.incoming')}}
-        </v-contextmenu-item>
-      </v-contextmenu-submenu>
-      <v-contextmenu-item divider></v-contextmenu-item>
-      <v-contextmenu-item
-              @click="$emit('pathToGCRootsOfObj', contextMenuTargetObjectId, contextMenuTargetObjectLabel)">
-        {{$t('jifa.heap.pathToGCRoots')}}
-      </v-contextmenu-item>
-    </v-contextmenu>
+<script setup lang="ts">
+import { Search } from '@element-plus/icons-vue';
+import CommonTable from '@/components/heapdump/CommonTable.vue';
+import { hdt } from '@/components/heapdump/utils';
+import { getIcon } from '@/components/heapdump/icon-helper';
+import { prettySize } from '@/support/utils';
+import { Link } from '@element-plus/icons-vue';
+import { t } from '@/i18n/i18n';
+import { useSelectedObject } from '@/composables/heapdump/selected-object';
+import { commonMenu as menu } from '@/components/heapdump/menu';
 
-    <div style="height: 45px; margin-top: 5px">
-      <el-autocomplete
-              v-model="query"
-              :fetch-suggestions="queryHistory"
-              :disabled="disabledInput"
-              placeholder="Query ..."
-              :trigger-on-focus="false"
-              prefix-icon="el-icon-edit"
-              @keyup.enter.native="search"
-              clearable
-              style="display: flex"
-      >
-        <el-select slot="prepend" v-model="queryType" style="width: 140px" default-first-option>
-          <el-option label="OQL" value="oql" />
+const { selectedObjectId } = useSelectedObject();
+
+const oqlLink =
+  'https://help.eclipse.org/latest/index.jsp?topic=%2Forg.eclipse.mat.ui.help%2Freference%2Foqlsyntax.html&cp%3D55_4_2';
+const sqlLink = 'https://github.com/vlsi/mat-calcite-plugin#sample';
+
+const input = ref(null);
+const type = ref('oql');
+const query = ref('');
+const last = ref('');
+
+watch(type, (t) => {
+  tableProps.value.apis[0].api = t === 'oql' ? 'oql' : 'sql';
+  query.value = '';
+  last.value = '';
+});
+
+const link = computed(() => (type.value === 'oql' ? oqlLink : sqlLink));
+
+const showDataTable = ref(false);
+const textResult = ref(null);
+const processing = ref(false);
+
+function doQuery() {
+  if (query.value) {
+    let q = query.value.trim();
+    if (q && q !== last.value) {
+      last.value = q;
+      textResult.value = null;
+      processing.value = true;
+      showDataTable.value = false;
+      nextTick(() => {
+        showDataTable.value = true;
+      });
+    }
+  }
+}
+
+const className = {
+  label: () => hdt('column.className'),
+  minWidth: 250,
+  content: (d) => d.label,
+  icon: (d) => getIcon(d.gCRoot, d.objectType, d.objType),
+  suffixMapper: (d) => d.suffix
+};
+
+const shallowHeap = {
+  label: 'Shallow Heap',
+  width: 130,
+  align: 'right',
+  sortable: true,
+  property: 'shallowHeap',
+  content: (d) => prettySize(d.shallowSize)
+};
+
+const retainedHeap = {
+  label: 'Retained Heap',
+  width: 130,
+  align: 'right',
+  sortable: true,
+  property: 'retainedHeap',
+  content: (d) => prettySize(d.retainedSize)
+};
+
+const TREE = 1;
+const TABLE = 2;
+const TEXT = 3;
+
+const columnsOfTreeResult = ref([className, shallowHeap, retainedHeap]);
+const columnsOfTextResult = ref([]);
+
+const tableProps = ref({
+  columns: [],
+
+  apis: [
+    {
+      api: 'oql',
+      parameters() {
+        return {
+          [type.value]: query.value
+        };
+      },
+      respMapper(r) {
+        if (r.type == TEXT) {
+          showDataTable.value = false;
+          textResult.value = [{ text: r.text }];
+          processing.value = false;
+          input.value.focus();
+          return {
+            data: [],
+            totalSize: 0
+          };
+        }
+        pushHistory(query.value.trim());
+        processing.value = false;
+        input.value.focus();
+        return r.pv;
+      },
+      paged: true
+    },
+    {
+      api: 'outbounds',
+      parameters(d) {
+        return {
+          objectId: d.objectId
+        };
+      },
+      paged: true
+    }
+  ],
+
+  columnAdjuster(r) {
+    if (r.type == TREE) {
+      if (tableProps.value.columns === columnsOfTreeResult.value) {
+        return false;
+      }
+      tableProps.value.hasChildren = (d) => d.hasOutbound;
+      tableProps.value.columns = columnsOfTreeResult.value;
+    } else if (r.type == TABLE) {
+      tableProps.value.hasChildren = undefined;
+      let columns = [];
+      for (let i = 0; i < r.columns.length; i++) {
+        const index = i;
+        columns.push({
+          label: r.columns[index],
+          content: (d) => d.values[index] || 'null'
+        });
+      }
+      tableProps.value.columns = columns;
+    } else if (r.type == TEXT) {
+      tableProps.value.hasChildren = undefined;
+      tableProps.value.columns = columnsOfTextResult.value;
+    }
+    return true;
+  },
+
+  defaultSortProperty: {
+    prop: 'retainedHeap',
+    order: 'descending'
+  },
+
+  sortParameterConverter: (sortProperty) => {
+    return {
+      sortBy: sortProperty.prop,
+      ascendingOrder: sortProperty.order === 'ascending'
+    };
+  },
+
+  onRowClick(d) {
+    if (d.hasOwnProperty('objectId')) {
+      selectedObjectId.value = d.objectId;
+    }
+  },
+
+  menu,
+
+  hasMenu(d) {
+    return d.hasOwnProperty('objectId');
+  }
+});
+
+const oqlHistory = ref([]);
+const sqlHistory = ref([]);
+
+function pushHistory(q) {
+  let history = type.value === 'oql' ? oqlHistory : sqlHistory;
+  q = q.trim();
+  for (let i = 0; i < history.value.length; i++) {
+    if (history.value[i].value === q) {
+      return;
+    }
+  }
+  history.value.unshift({ value: q });
+  if (history.value.length > 8) {
+    history.value.pop();
+  }
+}
+
+function matchHistory(q) {
+  let history = type.value === 'oql' ? oqlHistory : sqlHistory;
+  return history.value.filter((i) => i.value.toLowerCase().indexOf(q.toLowerCase()) == 0);
+}
+
+function fetchSuggestions(q, cb) {
+  cb(matchHistory(q));
+}
+</script>
+<template>
+  <div style="height: 100%; display: flex; flex-direction: column">
+    <div
+      style="
+        flex-shrink: 0;
+        margin-bottom: 8px;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+      "
+    >
+      <el-select v-model="type" placeholder="Select" style="width: 145px" fit-input-width>
+        <template #prefix>
+          <el-icon class="ej-link-icon" size="16">
+            <Link
+              @click="
+                (e) => {
+                  window.open(link);
+                  e.stopPropagation();
+                }
+              "
+            />
+          </el-icon>
+        </template>
+        <template #default>
+          <el-option label="MAT OQL" value="oql" />
           <el-option label="Calcite SQL" value="sql" />
-        </el-select>
-        <template slot="append">
-          <el-button :icon="searching ? 'el-icon-loading':'el-icon-search'" :disabled="searching" @click="search">
-          </el-button>
+        </template>
+      </el-select>
+      <el-autocomplete
+        ref="input"
+        v-model="query"
+        @keyup.enter="doQuery"
+        :placeholder="hdt('placeholder.query', type === 'oql' ? ['MAT OQL'] : ['Calcite SQL'])"
+        style="flex-grow: 1; margin-left: 7px"
+        :fetch-suggestions="fetchSuggestions"
+        :trigger-on-focus="false"
+        clearable
+        :disabled="processing"
+        fit-input-width
+      >
+        <template #append>
+          <el-button :icon="Search" @click="doQuery" />
         </template>
       </el-autocomplete>
     </div>
 
-    <div align="left" style="height: 25px; margin-bottom: 5px" v-if="queryType === 'oql'">
-      <a href="https://help.eclipse.org/oxygen/index.jsp?topic=%2Forg.eclipse.mat.ui.help%2Freference%2Foqlsyntax.html&cp=66_4_2"
-         target="_blank" style="font-size: 12px; font-weight: bold; color: #909399; text-decoration: underline">
-        > Click to get detailed OQL Help documents.
-      </a>
-    </div>
+    <div style="flex-grow: 1; overflow: hidden">
+      <CommonTable v-bind="tableProps" v-if="showDataTable" />
 
-    <div align="left" style="height: 25px; margin-bottom: 5px" v-if="queryType === 'sql'">
-      <a href="https://github.com/vlsi/mat-calcite-plugin#sample"
-         target="_blank" style="font-size: 12px; font-weight: bold; color: #909399; text-decoration: underline">
-        > Click to get detailed Calcite SQL Help.
-      </a>
-    </div>
-
-    <div v-loading="loading" style="position: absolute; top: 80px; left: 0; right: 0; bottom: 0;">
-      <el-table v-if="isTreeResult"
-                ref='treeResultTable' :data="treeTableData"
-                :highlight-current-row="false"
-                stripe
-                :header-cell-style="headerCellStyle"
-                :cell-style='cellStyle'
-                row-key="rowKey"
-                lazy
-                @sort-change="sortTree"
-                :indent=8
-                height="100%"
-                :load="loadOutbounds">
-        <el-table-column label="Class Name" width="800px" show-overflow-tooltip prop="label" sortable="custom">
-          <template slot-scope="scope">
-            <span v-if="scope.row.isResult" @click="$emit('setSelectedObjectId', scope.row.objectId)"
-                  style="cursor: pointer"
-                  @contextmenu="contextMenuTargetObjectId = scope.row.objectId; contextMenuTargetObjectLabel = scope.row.label"
-                  v-contextmenu:contextmenu>
-              <img :src="scope.row.icon" style="margin-right: 5px"/>
-              <strong>{{ scope.row.prefix }}</strong>
-              {{ scope.row.label }}
-              <span style="font-weight: bold; color: #909399">
-                {{ scope.row.suffix }}
-              </span>
-            </span>
-
-            <span v-if="scope.row.isOutboundsSummary">
-              <img :src="ICONS.misc.sumIcon" v-if="scope.row.currentSize >= scope.row.totalSize"/>
-              <img :src="ICONS.misc.sumPlusIcon"
-                   @dblclick="fetchOutbounds(scope.row.parentRowKey, scope.row.objectId, scope.row.nextPage, scope.row.resolve)"
-                   style="cursor: pointer"
-                   v-else/>
-              {{ toReadableCount(scope.row.currentSize) }} <strong> / </strong> {{ toReadableCount(scope.row.totalSize) }}
-            </span>
-
-            <span v-if="scope.row.isSummaryItem">
-              <img :src="ICONS.misc.sumIcon" v-if="treeResult.length >= totalSize"/>
-              <img :src="ICONS.misc.sumPlusIcon" @dblclick="fetchResult(scope.row.query)" style="cursor: pointer" v-else/>
-              {{ toReadableCount(treeResult.length) }} <strong> / </strong> {{ toReadableCount(totalSize) }}
-            </span>
-          </template>
-        </el-table-column>
-        <el-table-column label="Shallow Heap" prop="shallowHeap" sortable="custom" :formatter="toReadableSizeWithUnitFormatter">
-        </el-table-column>
-        <el-table-column label="Retained Heap" prop="retainedHeap" sortable="custom" :formatter="toReadableSizeWithUnitFormatter">
+      <el-table
+        size="small"
+        :data="textResult"
+        v-if="textResult"
+        style="height: 100%"
+        :header-cell-style="{
+          background: 'var(--el-fill-color-light)',
+          color: 'var(--el-text-color-primary)'
+        }"
+      >
+        <el-table-column :label="t('common.result')">
+          <div style="white-space: pre-wrap">
+            {{ textResult[0].text }}
+          </div>
         </el-table-column>
       </el-table>
-
-      <el-table v-if="isTableResult"
-                ref='tableResultTable' :data="tableTableData"
-                :highlight-current-row="false"
-                stripe
-                :header-cell-style="headerCellStyle"
-                :cell-style='cellStyle'
-                row-key="rowKey"
-                lazy
-                :indent=8
-                height="100%">
-
-        <el-table-column v-for="(column, index) in tableResultColumns" :label="column" v-bind:key="column">
-          <template slot-scope="scope">
-          <span v-if="scope.row.isResult" @click="$emit('setSelectedObjectId', scope.row.objectId)"
-                style="cursor: pointer"
-                @contextmenu="contextMenuTargetObjectId = scope.row.objectId; contextMenuTargetObjectLabel = scope.row.values[index] ? scope.row.values[index] : 'null'"
-                v-contextmenu:contextmenu>
-            {{ scope.row.values[index] ? scope.row.values[index] : 'null' }}
-          </span>
-
-            <span v-if="scope.row.isSummaryItem && index === 0">
-            <img :src="ICONS.misc.sumIcon" v-if="tableResult.length >= totalSize"/>
-            <img :src="ICONS.misc.sumPlusIcon" @dblclick="fetchResult(scope.row.query)" style="cursor: pointer" v-else/>
-            {{ toReadableCount(tableResult.length) }} <strong> / </strong> {{ toReadableCount(totalSize) }}
-          </span>
-          </template>
-        </el-table-column>
-      </el-table>
-
-
-      <el-input v-if="isTextResult"
-                v-model="textResult"
-                type="textarea"
-                readonly
-                autosize>
-      </el-input>
     </div>
   </div>
 </template>
+<style scoped>
+.ej-link-icon:hover {
+  color: var(--el-menu-hover-text-color);
+  cursor: pointer;
+}
 
-<script>
-  import axios from 'axios'
-  import {getOutboundIcon, ICONS} from "./IconHealper";
-  import {heapDumpService, toReadableCount, toReadableSizeWithUnit, toReadableSizeWithUnitFormatter} from "../../util";
-
-  let rowKey = 1
-
-  // query result type
-  const TREE = 1
-  const TABLE = 2
-  const TEXT = 3
-
-  export default {
-    props: ['file', 'preparedQuery', 'preparedQueryType'],
-    data() {
-      return {
-        ICONS,
-        cellStyle: {padding: '4px', fontSize: '12px'},
-        headerCellStyle: {padding: 0, 'font-size': '12px', 'font-weight': 'normal'},
-        searching: false,
-        loading: false,
-        query: '',
-        nextPage: 1,
-        pageSize: 25,
-        totalSize: 0,
-        resultType: 0,
-
-        contextMenuTargetObjectId: null,
-        contextMenuTargetObjectLabel: null,
-
-        treeResult: [],
-        treeTableData: [],
-
-        tableResult: [],
-        tableResultColumns: [],
-        tableTableData: [],
-
-        textResult: '',
-
-        isTreeResult: false,
-        isTableResult: false,
-        isTextResult: false,
-
-        historyQueries: [],
-        treeSortBy:'retainedHeap',
-        treeAscendingOrder:true,
-
-        disabledInput: false,
-
-        queryType: 'oql',
-      }
-    },
-    methods: {
-      toReadableCount,
-      toReadableSizeWithUnit,
-      toReadableSizeWithUnitFormatter,
-      adjustDataByResultType(type) {
-        this.isTreeResult = type === TREE
-        this.isTableResult = type === TABLE
-        this.isTextResult = type === TEXT
-      },
-
-      sortTree(val){
-        if (this.query) {
-          this.treeSortBy = val.prop;
-          this.treeAscendingOrder = val.order === 'ascending';
-          this.searching = true
-          this.clear()
-          this.fetchResult(this.query)
-        }
-      },
-
-      fetchResult(query) {
-        if (!query || query.length === 0) {
-          return
-        }
-        this.loading = true
-        axios.get(heapDumpService(this.file, this.queryType), {
-          params: {
-            oql: this.queryType === 'oql' ? query : undefined,
-            sql: this.queryType === 'sql' ? query : undefined,
-            page: this.nextPage,
-            pageSize: this.pageSize,
-            sortBy: this.treeSortBy,
-            ascendingOrder: this.treeAscendingOrder
-          }
-        }).then(resp => {
-          this.adjustDataByResultType(resp.data.type)
-          if (this.isTreeResult) {
-            this.putHistory(query)
-            this.totalSize = resp.data.pv.totalSize
-            let data = resp.data.pv.data
-            data.forEach(d => {
-              this.treeResult.push({
-                rowKey: rowKey++,
-                icon: getOutboundIcon(d.gCRoot, d.objectType),
-                prefix: d.prefix,
-                label: d.label,
-                suffix: d.suffix,
-                shallowHeap: d.shallowSize,
-                retainedHeap: d.retainedSize,
-                hasChildren: d.hasOutbound,
-                objectId: d.objectId,
-                isResult: true
-              })
-            })
-            this.treeTableData = this.treeResult.concat({
-              rowKey: rowKey++,
-              query: query,
-              isSummaryItem: true
-            })
-            this.nextPage++
-          } else if (this.isTableResult) {
-            this.putHistory(query)
-            this.totalSize = resp.data.pv.totalSize
-            this.tableResultColumns = resp.data.columns
-            let data = resp.data.pv.data
-            data.forEach(d => {
-              this.tableResult.push({
-                rowKey: rowKey++,
-                objectId: d.objectId,
-                values: d.values,
-                hasChildren: false,
-                isResult: true
-              })
-            })
-            this.tableTableData = this.tableResult.concat({
-              rowKey: rowKey++,
-              query: query,
-              isSummaryItem: true
-            })
-            this.nextPage++
-          } else if (this.isTextResult) {
-            this.textResult = resp.data.text
-          }
-          this.searching = false
-          this.loading = false
-        })
-      },
-      loadOutbounds(tree, treeNode, resolve) {
-        this.fetchOutbounds(tree.rowKey, tree.objectId, 1, resolve)
-      },
-      fetchOutbounds(parentRowKey, objectId, page, resolve) {
-        this.loading = true
-        axios.get(heapDumpService(this.file, 'outbounds'), {
-          params: {
-            objectId: objectId,
-            page: page,
-            pageSize: this.pageSize,
-          }
-        }).then(resp => {
-          let loadedLen = 0;
-          let loaded = this.$refs['treeResultTable'].store.states.lazyTreeNodeMap[parentRowKey]
-          let callResolve = false
-          if (loaded) {
-            loadedLen = loaded.length
-            if (loadedLen > 0) {
-              loaded.splice(--loadedLen, 1)
-            }
-          } else {
-            loaded = []
-            callResolve = true;
-          }
-
-          let res = resp.data.data
-          res.forEach(d => {
-            loaded.push({
-              rowKey: rowKey++,
-              icon: getOutboundIcon(d.gCRoot, d.objectType),
-              prefix: d.prefix,
-              label: d.label,
-              suffix: d.suffix,
-              shallowHeap: d.shallowSize,
-              retainedHeap: d.retainedSize,
-              hasChildren: d.hasOutbound,
-              objectId: d.objectId,
-              isResult: true
-            })
-          })
-
-          loaded.push({
-            rowKey: rowKey++,
-            objectId: objectId,
-            parentRowKey: parentRowKey,
-            isOutboundsSummary: true,
-            nextPage: page + 1,
-            currentSize: loadedLen + res.length,
-            totalSize: resp.data.totalSize,
-            resolve: resolve,
-          })
-
-          if (callResolve) {
-            resolve(loaded)
-          }
-          this.loading = false
-        })
-      },
-      clear() {
-        this.nextPage = 1
-        this.totalSize = 0
-
-        this.treeResult = []
-        this.treeTableData = []
-
-        this.tableResult = []
-        this.tableResultColumns = []
-        this.tableTableData = []
-        this.textResult = ''
-      },
-
-      search() {
-        if (this.query && !this.searching) {
-          this.searching = true
-          this.clear()
-          this.fetchResult(this.query)
-        }
-      },
-
-      putHistory(query) {
-        let target = query.trim()
-        for (let i = 0; i < this.historyQueries.length; i++) {
-          if (this.historyQueries[i].value === target) {
-            return
-          }
-        }
-
-        this.historyQueries.push({value: target})
-        if (this.historyQueries.length > 11) {
-          this.historyQueries.shift()
-        }
-      },
-
-      queryHistory(queryString, cb) {
-        let history = this.historyQueries;
-        let results = queryString ? history.filter(this.createFilter(queryString)) : history;
-        cb(results);
-      },
-
-      createFilter(queryString) {
-        return (history) => {
-          return (history.value.toLowerCase().indexOf(queryString.toLowerCase().trim()) === 0);
-        };
-      },
-    },
-
-    created() {
-      if (this.preparedQuery && this.preparedQueryType) {
-        this.query = this.preparedQuery
-        this.queryType = this.preparedQueryType
-        this.disabledInput = true
-        this.search()
-      } else {
-        this.disabledInput = false
-      }
-    }
-  }
-</script>
+:deep(.el-input-group__prepend) {
+  background-color: var(--el-fill-color-blank);
+}
+</style>

@@ -47,18 +47,22 @@ public class HttpConfigurer extends ConfigurationAccessor implements WebMvcConfi
     @Override
     public void addViewControllers(ViewControllerRegistry registry) {
         if (isMaster() || isStandaloneWorker()) {
-            String viewName = "forward:index.html";
-            registry.addViewController("/").setViewName(viewName);
-            registry.addViewController("/heapDump").setViewName(viewName);
-            registry.addViewController("/gcLog").setViewName(viewName);
-            registry.addViewController("/gcLogCompare").setViewName(viewName);
-            registry.addViewController("/threadDump").setViewName(viewName);
+            String viewName = "forward:/index.html";
+            String[] knownPages = new String[]{
+                    "/", "/error",
+                    "/heap-dump-analysis/*",
+                    "/gc-log-analysis/*",
+                    "/thread-dump-analysis/*",
+            };
+            for (String knowPage : knownPages) {
+                registry.addViewController(knowPage).setViewName(viewName);
+            }
         }
     }
 
     @Override
     public void configurePathMatch(PathMatchConfigurer configurer) {
-        configurer.addPathPrefix(Constant.HTTP_API_PREFIX, i -> true);
+        configurer.addPathPrefix(Constant.HTTP_API_PREFIX, clazz -> true);
     }
 
     @ConditionalOnRole({Role.MASTER, Role.STANDALONE_WORKER})

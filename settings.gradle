@@ -22,8 +22,8 @@ include ':analysis:heap-dump:hook'
 include ':analysis:gc-log'
 include ':analysis:thread-dump'
 include ':server'
+
 include ':frontend'
-include ':frontend_next'
 
 def mapGradleBuildFile(p) {
     p.buildFileName = "${p.name}.gradle".toLowerCase()

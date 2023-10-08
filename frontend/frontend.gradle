@@ -18,16 +18,12 @@ apply from: "$rootDir/gradle/base.gradle"
 
 task buildFrontend(type: NpmTask) {
     dependsOn npmInstall
-    args = ['run', 'prod-build']
+    args = ['run', 'build-only']
 }
 
-println project(':server').projectDir
-
 task moveStaticResourcesToServer(type: Copy) {
-    if (!file('build').exists() || gradle.startParameter.taskNames.contains("clean")) {
-        dependsOn buildFrontend
-    }
-    from "build"
+    dependsOn buildFrontend
+    from "dist"
     include "**/**"
     into project(':server').projectDir.toPath().resolve('src/main/resources/static')
 }

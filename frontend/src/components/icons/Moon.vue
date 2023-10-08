@@ -10,6 +10,7 @@
 
     SPDX-License-Identifier: EPL-2.0
  -->
+<script setup lang="=ts"></script>
 <template>
   <!-- https://www.svgrepo.com -->
   <svg viewBox="0 0 24 24" focusable="false" fill="#ede651" xmlns="http://www.w3.org/2000/svg">
@@ -18,4 +19,3 @@
     />
   </svg>
 </template>
-<script setup></script>

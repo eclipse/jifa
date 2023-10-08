@@ -1,5 +1,5 @@
 <!--
-    Copyright (c) 2020 Contributors to the Eclipse Foundation
+    Copyright (c) 2023 Contributors to the Eclipse Foundation
 
     See the NOTICE file(s) distributed with this work for additional
     information regarding copyright ownership.
@@ -10,337 +10,196 @@
 
     SPDX-License-Identifier: EPL-2.0
  -->
-<template xmlns:v-contextmenu="http://www.w3.org/1999/xhtml">
-  <div style="height: 100%; display: flex; flex-direction: column;">
-    <el-row>
-      <el-col :span="15">
-        <el-radio-group v-model="grouping" style="margin-top:10px; margin-left: 10px" @change="changeGrouping"
-                        size="mini">
-          <el-radio label="NONE">Object</el-radio>
-          <el-radio label="BY_CLASS">Class</el-radio>
-          <el-radio label="BY_CLASSLOADER">ClassLoader</el-radio>
-          <el-radio label="BY_PACKAGE">Package</el-radio>
-        </el-radio-group>
-      </el-col>
-      <el-col :span="9">
-        <el-tooltip :content="$t('jifa.searchTip')" placement="bottom" effect="light">
-          <el-input size="mini"
-                    :placeholder="$t('jifa.searchPlaceholder')"
-                    class="input-with-select"
-                    v-model="searchText"
-                    @keyup.enter.native="doSearch"
-                    clearable>
-            <el-select slot="prepend" style="width: 100px" v-model="searchType" default-first-option>
-              <el-option label="By name" value="by_name"></el-option>
-              <el-option label="By percent" value="by_percent"></el-option>
-              <el-option label="By shallow heap size" value="by_shallow_size"></el-option>
-              <el-option label="By retained heap size" value="by_retained_size"></el-option>
+<script setup lang="ts">
+import { prettyCount, prettyPercentage, prettySize } from '@/support/utils';
+import { getIcon, ICONS } from '@/components/heapdump/icon-helper';
+import { Search } from '@element-plus/icons-vue';
+import { useSelectedObject } from '@/composables/heapdump/selected-object';
+import CommonTable from '@/components/heapdump/CommonTable.vue';
+import { hdt } from '@/components/heapdump/utils';
+import { commonMenu as menu } from '@/components/heapdump/menu';
+
+const { selectedObjectId } = useSelectedObject();
+
+const parameters = reactive({
+  groupBy: 'NONE',
+  searchText: '',
+  searchType: 'by_name'
+});
+
+const searchText = ref('');
+
+function updateSearchText() {
+  parameters.searchText = searchText.value || '';
+}
+
+const className = {
+  label: () => hdt('column.className'),
+  minWidth: 250,
+  content: (d) => d.label,
+  icon: (d) =>
+    parameters.groupBy === 'BY_CLASS'
+      ? ICONS.objects.class
+      : getIcon(d.gCRoot, d.objectType, d.objType),
+  prefix: (d) => d.prefix,
+  suffix: (d) => d.suffix
+};
+
+const objects = {
+  label: () => hdt('column.objectCount'),
+  width: 120,
+  align: 'right',
+  sortable: true,
+  property: 'Objects',
+  content: (d) => prettyCount(d.objects)
+};
+
+const shallowHeap = {
+  label: 'Shallow Heap',
+  width: 130,
+  align: 'right',
+  sortable: true,
+  property: 'shallowHeap',
+  content: (d) => prettySize(d.shallowSize)
+};
+
+const retainedHeap = {
+  label: 'Retained Heap',
+  width: 130,
+  align: 'right',
+  sortable: true,
+  property: 'retainedHeap',
+  content: (d) => prettySize(d.retainedSize)
+};
+
+const percentage = {
+  label: () => hdt('column.percentage'),
+  width: 130,
+  align: 'right',
+  sortable: true,
+  property: 'percent',
+  content: (d) => prettyPercentage(d.percent)
+};
+
+const columns1 = [className, shallowHeap, retainedHeap, percentage];
+
+const columns2 = [className, objects, shallowHeap, retainedHeap, percentage];
+
+const tableProps = ref({
+  columns: columns1,
+
+  apis: [
+    {
+      api: 'dominatorTree.roots',
+      parameters: () => parameters,
+      paged: true
+    },
+    {
+      api: 'dominatorTree.children',
+      parameters: (item) => {
+        let idPathInResultTree = [];
+        let p = item;
+        do {
+          idPathInResultTree.push(p.objectId);
+          p = p.__meta.parent;
+        } while (p);
+        return {
+          ...parameters,
+          parentObjectId: item.objectId,
+          idPathInResultTree: idPathInResultTree.reverse()
+        };
+      },
+      paged: true
+    }
+  ],
+
+  hasChildren: () => true,
+
+  defaultSortProperty: {
+    prop: 'retainedHeap',
+    order: 'descending'
+  },
+
+  sortParameterConverter: (sortProperty) => {
+    return {
+      sortBy: sortProperty.prop,
+      ascendingOrder: sortProperty.order === 'ascending'
+    };
+  },
+
+  onRowClick: (d) => {
+    if (d.hasOwnProperty('objectId')) {
+      selectedObjectId.value = d.objectId;
+    }
+  },
+
+  menu,
+  watch: [parameters]
+});
+
+watchEffect(() => {
+  tableProps.value.columns = parameters.groupBy === 'NONE' ? columns1 : columns2;
+});
+</script>
+<template>
+  <div style="height: 100%; display: flex; flex-direction: column">
+    <div
+      style="
+        height: 32px;
+        flex-shrink: 0;
+        padding-left: 8px;
+        margin-bottom: 8px;
+        overflow: hidden;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      "
+    >
+      <el-space>
+        <el-text size="small" truncated>Group</el-text>
+
+        <el-select
+          v-model="parameters.groupBy"
+          placeholder="Select"
+          style="width: 105px"
+          placement="bottom"
+          size="small"
+        >
+          <el-option label="Object" value="NONE"></el-option>
+          <el-option label="Class" value="BY_CLASS"></el-option>
+          <el-option label="Class Loader" value="BY_CLASSLOADER"></el-option>
+          <el-option label="Package" value="BY_PACKAGE"></el-option>
+        </el-select>
+      </el-space>
+
+      <div>
+        <el-input size="small" v-model="searchText" @change="updateSearchText">
+          <template #prepend>
+            <el-select
+              v-model="parameters.searchType"
+              style="width: 116px"
+              size="small"
+              placement="bottom"
+            >
+              <el-option label="Class Name" value="by_name" />
+              <el-option label="Shallow Heap" value="by_shallow_size" />
+              <el-option label="Retained Heap" value="by_retained_size" />
+              <el-option label="Percent" value="by_percent" />
             </el-select>
-
-            <el-button slot="append" :icon="inSearching ? 'el-icon-loading' : 'el-icon-search'"
-                       :disabled="inSearching"
-                       @click="doSearch"/>
-          </el-input>
-        </el-tooltip>
-      </el-col>
-    </el-row>
-
-    <v-contextmenu ref="contextmenu">
-      <v-contextmenu-submenu :title="$t('jifa.heap.ref.object.label')">
-        <v-contextmenu-item
-            @click="$emit('outgoingRefsOfObj', contextMenuTargetObjectId, contextMenuTargetObjectLabel)">
-          {{$t('jifa.heap.ref.object.outgoing')}}
-        </v-contextmenu-item>
-        <v-contextmenu-item
-            @click="$emit('incomingRefsOfObj', contextMenuTargetObjectId, contextMenuTargetObjectLabel)">
-          {{$t('jifa.heap.ref.object.incoming')}}
-        </v-contextmenu-item>
-      </v-contextmenu-submenu>
-      <v-contextmenu-submenu :title="$t('jifa.heap.ref.type.label')">
-        <v-contextmenu-item
-            @click="$emit('outgoingRefsOfClass', contextMenuTargetObjectId, contextMenuTargetObjectLabel)">
-          {{$t('jifa.heap.ref.type.outgoing')}}
-        </v-contextmenu-item>
-        <v-contextmenu-item
-            @click="$emit('incomingRefsOfClass', contextMenuTargetObjectId, contextMenuTargetObjectLabel)">
-          {{$t('jifa.heap.ref.type.incoming')}}
-        </v-contextmenu-item>
-      </v-contextmenu-submenu>
-      <v-contextmenu-item divider></v-contextmenu-item>
-      <v-contextmenu-item v-if="grouping==='NONE'"
-          @click="$emit('pathToGCRootsOfObj', contextMenuTargetObjectId, contextMenuTargetObjectLabel)">
-        {{$t('jifa.heap.pathToGCRoots')}}
-      </v-contextmenu-item>
-      <v-contextmenu-item
-          @click="$emit('mergePathToGCRootsFromDominatorTree', contextMenuTargetObjectIds == null ? [contextMenuTargetObjectId] : contextMenuTargetObjectIds, contextMenuTargetObjectLabel)">
-        {{$t('jifa.heap.mergePathToGCRoots')}}
-      </v-contextmenu-item>
-    </v-contextmenu>
-
-    <div style="flex-grow: 1; overflow: auto">
-      <el-table
-          ref='recordTable' :data="tableData"
-          :highlight-current-row="true"
-          stripe
-          :header-cell-style="headerCellStyle"
-          :cell-style='cellStyle'
-          row-key="rowKey"
-          :load="loadChildren"
-          @sort-change="sortTable"
-          :span-method="spanMethod"
-          :indent=8
-          lazy
-          fit
-          v-loading="loading"
-      >
-        <el-table-column prop="id" label="Class Name" show-overflow-tooltip sortable="custom">
-          <template slot-scope="scope">
-          <span v-if="scope.row.isResult"
-                @click="scope.row.isObjType ? $emit('setSelectedObjectId', scope.row.objectId) : {}"
-                style="cursor: pointer"
-                @contextmenu="contextMenuTargetObjectId = scope.row.objectId; idPathInResultTree = scope.row.idPathInResultTree; contextMenuTargetObjectLabel = scope.row.label; contextMenuTargetObjectIds = scope.row.objectIds;"
-                v-contextmenu:contextmenu>
-            <img :src="scope.row.icon" style="margin-right: 5px"/>
-              {{ scope.row.label }}
-            <span style="font-weight: bold; color: #909399">
-              {{ scope.row.suffix }}
-            </span>
-          </span>
-
-            <span v-if="scope.row.isSummaryItem">
-            <img :src="ICONS.misc.sumIcon" v-if="records.length >= totalSize"/>
-            <img :src="ICONS.misc.sumPlusIcon" @dblclick="fetchNextPageData" style="cursor: pointer" v-else/>
-            {{ toReadableCount(records.length) }} <strong> / </strong> {{ toReadableCount(totalSize) }}
-          </span>
-
-            <span v-if="scope.row.isChildrenSummary">
-            <img :src="ICONS.misc.sumIcon" v-if="scope.row.currentSize >= scope.row.totalSize"/>
-            <img :src="ICONS.misc.sumPlusIcon"
-                 @dblclick="fetchChildren(scope.row.parentRowKey, scope.row.objectId, scope.row.nextPage, scope.row.idPathInResultTree, scope.row.resolve)"
-                 style="cursor: pointer"
-                 v-else/>
-            {{ toReadableCount(scope.row.currentSize) }} <strong> / </strong> {{ toReadableCount(scope.row.totalSize) }}
-          </span>
           </template>
-        </el-table-column>
-        <el-table-column/>
-        <el-table-column/>
-        <el-table-column/>
-        <el-table-column/>
-        <el-table-column/>
-
-        <el-table-column v-if="grouping!=='NONE'" label="Objects" prop="Objects" sortable="custom">
-          <template slot-scope="scope">
-            {{ grouping !== "NONE" ? toReadableCount(scope.row.objects) : '' }}
+          <template #append>
+            <el-button :icon="Search as any" size="small" @click="updateSearchText" />
           </template>
-        </el-table-column>
-
-        <el-table-column label="Shallow Heap" prop="shallowHeap" sortable="custom"
-                         :formatter="toReadableSizeWithUnitFormatter">
-        </el-table-column>
-        <el-table-column label="Retained Heap" prop="retainedHeap" sortable="custom"
-                         :formatter="toReadableSizeWithUnitFormatter">
-        </el-table-column>
-        <el-table-column label="Percentage" prop="percent" sortable="custom">
-        </el-table-column>
-      </el-table>
+        </el-input>
+      </div>
+    </div>
+    <div style="flex-grow: 1; overflow: hidden">
+      <CommonTable v-bind="tableProps" />
     </div>
   </div>
 </template>
-
-<script>
-  import axios from 'axios'
-  import {getIcon, ICONS} from "./IconHealper";
-  import {heapDumpService, toReadableCount, toReadableSizeWithUnitFormatter} from "../../util";
-
-  let rowKey = 1
-
-  export default {
-    props: ['file'],
-    data() {
-      return {
-        ICONS,
-        loading: false,
-        cellStyle: {padding: '4px', fontSize: '12px'},
-        headerCellStyle: {padding: 0, 'font-size': '12px', 'font-weight': 'normal'},
-
-        nextPage: 1,
-        pageSize: 25,
-        totalSize: 0,
-        records: [],
-        tableData: [],
-        contextMenuTargetObjectId: null,
-        contextMenuTargetObjectLabel: null,
-        contextMenuTargetObjectIds: null,
-
-        // grouping support
-        grouping: 'NONE',
-
-        // sorting support
-        ascendingOrder: false,
-        sortBy: 'retainedHeap',
-
-        // query support
-        searchText: '',
-        inSearching: false,
-        searchType: 'by_name'
-      }
-    },
-    methods: {
-      toReadableCount,
-      toReadableSizeWithUnitFormatter,
-      spanMethod(row) {
-        let index = row.columnIndex
-        if (index === 0) {
-          return [1, 6]
-        } else if (index >= 1 && index <= 5) {
-          return [0, 0]
-        }
-        return [1, 1]
-      },
-      clear() {
-        this.nextPage = 1
-        this.totalSize = 0
-        this.records = []
-      },
-      changeGrouping() {
-        // sort by Objects is not valid for grouping by none
-        if (this.grouping === 'NONE' && this.sortBy === 'Objects') {
-          this.sortBy = 'retainedHeap'
-        }
-        this.clear()
-        this.fetchNextPageData()
-      },
-      sortTable(val) {
-        this.sortBy = val.prop;
-        this.nextPage = 1
-        this.totalSize = 0
-        this.records = []
-        this.ascendingOrder = val.order === 'ascending';
-        this.fetchNextPageData();
-      },
-      getIconWrapper(gCRoot, objectType, isObj) {
-        return getIcon(gCRoot, objectType, isObj)
-      },
-      loadChildren(tree, treeNode, resolve) {
-        this.fetchChildren(tree.rowKey, tree.objectId, 1, tree.idPathInResultTree, resolve)
-      },
-      doSearch() {
-        this.clear();
-        this.fetchNextPageData();
-      },
-      fetchChildren(parentRowKey, objectId, page, idPathInResultTree, resolve) {
-        this.loading = true
-        axios.get(heapDumpService(this.file, 'dominatorTree/children'), {
-          params: {
-            parentObjectId: objectId,
-            page: page,
-            pageSize: this.pageSize,
-            groupBy: this.grouping,
-            idPathInResultTree: JSON.stringify(idPathInResultTree),
-            sortBy: this.sortBy,
-            ascendingOrder: this.ascendingOrder,
-          }
-        }).then(resp => {
-          let loadedLen = 0;
-          let loaded = this.$refs['recordTable'].store.states.lazyTreeNodeMap[parentRowKey]
-          let callResolve = false
-          if (loaded) {
-            loadedLen = loaded.length
-            if (loadedLen > 0) {
-              loaded.splice(--loadedLen, 1)
-            }
-          } else {
-            loaded = []
-            callResolve = true;
-          }
-
-          let res = resp.data.data
-          res.forEach(d => {
-            let idPathInResultTreeCopy = Array.from(idPathInResultTree);
-            idPathInResultTreeCopy.push(d.objectId);
-            loaded.push({
-              rowKey: rowKey++,
-              objectId: d.objectId,
-              isObjType: d.objType,
-              objectType: d.objectType,
-              icon: this.getIconWrapper(d.gCRoot, d.objectType, d.objType),
-              label: d.label,
-              suffix: d.suffix,
-              objects: d.objects,
-              objectIds: d.objectIds,
-              shallowHeap: d.shallowSize,
-              retainedHeap: d.retainedSize,
-              percent: (d.percent * 100).toFixed(2) + '%',
-              hasChildren: true,
-              isResult: true,
-              idPathInResultTree: idPathInResultTreeCopy
-            })
-          })
-
-          loaded.push({
-            rowKey: rowKey++,
-            objectId: objectId,
-            parentRowKey: parentRowKey,
-            isChildrenSummary: true,
-            nextPage: page + 1,
-            currentSize: loadedLen + res.length,
-            totalSize: resp.data.totalSize,
-            resolve: resolve,
-            idPathInResultTree: idPathInResultTree
-          })
-
-          if (callResolve) {
-            resolve(loaded)
-          }
-          this.loading = false
-        })
-      },
-      fetchNextPageData() {
-        this.loading = true
-        axios.get(heapDumpService(this.file, 'dominatorTree/roots'), {
-          params: {
-            page: this.nextPage,
-            pageSize: this.pageSize,
-            groupBy: this.grouping,
-            sortBy: this.sortBy,
-            ascendingOrder: this.ascendingOrder,
-            searchText: this.searchText,
-            searchType: this.searchType,
-          }
-        }).then(resp => {
-          this.totalSize = resp.data.totalSize
-          let data = resp.data.data
-          data.forEach(d => {
-            this.records.push({
-              rowKey: rowKey++,
-              objectId: d.objectId,
-              isObjType: d.objType,
-              objectType: d.objectType,
-              icon: this.getIconWrapper(d.gCRoot, d.objectType, d.objType),
-              label: d.label,
-              suffix: d.suffix,
-              objects: d.objects,
-              objectIds: d.objectIds,
-              shallowHeap: d.shallowSize,
-              retainedHeap: d.retainedSize,
-              percent: (d.percent * 100).toFixed(2) + '%',
-              hasChildren: true,
-              isResult: true,
-              idPathInResultTree: [d.objectId]
-            })
-          })
-          this.tableData = this.records.concat({
-            rowKey: rowKey++,
-            isSummaryItem: true
-          })
-          this.nextPage++
-          this.loading = false
-        })
-      },
-    },
-    created() {
-      this.fetchNextPageData()
-    }
-  }
-</script>
+<style scoped>
+:deep(.el-input-group__prepend) {
+  background-color: var(--el-fill-color-blank);
+}
+</style>

@@ -1,5 +1,5 @@
 <!--
-    Copyright (c) 2022 Contributors to the Eclipse Foundation
+    Copyright (c) 2023 Contributors to the Eclipse Foundation
 
     See the NOTICE file(s) distributed with this work for additional
     information regarding copyright ownership.
@@ -10,178 +10,156 @@
 
     SPDX-License-Identifier: EPL-2.0
  -->
+<script setup lang="ts">
+import { useAnalysisApiRequester } from '@/composables/analysis-api-requester';
 
+const props = defineProps({
+  id: {
+    required: true
+  },
+  title: {
+    type: String,
+    required: true
+  }
+});
+
+const { request } = useAnalysisApiRequester();
+
+const loading = ref(false);
+
+const pageSize = 10;
+const states = ref();
+const stateData = ref();
+
+function toggleContent(row, state) {
+  if (row.contentLoaded) {
+    row.contentVisible = !row.contentVisible;
+    return;
+  }
+
+  stateData.value[state].loading = true;
+  let id = row.id;
+  request('rawContentOfThread', {
+    id
+  }).then((content) => {
+    row.content = content.join('\n');
+    row.contentLoaded = true;
+    row.contentVisible = true;
+    stateData.value[state].loading = false;
+  });
+}
+
+function loadThreads(state) {
+  let data = stateData.value[state];
+  data.loading = true;
+  request('threadsByMonitor', {
+    id: props.id,
+    state,
+    page: data.page,
+    pageSize
+  }).then((pageView) => {
+    data.tableData = pageView.data.map((thread) => ({
+      ...thread,
+      content: '',
+      contentLoaded: false,
+      contentVisible: false
+    }));
+    data.loading = false;
+  });
+}
+
+function loadStates() {
+  loading.value = true;
+  request('threadCountsByMonitor', {
+    id: props.id
+  }).then((data) => {
+    let _states = [];
+    let _stateData = {};
+    for (let k in data) {
+      if (data[k] > 0) {
+        _states.push(k);
+        _stateData[k] = {
+          page: 1,
+          totalSize: data[k],
+          moreThanOnePage: data[k] > pageSize,
+          tableData: [],
+          loading: false
+        };
+      }
+    }
+    states.value = _states;
+    stateData.value = _stateData;
+    loading.value = false;
+
+    for (let k in _stateData) {
+      loadThreads(k);
+    }
+  });
+}
+
+watch([props], () => {
+  loadStates();
+});
+
+onMounted(() => {
+  loadStates();
+});
+</script>
 <template>
-  <div>
-    <el-alert :title="title" type="success">
-    </el-alert>
-    <div v-for="state in states" v-bind:key="state" style="margin-top: 10px">
-      <el-tag>{{ state }}</el-tag>
-      <el-table
-          :cell-style='cellStyle'
-          :data="tableDataOfState[state].tableData"
-          :show-header="false"
-          stripe
-          :v-loading="tableDataOfState[state].loading"
+  <el-alert :title="title" type="success" :closable="false" />
 
-          style="margin-top: 10px"
+  <div v-loading="loading">
+    <div style="margin-top: 20px" v-for="state in states" :key="state">
+      <el-tag style="margin-bottom: 10px" disable-transitions>{{ state }}</el-tag>
+      <el-table
+        stripe
+        :show-header="false"
+        :style="stateData[state].moreThanOnePage ? { height: `${40 * pageSize}px` } : {}"
+        :data="stateData[state].tableData"
+        v-loading="stateData[state].loading"
       >
         <el-table-column>
-          <template slot-scope="scope">
-            <div v-if="scope.row.dataRow">
-              <i class="el-icon-view" style="color: cornflowerblue"/>
-              <span style="margin-left: 10px; color: #409eff; cursor: pointer" @click="loadThreadContent(scope.row)">
-                {{ scope.row.name }}
-              </span>
-              <div v-if="scope.row.contentVisible && scope.row.contentLoaded" class="thread-content">
-                {{ scope.row.content }}
-              </div>
+          <template #default="{ row }">
+            <span class="clickable" @click="toggleContent(row, state)">{{ row.name }}</span>
+            <div class="content" v-if="row.contentVisible && row.contentLoaded">
+              <el-scrollbar>
+                {{ row.content }}
+              </el-scrollbar>
             </div>
-            <span v-if="scope.row.summaryRow" @dblclick="scope.row.dblclick()"
-                  :style="scope.row.size < scope.row.totalSize ? 'cursor: pointer': ''">
-            <i v-if="scope.row.size < scope.row.totalSize" class="el-icon-circle-plus"
-               style="color: cornflowerblue; margin-left: 1px;"/>
-            <i v-else class="el-icon-remove" style="color: #909399; margin-left: 1px;"/>
-            <span style="margin-left: 8px">
-              {{ scope.row.size }} <strong> / </strong>  {{ scope.row.totalSize }}
-            </span>
-          </span>
           </template>
         </el-table-column>
       </el-table>
+      <div class="pagination" v-if="stateData[state].moreThanOnePage">
+        <el-pagination
+          layout="total, prev, pager, next"
+          background
+          :total="stateData[state].totalSize"
+          :page-size="pageSize"
+          v-model:current-page="stateData[state].page"
+          @current-change="loadThreads(state)"
+          :disabled="stateData[state].loading"
+        />
+      </div>
     </div>
   </div>
 </template>
-
-<script>
-import axios from "axios";
-import {threadDumpService} from "@/util";
-
-export default {
-  props: ['file', 'id', 'title'],
-  data() {
-    return {
-      cellStyle: {padding: '8px'},
-
-      pageSize: 15,
-
-      states: [],
-      tableDataOfState: {}
-    }
-  },
-  methods: {
-    loadThreadContent(row) {
-      if (row.contentLoaded) {
-        row.contentVisible = !row.contentVisible
-        return
-      }
-      this.loading = true
-      axios.get(threadDumpService(this.file, "rawContentOfThread"), {params: {id: row.id}})
-          .then(resp => {
-            let content = ''
-            for (let i = 0; i < resp.data.length; i++) {
-              content += resp.data[i]
-              if (i !== resp.data.length - 1) {
-                content += "\n"
-              }
-            }
-            row.content = content
-            row.contentVisible = true
-            row.contentLoaded = true
-            this.loading = false
-          })
-    },
-
-    loadThreadData(stateData, state, page) {
-      stateData.loading = true
-      axios.get(threadDumpService(this.file, "threadsByMonitor"), {
-        params: {
-          id: this.id,
-          state,
-          page,
-          pageSize: this.pageSize
-        }
-      }).then(resp => {
-        let data = resp.data
-        let loaded = stateData.tableData
-        if (loaded.length > 0) {
-          // the last is summary row
-          loaded.splice(loaded.length - 1, 1)
-        }
-
-        let threads = data.data
-        threads.forEach(thread => {
-          loaded.push({
-            dataRow: true,
-            id: thread.id,
-            name: thread.name,
-            content: '',
-            contentLoaded: false,
-            contentVisible: false,
-          })
-        })
-
-        if (data.totalSize > 1) {
-          loaded.push({
-            summaryRow: true,
-            size: loaded.length,
-            totalSize: data.totalSize,
-            dblclick: () => {
-              if (loaded.length - 1 /* summary */ < data.totalSize) {
-                this.loadThreadData(stateData, state, page + 1);
-              }
-            }
-          })
-        }
-        this.loading = false
-      })
-    },
-
-    loadStateData() {
-      this.states = []
-      this.tableDataOfState = {}
-      if (this.id <= 0) {
-        return
-      }
-      axios.get(threadDumpService(this.file, "threadCountsByMonitor"), {params: {id: this.id}})
-          .then(resp => {
-            let data = resp.data
-            for (let k in data) {
-              if (data[k] > 0) {
-                this.states.push(k)
-                this.tableDataOfState[k] = {
-                  totalSize: data[k],
-                  tableData: [],
-                  loading: false
-                }
-              }
-            }
-
-            for (let k in this.tableDataOfState) {
-              this.loadThreadData(this.tableDataOfState[k], k, 1)
-            }
-          })
-    }
-  },
-
-  mounted() {
-    this.loadStateData()
-  },
-
-  watch: {
-    id: function () {
-      this.loadStateData()
-    }
-  }
-}
-</script>
-
 <style scoped>
-.thread-content {
+.pagination {
   margin-top: 15px;
-  background-color: #343a40;
-  color: #fff;
-  overflow: auto;
+  flex-shrink: 0;
+  display: flex;
+  justify-content: flex-end;
+  overflow: hidden;
+}
+
+.content {
+  margin-top: 5px;
+  border-radius: 8px;
+  padding: 7px;
+  background-color: rgba(var(--el-color-primary-rgb), 0.1);
   white-space: pre;
+  font-size: 14px;
+  line-height: 1.5;
+  overflow-y: auto;
 }
 </style>

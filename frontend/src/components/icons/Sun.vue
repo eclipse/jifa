@@ -10,6 +10,7 @@
 
     SPDX-License-Identifier: EPL-2.0
  -->
+<script setup lang="=ts"></script>
 <template>
   <!-- https://www.svgrepo.com -->
   <svg
@@ -32,4 +33,3 @@
     <path d="M5.32178 5.32227L4.92894 4.92943" />
   </svg>
 </template>
-<script setup></script>

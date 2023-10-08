@@ -1,5 +1,5 @@
 <!--
-    Copyright (c) 2022 Contributors to the Eclipse Foundation
+    Copyright (c) 2023 Contributors to the Eclipse Foundation
 
     See the NOTICE file(s) distributed with this work for additional
     information regarding copyright ownership.
@@ -10,188 +10,167 @@
 
     SPDX-License-Identifier: EPL-2.0
  -->
+<script setup lang="ts">
+import { useAnalysisApiRequester } from '@/composables/analysis-api-requester';
+import { tdt } from '@/i18n/i18n';
+import { Search } from '@element-plus/icons-vue';
 
+const props = defineProps({
+  groupName: {
+    type: String,
+    required: false
+  },
+  type: {
+    type: String,
+    required: false
+  }
+});
+
+const { request } = useAnalysisApiRequester();
+
+const loading = ref(false);
+
+const name = ref();
+const nameInput = ref();
+
+const page = ref(1);
+const pageSize = 10;
+const totalSize = ref(0);
+const moreThanOnePage = computed(() => totalSize.value > pageSize);
+const tableData = ref();
+
+function toggleContent(row) {
+  if (row.contentLoaded) {
+    row.contentVisible = !row.contentVisible;
+    return;
+  }
+
+  loading.value = true;
+  let id = row.id;
+  request('rawContentOfThread', {
+    id
+  }).then((content) => {
+    row.content = content.join('\n');
+    row.contentLoaded = true;
+    row.contentVisible = true;
+    loading.value = false;
+  });
+}
+
+function loadThreads() {
+  loading.value = true;
+  let groupName = props.groupName;
+  let type = props.type;
+  let paging = {
+    page: page.value,
+    pageSize
+  };
+  request(
+    groupName ? 'threadsOfGroup' : 'threads',
+    groupName
+      ? {
+          groupName,
+          ...paging
+        }
+      : {
+          type,
+          name: name.value,
+          ...paging
+        }
+  ).then((pageView) => {
+    totalSize.value = pageView.totalSize;
+    tableData.value = pageView.data.map((thread) => ({
+      ...thread,
+      content: '',
+      contentLoaded: false,
+      contentVisible: false
+    }));
+    loading.value = false;
+  });
+}
+
+function updateNameAndLoad() {
+  if (name.value === nameInput.value) {
+    return;
+  }
+  name.value = nameInput.value;
+  page.value = 1;
+  loadThreads();
+}
+
+function reset() {
+  nameInput.value = null;
+  name.value = null;
+  page.value = 1;
+}
+
+watch([props], () => {
+  reset();
+  loadThreads();
+});
+
+onMounted(() => {
+  loadThreads();
+});
+</script>
 <template>
-  <div>
-    <div style="margin-bottom: 15px" v-if="!groupName">
-      <el-input size="medium" style="width: 360px" v-model="inputName" v-on:change="name = inputName">
-        <template slot="prepend">{{ $t("jifa.threadDump.threadNameLabel") }}</template>
-      </el-input>
-    </div>
-    <el-table
-        :cell-style='cellStyle'
-        :data="tableData"
-        :show-header="false"
-        stripe
-        v-loading="loading"
-    >
-      <el-table-column>
-        <template slot-scope="scope">
-          <div v-if="scope.row.dataRow">
-            <i class="el-icon-view" style="color: cornflowerblue"/>
-            <span style="margin-left: 10px; color: #409eff; cursor: pointer"
-                  @click="loadThreadContent(scope.row)">
-              {{ scope.row.name }}
-            </span>
-            <div v-if="scope.row.contentVisible && scope.row.contentLoaded" class="thread-content">
-              {{ scope.row.content }}
-            </div>
-          </div>
-          <span v-if="scope.row.summaryRow" @dblclick="scope.row.dblclick()"
-                :style="scope.row.size < scope.row.totalSize ? 'cursor: pointer': ''">
-            <i v-if="scope.row.size < scope.row.totalSize" class="el-icon-circle-plus"
-               style="color: cornflowerblue; margin-left: 1px;"/>
-            <i v-else class="el-icon-remove" style="color: #909399; margin-left: 1px;"/>
-            <span style="margin-left: 8px">
-              {{ scope.row.size }} <strong> / </strong>  {{ scope.row.totalSize }}
-            </span>
-          </span>
-        </template>
-      </el-table-column>
-    </el-table>
+  <div style="margin-bottom: 15px" v-if="!groupName">
+    <el-input style="width: 360px" clearable v-model="nameInput" @change="updateNameAndLoad">
+      <template #prepend>
+        {{ tdt('threadNameLabel') }}
+      </template>
+      <template #append>
+        <el-button :icon="Search as any" size="small" @click="updateNameAndLoad" />
+      </template>
+    </el-input>
+  </div>
+  <el-table
+    stripe
+    :show-header="false"
+    :style="moreThanOnePage ? { height: `${40 * pageSize}px` } : {}"
+    :data="tableData"
+    v-loading="loading"
+  >
+    <el-table-column>
+      <template #default="{ row }">
+        <span class="clickable" @click="toggleContent(row)">{{ row.name }}</span>
+        <div class="content" v-if="row.contentVisible && row.contentLoaded">
+          <el-scrollbar>
+            {{ row.content }}
+          </el-scrollbar>
+        </div>
+      </template>
+    </el-table-column>
+  </el-table>
+  <div class="pagination" v-if="moreThanOnePage">
+    <el-pagination
+      layout="total, prev, pager, next"
+      background
+      :total="totalSize"
+      :page-size="pageSize"
+      v-model:current-page="page"
+      @current-change="loadThreads"
+      :disabled="loading"
+    />
   </div>
 </template>
-
-<script>
-import axios from "axios";
-import {threadDumpService} from "@/util";
-
-export default {
-  props: ['file', 'groupName', 'type'],
-  data() {
-    return {
-      cellStyle: {padding: '8px'},
-      loading: false,
-
-      pageSize: 15,
-      tableData: [],
-
-      name: '',
-      inputName: '',
-    }
-  },
-  methods: {
-    loadThreadContent(row) {
-      if (row.contentLoaded) {
-        row.contentVisible = !row.contentVisible
-        return
-      }
-      this.loading = true
-      axios.get(threadDumpService(this.file, "rawContentOfThread"), {params: {id: row.id}})
-          .then(resp => {
-            let content = ''
-            for (let i = 0; i < resp.data.length; i++) {
-              content += resp.data[i]
-              if (i !== resp.data.length - 1) {
-                content += "\n"
-              }
-            }
-            row.content = content
-            row.contentVisible = true
-            row.contentLoaded = true
-            this.loading = false
-          })
-    },
-
-    api() {
-      if (this.groupName) {
-        return "threadsOfGroup"
-      }
-      return "threads"
-    },
-
-    params(page) {
-      let params = {
-        page,
-        pageSize: this.pageSize
-      }
-      if (this.groupName) {
-        params.groupName = this.groupName
-      } else {
-        if (this.name) {
-          params.name = this.name
-        }
-        if (this.type) {
-          params.type = this.type
-        }
-      }
-      return params
-    },
-
-    loadData(page) {
-      this.loading = true
-
-      axios.get(threadDumpService(this.file, this.api()), {params: this.params(page)})
-          .then(resp => {
-            let data = resp.data
-            let loaded = this.tableData
-            if (loaded.length > 0) {
-              // the last is summary row
-              loaded.splice(loaded.length - 1, 1)
-            }
-
-            let threads = data.data
-            threads.forEach(thread => {
-              loaded.push({
-                dataRow: true,
-                id: thread.id,
-                name: thread.name,
-                content: '',
-                contentLoaded: false,
-                contentVisible: false,
-              })
-            })
-
-            if (data.totalSize > 1) {
-              loaded.push({
-                summaryRow: true,
-                size: loaded.length,
-                totalSize: data.totalSize,
-                dblclick: () => {
-                  if (loaded.length - 1 /* summary */ < data.totalSize) {
-                    this.loadData(page + 1);
-                  }
-                }
-              })
-            }
-
-            this.loading = false
-          })
-    },
-
-    reset() {
-      this.tableData = []
-      this.loadData(1)
-    }
-  },
-  computed: {
-    conditions() {
-      const {groupName, name, type} = this
-      return {
-        groupName,
-        name,
-        type
-      }
-    }
-  },
-  watch: {
-    conditions: {
-      handler: function () {
-        this.reset()
-      },
-      deep: true,
-      immediate: true
-    }
-  }
-}
-</script>
-
 <style scoped>
-.thread-content {
+.pagination {
   margin-top: 15px;
-  background-color: #343a40;
-  color: #fff;
-  overflow: auto;
+  flex-shrink: 0;
+  display: flex;
+  justify-content: flex-end;
+  overflow: hidden;
+}
+
+.content {
+  margin-top: 5px;
+  border-radius: 8px;
+  padding: 7px;
+  background-color: rgba(var(--el-color-primary-rgb), 0.1);
   white-space: pre;
+  font-size: 14px;
+  line-height: 1.5;
+  overflow-y: auto;
 }
 </style>
