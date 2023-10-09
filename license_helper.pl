@@ -107,7 +107,9 @@ sub callback {
         $dir =~ /.vscode/ ||
         $dir =~ /.idea/ ||
         $dir =~ /resources/ ||
-        $name eq '.gitignore' ) {
+        $name eq '.gitignore' ||
+        $name eq 'auto-imports.d.ts' ||
+        $name eq 'components.d.ts') {
       return;
     }
 
