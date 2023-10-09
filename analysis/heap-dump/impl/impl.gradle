@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020, 2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -30,7 +30,7 @@ jar {
         )
     }
 
-    archiveBaseName.set("heap-dump-analyzer-impl")
+    archiveBaseName.set("heap-dump-analysis-impl")
 }
 
 dependencies {
@@ -50,7 +50,8 @@ dependencies {
 
 compileJava.dependsOn(':analysis:heap-dump:hook:hookPreferences')
 
-task installJar(type: Copy, dependsOn: jar) {
+tasks.register('installJar', Copy) {
+    dependsOn jar
     from "${buildDir}/libs"
     into "${mat_deps_dir_path}"
     include "*${project.version}.jar"

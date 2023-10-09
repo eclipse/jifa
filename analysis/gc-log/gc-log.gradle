@@ -21,3 +21,6 @@ dependencies {
     implementation project(':common')
 }
 
+jar {
+    archiveBaseName.set("gc-log-analysis")
+}

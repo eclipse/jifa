@@ -35,3 +35,7 @@ jacocoTestReport {
         }))
     }
 }
+
+jar {
+    archiveBaseName.set("heap-dump-analysis-provider")
+}

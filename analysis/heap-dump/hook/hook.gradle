@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2022 Contributors to the Eclipse Foundation
+ * Copyright (c) 2022, 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -38,7 +38,8 @@ def findHprofJarName() {
     throw new IllegalStateException("Hprof jar not found");
 }
 
-task hookPreferences(type: Zip, dependsOn: compileJava) {
+tasks.register('hookPreferences', Zip) {
+    dependsOn compileJava
     def hprof = findHprofJarName()
     def preferences = 'org/eclipse/mat/hprof/ui/HprofPreferences.class'
     def access = 'org/eclipse/mat/hprof/extension/HprofPreferencesAccess.class'
@@ -67,4 +68,8 @@ task hookPreferences(type: Zip, dependsOn: compileJava) {
             duplicatesStrategy = DuplicatesStrategy.INCLUDE
         }
     }
+}
+
+jar {
+    archiveBaseName.set("heap-dump-analysis-hook")
 }

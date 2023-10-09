@@ -25,3 +25,7 @@ dependencies {
 test {
     jvmArgs('--add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED')
 }
+
+jar {
+    archiveBaseName.set("thread-dump-analysis")
+}
