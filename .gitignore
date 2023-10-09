@@ -27,3 +27,5 @@ cloud/
 *.tgz
 
 bin
+
+.test-temp

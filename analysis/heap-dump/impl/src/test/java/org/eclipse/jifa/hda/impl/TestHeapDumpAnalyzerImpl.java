@@ -14,11 +14,13 @@ package org.eclipse.jifa.hda.impl;
 
 import com.sun.management.HotSpotDiagnosticMXBean;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 import org.eclipse.jifa.analysis.listener.ProgressListener;
 import org.eclipse.jifa.hda.api.HeapDumpAnalyzer;
 import org.eclipse.jifa.hda.api.Model;
 import org.eclipse.jifa.hda.api.SearchType;
 import org.eclipse.jifa.hdp.provider.HeapDumpAnalysisApiExecutor;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -32,25 +34,31 @@ import java.util.Map;
 @Slf4j
 public class TestHeapDumpAnalyzerImpl {
 
+    private static Path DIRECTORY;
+
     private static HeapDumpAnalyzer ANALYZER;
 
     @BeforeAll
     public static void init() throws Exception {
         // init environment
-        Path heapFile = Files.createTempFile("test-heap", ".hprof").toAbsolutePath();
+        DIRECTORY = Files.createTempDirectory("test-heap-dir");
+        Path heapFile = Files.createTempFile(DIRECTORY, "test-heap", ".hprof").toAbsolutePath();
         Files.delete(heapFile);
         HotSpotDiagnosticMXBean platformMXBean = ManagementFactory.getPlatformMXBean(HotSpotDiagnosticMXBean.class);
         platformMXBean.dumpHeap(heapFile.toString(), false);
-        if (Files.exists(heapFile)) {
-            log.info("Heap dump file: {}", heapFile);
-            heapFile.toFile().deleteOnExit();
-        }
         Method buildAnalyzer = HeapDumpAnalysisApiExecutor.class.getDeclaredMethod("buildAnalyzer", Path.class, Map.class, ProgressListener.class);
         buildAnalyzer.setAccessible(true);
         ANALYZER = (HeapDumpAnalyzer) buildAnalyzer.invoke(new HeapDumpAnalysisApiExecutor(),
                                                            heapFile,
                                                            Collections.emptyMap(),
                                                            ProgressListener.NoOpProgressListener);
+    }
+
+    @AfterAll
+    public static void clean() {
+        if (DIRECTORY != null) {
+            FileUtils.deleteQuietly(DIRECTORY.toFile());
+        }
     }
 
     @Test

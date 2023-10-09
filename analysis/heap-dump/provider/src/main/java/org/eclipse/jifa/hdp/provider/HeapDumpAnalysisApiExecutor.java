@@ -84,12 +84,18 @@ public class HeapDumpAnalysisApiExecutor extends AbstractApiExecutor<HeapDumpAna
 
             String osgiWorkspace = path + "/osgi_workspace";
             String osgiConfiguration = path + "/osgi_configuration";
+
             if (Files.exists(Path.of(osgiWorkspace))) {
                 FileUtils.deleteQuietly(new File(osgiWorkspace));
             }
             if (Files.exists(Path.of(osgiConfiguration))) {
                 FileUtils.deleteQuietly(new File(osgiConfiguration));
             }
+
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                FileUtils.deleteQuietly(new File(osgiWorkspace));
+                FileUtils.deleteQuietly(new File(osgiConfiguration));
+            }));
 
             config.put(EquinoxLocations.PROP_INSTANCE_AREA_DEFAULT, osgiWorkspace);
             config.put(Location.CONFIGURATION_AREA_TYPE, osgiConfiguration);

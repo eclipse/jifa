@@ -46,8 +46,18 @@ java {
     compile.options.compilerArgs << '-parameters'
 }
 
+def testTempPath = rootProject.projectDir.toPath().toAbsolutePath().resolve('.test-temp')
+if (!testTempPath.toFile().exists()) {
+    testTempPath.toFile().mkdir()
+}
+
 test {
+    testLogging.showStandardStreams = true
     useJUnitPlatform()
+
+    systemProperty 'java.io.tmpdir', testTempPath.toString()
+    systemProperty 'jdk.util.zip.disableZip64ExtraFieldValidation', true
+
     finalizedBy jacocoTestReport
 }
 

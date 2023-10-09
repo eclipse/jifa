@@ -89,5 +89,4 @@ afterEvaluate {
     jarNames.add('heap-dump-analysis-impl-' + version + '.jar')
     def listFileName = 'list'
     Files.writeString(depsDirPath.resolve(listFileName), jarNames.stream().collect(Collectors.joining(",")))
-    println depsDirPath.resolve(listFileName).toAbsolutePath().toString()
 }
