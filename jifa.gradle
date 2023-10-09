@@ -10,20 +10,13 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-buildscript {
-    dependencies {
-        classpath 'io.spring.gradle:dependency-management-plugin:1.1.0'
-        classpath 'org.springframework.boot:spring-boot-gradle-plugin:3.1.0'
-    }
-}
-
 plugins {
     id 'base'
     id 'jacoco-report-aggregation'
+    id "org.springframework.boot" version "3.1.4"
 }
 
 apply from: "$rootDir/gradle/base.gradle"
-apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
 
 dependencies {

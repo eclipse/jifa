@@ -10,21 +10,12 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-buildscript {
-    dependencies {
-        classpath 'io.spring.gradle:dependency-management-plugin:1.1.0'
-        classpath 'org.springframework.boot:spring-boot-gradle-plugin:3.1.0'
-    }
-}
-
 plugins {
-    id "com.bmuschko.docker-spring-boot-application" version "9.3.1"
+    id 'application'
+    id "org.springframework.boot" version "3.1.4"
 }
 
 apply from: "$rootDir/gradle/java.gradle"
-
-apply plugin: 'application'
-apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
 
 springBoot {
@@ -35,14 +26,9 @@ dependencies {
     implementation project(':common')
     implementation project(':analysis')
 
-    if (gradle.startParameter.taskNames.size() > 0 &&
-            !(gradle.startParameter.taskNames[0].toLowerCase().contains("master"))) {
-        runtimeOnly project(':analysis:heap-dump:provider')
-        runtimeOnly project(':analysis:gc-log')
-        runtimeOnly project(':analysis:thread-dump')
-    }
-
-    implementation 'io.kubernetes:client-java:18.0.1'
+    runtimeOnly project(':analysis:heap-dump:provider')
+    runtimeOnly project(':analysis:gc-log')
+    runtimeOnly project(':analysis:thread-dump')
 
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
@@ -55,6 +41,8 @@ dependencies {
 
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
     implementation 'org.springframework.retry:spring-retry'
+
+    implementation 'io.kubernetes:client-java:18.0.1'
 
     implementation 'com.mysql:mysql-connector-j:8.0.33'
     runtimeOnly 'com.h2database:h2:2.2.220'
@@ -86,12 +74,7 @@ tasks.named("processResources") {
 }
 
 // for kryo
-applicationDefaultJvmArgs = ['--add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED']
-
-
-import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
-import org.springframework.boot.gradle.tasks.bundling.BootJar
-import org.springframework.boot.gradle.tasks.run.BootRun
+applicationDefaultJvmArgs = ['--add-opens=java.base/java.lang=ALL-UNNAMED', '--add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED']
 
 import java.nio.file.Files
 import java.security.KeyPair
@@ -119,8 +102,10 @@ afterEvaluate {
     generateDevKey(projectDir)
 }
 
+import org.springframework.boot.gradle.tasks.run.BootRun
+
 static void setJvmOptionsAndDevKeys(BootRun bootRun) {
-    bootRun.jvmArgs('--add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED')
+    bootRun.jvmArgs('--add-opens=java.base/java.lang=ALL-UNNAMED', '--add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED')
     bootRun.args('--jifa.public-key=file:' + bootRun.project.projectDir.toPath().resolve('dev_rsa.pub').toAbsolutePath().toString())
     bootRun.args('--jifa.private-key=file:' + bootRun.project.projectDir.toPath().resolve('dev_rsa').toAbsolutePath().toString())
 }
@@ -130,49 +115,6 @@ static void setMysqlEnv(BootRun bootRun) {
     bootRun.environment('MYSQL_DATABASE_NAME', 'jifa')
     bootRun.environment('MYSQL_USERNAME', 'root')
     bootRun.environment('MYSQL_PASSWORD', 'password')
-}
-
-def masterArchive = 'jifa-master.jar'
-def workerArchive = 'jifa-worker.jar'
-
-tasks.register("masterJar", BootJar) {
-    group('jifa')
-    classpath(project.sourceSets.main.runtimeClasspath)
-    mainClass.convention(mainClassName)
-    targetJavaVersion.convention(JavaVersion.VERSION_17)
-
-    manifest {
-        attributes('Implementation-Title': 'Eclipse Jifa')
-    }
-    archiveFileName = masterArchive
-}
-
-tasks.register("workerJar", BootJar) {
-    group('jifa')
-    classpath(project.sourceSets.main.runtimeClasspath)
-    mainClass.convention(mainClassName)
-    targetJavaVersion.convention(JavaVersion.VERSION_17)
-
-    manifest {
-        attributes('Implementation-Title': 'Eclipse Jifa')
-    }
-    archiveFileName = workerArchive
-}
-
-tasks.register("masterDocker", DockerBuildImage) {
-    group('jifa')
-    inputDir = project.projectDir.getParentFile()
-    images = ['jifadocker/jifa-master:latest']
-    buildArgs = ['BUILD_JAR': masterArchive]
-    dependsOn("masterJar")
-}
-
-tasks.register("workerDocker", DockerBuildImage) {
-    group('jifa')
-    inputDir = project.projectDir.getParentFile()
-    images = ['jifadocker/jifa-worker:latest']
-    buildArgs = ['BUILD_JAR': workerArchive]
-    dependsOn("workerJar")
 }
 
 tasks.register('runStandaloneWorker', BootRun) {
