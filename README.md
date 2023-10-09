@@ -12,9 +12,6 @@
  -->
 # Eclipse Jifa
 [![Eclipse License](https://img.shields.io/github/license/eclipse/jifa?label=License)](https://github.com/eclipse/jifa/blob/main/LICENSE)
-![CI Status](https://github.com/eclipse/jifa/actions/workflows/ci.yml/badge.svg?branch=main)
+![Commit Check](https://github.com/eclipse/jifa/actions/workflows/commit-check.yml/badge.svg?branch=main)
 
-This branch contains the latest version of the Eclipse Jifa project and is still under development and testing. We will
-replace the current master branch with this branch in the future.
-
-It would be best if you did not use it now.
+TODO
