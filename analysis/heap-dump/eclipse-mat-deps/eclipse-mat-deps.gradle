@@ -73,8 +73,8 @@ def depsDirPath =
 
 afterEvaluate {
     copy {
-        into "${depsDirPath}"
         from configurations.compileClasspath
+        into "${depsDirPath}"
         include '*.jar'
     }
 
@@ -82,7 +82,7 @@ afterEvaluate {
     Files.list(depsDirPath).map {
         it.toFile().getName()
     }.filter {
-        it.endsWith(".jar")
+        it.endsWith(".jar") && !it.startsWith('heap-dump-analysis-impl')
     }.forEach {
         jarNames.add(it)
     }
