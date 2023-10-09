@@ -13,6 +13,7 @@
 package org.eclipse.jifa.hdp.provider;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 import org.eclipse.jifa.analysis.AbstractApiExecutor;
 import org.eclipse.jifa.analysis.listener.ProgressListener;
 import org.eclipse.jifa.analysis.support.MethodNameConverter;
@@ -35,6 +36,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.ServiceLoader;
 
 @Slf4j
@@ -79,15 +81,25 @@ public class HeapDumpAnalysisApiExecutor extends AbstractApiExecutor<HeapDumpAna
             if (!dir.exists()) {
                 Files.createDirectory(Path.of(path));
             }
-            config.put(EquinoxLocations.PROP_INSTANCE_AREA_DEFAULT, path + "/osgi_workspace");
-            config.put(Location.CONFIGURATION_AREA_TYPE, path + "/osgi_configuration");
+
+            String osgiWorkspace = path + "/osgi_workspace";
+            String osgiConfiguration = path + "/osgi_configuration";
+            if (Files.exists(Path.of(osgiWorkspace))) {
+                FileUtils.deleteQuietly(new File(osgiWorkspace));
+            }
+            if (Files.exists(Path.of(osgiConfiguration))) {
+                FileUtils.deleteQuietly(new File(osgiConfiguration));
+            }
+
+            config.put(EquinoxLocations.PROP_INSTANCE_AREA_DEFAULT, osgiWorkspace);
+            config.put(Location.CONFIGURATION_AREA_TYPE, osgiConfiguration);
 
             Framework framework = ServiceLoader.load(FrameworkFactory.class).iterator().next().newFramework(config);
             framework.start();
 
             List<String> dependencies;
             try (BufferedReader br = new BufferedReader(
-                    new InputStreamReader(HeapDumpAnalysisApiExecutor.class.getClassLoader().getResourceAsStream("mat-deps/list")))) {
+                    new InputStreamReader(Objects.requireNonNull(HeapDumpAnalysisApiExecutor.class.getClassLoader().getResourceAsStream("mat-deps/list"))))) {
                 dependencies = Arrays.asList(br.readLine().split(","));
             }
 
@@ -98,6 +110,7 @@ public class HeapDumpAnalysisApiExecutor extends AbstractApiExecutor<HeapDumpAna
                 if (!dependency.startsWith("org.eclipse.osgi-")) {
                     URL resource = HeapDumpAnalysisApiExecutor.class.getClassLoader().getResource("mat-deps/" + dependency);
                     try {
+                        assert resource != null;
                         bundles.add(framework.getBundleContext().installBundle(resource.toString()));
                     } catch (Throwable t) {
                         log.error("Failed to install bundle: {}", dependency);
