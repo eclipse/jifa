@@ -1,8 +1,14 @@
-FROM --platform=linux/amd64 eclipse-temurin:17.0.5_8-jdk-alpine
-WORKDIR /wd
+FROM node:18 AS build
+RUN apt-get update && apt-get install openjdk-17-jdk -y
+WORKDIR /workspace/
+COPY . /workspace/
+RUN --mount=type=cache,target=/root/.gradle ./gradlew clean build -x test
+RUN mkdir -p server/build/dependency && (cd server/build/dependency; jar -xf ../libs/jifa.jar)
 
-ARG BUILD_JAR=jifa.jar
-
-COPY ./server/build/libs/${BUILD_JAR} jifa.jar
-
-CMD ["java","-jar","/wd/jifa.jar"]
+FROM eclipse-temurin:17-jdk
+VOLUME /tmp
+ARG DEPENDENCY=/workspace/server/build/dependency
+COPY --from=build ${DEPENDENCY}/BOOT-INF/lib /jifa/lib
+COPY --from=build ${DEPENDENCY}/META-INF /jifa/META-INF
+COPY --from=build ${DEPENDENCY}/BOOT-INF/classes /jifa
+ENTRYPOINT ["java","-Djdk.util.zip.disableZip64ExtraFieldValidation=true","-cp","jifa:jifa/lib/*","org.eclipse.jifa.server.Launcher"]

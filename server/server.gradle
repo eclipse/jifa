@@ -74,7 +74,9 @@ tasks.named("processResources") {
 }
 
 // for kryo
-applicationDefaultJvmArgs = ['--add-opens=java.base/java.lang=ALL-UNNAMED', '--add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED']
+applicationDefaultJvmArgs = ['--add-opens=java.base/java.lang=ALL-UNNAMED',
+                             '--add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED',
+                             '-Djdk.util.zip.disableZip64ExtraFieldValidation=true']
 
 import java.nio.file.Files
 import java.security.KeyPair
@@ -105,7 +107,9 @@ afterEvaluate {
 import org.springframework.boot.gradle.tasks.run.BootRun
 
 static void setJvmOptionsAndDevKeys(BootRun bootRun) {
-    bootRun.jvmArgs('--add-opens=java.base/java.lang=ALL-UNNAMED', '--add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED')
+    bootRun.jvmArgs('--add-opens=java.base/java.lang=ALL-UNNAMED',
+                    '--add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED',
+                    '-Djdk.util.zip.disableZip64ExtraFieldValidation=true')
     bootRun.args('--jifa.public-key=file:' + bootRun.project.projectDir.toPath().resolve('dev_rsa.pub').toAbsolutePath().toString())
     bootRun.args('--jifa.private-key=file:' + bootRun.project.projectDir.toPath().resolve('dev_rsa').toAbsolutePath().toString())
 }

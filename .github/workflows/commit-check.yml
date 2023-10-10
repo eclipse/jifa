@@ -11,7 +11,7 @@
 # SPDX-License-Identifier: EPL-2.0
 #
 
-name: commit-check
+name: Commit Check
 
 on: [push, pull_request]
 
