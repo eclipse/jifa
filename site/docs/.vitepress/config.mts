@@ -4,13 +4,20 @@ export default defineConfig({
   base: '/jifa/',
 
   title: "Eclipse Jifa",
+  titleTemplate: ":title · Eclipse Jifa",
   description: "An open source project for diagnosing common Java issues.",
+
+  lastUpdated: true,
 
   head: [
     ['link', {rel: "icon", href: "/jifa/eclipse_incubation_vertical_svg.svg"}],
   ],
 
   themeConfig: {
+    search: {
+      provider: 'local'
+    },
+
     socialLinks: [
       {icon: 'github', link: 'https://github.com/eclipse/jifa'}
     ]
@@ -56,6 +63,20 @@ export default defineConfig({
             ]
           }
         ],
+
+        editLink: {
+          text: 'Edit this page on GitHub',
+          pattern: 'https://github.com/eclipse/jifa/edit/main/site/docs/:path'
+        },
+
+        lastUpdated: {
+          text: 'Updated at',
+          formatOptions: {
+            dateStyle: 'short',
+            timeStyle: 'short',
+            forceLocale: true
+          }
+        }
       },
     },
 
@@ -98,6 +119,20 @@ export default defineConfig({
             ]
           }
         ],
+
+        editLink: {
+          text: '在 GitHub 上编辑此页',
+          pattern: 'https://github.com/eclipse/jifa/edit/main/site/docs/:path'
+        },
+
+        lastUpdated: {
+          text: '更新于',
+          formatOptions: {
+            dateStyle: 'short',
+            timeStyle: 'short',
+            forceLocale: true
+          }
+        }
       },
     }
   },

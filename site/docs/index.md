@@ -1,4 +1,6 @@
 ---
+title: Eclipse Jifa
+titleTemplate: :title
 layout: home
 
 hero:
