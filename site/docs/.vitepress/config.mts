@@ -2,7 +2,10 @@ import {defineConfig} from 'vitepress'
 
 export default defineConfig({
   base: '/jifa/',
+
   title: "Eclipse Jifa",
+  description: "An open source project for diagnosing common Java issues.",
+
   head: [
     ['link', {rel: "icon", href: "/jifa/eclipse_incubation_vertical_svg.svg"}],
   ],
