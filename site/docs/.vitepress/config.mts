@@ -31,7 +31,20 @@ export default defineConfig({
       themeConfig: {
         nav: [
           {text: 'Home', link: '/'},
-          {text: 'Guide', link: '/guide/what-is-eclipse-jifa'}
+          {text: 'Guide', link: '/guide/what-is-eclipse-jifa'},
+          {
+            text: '0.2.0-SNAPSHOT',
+            items: [
+              {
+                text: 'Changelog',
+                link: '/guide/changelog.md'
+              },
+              {
+                text: 'Contributing',
+                link: '/guide/contributing'
+              }
+            ]
+          }
         ],
 
         sidebar: [
@@ -54,12 +67,13 @@ export default defineConfig({
             items: [
               {text: 'Development', link: '/guide/development.md'},
               {text: 'Deployment', link: '/guide/deployment.md'},
-              {text: 'Configuration', link: '/guide/configuration.md'},
+              {text: 'Configuration', link: '/guide/contributing.md'},
             ]
           },
           {
             items: [
-              {text: 'Contribution', link: '/guide/contribution.md'},
+              {text: 'Changelog', link: '/guide/changelog.md'},
+              {text: 'Contributing', link: '/guide/contributing.md'},
             ]
           }
         ],
@@ -87,7 +101,20 @@ export default defineConfig({
       themeConfig: {
         nav: [
           {text: '主页', link: '/zh/'},
-          {text: '指南', link: '/zh/guide/what-is-eclipse-jifa'}
+          {text: '指南', link: '/zh/guide/what-is-eclipse-jifa'},
+          {
+            text: '0.2.0-SNAPSHOT',
+            items: [
+              {
+                text: '更新日志',
+                link: '/guide/changelog.md'
+              },
+              {
+                text: '贡献指南',
+                link: '/guide/contributing'
+              }
+            ]
+          }
         ],
 
         sidebar: [
@@ -101,7 +128,7 @@ export default defineConfig({
           {
             text: '核心特性',
             items: [
-              {text: '堆内存分析', link: '/zh/guide/heap-dump-analysis'},
+              {text: '堆快照分析', link: '/zh/guide/heap-dump-analysis'},
               {text: 'GC 日志分析', link: '/zh/guide/gc-log-analysis'},
               {text: '线程快照分析', link: '/zh/guide/thread-dump-analysis'},
             ]
@@ -115,10 +142,15 @@ export default defineConfig({
           },
           {
             items: [
-              {text: '贡献', link: '/zh/guide/contribution.md'},
+              {text: '更新日志', link: '/zh/guide/changelog.md'},
+              {text: '贡献指南', link: '/zh/guide/contributing.md'},
             ]
           }
         ],
+
+        outline: {
+          label: '本页目录',
+        },
 
         editLink: {
           text: '在 GitHub 上编辑此页',

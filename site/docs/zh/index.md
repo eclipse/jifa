@@ -6,7 +6,7 @@ layout: home
 hero:
   name: "Eclipse Jifa"
   text:
-  tagline: "一款致力于帮助 Java 研发人员排查应用中常见问题的开源项目"
+  tagline: "一个致力于帮助 Java 研发人员排查应用中常见问题的开源项目"
   actions:
     - theme: brand
       text: 快速上手
