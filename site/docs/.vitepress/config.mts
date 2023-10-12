@@ -67,7 +67,7 @@ export default defineConfig({
             items: [
               {text: 'Development', link: '/guide/development.md'},
               {text: 'Deployment', link: '/guide/deployment.md'},
-              {text: 'Configuration', link: '/guide/contributing.md'},
+              {text: 'Configuration', link: '/guide/configuration.md'},
             ]
           },
           {

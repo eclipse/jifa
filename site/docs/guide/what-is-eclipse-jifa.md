@@ -25,7 +25,7 @@ In v0.1, <b>Server</b> is based on Eclipse Vert.x, and <b>Frontend</b> is based 
 ## How to Use?
 
 From the core features currently provided by Jifa, the main usage workflow involves the generation of the file to be
-analyzed and uploading it to Jifa for analysis. Taking a Java heap snapshot as an example, users can initiate an
+analyzed and uploading it to Jifa for analysis. Taking Java heap dump analysis as an example, users can initiate an
 analysis through the following steps:
 
 - Obtain the heap snapshot file. Users can generate a new snapshot file using commands such as `jmap` or `jcmd`.
