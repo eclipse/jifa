@@ -46,6 +46,7 @@ function goHome() {
   useAnalysisStore().leaveGuard = false;
   location.assign('/');
 }
+
 export const useEnv = defineStore('env', {
   state: () => ({
     allowAnonymousAccess: false,
@@ -98,6 +99,11 @@ export const useEnv = defineStore('env', {
     handleLoginOrSignupResponse(resp: any) {
       window.localStorage.setItem(tokenKey, resp.headers.authorization);
       goHome();
+    },
+
+    resetToken() {
+      window.localStorage.removeItem(tokenKey)
+      Cookies.remove(tokenKey)
     }
   }
 });

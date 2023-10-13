@@ -37,10 +37,15 @@ onMounted(() => {
       shaken.value = true;
       loadingService.close();
     })
-    .catch(() => {
-      error.value = true;
-      shaken.value = true;
-      loadingService.close();
+    .catch((e) => {
+      if (e.response && e.response.status === 401) {
+        env.resetToken();
+        location.reload();
+      } else {
+        error.value = true;
+        shaken.value = true;
+        loadingService.close();
+      }
     });
 });
 </script>
