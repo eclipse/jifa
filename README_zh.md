@@ -14,24 +14,29 @@
 [![Eclipse License](https://img.shields.io/github/license/eclipse/jifa?label=License)](https://github.com/eclipse/jifa/blob/main/LICENSE)
 ![Commit Check](https://github.com/eclipse/jifa/actions/workflows/commit-check.yml/badge.svg?branch=main)
 
-- [中文](README_zh.md)
+- [English](README.md)
 
-> An open-source project for diagnosing common Java issues.
+> 一个致力于帮助 Java 研发人员排查应用中常见问题的开源项目。
 >
-> Latest Version: 0.2.0-SNAPSHOT
+> 最新版本：0.2.0-SNAPSHOT
 >
-> Complete information is available in the documentation at [https://eclipse.github.io/jifa](https://eclipse.github.io/jifa). Please refer to it for details.
+> 更多的项目信息请访问 [https://eclipse.github.io/jifa](https://eclipse.github.io/jifa)。
 
-## Quick Start
+## 快速开始
 
-### Run Jifa Locally with a Single Command
+### 一个命令运行 Jifa
 
 ```shell
-# Please make sure that Docker is installed.
+# 本地环境需要安装 docker
 $ /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/eclipse/jifa/HEAD/scripts/jifa.sh)"
 ```
 
-## Links
+## 相关链接
+
 - [GitHub Pages](https://eclipse.github.io/jifa)
-- [Mail List](https://accounts.eclipse.org/mailing-list/jifa-dev)
-- [Slack Channel](https://eclipsejifa.slack.com/)
+- [邮件列表](https://accounts.eclipse.org/mailing-list/jifa-dev)
+- 钉钉交流群二维码
+
+  <div>
+    <img src=https://user-images.githubusercontent.com/33491035/226314386-e1cf71d4-8429-4e4c-bdc0-c511a9009ee1.JPG alt="DingTalk" width=35%/>
+  </div>

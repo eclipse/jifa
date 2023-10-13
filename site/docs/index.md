@@ -5,7 +5,7 @@ layout: home
 
 hero:
   name: "Eclipse Jifa"
-  tagline: "An open source project for diagnosing common Java issues"
+  tagline: "An open-source project for diagnosing common Java issues"
   actions:
     - theme: brand
       text: Get Started

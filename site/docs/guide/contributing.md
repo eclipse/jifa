@@ -28,7 +28,7 @@ Prior to submitting a pull request, please ensure your code is well-formatted:
 
 ## Contributors
 
-Thanks to the following programmers for their contributions to the Jifa project.
+Thank you to all the people who already contributed to Jifa!
 
 <a href="https://github.com/eclipse/jifa/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=eclipse/jifa" alt="Contributors"/>

@@ -28,7 +28,7 @@
 
 ## 贡献者
 
-感谢以下开发者为 Jifa 项目所作出的贡献。
+感谢所有为 Jifa 项目做出贡献的开发者们！
 
 <a href="https://github.com/eclipse/jifa/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=eclipse/jifa" alt="Contributors"/>

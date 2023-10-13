@@ -5,7 +5,7 @@ export default defineConfig({
 
   title: "Eclipse Jifa",
   titleTemplate: ":title · Eclipse Jifa",
-  description: "An open source project for diagnosing common Java issues.",
+  description: "An open-source project for diagnosing common Java issues.",
 
   lastUpdated: true,
 
