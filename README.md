@@ -11,25 +11,29 @@
     SPDX-License-Identifier: EPL-2.0
  -->
 # Eclipse Jifa
+
 [![Eclipse License](https://img.shields.io/github/license/eclipse/jifa?label=License)](https://github.com/eclipse/jifa/blob/main/LICENSE)
 ![Commit Check](https://github.com/eclipse/jifa/actions/workflows/commit-check.yml/badge.svg?branch=main)
 
-- [中文](README_zh.md)
+> [中文](https://github.com/eclipse/jifa/blob/main/README_zh.md)
 
-> An open-source project for diagnosing common Java issues.
->
-> Latest Version: 0.2.0-SNAPSHOT
->
-> Complete information is available in the documentation at [https://eclipse.github.io/jifa](https://eclipse.github.io/jifa). Please refer to it for details.
+## Introduction
+
+Eclipse Jifa is an open-source project for diagnosing common Java issues.
+
+Latest Version: 0.2.0-SNAPSHOT
+
+Complete information is available in the documentation at [https://eclipse.github.io/jifa](https://eclipse.github.io/jifa). Please refer to it for details.
 
 ## Quick Start
 
 ### Run Jifa Locally with a Single Command
 
 ```shell
-# Please make sure that Docker is installed.
-$ /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/eclipse/jifa/HEAD/scripts/jifa.sh)"
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/eclipse/jifa/HEAD/scripts/jifa.sh)"
 ```
+
+Note: Please make sure that Docker is installed.
 
 ## Links
 - [GitHub Pages](https://eclipse.github.io/jifa)
