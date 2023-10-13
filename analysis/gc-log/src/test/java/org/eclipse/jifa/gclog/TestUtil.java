@@ -13,14 +13,17 @@
 
 package org.eclipse.jifa.gclog;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
+import java.util.Objects;
 
 public class TestUtil {
     public static BufferedReader stringToBufferedReader(String source) {
         InputStream inputStream = new ByteArrayInputStream(source.getBytes());
         return new BufferedReader(new InputStreamReader(inputStream));
+    }
+
+    public static BufferedReader getGCLog(String name) {
+        InputStream is = Objects.requireNonNull(Thread.currentThread().getContextClassLoader().getResourceAsStream(name));
+        return new BufferedReader(new InputStreamReader(is));
     }
 }

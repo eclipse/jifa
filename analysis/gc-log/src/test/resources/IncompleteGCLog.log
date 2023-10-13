@@ -1,0 +1,30 @@
+[0.510s][info][gc,heap      ] GC(0) CMS: 0K->24072K(174784K)
+[0.510s][info][gc,metaspace ] GC(0) Metaspace: 6531K->6530K(1056768K)
+[0.510s][info][gc           ] GC(0) Pause Young (Allocation Failure) 68M->32M(247M) 31.208ms
+[0.510s][info][gc,cpu       ] GC(0) User=0.06s Sys=0.03s Real=0.03s
+[3.231s][info][gc,start     ] GC(1) Pause Initial Mark
+[3.235s][info][gc           ] GC(1) Pause Initial Mark 147M->147M(247M) 3.236ms
+[3.235s][info][gc,cpu       ] GC(1) User=0.01s Sys=0.02s Real=0.03s
+[3.235s][info][gc           ] GC(1) Concurrent Mark
+[3.235s][info][gc,task      ] GC(1) Using 2 workers of 2 for marking
+[3.257s][info][gc           ] GC(1) Concurrent Mark 22.229ms
+[3.257s][info][gc,cpu       ] GC(1) User=0.07s Sys=0.00s Real=0.03s
+[3.257s][info][gc           ] GC(1) Concurrent Preclean
+[3.257s][info][gc           ] GC(1) Concurrent Preclean 0.264ms
+[3.257s][info][gc,cpu       ] GC(1) User=0.00s Sys=0.00s Real=0.00s
+[3.257s][info][gc,start     ] GC(1) Pause Remark
+[3.259s][info][gc           ] GC(1) Pause Remark 149M->149M(247M) 1.991ms
+[3.259s][info][gc,cpu       ] GC(1) User=0.02s Sys=0.03s Real=0.01s
+[3.259s][info][gc           ] GC(1) Concurrent Sweep
+[3.279s][info][gc           ] GC(1) Concurrent Sweep 19.826ms
+[3.279s][info][gc,cpu       ] GC(1) User=0.03s Sys=0.00s Real=0.02s
+[3.279s][info][gc           ] GC(1) Concurrent Reset
+[3.280s][info][gc           ] GC(1) Concurrent Reset 0.386ms
+[3.280s][info][gc,cpu       ] GC(1) User=0.00s Sys=0.00s Real=0.00s
+[3.280s][info][gc,heap      ] GC(1) Old: 142662K->92308K(174784K)
+[8.970s][info][gc,start     ] GC(2) Pause Full (Allocation Failure)
+[8.970s][info][gc,phases,start] GC(2) Phase 1: Mark live objects
+[9.026s][info][gc,phases      ] GC(2) Phase 1: Mark live objects 55.761ms
+[9.026s][info][gc,phases,start] GC(2) Phase 2: Compute new object addresses
+[9.051s][info][gc,phases      ] GC(2) Phase 2: Compute new object addresses 24.761ms
+[9.051s][info][gc,phases,start] GC(2) Phase 3: Adjust pointers
