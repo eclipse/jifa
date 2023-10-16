@@ -28,7 +28,7 @@ check_docker() {
 
 launch_jifa() {
   check_docker
-  docker run -p ${PORT}:${PORT} $MOUNTS eclipsejifa/jifa:${TAG} $INPUT_FILES
+  docker run --pull=always -p ${PORT}:${PORT} $MOUNTS eclipsejifa/jifa:${TAG} $INPUT_FILES
 }
 
 while [ $# -gt 0 ]; do
