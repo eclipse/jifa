@@ -14,6 +14,7 @@ package org.eclipse.jifa.server.service.impl;
 
 import jakarta.annotation.Nullable;
 import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jifa.analysis.Api;
 import org.eclipse.jifa.analysis.ApiService;
 import org.eclipse.jifa.server.ConfigurationAccessor;
@@ -32,6 +33,9 @@ import org.eclipse.jifa.server.support.AnalysisApiArgumentResolver;
 import org.eclipse.jifa.server.support.AnalysisApiArgumentResolverFactory;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
@@ -45,6 +49,7 @@ import static org.eclipse.jifa.server.enums.ServerErrorCode.UNSUPPORTED_API;
 import static org.eclipse.jifa.server.enums.ServerErrorCode.UNSUPPORTED_NAMESPACE;
 
 @Service
+@Slf4j
 public class AnalysisApiServiceImpl extends ConfigurationAccessor implements AnalysisApiService {
 
     private final FileService fileService;
@@ -59,7 +64,6 @@ public class AnalysisApiServiceImpl extends ConfigurationAccessor implements Ana
 
     private Map<String, Map<String, AnalysisApiArgumentResolver>> apis;
 
-    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     public AnalysisApiServiceImpl(FileService fileService,
                                   @Nullable WorkerService workerService,
                                   @Nullable CurrentElasticWorker currentElasticWorker,
@@ -99,6 +103,7 @@ public class AnalysisApiServiceImpl extends ConfigurationAccessor implements Ana
         FileEntity file = fileService.getFileByUniqueName(request.target(), FileType.getByApiNamespace(request.namespace()));
 
         if (isMaster()) {
+            assert workerService != null;
             WorkerEntity worker = workerService.resolveForAnalysisApiRequest(file);
             return workerService.sendRequest(worker, createPostRequest(Constant.HTTP_ANALYSIS_API_MAPPING, request, byte[].class));
         }
@@ -107,6 +112,7 @@ public class AnalysisApiServiceImpl extends ConfigurationAccessor implements Ana
         AnalysisApiArgumentResolver resolver =
                 ofNullable(ofNullable(apis.get(namespace)).orElseThrow(() -> CE(UNSUPPORTED_NAMESPACE))
                                                           .get(api)).orElseThrow(() -> CE(UNSUPPORTED_API));
+        assert storageService != null;
         Path targetPath = storageService.locationOf(file.getType(), file.getUniqueName());
         Object[] args = resolver.resolve(new AnalysisApiArgumentContext(file.getType(), targetPath, request.parameters(), fileService, storageService));
 
@@ -126,6 +132,36 @@ public class AnalysisApiServiceImpl extends ConfigurationAccessor implements Ana
                 currentElasticWorker.revokePreventingTermination();
             }
             throw t;
+        }
+    }
+
+    @Override
+    public FileType deduceFileType(Path path) {
+        if (!Files.exists(path)) {
+            log.warn("File '{}' does not exist", path);
+            return null;
+        }
+        if (!Files.isRegularFile(path)) {
+            log.warn("File '{}' is not a regular file", path);
+            return null;
+        }
+
+        File file = path.toFile();
+        byte[] content = new byte[(int) Math.min(file.length(), 16 * 1024)];
+
+        try {
+            try (FileInputStream input = new FileInputStream(file)) {
+                //noinspection ResultOfMethodCallIgnored
+                input.read(content);
+            }
+            String namespace = apiService.deduceNamespaceByContent(content);
+            if (namespace == null) {
+                log.warn("Failed to deduce the type of file '{}'", path);
+            }
+            return FileType.getByApiNamespace(namespace);
+        } catch (Exception e) {
+            log.warn("Failed to deduce the type of file '{}': {}", path, e.getMessage());
+            return null;
         }
     }
 }

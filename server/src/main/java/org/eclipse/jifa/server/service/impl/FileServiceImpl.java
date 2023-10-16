@@ -53,6 +53,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -70,6 +74,7 @@ import static org.eclipse.jifa.server.enums.ServerErrorCode.FILE_NOT_FOUND;
 import static org.eclipse.jifa.server.enums.ServerErrorCode.FILE_TYPE_MISMATCH;
 import static org.eclipse.jifa.server.enums.ServerErrorCode.UNAVAILABLE;
 
+@SuppressWarnings("DataFlowIssue")
 @Component
 @Slf4j
 public class FileServiceImpl extends ConfigurationAccessor implements FileService {
@@ -94,7 +99,6 @@ public class FileServiceImpl extends ConfigurationAccessor implements FileServic
 
     private final TaskScheduler taskScheduler;
 
-    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     public FileServiceImpl(TransactionTemplate transactionTemplate,
                            UserService userService,
                            FileRepo fileRepo,
@@ -239,6 +243,26 @@ public class FileServiceImpl extends ConfigurationAccessor implements FileServic
             }
             return savedFile.getId();
         });
+    }
+
+    @Override
+    public String handleLocalFileRequest(FileType type, Path path) throws IOException {
+        mustBe(STANDALONE_WORKER);
+
+        Validate.isTrue(Files.exists(path) && Files.isRegularFile(path));
+
+        String uniqueName = generateFileUniqueName();
+        storageService.handleLocalFile(type, path, uniqueName);
+
+        FileEntity newFile = new FileEntity();
+        File file = path.toFile();
+        newFile.setUniqueName(uniqueName);
+        newFile.setOriginalName(file.getName());
+        newFile.setType(type);
+        newFile.setSize(file.lastModified());
+        fileRepo.save(newFile);
+
+        return uniqueName;
     }
 
     @Override

@@ -15,6 +15,9 @@ set -eu
 #TAG="latest"
 TAG=0.2.0-SNAPSHOT
 PORT="8102"
+MOUNTS=""
+INPUT_FILES=""
+INPUT_FILE_COUNT=0
 
 check_docker() {
   if ! command -v docker &>/dev/null; then
@@ -23,9 +26,9 @@ check_docker() {
   fi
 }
 
-run_jifa() {
+launch_jifa() {
   check_docker
-  docker run -p ${PORT}:8102 eclipsejifa/jifa:${TAG}
+  docker run -p ${PORT}:${PORT} $MOUNTS eclipsejifa/jifa:${TAG} $INPUT_FILES
 }
 
 while [ $# -gt 0 ]; do
@@ -38,8 +41,21 @@ while [ $# -gt 0 ]; do
     PORT=$2
     shift
     ;;
+  *)
+    ABSOLUTE_PATH=$(realpath "$1")
+    if [ ! -f "$ABSOLUTE_PATH" ]; then
+      echo "$1 does not exist or is not a regular file"
+      exit 1
+    fi
+
+    FILE_NAME=$(basename "$ABSOLUTE_PATH")
+
+    MOUNTS="$MOUNTS -v $ABSOLUTE_PATH:/input-file-$INPUT_FILE_COUNT/$FILE_NAME"
+    INPUT_FILES="$INPUT_FILES --jifa.input-files[$INPUT_FILE_COUNT]=/input-file-$INPUT_FILE_COUNT/$FILE_NAME"
+    INPUT_FILE_COUNT=$((INPUT_FILE_COUNT+1))
+    ;;
   esac
   shift
 done
 
-run_jifa
+launch_jifa

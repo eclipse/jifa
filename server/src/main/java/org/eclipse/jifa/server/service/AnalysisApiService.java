@@ -13,10 +13,14 @@
 package org.eclipse.jifa.server.service;
 
 import org.eclipse.jifa.server.domain.dto.AnalysisApiRequest;
+import org.eclipse.jifa.server.enums.FileType;
 
+import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
 
 public interface AnalysisApiService {
 
     CompletableFuture<?> invoke(AnalysisApiRequest request);
+
+    FileType deduceFileType(Path path);
 }

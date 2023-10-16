@@ -16,19 +16,22 @@ import static org.eclipse.jifa.common.domain.exception.CommonException.CE;
 
 public enum FileType {
 
-    HEAP_DUMP("heap-dump", "heap-dump"),
+    HEAP_DUMP("heap-dump"),
 
-    GC_LOG("gc-log", "gc-log"),
+    GC_LOG("gc-log"),
 
-    THREAD_DUMP("thread-dump", "thread-dump");
+    THREAD_DUMP("thread-dump" );
 
     private final String storageDirectoryName;
 
     private final String apiNamespace;
 
-    FileType(String storageDirectoryName, String apiNamespace) {
-        this.storageDirectoryName = storageDirectoryName;
-        this.apiNamespace = apiNamespace;
+    private final String analysisUrlPath;
+
+    FileType(String tag) {
+        storageDirectoryName = tag;
+        apiNamespace = tag;
+        analysisUrlPath = tag + "-analysis";
     }
 
     public String getStorageDirectoryName() {
@@ -37,6 +40,10 @@ public enum FileType {
 
     public String getApiNamespace() {
         return apiNamespace;
+    }
+
+    public String getAnalysisUrlPath() {
+        return analysisUrlPath;
     }
 
     public static FileType getByApiNamespace(String expected) {

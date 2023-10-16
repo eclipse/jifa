@@ -30,7 +30,14 @@ Eclipse Jifa 是一个致力于帮助 Java 研发人员排查应用中常见问�
 ### 一个命令运行 Jifa
 
 ```shell
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/eclipse/jifa/HEAD/scripts/jifa.sh)"
+# 默认服务地址是 http://localhost:8102
+curl -fsSL https://raw.githubusercontent.com/eclipse/jifa/main/jifa.sh | bash
+
+# 修改服务端口
+curl -fsSL https://raw.githubusercontent.com/eclipse/jifa/main/jifa.sh | bash -s -- -p <port>
+
+# 分析本地文件
+curl -fsSL https://raw.githubusercontent.com/eclipse/jifa/main/jifa.sh | bash -s -- <file1 path> <file2 path> ...
 ```
 
 注：本地环境需要安装 docker

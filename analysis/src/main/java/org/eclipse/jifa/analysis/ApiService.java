@@ -42,4 +42,10 @@ public interface ApiService {
     static ApiService getInstance() {
         return ApiServiceImpl.instance();
     }
+
+    /**
+     * @param content the content
+     * @return the relevant namespace if the payload may be analyzed, otherwise null
+     */
+    String deduceNamespaceByContent(byte[] content);
 }

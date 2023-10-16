@@ -26,18 +26,14 @@ import java.io.IOException;
 
 @Slf4j
 public class GCLogAnalyzer {
-    private File file;
-    private ProgressListener listener;
+    private final File file;
+    private final ProgressListener listener;
 
     private final int MAX_SINGLE_LINE_LENGTH = 2048; // max length in hotspot
 
     public GCLogAnalyzer(File file, ProgressListener listener) {
         this.file = file;
         this.listener = listener;
-    }
-
-    public GCLogAnalyzer(File file) {
-        this(file, new DefaultProgressListener());
     }
 
     public GCModel parse() throws Exception {
@@ -48,6 +44,7 @@ public class GCLogAnalyzer {
             listener.sendUserMessage(ProgressListener.Level.INFO, "Deciding gc log format.", null);
 
             // decide log format
+
             GCLogParserFactory logParserFactory = new GCLogParserFactory();
             br.mark(GCLogParserFactory.MAX_ATTEMPT_LINE * MAX_SINGLE_LINE_LENGTH);
             GCLogParser parser = logParserFactory.getParser(br);

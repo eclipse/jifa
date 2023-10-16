@@ -16,9 +16,15 @@ import org.eclipse.jifa.analysis.AbstractApiExecutor;
 import org.eclipse.jifa.analysis.listener.ProgressListener;
 import org.eclipse.jifa.gclog.model.GCModel;
 import org.eclipse.jifa.gclog.parser.GCLogAnalyzer;
+import org.eclipse.jifa.gclog.parser.GCLogParserFactory;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.function.Predicate;
 
 public class GCLogAnalysisApiExecutor extends AbstractApiExecutor<GCModel> {
 
@@ -30,5 +36,18 @@ public class GCLogAnalysisApiExecutor extends AbstractApiExecutor<GCModel> {
     @Override
     public String namespace() {
         return "gc-log";
+    }
+
+    @Override
+    public Predicate<byte[]> matcher() {
+        return bytes -> {
+            GCLogParserFactory factory = new GCLogParserFactory();
+            try (BufferedReader bufferedReader = new BufferedReader(
+                    new InputStreamReader(new ByteArrayInputStream(bytes)))) {
+                return factory.getParser(bufferedReader) != null;
+            } catch (IOException e) {
+                return false;
+            }
+        };
     }
 }

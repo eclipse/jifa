@@ -21,12 +21,15 @@ import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Predicate;
 
 public class ApiServiceImpl implements ApiService {
 
     private Map<String, Set<Api>> apis;
 
     private Map<String, ApiExecutor> executors;
+
+    private Map<String, Predicate<byte[]>> matchers;
 
     private ApiServiceImpl() {
         loadExecutors();
@@ -35,6 +38,7 @@ public class ApiServiceImpl implements ApiService {
     private void loadExecutors() {
         Map<String, Set<Api>> apis = new HashMap<>();
         Map<String, ApiExecutor> executors = new HashMap<>();
+        Map<String, Predicate<byte[]>> matchers = new HashMap<>();
 
         for (ApiExecutor executor : ServiceLoader.load(ApiExecutor.class)) {
             String namespace = executor.namespace();
@@ -42,10 +46,15 @@ public class ApiServiceImpl implements ApiService {
 
             apis.put(namespace, executor.apis());
             executors.put(namespace, executor);
+            Predicate<byte[]> matcher = executor.matcher();
+            if (matcher != null) {
+                matchers.put(namespace, matcher);
+            }
         }
 
         this.apis = Collections.unmodifiableMap(apis);
         this.executors = Collections.unmodifiableMap(executors);
+        this.matchers = Collections.unmodifiableMap(matchers);
     }
 
     @Override
@@ -62,6 +71,16 @@ public class ApiServiceImpl implements ApiService {
         ApiExecutor executor = this.executors.get(namespace);
         Validate.notNull(executor, () -> "Unsupported namespace: " + namespace);
         return executor.execute(new ExecutionContext(target, api, arguments));
+    }
+
+    @Override
+    public String deduceNamespaceByContent(byte[] content) {
+        for (Map.Entry<String, Predicate<byte[]>> entry : matchers.entrySet()) {
+            if (entry.getValue().test(content)) {
+                return entry.getKey();
+            }
+        }
+        return null;
     }
 
     static ApiService instance() {

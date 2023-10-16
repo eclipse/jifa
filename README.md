@@ -30,7 +30,14 @@ Complete information is available in the documentation at [https://eclipse.githu
 ### Run Jifa Locally with a Single Command
 
 ```shell
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/eclipse/jifa/HEAD/scripts/jifa.sh)"
+# Default service address is at http://localhost:8102
+curl -fsSL https://raw.githubusercontent.com/eclipse/jifa/main/jifa.sh | bash
+
+# Change the server port
+curl -fsSL https://raw.githubusercontent.com/eclipse/jifa/main/jifa.sh | bash -s -- -p <port>
+
+# Analyze local files
+curl -fsSL https://raw.githubusercontent.com/eclipse/jifa/main/jifa.sh | bash -s -- <file1 path> <file2 path> ...
 ```
 
 Note: Please make sure that Docker is installed.

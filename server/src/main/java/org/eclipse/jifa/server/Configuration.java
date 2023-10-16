@@ -19,6 +19,7 @@ import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jifa.common.util.Validate;
 import org.eclipse.jifa.server.enums.Role;
 import org.eclipse.jifa.server.enums.SchedulingStrategy;
@@ -37,6 +38,7 @@ import static org.eclipse.jifa.server.Constant.DEFAULT_WORKER_PORT;
 @Validated
 @Getter
 @Setter
+@Slf4j
 public class Configuration {
 
     /**
@@ -112,6 +114,11 @@ public class Configuration {
      * default root password
      */
     private String rootPassword = "password";
+
+    /**
+     * Input files is some specified files that will be added automatically when starting.
+     */
+    private Path[] inputFiles;
 
     @PostConstruct
     private void init() {

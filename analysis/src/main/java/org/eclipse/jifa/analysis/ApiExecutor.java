@@ -14,6 +14,7 @@ package org.eclipse.jifa.analysis;
 
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Predicate;
 
 /**
  * Analysis api executor
@@ -37,4 +38,11 @@ public interface ApiExecutor {
      * @return result
      */
     CompletableFuture<?> execute(ExecutionContext context);
+
+    /**
+     * @return a matcher to tell the byte array is supported by this executor, default is null
+     */
+    default Predicate<byte[]> matcher() {
+        return null;
+    }
 }

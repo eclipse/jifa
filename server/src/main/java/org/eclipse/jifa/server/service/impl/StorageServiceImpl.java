@@ -164,14 +164,25 @@ public class StorageServiceImpl extends ConfigurationAccessor implements Storage
     }
 
     @Override
-    public long handleUpload(FileType type, MultipartFile file, String destFilename) throws Throwable {
+    public long handleUpload(FileType type, MultipartFile file, String destFilename) throws IOException {
         Path destination = provision(type, destFilename);
         try {
             file.transferTo(destination);
             return destination.toFile().length();
-        } catch (Throwable t) {
+        } catch (IOException e) {
             scavenge(type, destFilename);
-            throw t;
+            throw e;
+        }
+    }
+
+    @Override
+    public void handleLocalFile(FileType type, Path path, String destFilename) throws IOException {
+        Path destination = provision(type, destFilename);
+        try {
+            Files.copy(path, destination);
+        } catch (IOException e) {
+            scavenge(type, destFilename);
+            throw e;
         }
     }
 

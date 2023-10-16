@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.ServiceLoader;
+import java.util.function.Predicate;
 
 @Slf4j
 public class HeapDumpAnalysisApiExecutor extends AbstractApiExecutor<HeapDumpAnalyzer> {
@@ -154,6 +155,18 @@ public class HeapDumpAnalysisApiExecutor extends AbstractApiExecutor<HeapDumpAna
     @Override
     public String namespace() {
         return "heap-dump";
+    }
+
+    @Override
+    public Predicate<byte[]> matcher() {
+        return new Predicate<>() {
+            static final String HEADER = "JAVA PROFILE 1.0.2";
+
+            @Override
+            public boolean test(byte[] bytes) {
+                return bytes.length > HEADER.length() && new String(bytes, 0, HEADER.length()).equals(HEADER);
+            }
+        };
     }
 
     @Override

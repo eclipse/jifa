@@ -19,6 +19,7 @@ import org.eclipse.jifa.analysis.listener.ProgressListener;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.function.Predicate;
 
 @Slf4j
 public class ThreadDumpAnalysisApiExecutor extends AbstractApiExecutor<ThreadDumpAnalyzer> {
@@ -42,5 +43,17 @@ public class ThreadDumpAnalysisApiExecutor extends AbstractApiExecutor<ThreadDum
     @Override
     public String namespace() {
         return "thread-dump";
+    }
+
+    @Override
+    public Predicate<byte[]> matcher() {
+        return new Predicate<>() {
+            static final String HEADER = "Full thread dump";
+
+            @Override
+            public boolean test(byte[] bytes) {
+                return bytes.length > 20 + HEADER.length() && new String(bytes, 20, HEADER.length()).equals(HEADER);
+            }
+        };
     }
 }

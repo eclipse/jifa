@@ -12,11 +12,22 @@
  ********************************************************************************/
 package org.eclipse.jifa.server;
 
+import lombok.extern.slf4j.Slf4j;
+import org.eclipse.jifa.server.enums.FileType;
+import org.eclipse.jifa.server.enums.Role;
+import org.eclipse.jifa.server.service.AnalysisApiService;
+import org.eclipse.jifa.server.service.FileService;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+
+import java.io.IOException;
+import java.nio.file.Path;
 
 @SpringBootApplication
 @EnableConfigurationProperties({Configuration.class})
@@ -26,5 +37,48 @@ public class Launcher {
 
     public static void main(String[] args) {
         SpringApplication.run(Launcher.class, args);
+    }
+
+    @Component
+    @Slf4j
+    static class ReadyListener extends ConfigurationAccessor {
+
+        private final AnalysisApiService analysisApiService;
+
+        private final FileService fileService;
+
+        ReadyListener(AnalysisApiService analysisApiService, FileService fileService) {
+            this.analysisApiService = analysisApiService;
+            this.fileService = fileService;
+        }
+
+        @EventListener(ApplicationReadyEvent.class)
+        public void fireReadyEvent() {
+            //noinspection HttpUrlsUsage
+            log.info("Jifa Server: http://{}:{}", "localhost", config.getPort());
+
+            if (config.getRole() == Role.STANDALONE_WORKER) {
+                Path[] paths = config.getInputFiles();
+                if (paths != null) {
+                    for (Path path : paths) {
+                        try {
+                            FileType type = analysisApiService.deduceFileType(path);
+                            if (type != null) {
+                                String uniqueName = fileService.handleLocalFileRequest(type, path);
+                                //noinspection HttpUrlsUsage
+                                log.info("{}: http://{}:{}/{}/{}",
+                                         path.getFileName(),
+                                         "localhost",
+                                         config.getPort(),
+                                         type.getAnalysisUrlPath(),
+                                         uniqueName);
+                            }
+                        } catch (IOException e) {
+                            log.error("Failed to handle input file '{}': {}", path, e.getMessage());
+                        }
+                    }
+                }
+            }
+        }
     }
 }

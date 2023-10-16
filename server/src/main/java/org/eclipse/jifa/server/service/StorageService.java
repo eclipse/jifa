@@ -30,7 +30,9 @@ public interface StorageService {
 
     void handleTransfer(FileTransferRequest request, String destFilename, FileTransferListener listener);
 
-    long handleUpload(FileType type, MultipartFile file, String destFilename) throws Throwable;
+    long handleUpload(FileType type, MultipartFile file, String destFilename) throws IOException;
+
+    void handleLocalFile(FileType type, Path path, String destFilename) throws IOException;
 
     void scavenge(FileType type, String name);
 
