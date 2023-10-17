@@ -78,40 +78,13 @@ applicationDefaultJvmArgs = ['--add-opens=java.base/java.lang=ALL-UNNAMED',
                              '--add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED',
                              '-Djdk.util.zip.disableZip64ExtraFieldValidation=true']
 
-import java.nio.file.Files
-import java.security.KeyPair
-import java.security.KeyPairGenerator
-
-static void generateDevKey(File dir) {
-    def pubKeyPath = dir.toPath().resolve('dev_rsa.pub')
-    if (Files.exists(pubKeyPath)) {
-        return
-    }
-    KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
-    generator.initialize(2048);
-    KeyPair keyPair = generator.generateKeyPair();
-
-    String publicKeyEncoded =
-            '-----BEGIN PUBLIC KEY-----\n' + Base64.getEncoder().encodeToString(keyPair.getPublic().getEncoded()) + '\n-----END PUBLIC KEY-----\n'
-    Files.writeString(pubKeyPath, publicKeyEncoded)
-
-    String privateKeyEncoded =
-            '-----BEGIN PRIVATE KEY-----\n' + Base64.getEncoder().encodeToString(keyPair.getPrivate().getEncoded()) + '\n-----END PRIVATE KEY-----\n'
-    Files.writeString(dir.toPath().resolve('dev_rsa'), privateKeyEncoded)
-}
-
-afterEvaluate {
-    generateDevKey(projectDir)
-}
 
 import org.springframework.boot.gradle.tasks.run.BootRun
 
-static void setJvmOptionsAndDevKeys(BootRun bootRun) {
+static void setJvmOptions(BootRun bootRun) {
     bootRun.jvmArgs('--add-opens=java.base/java.lang=ALL-UNNAMED',
-                    '--add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED',
-                    '-Djdk.util.zip.disableZip64ExtraFieldValidation=true')
-    bootRun.args('--jifa.public-key=file:' + bootRun.project.projectDir.toPath().resolve('dev_rsa.pub').toAbsolutePath().toString())
-    bootRun.args('--jifa.private-key=file:' + bootRun.project.projectDir.toPath().resolve('dev_rsa').toAbsolutePath().toString())
+            '--add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED',
+            '-Djdk.util.zip.disableZip64ExtraFieldValidation=true')
 }
 
 static void setDatabase(BootRun bootRun) {
@@ -127,7 +100,7 @@ tasks.register('runStandaloneWorker', BootRun) {
     classpath(project.sourceSets.main.runtimeClasspath)
     mainClass.convention(mainClassName)
 
-    setJvmOptionsAndDevKeys(it)
+    setJvmOptions(it)
 }
 
 tasks.register('runStandaloneWorkerWithMysql', BootRun) {
@@ -135,7 +108,7 @@ tasks.register('runStandaloneWorkerWithMysql', BootRun) {
     classpath(project.sourceSets.main.runtimeClasspath)
     mainClass.convention(mainClassName)
 
-    setJvmOptionsAndDevKeys(it)
+    setJvmOptions(it)
     setDatabase(it)
 }
 
@@ -145,7 +118,7 @@ tasks.register('runMaster', BootRun) {
     mainClass.convention(mainClassName)
 
     args('--jifa.role=master', '--jifa.scheduling-strategy=static')
-    setJvmOptionsAndDevKeys(it)
+    setJvmOptions(it)
     setDatabase(it)
 }
 
@@ -155,7 +128,7 @@ tasks.register('runStaticWorker', BootRun) {
     mainClass.convention(mainClassName)
 
     args('--jifa.role=static-worker', '--jifa.port=9102')
-    setJvmOptionsAndDevKeys(it)
+    setJvmOptions(it)
     setDatabase(it)
 }
 

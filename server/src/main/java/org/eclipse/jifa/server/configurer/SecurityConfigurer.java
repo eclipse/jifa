@@ -22,6 +22,7 @@ import org.eclipse.jifa.server.ConfigurationAccessor;
 import org.eclipse.jifa.server.Constant;
 import org.eclipse.jifa.server.condition.ConditionalOnRole;
 import org.eclipse.jifa.server.filter.JwtTokenRefreshFilter;
+import org.eclipse.jifa.server.service.CipherService;
 import org.eclipse.jifa.server.service.JwtService;
 import org.eclipse.jifa.server.service.UserService;
 import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientProperties;
@@ -72,14 +73,14 @@ import static org.eclipse.jifa.server.enums.Role.STANDALONE_WORKER;
 public class SecurityConfigurer extends ConfigurationAccessor {
 
     @Bean
-    public JwtEncoder jwtEncoder() {
-        RSAKey jwk = new RSAKey.Builder(getPublicKey()).privateKey(getPrivateKey()).build();
+    public JwtEncoder jwtEncoder(CipherService cipherService) {
+        RSAKey jwk = new RSAKey.Builder(cipherService.getPublicKey()).privateKey(cipherService.getPrivateKey()).build();
         return new NimbusJwtEncoder(new ImmutableJWKSet<>(new JWKSet(jwk)));
     }
 
     @Bean
-    public JwtDecoder jwtDecoder() {
-        NimbusJwtDecoder decoder = NimbusJwtDecoder.withPublicKey(getPublicKey()).build();
+    public JwtDecoder jwtDecoder(CipherService cipherService) {
+        NimbusJwtDecoder decoder = NimbusJwtDecoder.withPublicKey(cipherService.getPublicKey()).build();
 
         if (getRole() == MASTER || getRole() == STANDALONE_WORKER) {
             decoder.setJwtValidator(new JwtTimestampValidator(Duration.ZERO));

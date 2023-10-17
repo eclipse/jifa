@@ -17,9 +17,6 @@ import org.eclipse.jifa.server.enums.Role;
 import org.eclipse.jifa.server.enums.SchedulingStrategy;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.security.interfaces.RSAPrivateKey;
-import java.security.interfaces.RSAPublicKey;
-
 public abstract class ConfigurationAccessor {
 
     @Autowired
@@ -52,14 +49,6 @@ public abstract class ConfigurationAccessor {
     protected final SchedulingStrategy getSchedulingStrategy() {
         assert isMaster();
         return config.getSchedulingStrategy();
-    }
-
-    protected final RSAPublicKey getPublicKey() {
-        return config.getPublicKey();
-    }
-
-    protected final RSAPrivateKey getPrivateKey() {
-        return config.getPrivateKey();
     }
 
     protected final void mustBe(Role... roles) {

@@ -157,7 +157,7 @@ onMounted(() => {
         analyze();
       }
     })
-    .catch(handleError);
+    .catch(e => handleError(e.response?.data?.message ? e.response.data.message : e));
 });
 
 onUnmounted(() => {

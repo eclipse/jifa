@@ -10,22 +10,24 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-package org.eclipse.jifa.server.service;
+package org.eclipse.jifa.server.domain.entity.shared;
 
-import org.eclipse.jifa.server.domain.dto.PublicKey;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
 
-import java.security.interfaces.RSAPrivateKey;
-import java.security.interfaces.RSAPublicKey;
+@SuppressWarnings("JpaDataSourceORMInspection")
+@Table(name = "configurations")
+@Entity
+@Getter
+@Setter
+public class ConfigurationEntity extends BaseEntity {
 
-public interface CipherService {
+    @Column(unique = true, nullable = false, updatable = false)
+    private String uniqueName;
 
-    String encrypt(String plaintext);
-
-    String decrypt(String ciphertext);
-
-    RSAPublicKey getPublicKey();
-
-    RSAPrivateKey getPrivateKey();
-
-    PublicKey getPublicKeyString();
+    @Column(nullable = false, length = 4096)
+    private String content;
 }

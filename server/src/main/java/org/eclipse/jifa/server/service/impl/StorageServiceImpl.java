@@ -44,6 +44,7 @@ import org.eclipse.jifa.server.ConfigurationAccessor;
 import org.eclipse.jifa.server.condition.StorageAccessible;
 import org.eclipse.jifa.server.domain.dto.FileTransferRequest;
 import org.eclipse.jifa.server.enums.FileType;
+import org.eclipse.jifa.server.service.CipherService;
 import org.eclipse.jifa.server.service.StorageService;
 import org.eclipse.jifa.server.support.FileTransferListener;
 import org.springframework.context.annotation.Conditional;
@@ -72,19 +73,25 @@ import java.util.concurrent.atomic.AtomicLong;
 @Service
 public class StorageServiceImpl extends ConfigurationAccessor implements StorageService {
 
+    private final CipherService cipherService;
+
     private Executor executor;
 
     private Path basePath;
 
     private KeyProvider sshKeyProvider;
 
+    public StorageServiceImpl(CipherService cipherService) {
+        this.cipherService = cipherService;
+    }
+
     @PostConstruct
     private void init() {
         basePath = config.getStoragePath();
         Validate.isTrue(Files.isDirectory(basePath));
 
-        RSAPublicKey publicKey = getPublicKey();
-        RSAPrivateKey privateKey = getPrivateKey();
+        RSAPublicKey publicKey = cipherService.getPublicKey();
+        RSAPrivateKey privateKey = cipherService.getPrivateKey();
         sshKeyProvider = new KeyProvider() {
             @Override
             public PrivateKey getPrivate() {

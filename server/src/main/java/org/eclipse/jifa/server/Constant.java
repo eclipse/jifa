@@ -86,4 +86,8 @@ public interface Constant extends org.eclipse.jifa.common.Constant {
     String ANALYSIS_API_REQUEST_TARGET_KEY = "target";
 
     String ANALYSIS_API_REQUEST_PARAMETERS_KEY = "parameters";
+
+    String CONFIGURATION_PUBLIC_KEY = "public-key";
+
+    String CONFIGURATION_PRIVATE_KEY = "private-key";
 }

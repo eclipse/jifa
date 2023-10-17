@@ -22,14 +22,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jifa.common.util.Validate;
 import org.eclipse.jifa.server.enums.Role;
 import org.eclipse.jifa.server.enums.SchedulingStrategy;
-import org.eclipse.jifa.server.util.DefaultRSAKeyPair;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.interfaces.RSAPrivateKey;
-import java.security.interfaces.RSAPublicKey;
 
 import static org.eclipse.jifa.server.Constant.DEFAULT_PORT;
 
@@ -108,16 +105,6 @@ public class Configuration {
     private int elasticWorkerIdleThreshold = 5;
 
     /**
-     * Public key used by Jifa
-     */
-    private RSAPublicKey publicKey;
-
-    /**
-     * Private key used by Jifa
-     */
-    private RSAPrivateKey privateKey;
-
-    /**
      * Whether to allow anonymous access, default is true
      */
     private boolean allowAnonymousAccess = true;
@@ -163,11 +150,6 @@ public class Configuration {
             if (Files.exists(storagePath) || storagePath.toFile().mkdirs()) {
                 Validate.isTrue(Files.isDirectory(storagePath), "jifa.storage-path must be a directory");
             }
-        }
-
-        if (publicKey == null || privateKey == null) {
-            publicKey = DefaultRSAKeyPair.getPublicKey();
-            privateKey = DefaultRSAKeyPair.getPrivateKey();
         }
     }
 }
