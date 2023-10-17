@@ -76,6 +76,9 @@ public class AnalysisApiStompResponseMessageConverter implements MessageConverte
         if (o == null) {
             return Constant.EMPTY_BYTE_ARRAY;
         }
+        if (o instanceof byte[] bs) {
+           return bs;
+        }
         try {
             return GsonHolder.GSON.toJson(o).getBytes(Constant.CHARSET);
         } catch (Throwable t) {

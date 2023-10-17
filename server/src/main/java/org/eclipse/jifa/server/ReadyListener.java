@@ -39,8 +39,11 @@ class ReadyListener extends ConfigurationAccessor {
 
     @EventListener(ApplicationReadyEvent.class)
     public void fireReadyEvent() {
-        //noinspection HttpUrlsUsage
-        log.info("Jifa Server: http://{}:{}", "localhost", config.getPort());
+        Role role = config.getRole();
+        if (role == Role.MASTER || role == Role.STANDALONE_WORKER) {
+            //noinspection HttpUrlsUsage
+            log.info("Jifa Server: http://{}:{}", "localhost", config.getPort());
+        }
 
         if (config.getRole() == Role.STANDALONE_WORKER) {
             Path[] paths = config.getInputFiles();
