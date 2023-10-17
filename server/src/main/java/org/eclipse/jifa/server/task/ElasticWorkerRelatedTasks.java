@@ -42,7 +42,6 @@ public class ElasticWorkerRelatedTasks extends ConfigurationAccessor {
 
     private final WorkerService workerService;
 
-    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     public ElasticWorkerRelatedTasks(LockSupport lockSupport, ElasticWorkerRepo elasticWorkerRepo,
                                      ElasticWorkerScheduler elasticWorkerScheduler,
                                      WorkerService workerService) {

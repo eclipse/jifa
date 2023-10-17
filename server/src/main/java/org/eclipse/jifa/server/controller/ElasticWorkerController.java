@@ -29,7 +29,6 @@ public class ElasticWorkerController {
 
     private final WorkerService workerService;
 
-    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     public ElasticWorkerController(WorkerService workerService) {
         this.workerService = workerService;
     }

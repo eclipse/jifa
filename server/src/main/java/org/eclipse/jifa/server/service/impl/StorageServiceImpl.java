@@ -41,13 +41,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jifa.common.util.ExecutorFactory;
 import org.eclipse.jifa.common.util.Validate;
 import org.eclipse.jifa.server.ConfigurationAccessor;
-import org.eclipse.jifa.server.condition.ElasticSchedulingStrategy;
-import org.eclipse.jifa.server.condition.Master;
+import org.eclipse.jifa.server.condition.StorageAccessible;
 import org.eclipse.jifa.server.domain.dto.FileTransferRequest;
 import org.eclipse.jifa.server.enums.FileType;
 import org.eclipse.jifa.server.service.StorageService;
 import org.eclipse.jifa.server.support.FileTransferListener;
-import org.springframework.boot.autoconfigure.condition.AnyNestedCondition;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -70,27 +68,9 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicLong;
 
-@Conditional(StorageServiceImpl.Accessible.class)
+@Conditional(StorageAccessible.class)
 @Service
 public class StorageServiceImpl extends ConfigurationAccessor implements StorageService {
-
-    static class Accessible extends AnyNestedCondition {
-
-        public Accessible() {
-            super(ConfigurationPhase.REGISTER_BEAN);
-        }
-
-        @SuppressWarnings("unused")
-        @Master
-        @ElasticSchedulingStrategy
-        static class MasterWithElasticSchedulingStrategy {
-        }
-
-        @SuppressWarnings("unused")
-        @org.eclipse.jifa.server.condition.Worker
-        static class Worker {
-        }
-    }
 
     private Executor executor;
 

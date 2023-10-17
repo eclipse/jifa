@@ -14,12 +14,13 @@ package org.eclipse.jifa.server.task;
 
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jifa.server.ConfigurationAccessor;
+import org.eclipse.jifa.server.condition.StorageAccessible;
 import org.eclipse.jifa.server.enums.FileType;
 import org.eclipse.jifa.server.repository.FileRepo;
 import org.eclipse.jifa.server.repository.TransferringFileRepo;
 import org.eclipse.jifa.server.service.FileService;
 import org.eclipse.jifa.server.service.StorageService;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -28,7 +29,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-@ConditionalOnBean(StorageService.class)
+@Conditional(StorageAccessible.class)
 @Component
 @Slf4j
 public class StorageRelatedTasks extends ConfigurationAccessor {
