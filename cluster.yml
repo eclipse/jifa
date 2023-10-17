@@ -8,6 +8,7 @@
 # http://www.eclipse.org/legal/epl-2.0
 #
 # SPDX-License-Identifier: EPL-2.0
+
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -142,23 +143,23 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   namespace: jifa
-  name: master
+  name: jifa-master
   labels:
-    app: master
+    app: jifa-master
 spec:
   replicas: 3
   selector:
     matchLabels:
-      app: master
+      app: jifa-master
   template:
     metadata:
       labels:
-        app: master
+        app: jifa-master
     spec:
       serviceAccountName: jifa-service-account
       containers:
         - name: main-container
-          image: jifadocker/jifa-master
+          image: eclipsejifa/jifa:0.2.0-SNAPSHOT
           imagePullPolicy: Always
           volumeMounts:
             - name: jifa-pv
@@ -172,11 +173,10 @@ spec:
               value: root
             - name: MYSQL_PASSWORD
               value: password
-          command: ["java","-jar","/wd/jifa.jar"]
-          args: [ "--jifa.role=master", "--jifa.scheduling-strategy=elastic", "--jifa.storage-pvc-name=jifa-pvc", "--jifa.storage-path=/jifa-storage", "--jifa.worker-image=jifadocker/jifa-worker" ]
+          args: [ "--jifa.role=master", "--jifa.scheduling-strategy=elastic", "--jifa.storage-pvc-name=jifa-pvc", "--jifa.storage-path=/jifa-storage", "--jifa.worker-image=eclipsejifa/jifa:0.2.0-SNAPSHOT" ]
           ports:
-            - name: jifa-http-port
-              containerPort: 9102
+            - name: jifa-service-port
+              containerPort: 8102
       volumes:
         - name: jifa-pv
           persistentVolumeClaim:
@@ -187,12 +187,12 @@ apiVersion: v1
 kind: Service
 metadata:
   namespace: jifa
-  name: master-service
+  name: jifa-service
 spec:
   selector:
-    app: master
+    app: jifa-master
   ports:
     - protocol: TCP
       port: 80
-      targetPort: jifa-http-port
+      targetPort: jifa-service-port
   type: LoadBalancer

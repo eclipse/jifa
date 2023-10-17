@@ -32,7 +32,7 @@ import java.nio.file.Path;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 
-import static org.eclipse.jifa.server.Constant.DEFAULT_WORKER_PORT;
+import static org.eclipse.jifa.server.Constant.DEFAULT_PORT;
 
 @ConfigurationProperties(prefix = "jifa", ignoreUnknownFields = false)
 @Validated
@@ -55,28 +55,31 @@ public class Configuration {
      *
      * @see #init()
      */
-    @PositiveOrZero
-    private int port = 0;
+    @Positive
+    private int port = DEFAULT_PORT;
 
     /**
      * The storage path.
      */
     private Path storagePath;
 
+    /**
+     * The scheduling strategy.
+     */
     private SchedulingStrategy schedulingStrategy;
 
     /**
-     * The name of PersistentVolumeClaim. Used by master to schedule an elastic worker
+     * The name of PersistentVolumeClaim.
      */
     private String storagePVCName;
 
     /**
-     * The container image of worker. Used by master to schedule an elastic worker
+     * The container image of worker.
      */
     private String workerImage;
 
-    @PositiveOrZero
-    private int elasticWorkerPort;
+    @Positive
+    private int elasticWorkerPort = DEFAULT_PORT;
 
     /**
      * Idle threshold in minutes of an elastic worker
@@ -130,9 +133,6 @@ public class Configuration {
                                   "jifa.storage-pvc-name must be set and not blank when role is master and scheduling strategy is elastic");
                 Validate.notBlank(workerImage,
                                   "jifa.worker-image name must be set and not blank when role is master and  scheduling strategy is elastic");
-                if (elasticWorkerPort == 0) {
-                    elasticWorkerPort = DEFAULT_WORKER_PORT;
-                }
             }
         }
 
@@ -144,10 +144,6 @@ public class Configuration {
             if (Files.exists(storagePath) || storagePath.toFile().mkdirs()) {
                 Validate.isTrue(Files.isDirectory(storagePath), "jifa.storage-path must be a directory");
             }
-        }
-
-        if (port == 0) {
-            port = role == Role.MASTER ? Constant.DEFAULT_MASTER_PORT : DEFAULT_WORKER_PORT;
         }
 
         if (publicKey == null || privateKey == null) {

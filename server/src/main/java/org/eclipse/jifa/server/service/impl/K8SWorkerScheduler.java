@@ -47,7 +47,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
-import static org.eclipse.jifa.server.Constant.DEFAULT_WORKER_PORT;
+import static org.eclipse.jifa.server.Constant.DEFAULT_PORT;
 import static org.eclipse.jifa.server.Constant.ELASTIC_WORKER_IDENTITY_ENV_KEY;
 import static org.eclipse.jifa.server.Constant.HTTP_API_PREFIX;
 import static org.eclipse.jifa.server.Constant.HTTP_HEALTH_CHECK_MAPPING;
@@ -92,7 +92,7 @@ public class K8SWorkerScheduler extends ConfigurationAccessor implements Elastic
 
                 V1Probe healthCheck = new V1Probe();
                 healthCheck.httpGet(new V1HTTPGetAction().path(HTTP_API_PREFIX + HTTP_HEALTH_CHECK_MAPPING)
-                                                         .port(new IntOrString(DEFAULT_WORKER_PORT)))
+                                                         .port(new IntOrString(DEFAULT_PORT)))
                            .initialDelaySeconds(5)
                            .periodSeconds(2)
                            .failureThreshold(30);
@@ -107,10 +107,9 @@ public class K8SWorkerScheduler extends ConfigurationAccessor implements Elastic
                         .addEnvItem(new V1EnvVar().name("MYSQL_USERNAME").value(System.getenv("MYSQL_USERNAME")))
                         .addEnvItem(new V1EnvVar().name("MYSQL_PASSWORD").value(System.getenv("MYSQL_PASSWORD")))
                         .addEnvItem(new V1EnvVar().name(ELASTIC_WORKER_IDENTITY_ENV_KEY).value(Long.toString(identity)))
-                        .command(List.of("java","-jar","/wd/jifa.jar"))
                         .args(List.of("--jifa.role=elastic-worker",
                                       "--jifa.storage-path=" + config.getStoragePath().toString()))
-                        .addPortsItem(new V1ContainerPort().containerPort(DEFAULT_WORKER_PORT))
+                        .addPortsItem(new V1ContainerPort().containerPort(DEFAULT_PORT))
                         .resources(resourceRequirements)
                         .startupProbe(healthCheck);
 
@@ -133,12 +132,14 @@ public class K8SWorkerScheduler extends ConfigurationAccessor implements Elastic
                 outerLoop:
                 while (true) {
                     V1PodStatus status = pod.getStatus();
-                    List<V1ContainerStatus> containerStatuses = status.getContainerStatuses();
-                    if (containerStatuses != null) {
-                        for (V1ContainerStatus containerStatus : containerStatuses) {
-                            if (WORKER_CONTAINER_NAME.equals(containerStatus.getName())) {
-                                if (containerStatus.getReady()) {
-                                    break outerLoop;
+                    if (status != null) {
+                        List<V1ContainerStatus> containerStatuses = status.getContainerStatuses();
+                        if (containerStatuses != null) {
+                            for (V1ContainerStatus containerStatus : containerStatuses) {
+                                if (WORKER_CONTAINER_NAME.equals(containerStatus.getName())) {
+                                    if (containerStatus.getReady()) {
+                                        break outerLoop;
+                                    }
                                 }
                             }
                         }
@@ -170,8 +171,11 @@ public class K8SWorkerScheduler extends ConfigurationAccessor implements Elastic
             V1PodList pods = api.listNamespacedPod(K8S_NAMESPACE, null, null, null, null, null, null, null, null, null, null);
             for (V1Pod pod : pods.getItems()) {
                 try {
+                    if (pod.getMetadata() == null) {
+                        continue;
+                    }
                     String name = pod.getMetadata().getName();
-                    if (!name.startsWith(POD_NAME_PREFIX)) {
+                    if (name == null || !name.startsWith(POD_NAME_PREFIX)) {
                         continue;
                     }
                     long identity = Long.parseLong(name.substring(POD_NAME_PREFIX.length()));

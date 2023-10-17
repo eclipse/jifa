@@ -17,9 +17,7 @@ import java.nio.charset.StandardCharsets;
 
 public interface Constant extends org.eclipse.jifa.common.Constant {
 
-    int DEFAULT_MASTER_PORT = 9102;
-
-    int DEFAULT_WORKER_PORT = 8102;
+    int DEFAULT_PORT = 8102;
 
     String COOKIE_JIFA_TOKEN_KEY = "jifa-token";
 
@@ -75,7 +73,7 @@ public interface Constant extends org.eclipse.jifa.common.Constant {
 
     String K8S_NAMESPACE = "jifa";
 
-    String POD_NAME_PREFIX = "elastic-worker-";
+    String POD_NAME_PREFIX = "jifa-elastic-worker-";
 
     String ELASTIC_WORKER_IDENTITY_ENV_KEY = "JIFA_ELASTIC_WORKER_IDENTITY";
 

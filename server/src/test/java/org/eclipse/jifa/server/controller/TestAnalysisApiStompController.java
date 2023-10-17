@@ -66,7 +66,7 @@ public class TestAnalysisApiStompController {
     @Test
     public void test() throws Exception {
         StompSession session = webSocketStompClient
-                .connectAsync(String.format("ws://localhost:%d/%s", Constant.DEFAULT_WORKER_PORT, Constant.STOMP_ENDPOINT), new StompSessionHandlerAdapter() {
+                .connectAsync(String.format("ws://localhost:%d/%s", Constant.DEFAULT_PORT, Constant.STOMP_ENDPOINT), new StompSessionHandlerAdapter() {
                 })
                 .get(1000, TimeUnit.SECONDS);
 
