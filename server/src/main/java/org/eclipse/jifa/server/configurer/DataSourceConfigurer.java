@@ -27,39 +27,14 @@ import javax.sql.DataSource;
 @Configuration
 public class DataSourceConfigurer extends ConfigurationAccessor {
 
-    private String mysqlHost;
-
-    private String mysqlDBName;
-
-    private String mysqlUsername;
-
-    private String mysqlPassword;
-
-    private void initMysqlConfig() {
-        mysqlHost = System.getenv("MYSQL_HOST");
-        if (mysqlHost != null) {
-            Validate.notBlank(mysqlHost);
-            mysqlDBName = System.getenv("MYSQL_DATABASE_NAME");
-            if (StringUtils.isBlank(mysqlDBName)) {
-                mysqlDBName = "jifa";
-            }
-            Validate.notBlank(mysqlDBName);
-            mysqlUsername = System.getenv("MYSQL_USERNAME");
-            mysqlPassword = System.getenv("MYSQL_PASSWORD");
-            Validate.notBlank(mysqlUsername);
-            Validate.notBlank(mysqlPassword);
-        }
-    }
-
     @Bean
     public DataSource getDataSource() {
-        initMysqlConfig();
-        if (mysqlHost != null) {
+        if (StringUtils.isNotBlank(config.getDatabaseHost())) {
             DataSourceBuilder<?> dataSourceBuilder = DataSourceBuilder.create();
             dataSourceBuilder.driverClassName("com.mysql.cj.jdbc.Driver");
-            dataSourceBuilder.url(String.format("jdbc:mysql://%s/%s?createDatabaseIfNotExist=true", mysqlHost, mysqlDBName));
-            dataSourceBuilder.username(mysqlUsername);
-            dataSourceBuilder.password(mysqlPassword);
+            dataSourceBuilder.url(String.format("jdbc:mysql://%s/%s?createDatabaseIfNotExist=true", config.getDatabaseHost(), config.getDatabaseName()));
+            dataSourceBuilder.username(config.getDatabaseUsername());
+            dataSourceBuilder.password(config.getDatabasePassword());
             return dataSourceBuilder.build();
         } else if (isStandaloneWorker()) {
             DataSourceBuilder<?> dataSourceBuilder = DataSourceBuilder.create();
@@ -70,6 +45,6 @@ public class DataSourceConfigurer extends ConfigurationAccessor {
             return dataSourceBuilder.build();
         }
 
-        return Validate.error("Mysql environments must be configured");
+        return Validate.error("Database must be configured");
     }
 }

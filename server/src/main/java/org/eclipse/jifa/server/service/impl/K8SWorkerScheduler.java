@@ -102,13 +102,15 @@ public class K8SWorkerScheduler extends ConfigurationAccessor implements Elastic
                         .image(config.getWorkerImage())
                         .imagePullPolicy("Always")
                         .addVolumeMountsItem(new V1VolumeMount().name("jifa-pv").mountPath(config.getStoragePath().toString()))
-                        .addEnvItem(new V1EnvVar().name("MYSQL_HOST").value(System.getenv("MYSQL_HOST")))
-                        .addEnvItem(new V1EnvVar().name("MYSQL_DATABASE_NAME").value(System.getenv("MYSQL_DATABASE_NAME")))
-                        .addEnvItem(new V1EnvVar().name("MYSQL_USERNAME").value(System.getenv("MYSQL_USERNAME")))
-                        .addEnvItem(new V1EnvVar().name("MYSQL_PASSWORD").value(System.getenv("MYSQL_PASSWORD")))
                         .addEnvItem(new V1EnvVar().name(ELASTIC_WORKER_IDENTITY_ENV_KEY).value(Long.toString(identity)))
-                        .args(List.of("--jifa.role=elastic-worker",
-                                      "--jifa.storage-path=" + config.getStoragePath().toString()))
+                        .args(List.of(
+                                "--jifa.role=elastic-worker",
+                                "--jifa.storage-path=" + config.getStoragePath().toString(),
+                                "--jifa.database-host=" + config.getDatabaseHost(),
+                                "--jifa.database-name=" + config.getDatabaseName(),
+                                "--jifa.database-username=" + config.getDatabaseUsername(),
+                                "--jifa.database-password=" + config.getDatabasePassword()
+                                     ))
                         .addPortsItem(new V1ContainerPort().containerPort(DEFAULT_PORT))
                         .resources(resourceRequirements)
                         .startupProbe(healthCheck);

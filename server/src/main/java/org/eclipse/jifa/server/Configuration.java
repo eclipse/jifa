@@ -63,6 +63,26 @@ public class Configuration {
     private Path storagePath;
 
     /**
+     * The database host
+     */
+    private String databaseHost;
+
+    /**
+     * The database name
+     */
+    private String databaseName = "jifa";
+
+    /**
+     * The database username
+     */
+    private String databaseUsername;
+
+    /**
+     * The database password
+     */
+    private String databasePassword;
+
+    /**
      * The scheduling strategy.
      */
     private SchedulingStrategy schedulingStrategy;

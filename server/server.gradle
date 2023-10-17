@@ -114,11 +114,12 @@ static void setJvmOptionsAndDevKeys(BootRun bootRun) {
     bootRun.args('--jifa.private-key=file:' + bootRun.project.projectDir.toPath().resolve('dev_rsa').toAbsolutePath().toString())
 }
 
-static void setMysqlEnv(BootRun bootRun) {
-    bootRun.environment('MYSQL_HOST', 'localhost:3306')
-    bootRun.environment('MYSQL_DATABASE_NAME', 'jifa')
-    bootRun.environment('MYSQL_USERNAME', 'root')
-    bootRun.environment('MYSQL_PASSWORD', 'password')
+static void setDatabase(BootRun bootRun) {
+    // Note: adjust args here according to your environment
+    bootRun.args('--jifa.database-host=localhost:3306')
+    bootRun.args('--jifa.database-name=jifa')
+    bootRun.args('--jifa.database-username=root')
+    bootRun.args('--jifa.database-password=password')
 }
 
 tasks.register('runStandaloneWorker', BootRun) {
@@ -135,7 +136,7 @@ tasks.register('runStandaloneWorkerWithMysql', BootRun) {
     mainClass.convention(mainClassName)
 
     setJvmOptionsAndDevKeys(it)
-    setMysqlEnv(it)
+    setDatabase(it)
 }
 
 tasks.register('runMaster', BootRun) {
@@ -145,7 +146,7 @@ tasks.register('runMaster', BootRun) {
 
     args('--jifa.role=master', '--jifa.scheduling-strategy=static')
     setJvmOptionsAndDevKeys(it)
-    setMysqlEnv(it)
+    setDatabase(it)
 }
 
 tasks.register('runStaticWorker', BootRun) {
@@ -155,7 +156,7 @@ tasks.register('runStaticWorker', BootRun) {
 
     args('--jifa.role=static-worker', '--jifa.port=9102')
     setJvmOptionsAndDevKeys(it)
-    setMysqlEnv(it)
+    setDatabase(it)
 }
 
 bootJar {
