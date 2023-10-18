@@ -25,30 +25,42 @@ import org.gradle.internal.os.OperatingSystem;
 p2deps {
     into 'compileOnly', {
         addFilter('platform', {
-            String os
+            String os = System.getProperty('eclipse-mat-deps.os')
+            String arch = System.getProperty('eclipse-mat-deps.arch', System.getProperty('os.arch'))
             String ws
-            String arch = System.getProperty('os.arch')
+
             if (arch == "amd64") {
                 arch = "x86_64"
             }
 
-            def platform = OperatingSystem.current()
-
             if (arch != "x86_64" && arch != "aarch64") {
-                throw new IllegalStateException("Unsupported platform: ${platform}")
+                throw new IllegalStateException("Unsupported architecture: ${arch}")
             }
 
-            if (platform == OperatingSystem.LINUX) {
-                os = "linux"
+            if (os == null) {
+                def platform = OperatingSystem.current()
+                if (platform == OperatingSystem.LINUX) {
+                    os = "linux"
+                } else if (platform == OperatingSystem.MAC_OS) {
+                    os = "macosx"
+                } else if (platform == OperatingSystem.WINDOWS) {
+                    if (arch != "x86_64") {
+                        throw new IllegalStateException("Unsupported architecture for Windows: ${arch}")
+                    }
+                    os = "win32"
+                } else {
+                    throw new IllegalStateException("Unsupported OS: ${platform}")
+                }
+            }
+
+            if (os == "linux") {
                 ws = "gtk"
-            } else if (platform == OperatingSystem.MAC_OS) {
-                os = "macosx"
+            } else if (os == "macosx") {
                 ws = "cocoa"
-            } else if (platform == OperatingSystem.WINDOWS && arch == "x86_64") {
-                os = "win32"
+            } else if (os == "win32") {
                 ws = "win32"
             } else {
-                throw new IllegalStateException("Unsupported platform: ${platform}")
+                throw new IllegalStateException("Unsupported OS: ${os}")
             }
 
             it.prop('osgi.os', os)
