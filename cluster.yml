@@ -164,16 +164,21 @@ spec:
           volumeMounts:
             - name: jifa-pv
               mountPath: "/jifa-storage"
+          env:
+            - name: MYSQL_HOST
+              value: mysql-service:3306
+            - name: MYSQL_DATABASE
+              value: jifa
+            - name: MYSQL_USER
+              value: root
+            - name: MYSQL_PASSWORD
+              value: password
           args:
             - --jifa.role=master
             - --jifa.scheduling-strategy=elastic
             - --jifa.storage-pvc-name=jifa-pvc
             - --jifa.storage-path=/jifa-storage
             - --jifa.worker-image=eclipsejifa/jifa:0.2.0-SNAPSHOT
-            - --jifa.database-host=mysql-service:3306
-            - --jifa.database-name=jifa
-            - --jifa.database-username=root
-            - --jifa.database-password=password
           ports:
             - name: jifa-port
               containerPort: 8102

@@ -103,14 +103,13 @@ public class K8SWorkerScheduler extends ConfigurationAccessor implements Elastic
                         .imagePullPolicy("Always")
                         .addVolumeMountsItem(new V1VolumeMount().name("jifa-pv").mountPath(config.getStoragePath().toString()))
                         .addEnvItem(new V1EnvVar().name(ELASTIC_WORKER_IDENTITY_ENV_KEY).value(Long.toString(identity)))
+                        .addEnvItem(new V1EnvVar().name("MYSQL_HOST").value(config.getDatabaseHost()))
+                        .addEnvItem(new V1EnvVar().name("MYSQL_DATABASE").value(config.getDatabaseName()))
+                        .addEnvItem(new V1EnvVar().name("MYSQL_USER").value(config.getDatabaseUser()))
+                        .addEnvItem(new V1EnvVar().name("MYSQL_PASSWORD").value(config.getDatabasePassword()))
                         .args(List.of(
                                 "--jifa.role=elastic-worker",
-                                "--jifa.storage-path=" + config.getStoragePath().toString(),
-                                "--jifa.database-host=" + config.getDatabaseHost(),
-                                "--jifa.database-name=" + config.getDatabaseName(),
-                                "--jifa.database-username=" + config.getDatabaseUsername(),
-                                "--jifa.database-password=" + config.getDatabasePassword()
-                                     ))
+                                "--jifa.storage-path=" + config.getStoragePath().toString()))
                         .addPortsItem(new V1ContainerPort().containerPort(DEFAULT_PORT))
                         .resources(resourceRequirements)
                         .startupProbe(healthCheck);

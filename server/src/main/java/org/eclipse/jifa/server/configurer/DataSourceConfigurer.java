@@ -33,7 +33,7 @@ public class DataSourceConfigurer extends ConfigurationAccessor {
             DataSourceBuilder<?> dataSourceBuilder = DataSourceBuilder.create();
             dataSourceBuilder.driverClassName("com.mysql.cj.jdbc.Driver");
             dataSourceBuilder.url(String.format("jdbc:mysql://%s/%s?createDatabaseIfNotExist=true", config.getDatabaseHost(), config.getDatabaseName()));
-            dataSourceBuilder.username(config.getDatabaseUsername());
+            dataSourceBuilder.username(config.getDatabaseUser());
             dataSourceBuilder.password(config.getDatabasePassword());
             return dataSourceBuilder.build();
         } else if (isStandaloneWorker()) {

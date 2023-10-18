@@ -89,10 +89,10 @@ static void setJvmOptions(BootRun bootRun) {
 
 static void setDatabase(BootRun bootRun) {
     // Note: adjust args here according to your environment
-    bootRun.args('--jifa.database-host=localhost:3306')
-    bootRun.args('--jifa.database-name=jifa')
-    bootRun.args('--jifa.database-username=root')
-    bootRun.args('--jifa.database-password=password')
+    bootRun.environment("MYSQL_HOST", "localhost:3306")
+    bootRun.environment("MYSQL_DATABASE", "jifa")
+    bootRun.environment("MYSQL_USER", "root")
+    bootRun.environment("MYSQL_PASSWORD", "password")
 }
 
 tasks.register('runStandaloneWorker', BootRun) {

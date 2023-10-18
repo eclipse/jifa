@@ -67,12 +67,12 @@ public class Configuration {
     /**
      * The database name
      */
-    private String databaseName = "jifa";
+    private String databaseName;
 
     /**
      * The database username
      */
-    private String databaseUsername;
+    private String databaseUser;
 
     /**
      * The database password
