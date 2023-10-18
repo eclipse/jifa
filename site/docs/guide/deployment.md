@@ -29,14 +29,14 @@ There are two types of roles:
 
 Based on different scheduling strategies, the cluster is divided into two types:
 
-- Elastic Cluster: `WORKER` nodes are scheduled on-demand. Users need to prepare a K8S cluster. The role of `WORKER` nodes is `ELASTIC_WORKER`.
+- Elastic Cluster: `WORKER` nodes are scheduled on-demand. Users need to prepare a K8S cluster. The role of `WORKER`
+  nodes is `ELASTIC_WORKER`.
 
 - Static Cluster: `WORKER` nodes need to be started in advance. The `role` of `WORKER` nodes is `STATIC_WORKER`.
 
-
 ### Elastic Cluster
 
-Refer to [cluster.yml](https://github.com/eclipse/jifa/blob/main/cluster.yml). 
+Refer to [cluster.yml](https://github.com/eclipse/jifa/blob/main/cluster.yml).
 
 Command: `kubectl apply -f cluster.yml`
 

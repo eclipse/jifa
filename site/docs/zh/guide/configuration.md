@@ -2,7 +2,9 @@
 
 本页梳理了服务端支持的配置。
 
-各配置项的默认值由 [Configuration.java](https://github.com/eclipse/jifa/blob/main/server/src/main/java/org/eclipse/jifa/server/Configuration.java) 或默认配置文件 [application.yml](https://github.com/eclipse/jifa/blob/main/server/src/main/resources/application.yml) 提供。
+各配置项的默认值由 [Configuration.java](https://github.com/eclipse/jifa/blob/main/server/src/main/java/org/eclipse/jifa/server/Configuration.java)
+或默认配置文件 [application.yml](https://github.com/eclipse/jifa/blob/main/server/src/main/resources/application.yml)
+提供。
 
 通过启动参数 `--jifa.<key>=<value>` 或指定配置文件进行设置。
 
@@ -142,17 +144,19 @@
 
 默认值：true
 
-## root-username
+## admin-username
 
-root 用户名。
+管理员账号的用户名。
 
 类型：String
 
-默认值：root
+默认值：admin
 
-## root-password
+如果设置为空，或已有注册用户则不会进行管理员账号注册
 
-root 用户密码。
+## admin-password
+
+管理员账号的密码。
 
 类型：String
 

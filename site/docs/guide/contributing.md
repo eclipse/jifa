@@ -5,7 +5,7 @@
 Contributions in various forms are welcome, including but not limited to:
 
 - Bug reports and issue submissions
- 
+
 - New requirements or ideas
 
 - Bug fixes
@@ -13,7 +13,7 @@ Contributions in various forms are welcome, including but not limited to:
 - Testing
 
 - Documentation enhancement
- 
+
 - New features or improvements
 
 ## Code Format

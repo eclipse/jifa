@@ -13,6 +13,7 @@
 package org.eclipse.jifa.server.service.impl;
 
 import jakarta.annotation.PostConstruct;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jifa.common.domain.exception.ShouldNotReachHereException;
 import org.eclipse.jifa.common.util.Validate;
 import org.eclipse.jifa.server.ConfigurationAccessor;
@@ -70,15 +71,15 @@ public class UserServiceImpl extends ConfigurationAccessor implements UserServic
 
     @PostConstruct
     private void init() {
-        if (config.getRootUsername() != null) {
-            Optional<LoginDataEntity> root = loginDataRepo.findByUsername(config.getRootUsername());
-            if (root.isPresent()) {
+        if (userRepo.count() == 0 && StringUtils.isNotBlank(config.getAdminUsername())) {
+            Optional<LoginDataEntity> defaultAdmin = loginDataRepo.findByUsername(config.getAdminUsername());
+            if (defaultAdmin.isPresent()) {
                 return;
             }
             try {
-                register("root", config.getRootUsername(), cipherService.encrypt(config.getRootPassword()), true);
+                register("Admin", config.getAdminUsername(), cipherService.encrypt(config.getAdminPassword()), true);
             } catch (Throwable t) {
-                if (loginDataRepo.findByUsername(config.getRootUsername()).isEmpty()) {
+                if (loginDataRepo.findByUsername(config.getAdminUsername()).isEmpty()) {
                     throw t;
                 }
             }
@@ -89,8 +90,8 @@ public class UserServiceImpl extends ConfigurationAccessor implements UserServic
     public JifaAuthenticationToken login(String username, String password) {
         LoginDataEntity loginData = loginDataRepo.findByUsername(username).orElse(null);
         Validate.notNull(loginData, USER_NOT_FOUND);
-         Validate.isTrue(encoder.matches(cipherService.decrypt(password), loginData.getPasswordHash()),
-                         INCORRECT_PASSWORD);
+        Validate.isTrue(encoder.matches(cipherService.decrypt(password), loginData.getPasswordHash()),
+                        INCORRECT_PASSWORD);
         return jwtService.generateToken(loginData.getUser());
     }
 

@@ -72,13 +72,13 @@ Default：Read from the environment variable `MYSQL_PASSWORD`, and `jifa` is use
 
 ## scheduling-strategy
 
-The scheduling strategy. 
+The scheduling strategy.
 
 Type: Enum
 
 - `STATIC`
 - `ELASTIC`
- 
+
 Default: null
 
 ## storage-pvc-name
@@ -123,9 +123,10 @@ Default: 8102
 
 ## elastic-worker-idle-threshold
 
-The idle threshold of `WORKER` nodes in an elastic cluster, in minutes, with a minimum value of 2. When a `WORKER` node is idle for more than this threshold, it will automatically stop.
+The idle threshold of `WORKER` nodes in an elastic cluster, in minutes, with a minimum value of 2. When a `WORKER` node
+is idle for more than this threshold, it will automatically stop.
 
-Type: int 
+Type: int
 
 Default: 5
 
@@ -145,17 +146,19 @@ Type: boolean
 
 Default: true
 
-## root-username
+## admin-username
 
-Root username.
+The username of the administrator account.
 
 Type: String
 
-Default: root
+Default: admin
 
-## root-password
+If set to blank or if there are already registered users, administrator account registration will not be performed.
 
-Root password.
+## admin-password
+
+The password of the administrator account.
 
 Type: String
 

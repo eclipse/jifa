@@ -2,7 +2,8 @@
 
 ## 简介
 
-Eclipse Jifa（简称 Jifa）中的 Jifa 由 “**J**ava **I**ssues **F**inding **A**ssistant” 的首字母组成。 项目起源于一个内部的在线系统，被设计用于提高生产环境 Java 应用堆泄漏等问题的排查效率。
+Eclipse Jifa（简称 Jifa）中的 Jifa 由 “**J**ava **I**ssues **F**inding **A**ssistant” 的首字母组成。
+项目起源于一个内部的在线系统，被设计用于提高生产环境 Java 应用堆泄漏等问题的排查效率。
 
 目前主要包含以下功能：
 
@@ -42,5 +43,5 @@ Eclipse Jifa（简称 Jifa）中的 Jifa 由 “**J**ava **I**ssues **F**inding 
    ![Upload](../image/upload.jpeg)
 
 3. 着手进行分析。
- 
+
    ![Upload](../image/heap-dump-analysis-overview.jpeg)

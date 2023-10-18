@@ -128,14 +128,14 @@ public class Configuration {
     private boolean allowRegistration = true;
 
     /**
-     * default root username
+     * default admin username
      */
-    private String rootUsername = "root";
+    private String adminUsername = "admin";
 
     /**
-     * default root password
+     * default admin password
      */
-    private String rootPassword = "password";
+    private String adminPassword = "password";
 
     /**
      * Input files is some specified files that will be added automatically when starting.
