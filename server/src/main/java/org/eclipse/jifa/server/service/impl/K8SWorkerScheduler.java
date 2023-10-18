@@ -35,6 +35,7 @@ import io.kubernetes.client.openapi.models.V1Volume;
 import io.kubernetes.client.openapi.models.V1VolumeMount;
 import io.kubernetes.client.util.Config;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jifa.common.util.Validate;
 import org.eclipse.jifa.server.ConfigurationAccessor;
 import org.eclipse.jifa.server.condition.ElasticCluster;
@@ -113,6 +114,11 @@ public class K8SWorkerScheduler extends ConfigurationAccessor implements Elastic
                         .addPortsItem(new V1ContainerPort().containerPort(DEFAULT_PORT))
                         .resources(resourceRequirements)
                         .startupProbe(healthCheck);
+
+                String workerJVMOptions = config.getWorkerJVMOptions();
+                if (StringUtils.isNotBlank(workerJVMOptions)) {
+                    container.addEnvItem(new V1EnvVar().name("JAVA_TOOL_OPTIONS").value(workerJVMOptions));
+                }
 
                 pod.spec(new V1PodSpec().addContainersItem(container).addVolumesItem(volume)
                                         .serviceAccountName("jifa-service-account")

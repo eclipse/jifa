@@ -90,15 +90,23 @@ public class Configuration {
     private String storagePVCName;
 
     /**
-     * The container image of worker.
+     * The container image of elastic workers.
      */
     private String workerImage;
 
+    /**
+     * The JVM options of elastic workers.
+     */
+    private String workerJVMOptions;
+
+    /**
+     * The port of elastic workers.
+     */
     @Positive
     private int elasticWorkerPort = DEFAULT_PORT;
 
     /**
-     * Idle threshold in minutes of an elastic worker
+     * Idle threshold in minutes of elastic workers
      */
     @Positive
     @Min(2)

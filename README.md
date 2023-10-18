@@ -19,15 +19,15 @@
 
 ## Introduction
 
-Eclipse Jifa is an open-source project for diagnosing common Java issues.
+Eclipse Jifa is an open-source project that makes troubleshooting easy.
 
 Latest Version: 0.2.0-SNAPSHOT
 
-Complete information is available in the documentation at [https://eclipse.github.io/jifa](https://eclipse.github.io/jifa). Please refer to it for details.
+Please refer to [GitHub Pages](https://eclipse.github.io/jifa) for more information.
 
 ## Quick Start
 
-### Run Jifa Locally with a Single Command
+### Run Jifa Locally
 
 ```shell
 # Default service address is at http://localhost:8102
@@ -38,6 +38,9 @@ curl -fsSL https://raw.githubusercontent.com/eclipse/jifa/main/jifa.sh | bash -s
 
 # Analyze local files
 curl -fsSL https://raw.githubusercontent.com/eclipse/jifa/main/jifa.sh | bash -s -- <file1 path> <file2 path> ...
+
+# Set JVM Options
+curl -fsSL https://raw.githubusercontent.com/eclipse/jifa/main/jifa.sh | bash -s -- --jvm-options "<JVM options>"
 ```
 
 Note: Please make sure that Docker is installed.

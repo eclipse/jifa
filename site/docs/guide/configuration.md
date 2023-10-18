@@ -97,6 +97,14 @@ Type: String
 
 Default: null
 
+## worker-jvm-options
+
+JVM options used by `WORKER` nodes in an elastic cluster
+
+Type：String
+
+Default：null
+
 ## elastic-worker-port
 
 The service port of `WORKER` nodes in an elastic cluster.

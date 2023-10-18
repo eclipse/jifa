@@ -16,6 +16,9 @@ $ curl -fsSL https://raw.githubusercontent.com/eclipse/jifa/main/jifa.sh | bash 
 
 # Analyze local files
 $ curl -fsSL https://raw.githubusercontent.com/eclipse/jifa/main/jifa.sh | bash -s -- <file1 path> <file2 path> ...
+
+# Set JVM Options
+curl -fsSL https://raw.githubusercontent.com/eclipse/jifa/main/jifa.sh | bash -s -- --jvm-options "<JVM options>"
 ```
 
 ::: tip Tip

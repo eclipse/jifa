@@ -16,6 +16,9 @@ $ curl -fsSL https://raw.githubusercontent.com/eclipse/jifa/main/jifa.sh | bash 
 
 # 分析本地文件
 $ curl -fsSL https://raw.githubusercontent.com/eclipse/jifa/main/jifa.sh | bash -s -- <file1 path> <file2 path> ...
+
+# 设置 JVM 参数
+curl -fsSL https://raw.githubusercontent.com/eclipse/jifa/main/jifa.sh | bash -s -- --jvm-options "<JVM options>"
 ```
 
 ::: tip 贴士

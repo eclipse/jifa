@@ -94,6 +94,14 @@
 
 默认值：null
 
+## worker-jvm-options
+
+弹性集群中用于设置 `WORKER` 节点的 JVM 参数。
+
+类型：String
+
+默认值：null
+
 ## elastic-worker-port
 
 弹性集群中 `WORKER` 节点的服务监听端口。

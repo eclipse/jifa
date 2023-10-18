@@ -18,6 +18,7 @@ PORT="8102"
 MOUNTS=""
 INPUT_FILES=""
 INPUT_FILE_COUNT=0
+JVM_OPTIONS=""
 
 check_docker() {
   if ! command -v docker &>/dev/null; then
@@ -28,7 +29,7 @@ check_docker() {
 
 launch_jifa() {
   check_docker
-  docker run --pull=always -p ${PORT}:${PORT} $MOUNTS eclipsejifa/jifa:${TAG} --jifa.port=${PORT} $INPUT_FILES
+  docker run --pull=always -e JAVA_TOOL_OPTIONS="$JVM_OPTIONS" -p ${PORT}:${PORT} $MOUNTS eclipsejifa/jifa:${TAG} --jifa.port=${PORT} $INPUT_FILES
 }
 
 while [ $# -gt 0 ]; do
@@ -39,6 +40,10 @@ while [ $# -gt 0 ]; do
     ;;
   -p)
     PORT=$2
+    shift
+    ;;
+  --jvm-options)
+    JVM_OPTIONS=$2
     shift
     ;;
   *)

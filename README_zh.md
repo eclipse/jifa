@@ -19,15 +19,15 @@
 
 ## 简介
 
-Eclipse Jifa 是一个致力于帮助 Java 研发人员排查应用中常见问题的开源项目。
+Eclipse Jifa 是一个致力于提高问题排查效率的开源项目。
 
 最新版本：0.2.0-SNAPSHOT
 
-关于项目的更多信息请访问 [https://eclipse.github.io/jifa](https://eclipse.github.io/jifa/zh/)。
+关于项目的更多信息请访问 [GitHub Pages](https://eclipse.github.io/jifa/zh/)。
 
 ## 快速上手
 
-### 一个命令运行 Jifa
+### 本地运行 Jifa
 
 ```shell
 # 默认服务地址是 http://localhost:8102
@@ -38,6 +38,9 @@ curl -fsSL https://raw.githubusercontent.com/eclipse/jifa/main/jifa.sh | bash -s
 
 # 分析本地文件
 curl -fsSL https://raw.githubusercontent.com/eclipse/jifa/main/jifa.sh | bash -s -- <file1 path> <file2 path> ...
+
+# 设置 JVM 参数
+curl -fsSL https://raw.githubusercontent.com/eclipse/jifa/main/jifa.sh | bash -s -- --jvm-options "<JVM options>"
 ```
 
 注：本地环境需要安装 docker
