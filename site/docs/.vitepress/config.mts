@@ -13,6 +13,7 @@ export default defineConfig({
     ['link', {rel: "icon", href: "/jifa/eclipse_incubation_vertical_svg.svg"}],
   ],
 
+
   themeConfig: {
     search: {
       provider: 'local'
@@ -20,7 +21,7 @@ export default defineConfig({
 
     socialLinks: [
       {icon: 'github', link: 'https://github.com/eclipse/jifa'}
-    ]
+    ],
   },
 
   locales: {
@@ -65,7 +66,6 @@ export default defineConfig({
           },
           {
             items: [
-              {text: 'Development', link: '/guide/development.md'},
               {text: 'Deployment', link: '/guide/deployment.md'},
               {text: 'Configuration', link: '/guide/configuration.md'},
             ]
@@ -77,6 +77,10 @@ export default defineConfig({
             ]
           }
         ],
+
+        outline: {
+          level: [2, 3],
+        },
 
         editLink: {
           text: 'Edit this page on GitHub',
@@ -107,11 +111,11 @@ export default defineConfig({
             items: [
               {
                 text: '更新日志',
-                link: '/guide/changelog.md'
+                link: '/zh/guide/changelog.md'
               },
               {
                 text: '贡献指南',
-                link: '/guide/contributing'
+                link: '/zh/guide/contributing'
               }
             ]
           }
@@ -122,11 +126,11 @@ export default defineConfig({
             text: '介绍',
             items: [
               {text: 'Eclipse Jifa 是什么？', link: '/zh/guide/what-is-eclipse-jifa'},
-              {text: '快速开始', link: '/zh/guide/getting-started'},
+              {text: '快速上手', link: '/zh/guide/getting-started'},
             ]
           },
           {
-            text: '核心特性',
+            text: '核心功能',
             items: [
               {text: '堆快照分析', link: '/zh/guide/heap-dump-analysis'},
               {text: 'GC 日志分析', link: '/zh/guide/gc-log-analysis'},
@@ -135,7 +139,6 @@ export default defineConfig({
           },
           {
             items: [
-              {text: '开发', link: '/zh/guide/development.md'},
               {text: '部署', link: '/zh/guide/deployment.md'},
               {text: '配置', link: '/zh/guide/configuration.md'},
             ]
@@ -150,6 +153,7 @@ export default defineConfig({
 
         outline: {
           label: '本页目录',
+          level: [2, 3],
         },
 
         editLink: {

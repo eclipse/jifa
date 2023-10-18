@@ -2,7 +2,7 @@
 
 ## How to contribute?
 
-We embrace contributions in various forms, encompassing, but not restricted to, the following:
+Contributions in various forms are welcome, including but not limited to:
 
 - Bug reports and issue submissions
  
