@@ -44,6 +44,6 @@ Taking the analysis of a heap dump as an example, users can initiate an analysis
 
    ![Upload](../image/upload.jpeg)
 
-3. Do analyzing.
+3. Do analysis.
 
    ![Upload](../image/heap-dump-analysis-overview.jpeg)
