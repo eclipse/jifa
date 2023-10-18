@@ -56,7 +56,7 @@ export default {
       all: '所有类型',
       heapDump: '堆内存快照',
       GCLog: 'GC 日志',
-      threadDump: '线程栈快照',
+      threadDump: '线程快照',
 
       new: '新文件',
 

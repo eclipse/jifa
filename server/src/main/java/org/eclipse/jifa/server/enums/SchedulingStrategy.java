@@ -13,6 +13,6 @@
 package org.eclipse.jifa.server.enums;
 
 public enum SchedulingStrategy {
-    STATIC, ELASTIC;
+    ELASTIC, STATIC
 
 }

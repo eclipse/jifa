@@ -59,7 +59,7 @@ public class StorageRelatedTasks extends ConfigurationAccessor {
     }
 
     @Scheduled(initialDelay = 1, fixedDelay = 1, timeUnit = TimeUnit.MINUTES)
-    public void cleanup() throws Throwable {
+    public void cleanup() {
         if (!shouldClean()) {
             return;
         }

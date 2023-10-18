@@ -12,7 +12,7 @@ jifa:
   role: standalone-worker
   storage-path: ${user.home}/jifa-storage
   database-host: ${MYSQL_HOST:}
-  database-name: ${MYSQL_DATABASE:}
+  database-name: ${MYSQL_DATABASE:jifa}
   database-user: ${MYSQL_USER:jifa}
   database-password: ${MYSQL_PASSWORD:jifa}
 

@@ -27,6 +27,7 @@ public class LockSupport extends ConfigurationAccessor {
     }
 
     void runUnderLock(Runnable runnable, String lockName) {
+        assert distributedLockService != null;
         if (!distributedLockService.lock(lockName)) {
             return;
         }
@@ -41,6 +42,7 @@ public class LockSupport extends ConfigurationAccessor {
         boolean shouldLock = isMaster();
 
         if (shouldLock) {
+            assert distributedLockService != null;
             if (!distributedLockService.lock(lockName)) {
                 return;
             }
