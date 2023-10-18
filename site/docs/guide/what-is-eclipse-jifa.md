@@ -43,6 +43,6 @@ as well as uploading through cloud storage solutions such as S3.
 
    ![Upload](../image/upload.jpeg)
 
-3. Do analyzing.
+3. Do analysis.
 
    ![Upload](../image/heap-dump-analysis-overview.jpeg)
