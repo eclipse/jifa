@@ -100,7 +100,7 @@ public class K8SWorkerScheduler extends ConfigurationAccessor implements Elastic
 
                 V1Container container = new V1Container()
                         .name(WORKER_CONTAINER_NAME)
-                        .image(config.getWorkerImage())
+                        .image(config.getElasticWorkerImage())
                         .imagePullPolicy("Always")
                         .addVolumeMountsItem(new V1VolumeMount().name("jifa-pv").mountPath(config.getStoragePath().toString()))
                         .addEnvItem(new V1EnvVar().name(ELASTIC_WORKER_IDENTITY_ENV_KEY).value(Long.toString(identity)))
@@ -110,18 +110,19 @@ public class K8SWorkerScheduler extends ConfigurationAccessor implements Elastic
                         .addEnvItem(new V1EnvVar().name("MYSQL_PASSWORD").value(config.getDatabasePassword()))
                         .args(List.of(
                                 "--jifa.role=elastic-worker",
-                                "--jifa.storage-path=" + config.getStoragePath().toString()))
-                        .addPortsItem(new V1ContainerPort().containerPort(DEFAULT_PORT))
+                                "--jifa.storage-path=" + config.getStoragePath().toString(),
+                                "--jifa.port=" + config.getElasticWorkerPort()))
+                        .addPortsItem(new V1ContainerPort().containerPort(config.getElasticWorkerPort()))
                         .resources(resourceRequirements)
                         .startupProbe(healthCheck);
 
-                String workerJVMOptions = config.getWorkerJVMOptions();
-                if (StringUtils.isNotBlank(workerJVMOptions)) {
-                    container.addEnvItem(new V1EnvVar().name("JAVA_TOOL_OPTIONS").value(workerJVMOptions));
+                String jvmOptions = config.getElasticWorkerJVMOptions();
+                if (StringUtils.isNotBlank(jvmOptions)) {
+                    container.addEnvItem(new V1EnvVar().name("JAVA_TOOL_OPTIONS").value(jvmOptions));
                 }
 
                 pod.spec(new V1PodSpec().addContainersItem(container).addVolumesItem(volume)
-                                        .serviceAccountName("jifa-service-account")
+                                        .serviceAccountName(config.getServiceAccountName())
                                         .restartPolicy("Never"));
 
                 api.createNamespacedPod(K8S_NAMESPACE, pod, null, null, null, null);

@@ -80,13 +80,21 @@
 
 ## storage-pvc-name
 
-弹性集群中使用的 PVC。
+弹性集群中使用的 PersistentVolumeClaim 名称。
 
 类型：String
 
 默认值：null
 
-## worker-image
+## service-account-name
+
+弹性集群中使用的 ServiceAccount 名称。
+
+类型: String
+
+默认值: null
+
+## elastic-worker-image
 
 弹性集群中用于运行 `WORKER` 节点的镜像。
 
@@ -94,7 +102,7 @@
 
 默认值：null
 
-## worker-jvm-options
+## elastic-worker-jvm-options
 
 弹性集群中用于设置 `WORKER` 节点的 JVM 参数。
 

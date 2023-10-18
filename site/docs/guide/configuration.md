@@ -83,13 +83,21 @@ Default: null
 
 ## storage-pvc-name
 
-The PVC used in an elastic cluster.
+The name of PersistentVolumeClaim used in an elastic cluster.
 
 Type: String
 
 Default: null
 
-## worker-image
+## service-account-name
+
+The name of ServiceAccount used in an elastic cluster.
+
+Type: String
+
+Default: null
+
+## elastic-worker-image
 
 Docker image used in an elastic cluster to run `WORKER` nodes.
 
@@ -97,7 +105,7 @@ Type: String
 
 Default: null
 
-## worker-jvm-options
+## elastic-worker-jvm-options
 
 JVM options used by `WORKER` nodes in an elastic cluster
 

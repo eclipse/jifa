@@ -35,7 +35,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(
-        properties = {"jifa.role=master", "jifa.scheduling-strategy=elastic", "jifa.storage-pvc-name=storage-pvc", "jifa.worker-image=image"},
+        properties = {
+                "jifa.role=master",
+                "jifa.scheduling-strategy=elastic",
+                "jifa.storage-pvc-name=storage-pvc",
+                "jifa.service-account-name=service-account",
+                "jifa.elastic-worker-image=image"
+        },
         value = ElasticWorkerController.class, excludeAutoConfiguration = {SecurityAutoConfiguration.class}
 )
 public class TestElasticWorkerController {

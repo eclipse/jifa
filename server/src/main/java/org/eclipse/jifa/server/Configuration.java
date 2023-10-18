@@ -90,14 +90,19 @@ public class Configuration {
     private String storagePVCName;
 
     /**
+     * The name of ServiceAccount
+     */
+    private String serviceAccountName;
+
+    /**
      * The container image of elastic workers.
      */
-    private String workerImage;
+    private String elasticWorkerImage;
 
     /**
      * The JVM options of elastic workers.
      */
-    private String workerJVMOptions;
+    private String elasticWorkerJVMOptions;
 
     /**
      * The port of elastic workers.
@@ -145,8 +150,10 @@ public class Configuration {
             if (schedulingStrategy == SchedulingStrategy.ELASTIC) {
                 Validate.notBlank(storagePVCName,
                                   "jifa.storage-pvc-name must be set and not blank when role is master and scheduling strategy is elastic");
-                Validate.notBlank(workerImage,
-                                  "jifa.worker-image name must be set and not blank when role is master and  scheduling strategy is elastic");
+                Validate.notBlank(serviceAccountName,
+                                  "jifa.service-account-name must be set and not blank when role is master and scheduling strategy is elastic");
+                Validate.notBlank(elasticWorkerImage,
+                                  "jifa.elastic-worker-image name must be set and not blank when role is master and  scheduling strategy is elastic");
             }
         }
 

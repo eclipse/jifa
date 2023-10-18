@@ -178,7 +178,8 @@ spec:
             - --jifa.scheduling-strategy=elastic
             - --jifa.storage-pvc-name=jifa-pvc
             - --jifa.storage-path=/jifa-storage
-            - --jifa.worker-image=eclipsejifa/jifa:0.2.0-SNAPSHOT
+            - --jifa.service-account-name=jifa-service-account
+            - --jifa.elastic-worker-image=eclipsejifa/jifa:0.2.0-SNAPSHOT
           ports:
             - name: jifa-port
               containerPort: 8102
