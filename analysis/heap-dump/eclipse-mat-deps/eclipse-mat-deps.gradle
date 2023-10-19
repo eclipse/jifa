@@ -15,13 +15,47 @@ import java.util.stream.Collectors
 
 plugins {
     id 'java'
-    id "dev.equo.p2deps" version "1.1.0"
+    id "dev.equo.p2deps" version "1.7.3"
 }
 
 apply from: "$rootDir/gradle/base.gradle"
 
+import org.gradle.internal.os.OperatingSystem;
+
 p2deps {
     into 'compileOnly', {
+        addFilter('platform', {
+            String os
+            String ws
+            String arch = System.getProperty('os.arch')
+            if (arch == "amd64") {
+                arch = "x86_64"
+            }
+
+            def platform = OperatingSystem.current()
+
+            if (arch != "amd64" && arch != "aarch64") {
+                throw new IllegalStateException("Unsupported platform: ${platform}")
+            }
+
+            if (platform == OperatingSystem.LINUX) {
+                os = "linux"
+                ws = "gtk"
+            } else if (platform == OperatingSystem.MAC_OS) {
+                os = "macosx"
+                ws = "cocoa"
+            } else if (platform == OperatingSystem.WINDOWS && arch == "x86_64") {
+                os = "win32"
+                ws = "win32"
+            } else {
+                throw new IllegalStateException("Unsupported platform: ${platform}")
+            }
+
+            it.prop('osgi.os', os)
+            it.prop('osgi.ws', ws)
+            it.prop('osgi.arch', arch)
+        })
+
         p2repo 'https://download.eclipse.org/eclipse/updates/4.26/'
         install 'com.ibm.icu'
         install 'org.apache.felix.scr'
@@ -72,6 +106,8 @@ def depsDirPath =
 }
 
 afterEvaluate {
+    delete(depsDirPath)
+
     copy {
         from configurations.compileClasspath
         into "${depsDirPath}"
