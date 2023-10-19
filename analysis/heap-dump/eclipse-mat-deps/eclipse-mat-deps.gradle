@@ -34,7 +34,7 @@ p2deps {
 
             def platform = OperatingSystem.current()
 
-            if (arch != "amd64" && arch != "aarch64") {
+            if (arch != "x86_64" && arch != "aarch64") {
                 throw new IllegalStateException("Unsupported platform: ${platform}")
             }
 
