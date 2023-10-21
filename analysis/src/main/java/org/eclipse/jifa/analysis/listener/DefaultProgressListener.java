@@ -71,6 +71,11 @@ public class DefaultProgressListener implements ProgressListener {
     }
 
     @Override
+    public void reset() {
+        this.total = this.done = 0;
+    }
+
+    @Override
     public String log() {
         return log.toString();
     }

@@ -24,6 +24,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -46,36 +47,37 @@ public class SerDesParser implements Parser {
         this.parser = parser;
     }
 
-    private Path storage(Path from) {
-        return Paths.get(from.toFile().getAbsoluteFile() + ".kryo");
-    }
-
     @Override
     public Snapshot parse(Path path, ProgressListener listener) {
         // TODO: multi-threads support
-        Path storage = storage(path);
-        if (storage.toFile().exists()) {
+        Path serializedDataPath = resolveSerializedDataPath(path);
+        if (Files.exists(serializedDataPath)) {
             try {
-                listener.beginTask("Deserializing thread dump snapshot", 100);
-                Snapshot snapshot = deserialize(storage);
+                listener.beginTask("Deserializing thread dump", 100);
+                Snapshot snapshot = deserialize(serializedDataPath);
                 listener.worked(100);
                 return snapshot;
             } catch (Throwable t) {
-                log.error("Deserialize thread dump snapshot failed", t);
-                listener.sendUserMessage(ProgressListener.Level.WARNING, "Deserialize thread dump snapshot failed", t);
+                log.error("Failed to deserialize thread dump: {}", t.getMessage());
+                listener.sendUserMessage(ProgressListener.Level.WARNING, "Deserialize thread dump failed", t);
                 listener.reset();
             }
         }
 
-        listener.beginTask(null, 5);
         Snapshot snapshot = parser.parse(path, listener);
         try {
-            serialize(snapshot, storage);
-            listener.worked(5);
+            listener.beginTask("Serializing thread dump", 5);
+            serialize(snapshot, serializedDataPath);
         } catch (Throwable t) {
-            log.error("Serialize snapshot failed", t);
+            log.warn("Failed to serialize thread dump: {}", t.getMessage());
+        } finally {
+            listener.worked(5);
         }
         return snapshot;
+    }
+
+    private Path resolveSerializedDataPath(Path source) {
+        return Paths.get(source.toFile().getAbsoluteFile() + ".kryo");
     }
 
     private void serialize(Snapshot snapshot, Path path) throws FileNotFoundException {
