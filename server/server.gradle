@@ -69,8 +69,17 @@ tasks.named('compileJava') {
     inputs.files(tasks.named('processResources'))
 }
 
+import java.nio.file.Files
+
 tasks.named("processResources") {
-    dependsOn(':frontend:build')
+    if (!Files.exists(projectDir.toPath().resolve("src/main/resources/static"))
+        || gradle.startParameter.taskNames.contains("clean")) {
+        dependsOn(':frontend:build')
+    }
+}
+
+tasks.named("clean") {
+    delete(projectDir.toPath().resolve("src/main/resources/static"))
 }
 
 // for kryo
