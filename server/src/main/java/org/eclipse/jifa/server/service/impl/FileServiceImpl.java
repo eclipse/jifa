@@ -59,6 +59,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -286,7 +287,12 @@ public class FileServiceImpl extends ConfigurationAccessor implements FileServic
 
     @Override
     public void deleteOldestFile() {
-        fileRepo.findFirstByOrderByCreatedTimeDesc().ifPresent(this::doDelete);
+        Optional<FileEntity> optional = fileRepo.findFirstByOrderByCreatedTimeDesc();
+        if (optional.isPresent()) {
+            FileEntity file = optional.get();
+            doDelete(file);
+            log.info("File '{} ({})' is deleted", file.getOriginalName(), file.getUniqueName());
+        }
     }
 
     private FileEntity getFileEntityByIdAndCheckAuthority(long id) {

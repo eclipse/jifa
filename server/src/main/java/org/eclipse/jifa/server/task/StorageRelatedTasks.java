@@ -44,7 +44,7 @@ public class StorageRelatedTasks extends ConfigurationAccessor {
 
     private final StorageService storageService;
 
-    private static final double THRESHOLD = 0.15;
+    private static final double THRESHOLD = 0.05;
 
     public StorageRelatedTasks(LockSupport lockSupport,
                                FileRepo fileRepo,
