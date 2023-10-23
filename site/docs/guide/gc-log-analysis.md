@@ -2,65 +2,54 @@
 
 ## Introduction
 
-GC (Garbage Collection) log analysis is a technique used to diagnose memory-related issues and analyze GC performance in
-Java applications. When applications experience long pause, low GC performance or other GC related problems, GC Log
-analysis provides detailed information about GC cause, duration and memory usage change in the heap memory.
+GC (Garbage Collection) log analysis is a technical approach used to analyze issues related to garbage collection. When
+Java applications experience long pauses and response-time (RT) jitter caused by GC, GC logs can provide detailed
+information about the causes, duration, memory changes, and other relevant details.
 
-By generating GC log files, we can obtain information about the GC execution of an application over a certain period of
-time. This includes details such as the time, cause, and memory changes for each GC operation. GC log formats can vary
-and contain extensive and specialized information, making it challenging for manual reading and analysis. With the use
-of GC log analysis tools, users can quickly identify issues like memory leaks, long GC pauses, premature object
-promotion, and other performance-affecting problems without the need to read through lengthy and complex GC logs.
-
-GC log analysis also offers the ability to compare two GC logs or compare one GC log during different time periods. This
-functionality can guide us in optimizing GC performance and understanding the impact of changes on GC behavior.
-
-In summary, GC log analysis is a powerful tool that helps developers diagnose and address issues like memory leaks, long
-GC pauses, and premature object promotion in Java applications. By conducting in-depth analysis of GC execution, we can
-identify underlying problems and take appropriate optimization measures.
+Different versions of the JDK and various GC algorithms have different log formats, and there is a series of JVM options
+controlling the level of detail, making it more challenging to analyze logs directly. Using GC log analysis can help
+developers quickly identify issues such as memory leaks, long pauses, premature object promotions, and other
+performance-affecting problems. This feature also provides comparative analysis views, which can guide developers
+in optimizing GC performance and understanding the impact of code or JVM option changes on GC performance.
 
 ## Views
 
 ### Basic Information
 
-Show some basic information about this GC log, such as the GC algorithm, the number of GC threads, the time covered by
-the log, the currently selected time range, and the duration of the log.
+This view displays some basic information, such as the GC algorithm used by the application, the number of GC threads,
+and the time period covered by the log.
 
 ### Diagnosis
 
-Highlight significant issues identified in the GC log on a timeline. The most severe and prioritized problems will be
-indicated, along with the time range when these issues occurred (clicking on the time range allows for data analysis).
-Common troubleshooting and optimization methods will be provided.
+This view analyzes the serious issues present in the application and marks them on a timeline. It also provides
+information about the most critical problems that need to be addressed first, including the exact time they occurred and
+general troubleshooting and optimization methods.
 
 ### Time Graph
 
-Visualize the GC log by presenting the memory size of different areas, reclamation, promotion and duration of various GC
-events at different time points using line charts or scatter plots.
+This view presents data such as GC duration and memory changes in various regions through visual representation.
 
 ### Pause Info
 
-Display the number of pauses within different time ranges in a visual manner. Provide statistical metrics related to GC
-pauses, such as throughput, average pause time, and maximum pause time.
+This view displays metrics related to GC pauses, such as average pause time and maximum pause time.
 
 ### Heap and Metaspace
 
-Present average capacity, maximum usage, and post Full GC and Old GC average usage for young generation, old generation,
-humongous objects, entire heap, and metaspace.
+This view presents memory usage of the metaspace and each region of the heap.
 
 ### Phase and Cause
 
-Split GC events into phases or causes, showcasing the occurrence count, interval, and duration of each phase.
+This view is split based on GC phases or causes, displaying metrics such as the number of occurrences, intervals, and
+durations.
 
 ### Object Statistics
 
-Provide statistics on object creation and object promotion.
+This view displays data related to object creation and promotion.
 
 ### JVM Options
 
-Display the current JVM options, categorized based on their relevance to GC.
+This view displays the JVM options used by the application.
 
 ### Log Details
 
-Display detailed information about each GC occurrence, supporting queries based on GC cause, event types, and minimum
-pause time.
-
+This view displays the details of each GC and supports querying based on dimensions such as the cause.

@@ -18,14 +18,14 @@ features:
   - title: 堆快照分析
     link: ./guide/heap-dump-analysis
     icon: 🔬
-    details: 基于 Eclipse Memory Analyzer。支持内存泄漏检测、支配树、对象查询语言（OQL/Calcite SQL）等常用功能视图。帮助排查 OOM、Full GC 等问题。
+    details: 基于 Eclipse Memory Analyzer。功能：泄漏检测、支配关系、对象查询语言（OQL/Calcite SQL）等。可辅助开发者排查 OOM、Full GC 等问题。
   - title: GC 日志分析
     link: ./guide/gc-log-analysis
-    icon: 📊
-    details: 支持 GC 问题诊断、原因分析、JVM 选项调优、性能对比等功能视图，支持多种 GC 算法，如 G1、CMS、ZGC 等。帮助排查长时间暂停、RT 不稳定等问题。
+    icon: 🗑️
+    details: 功能：问题诊断、原因分析、选项调优、性能对比等，支持常用的 GC 算法，如 CMS、G1。可辅助开发者排查长时间暂停、RT 不稳定等问题。
   - title: 线程快照分析
     link: ./guide/thread-dump-analysis
     icon: 🔒
-    details: 支持线程和线程池分析、锁分析、调用栈聚合等功能视图。帮助排查线程泄漏、死锁等问题。
+    details: 功能：线程与线程池分析、Java monitors 分析、调用栈聚合等。可辅助开发者排查 CPU 高、线程泄漏、死锁等问题。
 ---
 

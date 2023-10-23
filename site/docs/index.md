@@ -18,13 +18,13 @@ features:
   - title: Heap Dump Analysis
     link: ./guide/heap-dump-analysis
     icon: 🔬
-    details: Providing commonly used views for memory leak detection, dominator tree, Object Query Language (OQL/Calcite SQL), and more. Typical scenarios include OOM and Full GC. Based on Eclipse Memory Analyzer.
+    details: "Based on Eclipse Memory Analyzer. Features: Leak Detection, Dominator Tree, Object Query Language (OQL/Calcite SQL), etc." 
   - title: GC Log Analysis
     link: ./guide/gc-log-analysis
-    icon: 📊
-    details: Providing GC cause analysis, JVM options tuning, performance comparisons, and more, with support for various GC algorithms such as G1, CMS, ZGC, etc. Typical scenarios include long pause and unstable response time.
+    icon: 🗑️
+    details: "Features: Cause Analysis, Options Tuning, Comparison, etc. Supports commonly used algorithms such as CMS and G1."
   - title: Thread Dump Analysis
     link: ./guide/thread-dump-analysis
     icon: 🔒
-    details: Providing thread/thread pool analysis, lock analysis, aggregated call stack views, and more. Typical scenarios include thread leak and deadlock.
+    details: "Features: Thread & Thread Pool Analysis, Java Monitors Analysis, Aggregated Stack Trace Views, etc."
 ---

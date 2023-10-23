@@ -2,8 +2,8 @@
 
 ## 简介
 
-Eclipse Jifa（简称 Jifa）中的 Jifa 由 “**J**ava **I**ssues **F**inding **A**ssistant” 的首字母组成。
-项目起源于一个内部的在线系统，被设计用于提高生产环境 Java 应用堆泄漏等问题的排查效率。
+Eclipse Jifa（简称 Jifa）的名字由 “**J**ava **I**ssues **F**inding **A**ssistant” 的首字母组成。
+项目起源于一个内部的在线系统，被设计用于提高生产环境 Java 应用堆泄漏等问题的排查效率。于 2020 年开源并贡献给 Eclipse 基金会。
 
 目前主要包含以下功能：
 
@@ -38,7 +38,7 @@ Eclipse Jifa（简称 Jifa）中的 Jifa 由 “**J**ava **I**ssues **F**inding 
    ```
    :::
 
-2. 上传堆快照文件到 Jifa。目前支持多种上传方式，如本地文件上传、通过 OSS 等云存储上传。
+2. 上传堆快照文件。支持多种上传方式，如本地文件上传、通过 OSS 上传。
 
    ![Upload](../image/upload.jpeg)
 

@@ -130,7 +130,7 @@ export default defineConfig({
             ]
           },
           {
-            text: '核心功能',
+            text: '核心功能介绍',
             items: [
               {text: '堆快照分析', link: '/zh/guide/heap-dump-analysis'},
               {text: 'GC 日志分析', link: '/zh/guide/gc-log-analysis'},

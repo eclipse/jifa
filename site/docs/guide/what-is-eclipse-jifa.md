@@ -4,7 +4,7 @@
 
 Eclipse Jifa (abbreviated as Jifa) stands for "**J**ava **I**ssues **F**inding **A**ssistant".
 This project originated from an internal system which was designed to improve the efficiency of diagnosing Java heap
-related issues that occurred in the production environment.
+related issues that occurred in the production environment. It was open sourced and contributed to the Eclipse Foundation in 2020.
 
 Currently, Jifa primarily supports the following features:
 
@@ -39,8 +39,7 @@ Taking the analysis of a heap dump as an example, users can initiate an analysis
    ```
    :::
 
-2. Upload the heap dump to Jifa. Currently, various transfer methods are supported, including local file upload,
-   as well as uploading through cloud storage solutions such as S3.
+2. Upload the heap dump. Various transfer methods are supported, such as local file upload and S3.
 
    ![Upload](../image/upload.jpeg)
 
