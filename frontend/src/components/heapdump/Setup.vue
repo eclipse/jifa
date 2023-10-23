@@ -34,7 +34,7 @@ function onConfirm() {
     style="width: 600px"
     size="large"
   >
-    <el-form-item label="Keep unreachable objects">
+    <el-form-item :label="hdt('option.labelOfKeepUnreachableObjects')">
       <el-switch v-model="options.keep_unreachable_objects"></el-switch>
       <el-popover
         placement="top"
@@ -60,7 +60,7 @@ function onConfirm() {
       </el-popover>
     </el-form-item>
 
-    <el-form-item label="Strictness" slot="reference">
+    <el-form-item :label="hdt('option.labelOfStrictness')" slot="reference">
       <el-radio-group v-model="options.strictness">
         <el-radio-button label="stop">stop</el-radio-button>
         <el-radio-button label="warn">warn</el-radio-button>
