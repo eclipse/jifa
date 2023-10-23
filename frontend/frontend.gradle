@@ -34,7 +34,6 @@ tasks.register('build') {
 
 tasks.register('clean') {
     doFirst(() -> {
-        delete 'build'
-        delete project(':server').projectDir.toPath().resolve('src/main/resources/static')
+        delete 'dist'
     })
 }

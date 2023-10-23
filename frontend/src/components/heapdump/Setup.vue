@@ -18,7 +18,7 @@ import { t } from '@/i18n/i18n';
 const emit = defineEmits(['confirmAnalysisOptions']);
 
 const options = reactive({
-  keepUnreachableObjects: true,
+  keep_unreachable_objects: true,
   strictness: 'stop'
 });
 
@@ -35,7 +35,7 @@ function onConfirm() {
     size="large"
   >
     <el-form-item label="Keep unreachable objects">
-      <el-switch v-model="options.keepUnreachableObjects"></el-switch>
+      <el-switch v-model="options.keep_unreachable_objects"></el-switch>
       <el-popover
         placement="top"
         :width="600"
