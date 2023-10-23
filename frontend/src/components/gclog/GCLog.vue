@@ -24,8 +24,6 @@ import Details from '@/components/gclog/Details.vue';
 import PhaseStats from '@/components/gclog/PhaseStats.vue';
 import Diagnosis from '@/components/gclog/Diagnosis.vue';
 import Pause from '@/components/gclog/Pause.vue';
-import { useHeaderToolbar } from '@/composables/header-toolbar';
-import Toolbar from '@/components/gclog/Toolbar.vue';
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
 import Comparison from '@/components/gclog/Comparison.vue';
@@ -154,16 +152,12 @@ onMounted(() => {
     GCLogData.init(metadata, timeRange);
     loading.value = false;
   });
-  if (!showComparisonView) {
-    useHeaderToolbar().set(Toolbar);
-  }
 });
 
 onUnmounted(() => {
   if (GCLogData.showDetails) {
     GCLogData.toggleDetails();
   }
-  useHeaderToolbar().reset();
 });
 </script>
 <template>

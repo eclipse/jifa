@@ -15,43 +15,52 @@ import { gct, t } from '@/i18n/i18n';
 import DownloadLink from '@/components/common/DownloadLink.vue';
 import { ArrowLeftBold, List, Rank, SetUp } from '@element-plus/icons-vue';
 import { useGCLogData } from '@/stores/gc-log-data';
-import { useAnalysisStore } from '@/stores/analysis';
+import { Phase, useAnalysisStore } from '@/stores/analysis';
+import { useRoute } from 'vue-router';
 
-const analysisStore = useAnalysisStore();
+const analysis = useAnalysisStore();
 const GCLogData = useGCLogData();
 
+const route = useRoute();
+const showComparisonView = route.query.hasOwnProperty('compareTo');
+
 function gotoComparison() {
-  window.open(`${analysisStore.target}?compareTo=`);
+  window.open(`${analysis.target}?compareTo=`);
 }
 </script>
 <template>
-  <DownloadLink />
+  <template v-if="!showComparisonView">
+    <el-divider direction="vertical" />
+    <DownloadLink />
 
-  <el-divider direction="vertical" />
+    <template v-if="analysis.phase === Phase.SUCCESS">
+      <el-divider direction="vertical" />
 
-  <el-button link class="ej-header-button" :icon="Rank" @click="gotoComparison">
-    {{ t('analysis.comparison') }}
-  </el-button>
+      <el-button link class="ej-header-button" :icon="Rank" @click="gotoComparison">
+        {{ t('analysis.comparison') }}
+      </el-button>
 
-  <el-divider direction="vertical" />
+      <el-divider direction="vertical" />
 
-  <el-button
-    link
-    class="ej-header-button"
-    :icon="SetUp"
-    @click="GCLogData.toggleAnalysisConfigVisible()"
-  >
-    {{ t('analysis.setting') }}
-  </el-button>
+      <el-button
+        link
+        class="ej-header-button"
+        :icon="SetUp"
+        @click="GCLogData.toggleAnalysisConfigVisible()"
+      >
+        {{ t('analysis.setting') }}
+      </el-button>
 
-  <el-divider direction="vertical" />
+      <el-divider direction="vertical" />
 
-  <el-button
-    link
-    class="ej-header-button"
-    :icon="GCLogData.showDetails ? ArrowLeftBold : List"
-    @click="GCLogData.toggleDetails()"
-  >
-    {{ gct(GCLogData.showDetails ? 'header.backToMainView' : 'header.showDetails') }}
-  </el-button>
+      <el-button
+        link
+        class="ej-header-button"
+        :icon="GCLogData.showDetails ? ArrowLeftBold : List"
+        @click="GCLogData.toggleDetails()"
+      >
+        {{ gct(GCLogData.showDetails ? 'header.backToMainView' : 'header.showDetails') }}
+      </el-button>
+    </template>
+  </template>
 </template>

@@ -16,17 +16,15 @@ import { useAnalysisApiRequester } from '@/composables/analysis-api-requester';
 import { prettyTime } from '@/support/utils';
 import {
   Clock,
-  Connection,
   CoffeeCup,
+  Connection,
   Delete,
+  Histogram,
   Operation,
   Platform,
-  Promotion,
-  Histogram
+  Promotion
 } from '@element-plus/icons-vue';
 import Content from '@/components/threaddump/Content.vue';
-import Toolbar from '@/components/threaddump/Toolbar.vue';
-import { useHeaderToolbar } from '@/composables/header-toolbar';
 import Thread from '@/components/threaddump/Thread.vue';
 import Monitor from '@/components/threaddump/Monitor.vue';
 import CallSiteTree from '@/components/threaddump/CallSiteTree.vue';
@@ -95,8 +93,6 @@ function showThreadsOfGroup(group) {
 }
 
 onMounted(() => {
-  useHeaderToolbar().set(Toolbar);
-
   loading.value = true;
   request('overview').then((overview) => {
     deadLockCount.value = overview.deadLockCount;
@@ -182,10 +178,6 @@ onMounted(() => {
     threadGroupStats.value = _threadGroupStats;
     loading.value = false;
   });
-});
-
-onUnmounted(() => {
-  useHeaderToolbar().reset();
 });
 </script>
 <template>

@@ -102,8 +102,8 @@ export const useEnv = defineStore('env', {
     },
 
     resetToken() {
-      window.localStorage.removeItem(tokenKey)
-      Cookies.remove(tokenKey)
+      window.localStorage.removeItem(tokenKey);
+      Cookies.remove(tokenKey);
     }
   }
 });

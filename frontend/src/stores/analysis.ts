@@ -13,6 +13,14 @@
 import { type FileType } from '@/composables/file-types';
 import { defineStore } from 'pinia';
 
+export enum Phase {
+  INIT,
+  SETUP,
+  ANALYZING,
+  SUCCESS,
+  FAILURE
+}
+
 export const useAnalysisStore = defineStore('analysis', {
   state: () => ({
     fileType: null as FileType | null,
@@ -20,6 +28,8 @@ export const useAnalysisStore = defineStore('analysis', {
 
     fileId: -1,
     filename: '',
+
+    phase: null as Phase | null,
 
     leaveGuard: true
   }),
@@ -33,6 +43,10 @@ export const useAnalysisStore = defineStore('analysis', {
     setIdAndFilename(id: number, filename: string) {
       this.fileId = id;
       this.filename = filename;
+    },
+
+    setPhase(phase: Phase | null) {
+      this.phase = phase;
     }
   }
 });

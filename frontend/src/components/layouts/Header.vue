@@ -47,7 +47,6 @@ const { toolbar } = useHeaderToolbar();
         <span class="project-name">Jifa</span>
 
         <template v-if="toolbar">
-          <el-divider direction="vertical" />
           <component :is="toolbar" />
         </template>
       </div>

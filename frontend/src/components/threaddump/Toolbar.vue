@@ -14,5 +14,6 @@
 import DownloadLink from '@/components/common/DownloadLink.vue';
 </script>
 <template>
+  <el-divider direction="vertical" />
   <DownloadLink />
 </template>

@@ -11,9 +11,14 @@
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
 import GCLog from '@/components/gclog/GCLog.vue';
+import GCLogToolBar from '@/components/gclog/Toolbar.vue';
+
 import HeapDump from '@/components/heapdump/HeapDump.vue';
 import HeapDumpSetup from '@/components/heapdump/Setup.vue';
-import ThreadDumpView from '@/components/threaddump/ThreadDump.vue';
+import HeapDumpToolBar from '@/components/heapdump/Toolbar.vue';
+
+import ThreadDump from '@/components/threaddump/ThreadDump.vue';
+import ThreadDumpToolBar from '@/components/threaddump/Toolbar.vue';
 
 export const fileTypeMap = new Map<string, FileType>();
 
@@ -23,6 +28,7 @@ export class FileType {
     public readonly labelKey: string,
     public readonly namespace: string,
     public readonly routePath: string,
+    public readonly toolBarComponent: object | null,
     public readonly setupComponent: object | null,
     public readonly analysisComponent: object
   ) {
@@ -34,14 +40,37 @@ function def(
   key: string,
   labelKey: string,
   namespace: string,
-  setupView: object | null,
-  analysisView: object
+  toolBarComponent: object,
+  setupComponent: object | null,
+  analysisComponent: object
 ) {
-  return new FileType(key, labelKey, namespace, namespace + '-analysis', setupView, analysisView);
+  return new FileType(
+    key,
+    labelKey,
+    namespace,
+    namespace + '-analysis',
+    toolBarComponent,
+    setupComponent,
+    analysisComponent
+  );
 }
 
-export const HEAP_DUMP = def('HEAP_DUMP', 'heapDump', 'heap-dump', HeapDumpSetup, HeapDump);
+export const HEAP_DUMP = def(
+  'HEAP_DUMP',
+  'heapDump',
+  'heap-dump',
+  HeapDumpToolBar,
+  HeapDumpSetup,
+  HeapDump
+);
 
-export const GC_LOG = def('GC_LOG', 'GCLog', 'gc-log', null, GCLog);
+export const GC_LOG = def('GC_LOG', 'GCLog', 'gc-log', GCLogToolBar, null, GCLog);
 
-export const THREAD_DUMP = def('THREAD_DUMP', 'threadDump', 'thread-dump', null, ThreadDumpView);
+export const THREAD_DUMP = def(
+  'THREAD_DUMP',
+  'threadDump',
+  'thread-dump',
+  ThreadDumpToolBar,
+  null,
+  ThreadDump
+);

@@ -11,15 +11,14 @@
     SPDX-License-Identifier: EPL-2.0
  -->
 <script setup lang="ts">
-import { useRoute } from 'vue-router';
-import { useAnalysisStore } from '@/stores/analysis';
+import { onBeforeRouteLeave, useRoute } from 'vue-router';
+import { Phase, useAnalysisStore } from '@/stores/analysis';
 import { useAnalysisApiRequester } from '@/composables/analysis-api-requester';
-import { ElNotification } from 'element-plus';
-import { onBeforeRouteLeave } from 'vue-router';
-import { ElMessageBox } from 'element-plus';
+import { ElMessageBox, ElNotification } from 'element-plus';
 import type { FileType } from '@/composables/file-types';
 import { t } from '@/i18n/i18n';
 import axios from 'axios';
+import { useHeaderToolbar } from '@/composables/header-toolbar';
 
 const props = defineProps<{
   target: string;
@@ -29,26 +28,18 @@ const route = useRoute();
 const analysis = useAnalysisStore();
 analysis.setTarget(route.meta.fileType as FileType, props.target);
 
-const setupView = toRaw(analysis.fileType?.setupComponent);
-const analysisView = toRaw(analysis.fileType?.analysisComponent);
+const toolBarComponent = toRaw(analysis.fileType?.toolBarComponent);
+const setupComponent = toRaw(analysis.fileType?.setupComponent);
+const analysisComponent = toRaw(analysis.fileType?.analysisComponent);
 
 const { request } = useAnalysisApiRequester();
 
-enum Phase {
-  INIT,
-  SETUP,
-  ANALYZING,
-  SUCCESS,
-  FAILURE
-}
-
-const phase = ref(Phase.INIT);
 const progress = ref(0);
 const log = ref('');
 const analysisLogDiv = ref(null);
 
 const progressStatus = computed(() => {
-  if (phase.value === Phase.FAILURE) {
+  if (analysis.phase === Phase.FAILURE) {
     return { status: 'exception' };
   }
   if (progress.value === 100) {
@@ -64,7 +55,7 @@ function analyze(options?) {
   }
   request('analyze', parameters)
     .then(() => {
-      phase.value = Phase.ANALYZING;
+      analysis.setPhase(Phase.ANALYZING);
       nextTick(() => pollProgress());
     })
     .catch(handleError);
@@ -98,7 +89,7 @@ function pollProgress() {
               offset: 200,
               duration: 500,
               showClose: false,
-              onClose: () => (phase.value = Phase.SUCCESS)
+              onClose: () => analysis.setPhase(Phase.SUCCESS)
             }),
           500
         );
@@ -113,7 +104,7 @@ function handleError(error?) {
   if (error) {
     log.value = error;
   }
-  phase.value = Phase.FAILURE;
+  analysis.setPhase(Phase.FAILURE);
 }
 
 onBeforeRouteLeave((to, from, next) => {
@@ -135,6 +126,7 @@ async function beforeWindowUnload(e) {
 }
 
 onMounted(() => {
+  useHeaderToolbar().set(toolBarComponent);
   window.addEventListener('beforeunload', beforeWindowUnload);
 
   axios
@@ -152,26 +144,28 @@ onMounted(() => {
     })
     .then((need) => {
       if (need) {
-        phase.value = Phase.SETUP;
+        analysis.setPhase(Phase.SETUP);
       } else {
         analyze();
       }
     })
-    .catch(e => handleError(e.response?.data?.message ? e.response.data.message : e));
+    .catch((e) => handleError(e.response?.data?.message ? e.response.data.message : e));
 });
 
 onUnmounted(() => {
-  document.title = 'Eclipse Jifa';
+  useHeaderToolbar().reset();
+  analysis.setPhase(null);
   window.removeEventListener('beforeunload', beforeWindowUnload);
+  document.title = 'Eclipse Jifa';
 });
 </script>
 <template>
   <transition mode="out-in">
-    <div class="ej-common-view-div" v-if="phase == Phase.INIT" v-loading="true"></div>
+    <div class="ej-common-view-div" v-if="analysis.phase == Phase.INIT" v-loading="true"></div>
     <div
       class="ej-common-view-div"
       style="display: flex; flex-direction: column; justify-content: start"
-      v-else-if="phase == Phase.ANALYZING || phase == Phase.FAILURE"
+      v-else-if="analysis.phase == Phase.ANALYZING || analysis.phase == Phase.FAILURE"
     >
       <el-progress
         :stroke-width="35"
@@ -185,7 +179,9 @@ onUnmounted(() => {
       />
       <div
         ref="analysisLogDiv"
-        :class="[phase == Phase.FAILURE ? 'ej-analysis-error-log-div' : 'ej-analysis-log-div']"
+        :class="[
+          analysis.phase == Phase.FAILURE ? 'ej-analysis-error-log-div' : 'ej-analysis-log-div'
+        ]"
       >
         <p style="font-weight: bold">{{ t('analysis.log') }}</p>
         <p v-if="log" style="white-space: pre-line">{{ log }}</p>
@@ -194,11 +190,11 @@ onUnmounted(() => {
     <div
       class="ej-common-view-div"
       style="display: flex; flex-direction: column; justify-content: center; align-items: center"
-      v-else-if="phase === Phase.SETUP"
+      v-else-if="analysis.phase === Phase.SETUP"
     >
-      <component :is="setupView" @confirmAnalysisOptions="analyze"></component>
+      <component :is="setupComponent" @confirmAnalysisOptions="analyze"></component>
     </div>
-    <component :is="analysisView" v-else-if="phase == Phase.SUCCESS"></component>
+    <component :is="analysisComponent" v-else-if="analysis.phase == Phase.SUCCESS"></component>
   </transition>
 </template>
 
