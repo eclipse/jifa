@@ -20,6 +20,11 @@ on:
         description: 'Tag to release'
         required: true
         type: string
+      latestTag:
+        description: 'Tag the Docker image as the latest'
+        required: true
+        type: boolean
+        default: true
 
 run-name: Release ${{ github.event.inputs.tag }}
 
@@ -27,16 +32,22 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - name: Check tag format
-        id: check-tag
+      - name: Docker Tags
+        id: docker-tags
         run: |
           if [[ ! ${{ github.event.inputs.tag }} =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9]+)?$ ]]; then
             echo "Tag format is invalid. Please use vX.Y.Z or vX.Y.Z-<qualifier>."
             exit 1
           fi
-          tag=${{ github.event.inputs.tag }}
-          version=${tag#v}
-          echo "::set-output name=version::$version"
+          selectedTag=${{ github.event.inputs.tag }}
+          version=${selectedTag#v}
+          if [[ ${{ github.event.inputs.latestTag }} == true ]]; then
+            tags=eclipsejifa/jifa:latest,eclipsejifa/jifa:${version}
+          else
+            tags=eclipsejifa/jifa:${version}
+          fi
+          echo "Docker Tags: $tags"
+          echo "::set-output name=tags::$tags"
       - name: Checkout
         uses: actions/checkout@v4
         with:
@@ -95,7 +106,7 @@ jobs:
           file: ./final.Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: eclipsejifa/jifa:latest,eclipsejifa/jifa:${{ steps.check-tag.outputs.version }}
+          tags: ${{ steps.docker-tags.outputs.tags }}
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
