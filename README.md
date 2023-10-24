@@ -21,8 +21,6 @@
 
 Eclipse Jifa is an open-source project that makes troubleshooting easy.
 
-Latest Version: 0.2.0-SNAPSHOT
-
 Please refer to [GitHub Pages](https://eclipse.github.io/jifa) for more information.
 
 ## Quick Start

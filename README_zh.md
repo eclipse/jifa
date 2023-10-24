@@ -21,8 +21,6 @@
 
 Eclipse Jifa 是一个致力于提高问题排查效率的开源项目。
 
-最新版本：0.2.0-SNAPSHOT
-
 关于项目的更多信息请访问 [GitHub Pages](https://eclipse.github.io/jifa/zh/)。
 
 ## 快速上手

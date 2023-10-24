@@ -12,8 +12,7 @@
 
 set -eu
 
-#TAG="latest"
-TAG=0.2.0-SNAPSHOT
+TAG="latest"
 PORT="8102"
 MOUNTS=""
 INPUT_FILES=""

@@ -159,7 +159,7 @@ spec:
       serviceAccountName: jifa-service-account
       containers:
         - name: main-container
-          image: eclipsejifa/jifa:0.2.0-SNAPSHOT
+          image: eclipsejifa/jifa:latest
           imagePullPolicy: Always
           volumeMounts:
             - name: jifa-pv
@@ -179,7 +179,7 @@ spec:
             - --jifa.storage-pvc-name=jifa-pvc
             - --jifa.storage-path=/jifa-storage
             - --jifa.service-account-name=jifa-service-account
-            - --jifa.elastic-worker-image=eclipsejifa/jifa:0.2.0-SNAPSHOT
+            - --jifa.elastic-worker-image=eclipsejifa/jifa:latest
           ports:
             - name: jifa-port
               containerPort: 8102
