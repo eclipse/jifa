@@ -21,7 +21,7 @@ $ curl -fsSL https://raw.githubusercontent.com/eclipse/jifa/main/jifa.sh | bash 
 $ curl -fsSL https://raw.githubusercontent.com/eclipse/jifa/main/jifa.sh | bash -s -- <file1 path> <file2 path> ...
 
 # Add JVM Options
-curl -fsSL https://raw.githubusercontent.com/eclipse/jifa/main/jifa.sh | bash -s -- --jvm-options "<JVM options>"
+$ curl -fsSL https://raw.githubusercontent.com/eclipse/jifa/main/jifa.sh | bash -s -- --jvm-options "<JVM options>"
 ```
 
 ::: tip Tip
