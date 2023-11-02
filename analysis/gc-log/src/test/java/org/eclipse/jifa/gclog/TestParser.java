@@ -75,74 +75,9 @@ public class TestParser {
 
     @Test
     public void testJDK11G1Parser() throws Exception {
-        String log =
-                "[0.015s][info][gc,heap] Heap region size: 1M\n" +
-                        "[0.017s][info][gc     ] Using G1\n" +
-                        "[0.017s][info][gc,heap,coops] Heap address: 0x00000007fc000000, size: 64 MB, Compressed Oops mode: Zero based, Oop shift amount: 3\n" +
-                        "[0.050s][info   ][gc           ] Periodic GC enabled with interval 100 ms" +
-                        "[1.000s][info][safepoint     ] Application time: 0.0816788 seconds\n" +
-                        "[1.000s][info][safepoint     ] Entering safepoint region: G1CollectForAllocation\n" +
-                        "[1.000s][info][gc,start     ] GC(0) Pause Young (Normal) (Metadata GC Threshold)\n" +
-                        "[1.000s][info][gc,task      ] GC(0) Using 8 workers of 8 for evacuation\n" +
-                        "[1.010s][info][gc           ] GC(0) To-space exhausted\n" +
-                        "[1.010s][info][gc,phases    ] GC(0)   Pre Evacuate Collection Set: 0.0ms\n" +
-                        "[1.010s][info][gc,phases    ] GC(0)   Evacuate Collection Set: 9.5ms\n" +
-                        "[1.010s][info][gc,phases    ] GC(0)   Post Evacuate Collection Set: 0.6ms\n" +
-                        "[1.010s][info][gc,phases    ] GC(0)   Other: 0.5ms\n" +
-                        "[1.010s][info][gc,heap      ] GC(0) Eden regions: 19->0(33)\n" +
-                        "[1.010s][info][gc,heap      ] GC(0) Survivor regions: 0->3(3)\n" +
-                        "[1.010s][info][gc,heap      ] GC(0) Old regions: 0->2\n" +
-                        "[1.010s][info][gc,heap      ] GC(0) Humongous regions: 4->3\n" +
-                        "[1.010s][info][gc,metaspace ] GC(0) Metaspace: 20679K->20679K(45056K)\n" +
-                        "[1.010s][info][gc           ] GC(0) Pause Young (Concurrent Start) (Metadata GC Threshold) 19M->4M(64M) 10.709ms\n" +
-                        "[1.010s][info][gc,cpu       ] GC(0) User=0.02s Sys=0.01s Real=0.01s\n" +
-                        "[1.010s][info][safepoint     ] Leaving safepoint region\n" +
-                        "[1.010s][info][safepoint     ] Total time for which application threads were stopped: 0.0101229 seconds, Stopping threads took: 0.0000077 seconds\n" +
-                        "[3.000s][info][gc           ] GC(1) Concurrent Cycle\n" +
-                        "[3.000s][info][gc,marking   ] GC(1) Concurrent Clear Claimed Marks\n" +
-                        "[3.000s][info][gc,marking   ] GC(1) Concurrent Clear Claimed Marks 0.057ms\n" +
-                        "[3.000s][info][gc,marking   ] GC(1) Concurrent Scan Root Regions\n" +
-                        "[3.002s][info][gc,marking   ] GC(1) Concurrent Scan Root Regions 2.709ms\n" +
-                        "[3.002s][info][gc,marking   ] GC(1) Concurrent Mark (3.002s)\n" +
-                        "[3.002s][info][gc,marking   ] GC(1) Concurrent Mark From Roots\n" +
-                        "[3.002s][info][gc,task      ] GC(1) Using 2 workers of 2 for marking\n" +
-                        "[3.005s][info][gc,marking   ] GC(1) Concurrent Mark From Roots 3.109ms\n" +
-                        "[3.005s][info][gc,marking   ] GC(1) Concurrent Preclean\n" +
-                        "[3.005s][info][gc,marking   ] GC(1) Concurrent Preclean 0.040ms\n" +
-                        "[3.005s][info][gc,marking   ] GC(1) Concurrent Mark (2.391s, 2.394s) 3.251ms\n" +
-                        "[3.005s][info][gc,start     ] GC(1) Pause Remark\n" +
-                        "[3.005s][info][gc,stringtable] GC(1) Cleaned string and symbol table, strings: 9850 processed, 0 removed, symbols: 69396 processed, 29 removed\n" +
-                        "[3.008s][info][gc            ] GC(1) Pause Remark 5M->5M(64M) 2.381ms\n" +
-                        "[3.008s][info][gc,cpu        ] GC(1) User=0.01s Sys=0.00s Real=0.01s\n" +
-                        "[3.008s][info][gc,marking    ] GC(1) Concurrent Rebuild Remembered Sets\n" +
-                        "[3.010s][info][gc,marking    ] GC(1) Concurrent Rebuild Remembered Sets 2.151ms\n" +
-                        "[3.010s][info][gc,start      ] GC(1) Pause Cleanup\n" +
-                        "[3.010s][info][gc            ] GC(1) Pause Cleanup 6M->6M(64M) 0.094ms\n" +
-                        "[3.010s][info][gc,cpu        ] GC(1) User=0.00s Sys=0.00s Real=0.00s\n" +
-                        "[3.010s][info][gc,marking    ] GC(1) Concurrent Cleanup for Next Mark\n" +
-                        "[3.012s][info][gc,marking    ] GC(1) Concurrent Cleanup for Next Mark 2.860ms\n" +
-                        "[3.012s][info][gc            ] GC(1) Concurrent Cycle 14.256ms\n" +
-                        "[7.055s][info   ][gc,task       ] GC(2) Using 8 workers of 8 for full compaction\n" +
-                        "[7.055s][info   ][gc,start      ] GC(2) Pause Full (G1 Evacuation Pause)\n" +
-                        "[7.056s][info   ][gc,phases,start] GC(2) Phase 1: Mark live objects\n" +
-                        "[7.058s][info   ][gc,stringtable ] GC(2) Cleaned string and symbol table, strings: 1393 processed, 0 removed, symbols: 17391 processed, 0 removed\n" +
-                        "[7.058s][info   ][gc,phases      ] GC(2) Phase 1: Mark live objects 2.650ms\n" +
-                        "[7.058s][info   ][gc,phases,start] GC(2) Phase 2: Prepare for compaction\n" +
-                        "[7.061s][info   ][gc,phases      ] GC(2) Phase 2: Prepare for compaction 2.890ms\n" +
-                        "[7.061s][info   ][gc,phases,start] GC(2) Phase 3: Adjust pointers\n" +
-                        "[7.065s][info   ][gc,phases      ] GC(2) Phase 3: Adjust pointers 3.890ms\n" +
-                        "[7.065s][info   ][gc,phases,start] GC(2) Phase 4: Compact heap\n" +
-                        "[7.123s][info   ][gc,phases      ] GC(2) Phase 4: Compact heap 57.656ms\n" +
-                        "[7.123s][info   ][gc,heap        ] GC(2) Eden regions: 0->0(680)\n" +
-                        "[7.123s][info   ][gc,heap        ] GC(2) Survivor regions: 0->0(85)\n" +
-                        "[7.123s][info   ][gc,heap        ] GC(2) Old regions: 1700->1089\n" +
-                        "[7.123s][info   ][gc,heap        ] GC(2) Humongous regions: 0->0\n" +
-                        "[7.123s][info   ][gc,metaspace   ] GC(2) Metaspace: 3604K->3604K(262144K)\n" +
-                        "[7.123s][info   ][gc             ] GC(2) Pause Full (G1 Evacuation Pause) 1700M->1078M(1700M) 67.806ms\n" +
-                        "[7.123s][info   ][gc,cpu         ] GC(2) User=0.33s Sys=0.00s Real=0.07s";
         UnifiedG1GCLogParser parser = (UnifiedG1GCLogParser)
-                (new GCLogParserFactory().getParser(stringToBufferedReader(log)));
-        G1GCModel model = (G1GCModel) parser.parse(stringToBufferedReader(log));
+                (new GCLogParserFactory().getParser(TestUtil.getGCLog("11G1Parser.log")));
+        G1GCModel model = (G1GCModel) parser.parse(TestUtil.getGCLog("11G1Parser.log"));
         model.calculateDerivedInfo(new DefaultProgressListener());
         // assert parsing success
         Assertions.assertNotNull(model);
@@ -213,21 +148,9 @@ public class TestParser {
 
     @Test
     public void testJDK11G1ParserDetectHeapRegionSize() throws Exception {
-        String log = "[3.865s][info][gc,start      ] GC(14) Pause Young (Normal) (G1 Evacuation Pause)\n" +
-                "[3.865s][info][gc,task       ] GC(14) Using 2 workers of 2 for evacuation\n" +
-                "[3.982s][info][gc,phases     ] GC(14)   Pre Evacuate Collection Set: 0.0ms\n" +
-                "[3.982s][info][gc,phases     ] GC(14)   Evacuate Collection Set: 116.2ms\n" +
-                "[3.982s][info][gc,phases     ] GC(14)   Post Evacuate Collection Set: 0.3ms\n" +
-                "[3.982s][info][gc,phases     ] GC(14)   Other: 0.2ms\n" +
-                "[3.982s][info][gc,heap       ] GC(14) Eden regions: 5->0(5)\n" +
-                "[3.982s][info][gc,heap       ] GC(14) Survivor regions: 1->1(1)\n" +
-                "[3.982s][info][gc,heap       ] GC(14) Old regions: 32->37\n" +
-                "[3.982s][info][gc,heap       ] GC(14) Humongous regions: 2->2\n" +
-                "[3.982s][info][gc,metaspace  ] GC(14) Metaspace: 21709K->21707K(1069056K)\n" +
-                "[3.982s][info][gc            ] GC(14) Pause Young (Normal) (G1 Evacuation Pause) 637M->630M(2048M) 116.771ms";
         UnifiedG1GCLogParser parser = new UnifiedG1GCLogParser();
         parser.setMetadata(new GCLogParsingMetadata(GCCollectorType.G1, GCLogStyle.UNIFIED));
-        G1GCModel model = (G1GCModel) parser.parse(stringToBufferedReader(log));
+        G1GCModel model = (G1GCModel) parser.parse(TestUtil.getGCLog("11G1ParserDetectHeapRegionSize.log"));
         model.calculateDerivedInfo(new DefaultProgressListener());
         // should infer region size 16m
         Assertions.assertEquals(model.getHeapRegionSize(), 16 * 1024 * 1024);
@@ -258,120 +181,9 @@ public class TestParser {
 
     @Test
     public void testJDK11ZGCParser() throws Exception {
-        String log =
-                "[7.000s] GC(374) Garbage Collection (Proactive)\n" +
-                        "[7.006s] GC(374) Pause Mark Start 4.459ms\n" +
-                        "[7.312s] GC(374) Concurrent Mark 306.720ms\n" +
-                        "[7.312s] GC(374) Pause Mark End 0.606ms\n" +
-                        "[7.313s] GC(374) Concurrent Process Non-Strong References 1.290ms\n" +
-                        "[7.314s] GC(374) Concurrent Reset Relocation Set 0.550ms\n" +
-                        "[7.314s] GC(374) Concurrent Destroy Detached Pages 0.001ms\n" +
-                        "[7.316s] GC(374) Concurrent Select Relocation Set 2.418ms\n" +
-                        "[7.321s] GC(374) Concurrent Prepare Relocation Set 5.719ms\n" +
-                        "[7.324s] GC(374) Pause Relocate Start 3.791ms\n" +
-                        "[7.356s] GC(374) Concurrent Relocate 32.974ms\n" +
-                        "[7.356s] GC(374) Load: 1.68/1.99/2.04\n" +
-                        "[7.356s] GC(374) MMU: 2ms/0.0%, 5ms/0.0%, 10ms/0.0%, 20ms/0.0%, 50ms/0.0%, 100ms/0.0%\n" +
-                        "[7.356s] GC(374) Mark: 8 stripe(s), 2 proactive flush(es), 1 terminate flush(es), 0 completion(s), 0 continuation(s)\n" +
-                        "[7.356s] GC(374) Relocation: Successful, 359M relocated\n" +
-                        "[7.356s] GC(374) NMethods: 21844 registered, 609 unregistered\n" +
-                        "[7.356s] GC(374) Metaspace: 125M used, 127M capacity, 128M committed, 130M reserved\n" +
-                        "[7.356s] GC(374) Soft: 18634 encountered, 0 discovered, 0 enqueued\n" +
-                        "[7.356s] GC(374) Weak: 56186 encountered, 18454 discovered, 3112 enqueued\n" +
-                        "[7.356s] GC(374) Final: 64 encountered, 16 discovered, 7 enqueued\n" +
-                        "[7.356s] GC(374) Phantom: 1882 encountered, 1585 discovered, 183 enqueued\n" +
-                        "[7.356s] GC(374)                Mark Start          Mark End        Relocate Start      Relocate End           High               Low\n" +
-                        "[7.356s] GC(374)  Capacity:    40960M (100%)      40960M (100%)      40960M (100%)      40960M (100%)      40960M (100%)      40960M (100%)\n" +
-                        "[7.356s] GC(374)   Reserve:       96M (0%)           96M (0%)           96M (0%)           96M (0%)           96M (0%)           96M (0%)\n" +
-                        "[7.356s] GC(374)      Free:    35250M (86%)       35210M (86%)       35964M (88%)       39410M (96%)       39410M (96%)       35210M (86%)\n" +
-                        "[7.356s] GC(374)      Used:     5614M (14%)        5654M (14%)        4900M (12%)        1454M (4%)         5654M (14%)        1454M (4%)\n" +
-                        "[7.356s] GC(374)      Live:         -              1173M (3%)         1173M (3%)         1173M (3%)             -                  -\n" +
-                        "[7.356s] GC(374) Allocated:         -                40M (0%)           40M (0%)          202M (0%)             -                  -\n" +
-                        "[7.356s] GC(374)   Garbage:         -              4440M (11%)        3686M (9%)          240M (1%)             -                  -\n" +
-                        "[7.356s] GC(374) Reclaimed:         -                  -               754M (2%)         4200M (10%)            -                  -\n" +
-                        "[7.356s] GC(374) Garbage Collection (Proactive) 5614M(14%)->1454M(4%)\n" +
-                        "[7.555s] === Garbage Collection Statistics =======================================================================================================================\n" +
-                        "[7.555s]                                                              Last 10s              Last 10m              Last 10h                Total\n" +
-                        "[7.555s]                                                              Avg / Max             Avg / Max             Avg / Max             Avg / Max\n" +
-                        "[7.555s]   Collector: Garbage Collection Cycle                    362.677 / 362.677     365.056 / 529.211     315.229 / 868.961     315.229 / 868.961     ms\n" +
-                        "[7.555s]  Contention: Mark Segment Reset Contention                     0 / 0                 1 / 106               0 / 238               0 / 238         ops/s\n" +
-                        "[7.555s]  Contention: Mark SeqNum Reset Contention                      0 / 0                 0 / 1                 0 / 1                 0 / 1           ops/s\n" +
-                        "[7.555s]  Contention: Relocation Contention                             1 / 10                0 / 52                0 / 87                0 / 87          ops/s\n" +
-                        "[7.555s]    Critical: Allocation Stall                              0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms\n" +
-                        "[7.555s]    Critical: Allocation Stall                                  0 / 0                 0 / 0                 0 / 0                 0 / 0           ops/s\n" +
-                        "[7.555s]    Critical: GC Locker Stall                               0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms\n" +
-                        "[7.555s]    Critical: GC Locker Stall                                   0 / 0                 0 / 0                 0 / 0                 0 / 0           ops/s\n" +
-                        "[7.555s]      Memory: Allocation Rate                                  85 / 210             104 / 826              54 / 2628             54 / 2628        MB/s\n" +
-                        "[7.555s]      Memory: Heap Used After Mark                           5654 / 5654           5727 / 6416           5588 / 14558          5588 / 14558       MB\n" +
-                        "[7.555s]      Memory: Heap Used After Relocation                     1454 / 1454           1421 / 1814           1224 / 2202           1224 / 2202        MB\n" +
-                        "[7.555s]      Memory: Heap Used Before Mark                          5614 / 5614           5608 / 6206           5503 / 14268          5503 / 14268       MB\n" +
-                        "[7.555s]      Memory: Heap Used Before Relocation                    4900 / 4900           4755 / 5516           4665 / 11700          4665 / 11700       MB\n" +
-                        "[7.555s]      Memory: Out Of Memory                                     0 / 0                 0 / 0                 0 / 0                 0 / 0           ops/s\n" +
-                        "[7.555s]      Memory: Page Cache Flush                                  0 / 0                 0 / 0                 0 / 0                 0 / 0           MB/s\n" +
-                        "[7.555s]      Memory: Page Cache Hit L1                                49 / 105              53 / 439              27 / 1353             27 / 1353        ops/s\n" +
-                        "[7.555s]      Memory: Page Cache Hit L2                                 0 / 0                 0 / 0                 0 / 0                 0 / 0           ops/s\n" +
-                        "[7.555s]      Memory: Page Cache Miss                                   0 / 0                 0 / 0                 0 / 551               0 / 551         ops/s\n" +
-                        "[7.555s]      Memory: Undo Object Allocation Failed                     0 / 0                 0 / 0                 0 / 8                 0 / 8           ops/s\n" +
-                        "[7.555s]      Memory: Undo Object Allocation Succeeded                  1 / 10                0 / 52                0 / 87                0 / 87          ops/s\n" +
-                        "[7.555s]      Memory: Undo Page Allocation                              0 / 0                 0 / 1                 0 / 16                0 / 16          ops/s\n" +
-                        "[7.555s]       Phase: Concurrent Destroy Detached Pages             0.001 / 0.001         0.001 / 0.001         0.001 / 0.012         0.001 / 0.012       ms\n" +
-                        "[7.555s]       Phase: Concurrent Mark                             306.720 / 306.720     303.979 / 452.112     255.790 / 601.718     255.790 / 601.718     ms\n" +
-                        "[7.555s]       Phase: Concurrent Mark Continue                      0.000 / 0.000         0.000 / 0.000       189.372 / 272.607     189.372 / 272.607     ms\n" +
-                        "[7.555s]       Phase: Concurrent Prepare Relocation Set             5.719 / 5.719         6.314 / 14.492        6.150 / 36.507        6.150 / 36.507      ms\n" +
-                        "[7.555s]       Phase: Concurrent Process Non-Strong References      1.290 / 1.290         1.212 / 1.657         1.179 / 2.334         1.179 / 2.334       ms\n" +
-                        "[7.555s]       Phase: Concurrent Relocate                          32.974 / 32.974       35.964 / 86.278       31.599 / 101.253      31.599 / 101.253     ms\n" +
-                        "[7.555s]       Phase: Concurrent Reset Relocation Set               0.550 / 0.550         0.615 / 0.937         0.641 / 5.411         0.641 / 5.411       ms\n" +
-                        "[7.555s]       Phase: Concurrent Select Relocation Set              2.418 / 2.418         2.456 / 3.131         2.509 / 4.753         2.509 / 4.753       ms\n" +
-                        "[7.555s]       Phase: Pause Mark End                                0.606 / 0.606         0.612 / 0.765         0.660 / 5.543         0.660 / 5.543       ms\n" +
-                        "[7.555s]       Phase: Pause Mark Start                              4.459 / 4.459         4.636 / 6.500         6.160 / 547.572       6.160 / 547.572     ms\n" +
-                        "[7.555s]       Phase: Pause Relocate Start                          3.791 / 3.791         3.970 / 5.443         4.047 / 8.993         4.047 / 8.993       ms\n" +
-                        "[7.555s]    Subphase: Concurrent Mark                             306.253 / 306.593     303.509 / 452.030     254.759 / 601.564     254.759 / 601.564     ms\n" +
-                        "[7.555s]    Subphase: Concurrent Mark Idle                          1.069 / 1.110         1.527 / 18.317        1.101 / 18.317        1.101 / 18.317      ms\n" +
-                        "[7.555s]    Subphase: Concurrent Mark Try Flush                     0.554 / 0.685         0.872 / 18.247        0.507 / 18.247        0.507 / 18.247      ms\n" +
-                        "[7.555s]    Subphase: Concurrent Mark Try Terminate                 0.978 / 1.112         1.386 / 18.318        0.998 / 18.318        0.998 / 18.318      ms\n" +
-                        "[7.555s]    Subphase: Concurrent References Enqueue                 0.007 / 0.007         0.008 / 0.013         0.009 / 0.037         0.009 / 0.037       ms\n" +
-                        "[7.555s]    Subphase: Concurrent References Process                 0.628 / 0.628         0.638 / 1.153         0.596 / 1.789         0.596 / 1.789       ms\n" +
-                        "[7.555s]    Subphase: Concurrent Weak Roots                         0.497 / 0.618         0.492 / 0.670         0.502 / 1.001         0.502 / 1.001       ms\n" +
-                        "[7.555s]    Subphase: Concurrent Weak Roots JNIWeakHandles          0.001 / 0.001         0.001 / 0.006         0.001 / 0.007         0.001 / 0.007       ms\n" +
-                        "[7.555s]    Subphase: Concurrent Weak Roots StringTable             0.476 / 0.492         0.402 / 0.523         0.400 / 0.809         0.400 / 0.809       ms\n" +
-                        "[7.555s]    Subphase: Concurrent Weak Roots VMWeakHandles           0.105 / 0.123         0.098 / 0.150         0.103 / 0.903         0.103 / 0.903       ms\n" +
-                        "[7.555s]    Subphase: Pause Mark Try Complete                       0.000 / 0.000         0.001 / 0.004         0.156 / 1.063         0.156 / 1.063       ms\n" +
-                        "[7.555s]    Subphase: Pause Remap TLABS                             0.040 / 0.040         0.046 / 0.073         0.050 / 0.140         0.050 / 0.140       ms\n" +
-                        "[7.555s]    Subphase: Pause Retire TLABS                            0.722 / 0.722         0.835 / 1.689         0.754 / 1.919         0.754 / 1.919       ms\n" +
-                        "[7.555s]    Subphase: Pause Roots                                   1.581 / 2.896         1.563 / 3.787         1.592 / 545.902       1.592 / 545.902     ms\n" +
-                        "[7.555s]    Subphase: Pause Roots ClassLoaderDataGraph              1.461 / 2.857         1.549 / 3.782         1.554 / 6.380         1.554 / 6.380       ms\n" +
-                        "[7.555s]    Subphase: Pause Roots CodeCache                         1.130 / 1.312         0.999 / 1.556         0.988 / 6.322         0.988 / 6.322       ms\n" +
-                        "[7.555s]    Subphase: Pause Roots JNIHandles                        0.010 / 0.015         0.004 / 0.028         0.005 / 1.709         0.005 / 1.709       ms\n" +
-                        "[7.555s]    Subphase: Pause Roots JNIWeakHandles                    0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms\n" +
-                        "[7.555s]    Subphase: Pause Roots JRFWeak                           0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms\n" +
-                        "[7.555s]    Subphase: Pause Roots JVMTIExport                       0.001 / 0.001         0.001 / 0.003         0.001 / 0.005         0.001 / 0.005       ms\n" +
-                        "[7.555s]    Subphase: Pause Roots JVMTIWeakExport                   0.001 / 0.001         0.001 / 0.001         0.001 / 0.012         0.001 / 0.012       ms\n" +
-                        "[7.555s]    Subphase: Pause Roots Management                        0.002 / 0.002         0.003 / 0.006         0.003 / 0.305         0.003 / 0.305       ms\n" +
-                        "[7.555s]    Subphase: Pause Roots ObjectSynchronizer                0.000 / 0.000         0.000 / 0.001         0.000 / 0.006         0.000 / 0.006       ms\n" +
-                        "[7.555s]    Subphase: Pause Roots Setup                             0.474 / 0.732         0.582 / 1.791         0.526 / 2.610         0.526 / 2.610       ms\n" +
-                        "[7.555s]    Subphase: Pause Roots StringTable                       0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms\n" +
-                        "[7.555s]    Subphase: Pause Roots SystemDictionary                  0.028 / 0.039         0.027 / 0.075         0.033 / 2.777         0.033 / 2.777       ms\n" +
-                        "[7.555s]    Subphase: Pause Roots Teardown                          0.003 / 0.005         0.003 / 0.009         0.003 / 0.035         0.003 / 0.035       ms\n" +
-                        "[7.555s]    Subphase: Pause Roots Threads                           0.262 / 1.237         0.309 / 1.791         0.358 / 544.610       0.358 / 544.610     ms\n" +
-                        "[7.555s]    Subphase: Pause Roots Universe                          0.003 / 0.004         0.003 / 0.009         0.003 / 0.047         0.003 / 0.047       ms\n" +
-                        "[7.555s]    Subphase: Pause Roots VMWeakHandles                     0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms\n" +
-                        "[7.555s]    Subphase: Pause Weak Roots                              0.000 / 0.003         0.000 / 0.007         0.000 / 0.020         0.000 / 0.020       ms\n" +
-                        "[7.555s]    Subphase: Pause Weak Roots JFRWeak                      0.001 / 0.001         0.001 / 0.002         0.001 / 0.012         0.001 / 0.012       ms\n" +
-                        "[7.555s]    Subphase: Pause Weak Roots JNIWeakHandles               0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms\n" +
-                        "[7.555s]    Subphase: Pause Weak Roots JVMTIWeakExport              0.001 / 0.001         0.001 / 0.001         0.001 / 0.008         0.001 / 0.008       ms\n" +
-                        "[7.555s]    Subphase: Pause Weak Roots Setup                        0.000 / 0.000         0.000 / 0.000         0.000 / 0.001         0.000 / 0.001       ms\n" +
-                        "[7.555s]    Subphase: Pause Weak Roots StringTable                  0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms\n" +
-                        "[7.555s]    Subphase: Pause Weak Roots SymbolTable                  0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms\n" +
-                        "[7.555s]    Subphase: Pause Weak Roots Teardown                     0.001 / 0.001         0.001 / 0.001         0.001 / 0.015         0.001 / 0.015       ms\n" +
-                        "[7.555s]    Subphase: Pause Weak Roots VMWeakHandles                0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms\n" +
-                        "[7.555s]      System: Java Threads                                    911 / 911             910 / 911             901 / 913             901 / 913         threads\n" +
-                        "[7.555s] =========================================================================================================================================================\n" +
-                        "[7.777s] Allocation Stall (ThreadPoolTaskScheduler-1) 0.204ms\n" +
-                        "[7.888s] Allocation Stall (NioProcessor-2) 0.391ms\n" +
-                        "[7.889s] Out Of Memory (thread 8)";
         UnifiedZGCLogParser parser = (UnifiedZGCLogParser)
-                (new GCLogParserFactory().getParser(stringToBufferedReader(log)));
-        ZGCModel model = (ZGCModel) parser.parse(stringToBufferedReader(log));
+                (new GCLogParserFactory().getParser(TestUtil.getGCLog("11ZGCParser.log")));
+        ZGCModel model = (ZGCModel) parser.parse(TestUtil.getGCLog("11ZGCParser.log"));
         model.calculateDerivedInfo(new DefaultProgressListener());
         Assertions.assertNotNull(model);
 
@@ -411,45 +223,10 @@ public class TestParser {
 
     @Test
     public void testJDK8CMSParser() throws Exception {
-        String log =
-                "OpenJDK 64-Bit Server VM (25.212-b469) for linux-amd64 JRE (1.8.0_212-b469), built on Jun 16 2019 15:54:49 by \"admin\" with gcc 4.8.2\n" +
-                        "Memory: 4k page, physical 8388608k(5632076k free), swap 0k(0k free)\n" +
-                        "610.956: [Full GC (Heap Dump Initiated GC) 610.956: [CMS[YG occupancy: 1212954 K (1843200 K)]611.637: [weak refs processing, 0.0018945 secs]611.639: [class unloading, 0.0454119 secs]611.684: [scrub symbol table, 0.0248340 secs]611.709: [scrub string table, 0.0033967 secs]: 324459K->175339K(3072000K), 1.0268069 secs] 1537414K->1388294K(4915200K), [Metaspace: 114217K->113775K(1153024K)], 1.0277002 secs] [Times: user=1.71 sys=0.05, real=1.03 secs]\n" +
-                        "674.686: [GC (Allocation Failure) 674.687: [ParNew: 1922432K->174720K(1922432K), 0.1691241 secs] 3557775K->1858067K(4019584K), 0.1706065 secs] [Times: user=0.54 sys=0.04, real=0.17 secs]\n" +
-                        "675.110: Total time for which application threads were stopped: 0.0001215 seconds, Stopping threads took: 0.0000271 seconds\n" +
-                        "675.111: Application time: 0.0170944 seconds\n" +
-                        "675.164: [GC (CMS Initial Mark) [1 CMS-initial-mark: 1683347K(2097152K)] 1880341K(4019584K), 0.0714398 secs] [Times: user=0.19 sys=0.05, real=0.07 secs]" +
-                        "675.461: [CMS-concurrent-mark-start]\n" +
-                        "705.287: [GC (Allocation Failure) 705.288: [ParNew: 1922432K->174720K(1922432K), 0.2481441 secs] 3680909K->2051729K(4019584K), 0.2502404 secs] [Times: user=0.93 sys=0.10, real=0.25 secs]\n" +
-                        "709.876: [CMS-concurrent-mark: 17.528/34.415 secs] [Times: user=154.39 sys=4.20, real=34.42 secs]\n" +
-                        "709.959: [CMS-concurrent-preclean-start]\n" +
-                        "710.570: [CMS-concurrent-preclean: 0.576/0.611 secs] [Times: user=3.08 sys=0.05, real=0.69 secs]\n" +
-                        "710.571: [CMS-concurrent-abortable-preclean-start]\n" +
-                        "715.691: [GC (Allocation Failure) 715.692: [ParNew: 1922432K->174720K(1922432K), 0.1974709 secs] 3799441K->2119132K(4019584K), 0.1992381 secs] [Times: user=0.61 sys=0.04, real=0.20 secs]\n" +
-                        "717.759: [CMS-concurrent-abortable-preclean: 5.948/7.094 secs] [Times: user=32.21 sys=0.66, real=7.19 secs]\n" +
-                        "717.792: [GC (CMS Final Remark) [YG occupancy: 438765 K (1922432 K)]717.792: [Rescan (parallel) , 0.1330457 secs]717.925: [weak refs processing, 0.0007103 secs]717.926: [class unloading, 0.2074917 secs]718.134: [scrub symbol table, 0.0751664 secs]718.209: [scrub string table, 0.0137015 secs][1 CMS-remark: 1944412K(2097152K)] 2383178K(4019584K), 0.4315000 secs] [Times: user=0.77 sys=0.01, real=0.43 secs]\n" +
-                        "718.226: [CMS-concurrent-sweep-start]\n" +
-                        "724.991: [GC (Allocation Failure) 724.992: [ParNew: 1922432K->174720K(1922432K), 0.2272846 secs] 3377417K->1710595K(4019584K), 0.2289948 secs] [Times: user=0.70 sys=0.01, real=0.23 secs]\n" +
-                        "728.865: [CMS-concurrent-sweep: 8.279/10.639 secs] [Times: user=48.12 sys=1.21, real=10.64 secs]\n" +
-                        "731.570: [CMS-concurrent-reset-start]\n" +
-                        "731.806: [CMS-concurrent-reset: 0.205/0.237 secs] [Times: user=1.43 sys=0.04, real=0.34 secs]\n" +
-                        "778.294: [GC (Allocation Failure) 778.295: [ParNew: 1922432K->163342K(1922432K), 0.2104952 secs] 3570857K->1917247K(4019584K), 0.2120639 secs] [Times: user=0.63 sys=0.00, real=0.21 secs]\n" +
-                        "778.534: [GC (CMS Initial Mark) [1 CMS-initial-mark: 1753905K(2097152K)] 1917298K(4019584K), 0.0645754 secs] [Times: user=0.20 sys=0.01, real=0.06 secs]\n" +
-                        "778.601: [CMS-concurrent-mark-start]\n" +
-                        "792.762: [CMS-concurrent-mark: 11.404/14.161 secs] [Times: user=61.30 sys=2.27, real=14.17 secs]\n" +
-                        "792.763: [CMS-concurrent-preclean-start]\n" +
-                        "795.862: [CMS-concurrent-preclean: 2.148/3.100 secs] [Times: user=12.43 sys=0.91, real=3.10 secs]\n" +
-                        "795.864: [CMS-concurrent-abortable-preclean-start]\n" +
-                        "795.864: [CMS-concurrent-abortable-preclean: 0.000/0.000 secs] [Times: user=0.03 sys=0.00, real=0.00 secs]\n" +
-                        "795.886: [GC (CMS Final Remark) [YG occupancy: 1619303 K (1922432 K)]795.887: [Rescan (parallel) , 0.2995817 secs]796.186: [weak refs processing, 0.0001985 secs]796.187: [class unloading, 0.1856105 secs]796.372: [scrub symbol table, 0.0734544 secs]796.446: [scrub string table, 0.0079670 secs][1 CMS-remark: 2048429K(2097152K)] 3667732K(4019584K), 0.5676600 secs] [Times: user=1.34 sys=0.01, real=0.57 secs]\n" +
-                        "796.456: [CMS-concurrent-sweep-start]\n" +
-                        "796.991: [GC (Allocation Failure) 796.992: [ParNew: 1922432K->1922432K(1922432K), 0.0000267 secs]796.992: [CMS797.832: [CMS-concurrent-sweep: 1.180/1.376 secs] [Times: user=3.42 sys=0.14, real=1.38 secs]\n" +
-                        " (concurrent mode failure): 2034154K->1051300K(2097152K), 4.6146919 secs] 3956586K->1051300K(4019584K), [Metaspace: 296232K->296083K(1325056K)], 4.6165192 secs] [Times: user=4.60 sys=0.05, real=4.62 secs]\n" +
-                        "813.396: [GC (Allocation Failure) 813.396: [ParNew813.404: [SoftReference, 4 refs, 0.0000260 secs]813.405: [WeakReference, 59 refs, 0.0000110 secs]813.406: [FinalReference, 1407 refs, 0.0025979 secs]813.407: [PhantomReference, 11 refs, 10 refs, 0.0000131 secs]813.408: [JNI Weak Reference, 0.0000088 secs]: 69952K->8704K(78656K), 0.0104509 secs] 69952K->11354K(253440K), 0.0105137 secs] [Times: user=0.04 sys=0.01, real=0.01 secs]\n";
         PreUnifiedGenerationalGCLogParser parser = (PreUnifiedGenerationalGCLogParser)
-                (new GCLogParserFactory().getParser(stringToBufferedReader(log)));
+                (new GCLogParserFactory().getParser(TestUtil.getGCLog("8CMSParser.log")));
 
-        CMSGCModel model = (CMSGCModel) parser.parse(stringToBufferedReader(log));
+        CMSGCModel model = (CMSGCModel) parser.parse(TestUtil.getGCLog("8CMSParser.log"));
         model.calculateDerivedInfo(new DefaultProgressListener());
         Assertions.assertNotNull(model);
 
@@ -525,23 +302,10 @@ public class TestParser {
 
     @Test
     public void testJDK8CMSCPUTime() throws Exception {
-        String log = "2022-11-28T14:57:05.217+0800: 6.216: [GC (CMS Initial Mark) [1 CMS-initial-mark: 0K(3584000K)] 619320K(5519360K), 0.1236090 secs] [Times: user=0.08 sys=0.08, real=0.13 secs] \n" +
-                "2022-11-28T14:57:05.341+0800: 6.340: [CMS-concurrent-mark-start]\n" +
-                "2022-11-28T14:57:05.342+0800: 6.340: [CMS-concurrent-mark: 0.001/0.001 secs] [Times: user=0.01 sys=0.00, real=0.00 secs] \n" +
-                "2022-11-28T14:57:05.342+0800: 6.340: [CMS-concurrent-preclean-start]\n" +
-                "2022-11-28T14:57:05.347+0800: 6.345: [CMS-concurrent-preclean: 0.005/0.005 secs] [Times: user=0.01 sys=0.00, real=0.03 secs] \n" +
-                "2022-11-28T14:57:05.347+0800: 6.346: [CMS-concurrent-abortable-preclean-start]\n" +
-                "2022-11-28T14:57:09.974+0800: 10.973: [GC (Allocation Failure) 2022-11-28T14:57:09.974+0800: 10.973: [ParNew2022-11-28T14:57:09.997+0800: 10.996: [CMS-concurrent-abortable-preclean: 0.335/4.650 secs] [Times: user=10.64 sys=0.72, real=4.65 secs] \n" +
-                ": 1720320K->36032K(1935360K), 0.0395605 secs] 1720320K->36032K(5519360K), 0.0397919 secs] [Times: user=0.18 sys=0.03, real=0.05 secs] \n" +
-                "2022-11-28T14:57:10.015+0800: 11.013: [GC (CMS Final Remark) [YG occupancy: 70439 K (1935360 K)]2022-11-28T14:57:10.015+0800: 11.013: [Rescan (parallel) , 0.0049504 secs]2022-11-28T14:57:10.020+0800: 11.018: [weak refs processing, 0.0001257 secs]2022-11-28T14:57:10.020+0800: 11.018: [class unloading, 0.0154147 secs]2022-11-28T14:57:10.035+0800: 11.034: [scrub symbol table, 0.0077166 secs]2022-11-28T14:57:10.043+0800: 11.042: [scrub string table, 0.0006843 secs][1 CMS-remark: 0K(3584000K)] 70439K(5519360K), 0.0301977 secs] [Times: user=0.15 sys=0.00, real=0.03 secs] \n" +
-                "2022-11-28T14:57:10.046+0800: 11.044: [CMS-concurrent-sweep-start]\n" +
-                "2022-11-28T14:57:10.046+0800: 11.044: [CMS-concurrent-sweep: 0.000/0.000 secs] [Times: user=0.00 sys=0.00, real=0.02 secs] \n" +
-                "2022-11-28T14:57:10.047+0800: 11.045: [CMS-concurrent-reset-start]\n" +
-                "2022-11-28T14:57:10.074+0800: 11.072: [CMS-concurrent-reset: 0.027/0.027 secs] [Times: user=0.25 sys=0.04, real=0.04 secs] ";
         PreUnifiedGenerationalGCLogParser parser = (PreUnifiedGenerationalGCLogParser)
-                (new GCLogParserFactory().getParser(stringToBufferedReader(log)));
+                (new GCLogParserFactory().getParser(TestUtil.getGCLog("8CMSCPUTime.log")));
 
-        CMSGCModel model = (CMSGCModel) parser.parse(stringToBufferedReader(log));
+        CMSGCModel model = (CMSGCModel) parser.parse(TestUtil.getGCLog("8CMSCPUTime.log"));
         model.calculateDerivedInfo(new DefaultProgressListener());
         Assertions.assertNotNull(model);
         Assertions.assertEquals(model.getLastEventOfType(GCEventType.CMS_INITIAL_MARK).getCpuTime().getReal(),130, DELTA);
@@ -556,76 +320,10 @@ public class TestParser {
 
     @Test
     public void testJDK8G1GCParser() throws Exception {
-        String log = "3.960: [GC pause (G1 Evacuation Pause) (young)4.000: [SoftReference, 0 refs, 0.0000435 secs]4.000: [WeakReference, 374 refs, 0.0002082 secs]4.001: [FinalReference, 5466 refs, 0.0141707 secs]4.015: [PhantomReference, 0 refs, 0 refs, 0.0000253 secs]4.015: [JNI Weak Reference, 0.0000057 secs], 0.0563085 secs]\n" +
-                "   [Parallel Time: 39.7 ms, GC Workers: 4]\n" +
-                "      [GC Worker Start (ms): Min: 3959.8, Avg: 3959.9, Max: 3960.1, Diff: 0.2]\n" +
-                "      [Ext Root Scanning (ms): Min: 2.6, Avg: 10.1, Max: 17.9, Diff: 15.2, Sum: 40.4]\n" +
-                "      [Update RS (ms): Min: 0.0, Avg: 0.0, Max: 0.0, Diff: 0.0, Sum: 0.0]\n" +
-                "         [Processed Buffers: Min: 0, Avg: 0.0, Max: 0, Diff: 0, Sum: 0]\n" +
-                "      [Scan RS (ms): Min: 0.0, Avg: 0.0, Max: 0.0, Diff: 0.0, Sum: 0.0]\n" +
-                "      [Code Root Scanning (ms): Min: 0.0, Avg: 0.5, Max: 2.1, Diff: 2.1, Sum: 2.1]\n" +
-                "      [Object Copy (ms): Min: 18.1, Avg: 26.2, Max: 33.7, Diff: 15.6, Sum: 104.9]\n" +
-                "      [Termination (ms): Min: 0.0, Avg: 1.5, Max: 3.5, Diff: 3.5, Sum: 6.2]\n" +
-                "         [Termination Attempts: Min: 1, Avg: 21.8, Max: 51, Diff: 50, Sum: 87]\n" +
-                "      [GC Worker Other (ms): Min: 0.0, Avg: 0.1, Max: 0.1, Diff: 0.0, Sum: 0.2]\n" +
-                "      [GC Worker Total (ms): Min: 38.0, Avg: 38.5, Max: 39.5, Diff: 1.5, Sum: 153.8]\n" +
-                "      [GC Worker End (ms): Min: 3998.0, Avg: 3998.4, Max: 3999.4, Diff: 1.4]\n" +
-                "   [Code Root Fixup: 0.2 ms]\n" +
-                "   [Code Root Purge: 0.2 ms]\n" +
-                "   [Clear CT: 0.2 ms]\n" +
-                "   [Other: 16.0 ms]\n" +
-                "      [Choose CSet: 0.0 ms]\n" +
-                "      [Ref Proc: 15.1 ms]\n" +
-                "      [Ref Enq: 0.2 ms]\n" +
-                "      [Redirty Cards: 0.1 ms]\n" +
-                "      [Humongous Register: 0.0 ms]\n" +
-                "      [Humongous Reclaim: 0.0 ms]\n" +
-                "      [Free CSet: 0.3 ms]\n" +
-                "   [Eden: 184.0M(184.0M)->0.0B(160.0M) Survivors: 0.0B->24.0M Heap: 184.0M(3800.0M)->19.3M(3800.0M)]\n" +
-                " [Times: user=0.07 sys=0.01, real=0.06 secs]\n" +
-                "4.230: [GC concurrent-root-region-scan-start]\n" +
-                "4.391: [GC concurrent-root-region-scan-end, 0.1608430 secs]\n" +
-                "4.391: [GC concurrent-mark-start]\n" +
-                "7.101: [GC concurrent-mark-reset-for-overflow]\n" +
-                "19.072: [GC concurrent-mark-end, 14.6803750 secs]\n" +
-                "19.078: [GC remark 19.078: [Finalize Marking, 0.1774665 secs] 19.255: [GC ref-proc, 0.1648116 secs] 19.420: [Unloading, 0.1221964 secs], 0.4785858 secs]\n" +
-                " [Times: user=1.47 sys=0.31, real=0.48 secs]\n" +
-                "19.563: [GC cleanup 11G->9863M(20G), 0.0659638 secs]\n" +
-                " [Times: user=0.20 sys=0.01, real=0.07 secs]\n" +
-                "19.630: [GC concurrent-cleanup-start]\n" +
-                "19.631: [GC concurrent-cleanup-end, 0.0010377 secs]\n" +
-                "23.346: [Full GC (Metadata GC Threshold)  7521M->7002M(46144M), 1.9242692 secs]\n" +
-                "   [Eden: 0.0B(1760.0M)->0.0B(2304.0M) Survivors: 544.0M->0.0B Heap: 7521.7M(46144.0M)->7002.8M(46144.0M)], [Metaspace: 1792694K->291615K(698368K)]\n" +
-                " [Times: user=2.09 sys=0.19, real=1.92 secs]\n" +
-                "79.619: [GC pause (G1 Evacuation Pause) (mixed)79.636: [SoftReference, 1 refs, 0.0000415 secs]79.636: [WeakReference, 2 refs, 0.0000061 secs]79.636: [FinalReference, 3 refs, 0.0000049 secs]79.636: [PhantomReference, 4 refs, 5 refs, 0.0000052 secs]79.636: [JNI Weak Reference, 0.0000117 secs] (to-space exhausted), 0.0264971 secs]\n" +
-                "   [Parallel Time: 20.5 ms, GC Workers: 4]\n" +
-                "      [GC Worker Start (ms): Min: 1398294.3, Avg: 1398294.4, Max: 1398294.5, Diff: 0.2]\n" +
-                "      [Ext Root Scanning (ms): Min: 1.8, Avg: 2.0, Max: 2.2, Diff: 0.4, Sum: 15.7]\n" +
-                "      [Update RS (ms): Min: 1.2, Avg: 1.5, Max: 1.7, Diff: 0.5, Sum: 11.8]\n" +
-                "         [Processed Buffers: Min: 21, Avg: 27.0, Max: 30, Diff: 9, Sum: 216]\n" +
-                "      [Scan RS (ms): Min: 1.8, Avg: 1.9, Max: 2.2, Diff: 0.4, Sum: 15.5]\n" +
-                "      [Code Root Scanning (ms): Min: 0.0, Avg: 0.0, Max: 0.0, Diff: 0.0, Sum: 0.0]\n" +
-                "      [Object Copy (ms): Min: 14.5, Avg: 14.7, Max: 14.9, Diff: 0.4, Sum: 118.0]\n" +
-                "      [Termination (ms): Min: 0.0, Avg: 0.1, Max: 0.1, Diff: 0.1, Sum: 0.5]\n" +
-                "         [Termination Attempts: Min: 1, Avg: 148.2, Max: 181, Diff: 180, Sum: 1186]\n" +
-                "      [GC Worker Other (ms): Min: 0.0, Avg: 0.0, Max: 0.1, Diff: 0.0, Sum: 0.3]\n" +
-                "      [GC Worker Total (ms): Min: 20.1, Avg: 20.2, Max: 20.3, Diff: 0.2, Sum: 161.9]\n" +
-                "      [GC Worker End (ms): Min: 1398314.7, Avg: 1398314.7, Max: 1398314.7, Diff: 0.0]\n" +
-                "   [Code Root Fixup: 0.0 ms]\n" +
-                "   [Code Root Purge: 0.0 ms]\n" +
-                "   [Clear CT: 0.5 ms]\n" +
-                "   [Other: 10.4 ms]\n" +
-                "      [Choose CSet: 0.0 ms]\n" +
-                "      [Ref Proc: 8.8 ms]\n" +
-                "      [Ref Enq: 0.3 ms]\n" +
-                "      [Redirty Cards: 0.2 ms]\n" +
-                "      [Free CSet: 0.1 ms]\n" +
-                "   [Eden: 2304.0M(2304.0M)->0.0B(2304.0M) Survivors: 192.0M->192.0M Heap: 15.0G(19.8G)->12.8G(19.8G)]\n" +
-                " [Times: user=0.17 sys=0.00, real=0.03 secs]";
         PreUnifiedG1GCLogParser parser = (PreUnifiedG1GCLogParser)
-                (new GCLogParserFactory().getParser(stringToBufferedReader(log)));
+                (new GCLogParserFactory().getParser(TestUtil.getGCLog("8G1GCParser.log")));
 
-        G1GCModel model = (G1GCModel) parser.parse(stringToBufferedReader(log));
+        G1GCModel model = (G1GCModel) parser.parse(TestUtil.getGCLog("8G1GCParser.log"));
         model.calculateDerivedInfo(new DefaultProgressListener());
         Assertions.assertNotNull(model);
         Assertions.assertEquals(model.getGcEvents().size(), 4);
@@ -701,42 +399,10 @@ public class TestParser {
     public void testJDK8G1GCParserAdaptiveSize() throws Exception {
         // although we don't read anything from options like -XX:+PrintAdaptiveSizePolicy, they should not
         // affect parsing
-        String log = "2022-02-09T15:55:55.807+0800: 0.683: [GC pause (G1 Evacuation Pause) (young)\n" +
-                "Desired survivor size 3670016 bytes, new threshold 15 (max 15)\n" +
-                " 0.683: [G1Ergonomics (CSet Construction) start choosing CSet, _pending_cards: 0, predicted base time: 10.00 ms, remaining time: 240.00 ms, target pause time: 250.00 ms]\n" +
-                " 0.683: [G1Ergonomics (CSet Construction) add young regions to CSet, eden: 51 regions, survivors: 0 regions, predicted young region time: 1298.76 ms]\n" +
-                " 0.683: [G1Ergonomics (CSet Construction) finish choosing CSet, eden: 51 regions, survivors: 0 regions, old: 0 regions, predicted pause time: 1308.76 ms, target pause time: 250.00 ms]\n" +
-                ", 0.0085898 secs]\n" +
-                "   [Parallel Time: 5.5 ms, GC Workers: 4]\n" +
-                "      [GC Worker Start (ms): Min: 682.6, Avg: 682.6, Max: 682.7, Diff: 0.0]\n" +
-                "      [Ext Root Scanning (ms): Min: 0.8, Avg: 1.2, Max: 1.6, Diff: 0.8, Sum: 4.8]\n" +
-                "      [Update RS (ms): Min: 0.0, Avg: 0.0, Max: 0.0, Diff: 0.0, Sum: 0.0]\n" +
-                "         [Processed Buffers: Min: 0, Avg: 0.0, Max: 0, Diff: 0, Sum: 0]\n" +
-                "      [Scan RS (ms): Min: 0.0, Avg: 0.0, Max: 0.0, Diff: 0.0, Sum: 0.0]\n" +
-                "      [Code Root Scanning (ms): Min: 0.0, Avg: 0.2, Max: 0.9, Diff: 0.9, Sum: 0.9]\n" +
-                "      [Object Copy (ms): Min: 3.5, Avg: 3.9, Max: 4.5, Diff: 1.0, Sum: 15.7]\n" +
-                "      [Termination (ms): Min: 0.0, Avg: 0.0, Max: 0.0, Diff: 0.0, Sum: 0.1]\n" +
-                "         [Termination Attempts: Min: 1, Avg: 6.8, Max: 9, Diff: 8, Sum: 27]\n" +
-                "      [GC Worker Other (ms): Min: 0.0, Avg: 0.0, Max: 0.0, Diff: 0.0, Sum: 0.1]\n" +
-                "      [GC Worker Total (ms): Min: 5.4, Avg: 5.4, Max: 5.4, Diff: 0.0, Sum: 21.6]\n" +
-                "      [GC Worker End (ms): Min: 688.1, Avg: 688.1, Max: 688.1, Diff: 0.0]\n" +
-                "   [Code Root Fixup: 0.0 ms]\n" +
-                "   [Code Root Purge: 0.0 ms]\n" +
-                "   [Clear CT: 0.1 ms]\n" +
-                "   [Other: 3.0 ms]\n" +
-                "      [Choose CSet: 0.0 ms]\n" +
-                "      [Ref Proc: 2.6 ms]\n" +
-                "      [Ref Enq: 0.0 ms]\n" +
-                "      [Redirty Cards: 0.1 ms]\n" +
-                "      [Humongous Register: 0.0 ms]\n" +
-                "      [Humongous Reclaim: 0.0 ms]\n" +
-                "      [Free CSet: 0.1 ms]\n" +
-                "   [Eden: 52224.0K(52224.0K)->0.0B(45056.0K) Survivors: 0.0B->7168.0K Heap: 52224.0K(1024.0M)->8184.0K(1024.0M)]\n" +
-                " [Times: user=0.02 sys=0.01, real=0.01 secs] ";
         PreUnifiedG1GCLogParser parser = (PreUnifiedG1GCLogParser)
-                (new GCLogParserFactory().getParser(stringToBufferedReader(log)));
+                (new GCLogParserFactory().getParser(TestUtil.getGCLog("8G1GCParserAdaptiveSize.log")));
 
-        G1GCModel model = (G1GCModel) parser.parse(stringToBufferedReader(log));
+        G1GCModel model = (G1GCModel) parser.parse(TestUtil.getGCLog("8G1GCParserAdaptiveSize.log"));
         model.calculateDerivedInfo(new DefaultProgressListener());
         Assertions.assertNotNull(model);
         Assertions.assertEquals(model.getGcEvents().size(), 1);
@@ -750,26 +416,10 @@ public class TestParser {
 
     @Test
     public void testJDK11SerialGCParser() throws Exception {
-        String log = "[0.486s][info][gc,start     ] GC(0) Pause Young (Allocation Failure)\n" +
-                "[0.511s][info][gc,heap      ] GC(0) DefNew: 69952K->8704K(78656K)\n" +
-                "[0.511s][info][gc,heap      ] GC(0) Tenured: 0K->24185K(174784K)\n" +
-                "[0.511s][info][gc,metaspace ] GC(0) Metaspace: 6529K->6519K(1056768K)\n" +
-                "[0.511s][info][gc           ] GC(0) Pause Young (Allocation Failure) 68M->32M(247M) 25.164ms\n" +
-                "[0.511s][info][gc,cpu       ] GC(0) User=0.02s Sys=0.00s Real=0.02s\n" +
-                "[5.614s][info][gc,start     ] GC(1) Pause Full (Allocation Failure)\n" +
-                "[5.614s][info][gc,phases,start] GC(1) Phase 1: Mark live objects\n" +
-                "[5.662s][info][gc,phases      ] GC(1) Phase 1: Mark live objects 47.589ms\n" +
-                "[5.662s][info][gc,phases,start] GC(1) Phase 2: Compute new object addresses\n" +
-                "[5.688s][info][gc,phases      ] GC(1) Phase 2: Compute new object addresses 26.097ms\n" +
-                "[5.688s][info][gc,phases,start] GC(1) Phase 3: Adjust pointers\n" +
-                "[5.743s][info][gc,phases      ] GC(1) Phase 3: Adjust pointers 55.459ms\n" +
-                "[5.743s][info][gc,phases,start] GC(1) Phase 4: Move objects\n" +
-                "[5.760s][info][gc,phases      ] GC(1) Phase 4: Move objects 17.259ms\n" +
-                "[5.761s][info][gc             ] GC(1) Pause Full (Allocation Failure) 215M->132M(247M) 146.617ms";
         UnifiedGenerationalGCLogParser parser = (UnifiedGenerationalGCLogParser)
-                (new GCLogParserFactory().getParser(stringToBufferedReader(log)));
+                (new GCLogParserFactory().getParser(TestUtil.getGCLog("11SerialGCParser.log")));
 
-        SerialGCModel model = (SerialGCModel) parser.parse(stringToBufferedReader(log));
+        SerialGCModel model = (SerialGCModel) parser.parse(TestUtil.getGCLog("11SerialGCParser.log"));
         model.calculateDerivedInfo(new DefaultProgressListener());
         Assertions.assertNotNull(model);
         Assertions.assertEquals(model.getGcEvents().size(), 2);
@@ -804,32 +454,10 @@ public class TestParser {
 
     @Test
     public void testJDK11ParallelGCParser() throws Exception {
-        String log = "[0.455s][info][gc,start     ] GC(0) Pause Young (Allocation Failure)\n" +
-                "[0.466s][info][gc,heap      ] GC(0) PSYoungGen: 65536K->10720K(76288K)\n" +
-                "[0.466s][info][gc,heap      ] GC(0) ParOldGen: 0K->20800K(175104K)\n" +
-                "[0.466s][info][gc,metaspace ] GC(0) Metaspace: 6531K->6531K(1056768K)\n" +
-                "[0.466s][info][gc           ] GC(0) Pause Young (Allocation Failure) 64M->30M(245M) 11.081ms\n" +
-                "[0.466s][info][gc,cpu       ] GC(0) User=0.03s Sys=0.02s Real=0.01s\n" +
-                "[2.836s][info][gc,start     ] GC(1) Pause Full (Ergonomics)\n" +
-                "[2.836s][info][gc,phases,start] GC(1) Marking Phase\n" +
-                "[2.857s][info][gc,phases      ] GC(1) Marking Phase 21.145ms\n" +
-                "[2.857s][info][gc,phases,start] GC(1) Summary Phase\n" +
-                "[2.857s][info][gc,phases      ] GC(1) Summary Phase 0.006ms\n" +
-                "[2.857s][info][gc,phases,start] GC(1) Adjust Roots\n" +
-                "[2.859s][info][gc,phases      ] GC(1) Adjust Roots 1.757ms\n" +
-                "[2.859s][info][gc,phases,start] GC(1) Compaction Phase\n" +
-                "[2.881s][info][gc,phases      ] GC(1) Compaction Phase 22.465ms\n" +
-                "[2.881s][info][gc,phases,start] GC(1) Post Compact\n" +
-                "[2.882s][info][gc,phases      ] GC(1) Post Compact 1.054ms\n" +
-                "[2.882s][info][gc,heap        ] GC(1) PSYoungGen: 10729K->0K(76288K)\n" +
-                "[2.882s][info][gc,heap        ] GC(1) ParOldGen: 141664K->94858K(175104K)\n" +
-                "[2.882s][info][gc,metaspace   ] GC(1) Metaspace: 7459K->7459K(1056768K)\n" +
-                "[2.882s][info][gc             ] GC(1) Pause Full (Ergonomics) 148M->92M(245M) 46.539ms\n" +
-                "[2.882s][info][gc,cpu         ] GC(1) User=0.17s Sys=0.00s Real=0.05s";
         UnifiedGenerationalGCLogParser parser = (UnifiedGenerationalGCLogParser)
-                (new GCLogParserFactory().getParser(stringToBufferedReader(log)));
+                (new GCLogParserFactory().getParser(TestUtil.getGCLog("11ParallelGCParser.log")));
 
-        ParallelGCModel model = (ParallelGCModel) parser.parse(stringToBufferedReader(log));
+        ParallelGCModel model = (ParallelGCModel) parser.parse(TestUtil.getGCLog("11ParallelGCParser.log"));
         model.calculateDerivedInfo(new DefaultProgressListener());
         Assertions.assertNotNull(model);
         Assertions.assertEquals(model.getGcEvents().size(), 2);
@@ -868,48 +496,10 @@ public class TestParser {
 
     @Test
     public void testJDK11CMSGCParser() throws Exception {
-        String log = "[0.479s][info][gc,start     ] GC(0) Pause Young (Allocation Failure)\n" +
-                "[0.480s][info][gc,task      ] GC(0) Using 5 workers of 8 for evacuation\n" +
-                "[0.510s][info][gc,heap      ] GC(0) ParNew: 69952K->8703K(78656K)\n" +
-                "[0.510s][info][gc,heap      ] GC(0) CMS: 0K->24072K(174784K)\n" +
-                "[0.510s][info][gc,metaspace ] GC(0) Metaspace: 6531K->6530K(1056768K)\n" +
-                "[0.510s][info][gc           ] GC(0) Pause Young (Allocation Failure) 68M->32M(247M) 31.208ms\n" +
-                "[0.510s][info][gc,cpu       ] GC(0) User=0.06s Sys=0.03s Real=0.03s\n" +
-                "[3.231s][info][gc,start     ] GC(1) Pause Initial Mark\n" +
-                "[3.235s][info][gc           ] GC(1) Pause Initial Mark 147M->147M(247M) 3.236ms\n" +
-                "[3.235s][info][gc,cpu       ] GC(1) User=0.01s Sys=0.02s Real=0.03s\n" +
-                "[3.235s][info][gc           ] GC(1) Concurrent Mark\n" +
-                "[3.235s][info][gc,task      ] GC(1) Using 2 workers of 2 for marking\n" +
-                "[3.257s][info][gc           ] GC(1) Concurrent Mark 22.229ms\n" +
-                "[3.257s][info][gc,cpu       ] GC(1) User=0.07s Sys=0.00s Real=0.03s\n" +
-                "[3.257s][info][gc           ] GC(1) Concurrent Preclean\n" +
-                "[3.257s][info][gc           ] GC(1) Concurrent Preclean 0.264ms\n" +
-                "[3.257s][info][gc,cpu       ] GC(1) User=0.00s Sys=0.00s Real=0.00s\n" +
-                "[3.257s][info][gc,start     ] GC(1) Pause Remark\n" +
-                "[3.259s][info][gc           ] GC(1) Pause Remark 149M->149M(247M) 1.991ms\n" +
-                "[3.259s][info][gc,cpu       ] GC(1) User=0.02s Sys=0.03s Real=0.01s\n" +
-                "[3.259s][info][gc           ] GC(1) Concurrent Sweep\n" +
-                "[3.279s][info][gc           ] GC(1) Concurrent Sweep 19.826ms\n" +
-                "[3.279s][info][gc,cpu       ] GC(1) User=0.03s Sys=0.00s Real=0.02s\n" +
-                "[3.279s][info][gc           ] GC(1) Concurrent Reset\n" +
-                "[3.280s][info][gc           ] GC(1) Concurrent Reset 0.386ms\n" +
-                "[3.280s][info][gc,cpu       ] GC(1) User=0.00s Sys=0.00s Real=0.00s\n" +
-                "[3.280s][info][gc,heap      ] GC(1) Old: 142662K->92308K(174784K)\n" +
-                "[8.970s][info][gc,start     ] GC(2) Pause Full (Allocation Failure)\n" +
-                "[8.970s][info][gc,phases,start] GC(2) Phase 1: Mark live objects\n" +
-                "[9.026s][info][gc,phases      ] GC(2) Phase 1: Mark live objects 55.761ms\n" +
-                "[9.026s][info][gc,phases,start] GC(2) Phase 2: Compute new object addresses\n" +
-                "[9.051s][info][gc,phases      ] GC(2) Phase 2: Compute new object addresses 24.761ms\n" +
-                "[9.051s][info][gc,phases,start] GC(2) Phase 3: Adjust pointers\n" +
-                "[9.121s][info][gc,phases      ] GC(2) Phase 3: Adjust pointers 69.678ms\n" +
-                "[9.121s][info][gc,phases,start] GC(2) Phase 4: Move objects\n" +
-                "[9.149s][info][gc,phases      ] GC(2) Phase 4: Move objects 28.069ms\n" +
-                "[9.149s][info][gc             ] GC(2) Pause Full (Allocation Failure) 174M->166M(247M) 178.617ms\n" +
-                "[9.149s][info][gc,cpu         ] GC(2) User=0.17s Sys=0.00s Real=0.18s";
         UnifiedGenerationalGCLogParser parser = (UnifiedGenerationalGCLogParser)
-                (new GCLogParserFactory().getParser(stringToBufferedReader(log)));
+                (new GCLogParserFactory().getParser(TestUtil.getGCLog("11CMSGCParser.log")));
 
-        CMSGCModel model = (CMSGCModel) parser.parse(stringToBufferedReader(log));
+        CMSGCModel model = (CMSGCModel) parser.parse(TestUtil.getGCLog("11CMSGCParser.log"));
         model.calculateDerivedInfo(new DefaultProgressListener());
         Assertions.assertNotNull(model);
         Assertions.assertEquals(model.getGcEvents().size(), 3);
@@ -968,17 +558,10 @@ public class TestParser {
 
     @Test
     public void testJDK8ParallelGCParser() throws Exception {
-        String log =
-                "0.141: [GC (Allocation Failure) [PSYoungGen: 25145K->4077K(29696K)] 25145K->16357K(98304K), 0.0225874 secs] [Times: user=0.10 sys=0.01, real=0.03 secs]\n" +
-                        "0.269: [Full GC (Ergonomics) [PSYoungGen: 4096K->0K(55296K)] [ParOldGen: 93741K->67372K(174592K)] 97837K->67372K(229888K), [Metaspace: 3202K->3202K(1056768K)], 0.6862093 secs] [Times: user=2.60 sys=0.02, real=0.69 secs]\n" +
-                        "0.962: [GC (Allocation Failure) [PSYoungGen: 51200K->4096K(77824K)] 118572K->117625K(252416K), 0.0462864 secs] [Times: user=0.29 sys=0.01, real=0.05 secs]\n" +
-                        "1.872: [Full GC (Ergonomics) [PSYoungGen: 4096K->0K(103936K)] [ParOldGen: 169794K->149708K(341504K)] 173890K->149708K(445440K), [Metaspace: 3202K->3202K(1056768K)], 1.3724621 secs] [Times: user=8.33 sys=0.01, real=1.38 secs]\n" +
-                        "3.268: [GC (Allocation Failure) [PSYoungGen: 99840K->56802K(113664K)] 249548K->302089K(455168K), 0.1043993 secs] [Times: user=0.75 sys=0.06, real=0.10 secs]\n" +
-                        "14.608: [Full GC (Ergonomics) [PSYoungGen: 65530K->0K(113664K)] [ParOldGen: 341228K->720K(302592K)] 406759K->720K(416256K), [Metaspace: 3740K->3737K(1056768K)], 0.0046781 secs] [Times: user=0.02 sys=0.01, real=0.00 secs]\n";
         PreUnifiedGenerationalGCLogParser parser = (PreUnifiedGenerationalGCLogParser)
-                (new GCLogParserFactory().getParser(stringToBufferedReader(log)));
+                (new GCLogParserFactory().getParser(TestUtil.getGCLog("8ParallelGCParser.log")));
 
-        ParallelGCModel model = (ParallelGCModel) parser.parse(stringToBufferedReader(log));
+        ParallelGCModel model = (ParallelGCModel) parser.parse(TestUtil.getGCLog("8ParallelGCParser.log"));
         model.calculateDerivedInfo(new DefaultProgressListener());
         Assertions.assertNotNull(model);
 
@@ -1025,20 +608,11 @@ public class TestParser {
 
     @Test
     public void testJDK8SerialGCParser() throws Exception {
-        String log =
-                "2021-12-07T11:18:11.688+0800: #0: [GC (Allocation Failure) 2021-12-07T11:18:11.688+0800: #0: [DefNew: 69952K->8704K(78656K), 0.0591895 secs] 69952K->56788K(253440K), 0.0592437 secs] [Times: user=0.05 sys=0.02, real=0.06 secs] \n" +
-                        "2021-12-07T11:18:11.756+0800: #1: [GC (Allocation Failure) 2021-12-07T11:18:11.756+0800: #1: [DefNew: 78656K->8703K(78656K), 0.0700624 secs] 126740K->114869K(253440K), 0.0701086 secs] [Times: user=0.05 sys=0.01, real=0.07 secs] \n" +
-                        "2021-12-07T11:18:11.833+0800: #2: [GC (Allocation Failure) 2021-12-07T11:18:11.833+0800: #2: [DefNew: 78655K->8703K(78656K), 0.0837783 secs]2021-12-07T11:18:11.917+0800: #3: [Tenured: 176115K->174136K(176128K), 0.1988447 secs] 184821K->174136K(254784K), [Metaspace: 3244K->3244K(1056768K)], 0.2828418 secs] [Times: user=0.27 sys=0.02, real=0.28 secs] \n" +
-                        "2021-12-07T11:18:12.140+0800: #4: [GC (Allocation Failure) 2021-12-07T11:18:12.140+0800: #4: [DefNew: 116224K->14463K(130688K), 0.1247689 secs] 290360K->290358K(420916K), 0.1248360 secs] [Times: user=0.10 sys=0.03, real=0.12 secs] \n" +
-                        "2021-12-07T11:18:12.273+0800: #5: [GC (Allocation Failure) 2021-12-07T11:18:12.273+0800: #5: [DefNew: 102309K->14463K(130688K), 0.1181527 secs]2021-12-07T11:18:12.391+0800: #6: [Tenured: 362501K->362611K(362612K), 0.3681604 secs] 378203K->376965K(493300K), [Metaspace: 3244K->3244K(1056768K)], 0.4867024 secs] [Times: user=0.46 sys=0.03, real=0.49 secs] \n" +
-                        "2021-12-07T11:18:12.809+0800: #7: [GC (Allocation Failure) 2021-12-07T11:18:12.809+0800: #7: [DefNew: 227109K->30207K(272000K), 0.3180977 secs] 589721K->581277K(876356K), 0.3181286 secs] [Times: user=0.27 sys=0.05, real=0.32 secs] \n" +
-                        "2021-12-07T11:18:13.160+0800: #8: [GC (Allocation Failure) 2021-12-07T11:18:13.160+0800: #8: [DefNew: 271999K->30207K(272000K), 0.2782985 secs]2021-12-07T11:18:13.438+0800: #9: [Tenured: 785946K->756062K(786120K), 0.8169720 secs] 823069K->756062K(1058120K), [Metaspace: 3782K->3782K(1056768K)], 1.0959870 secs] [Times: user=1.03 sys=0.07, real=1.09 secs] \n" +
-                        "2021-12-07T11:18:14.386+0800: #10: [GC (Allocation Failure) 2021-12-07T11:18:14.386+0800: #10: [DefNew: 504128K->62975K(567104K), 0.5169362 secs] 1260190K->1260189K(1827212K), 0.5169650 secs] [Times: user=0.40 sys=0.12, real=0.52 secs] ";
 
         PreUnifiedGenerationalGCLogParser parser = (PreUnifiedGenerationalGCLogParser)
-                (new GCLogParserFactory().getParser(stringToBufferedReader(log)));
+                (new GCLogParserFactory().getParser(TestUtil.getGCLog("8SerialGCParser.log")));
 
-        SerialGCModel model = (SerialGCModel) parser.parse(stringToBufferedReader(log));
+        SerialGCModel model = (SerialGCModel) parser.parse(TestUtil.getGCLog("8SerialGCParser.log"));
         model.calculateDerivedInfo(new DefaultProgressListener());
         Assertions.assertNotNull(model);
 
@@ -1086,11 +660,8 @@ public class TestParser {
 
     @Test
     public void testJDK8GenerationalGCInterleave() throws Exception {
-        String log =
-                "2022-08-02T10:26:05.043+0800: 61988.328: [GC (Allocation Failure) 2022-08-02T10:26:05.043+0800: 61988.328: [ParNew: 2621440K->2621440K(2883584K), 0.0000519 secs]2022-08-02T10:26:05.043+0800: 61988.328: [CMS: 1341593K->1329988K(2097152K), 2.0152293 secs] 3963033K->1329988K(4980736K), [Metaspace: 310050K->309844K(1343488K)], 2.0160411 secs] [Times: user=1.98 sys=0.05, real=2.01 secs] ";
-
-        GCLogParser parser = new GCLogParserFactory().getParser(stringToBufferedReader(log));
-        GCModel model = parser.parse(stringToBufferedReader(log));
+        GCLogParser parser = new GCLogParserFactory().getParser(TestUtil.getGCLog("8GenerationalGCInterleave.log"));
+        GCModel model = parser.parse(TestUtil.getGCLog("8GenerationalGCInterleave.log"));
         model.calculateDerivedInfo(new DefaultProgressListener());
         Assertions.assertNotNull(model);
 
@@ -1110,28 +681,11 @@ public class TestParser {
 
     @Test
     public void testJDK11GenerationalGCInterleave() throws Exception {
-        String log =
-                "[5.643s][info][gc,start     ] GC(3) Pause Young (Allocation Failure)\n" +
-                        "[5.643s][info][gc,start     ] GC(4) Pause Full (Allocation Failure)\n" +
-                        "[5.643s][info][gc,phases,start] GC(4) Phase 1: Mark live objects\n" +
-                        "[5.691s][info][gc,phases      ] GC(4) Phase 1: Mark live objects 47.363ms\n" +
-                        "[5.691s][info][gc,phases,start] GC(4) Phase 2: Compute new object addresses\n" +
-                        "[5.715s][info][gc,phases      ] GC(4) Phase 2: Compute new object addresses 24.314ms\n" +
-                        "[5.715s][info][gc,phases,start] GC(4) Phase 3: Adjust pointers\n" +
-                        "[5.771s][info][gc,phases      ] GC(4) Phase 3: Adjust pointers 56.294ms\n" +
-                        "[5.771s][info][gc,phases,start] GC(4) Phase 4: Move objects\n" +
-                        "[5.789s][info][gc,phases      ] GC(4) Phase 4: Move objects 17.974ms\n" +
-                        "[5.789s][info][gc             ] GC(4) Pause Full (Allocation Failure) 215M->132M(247M) 146.153ms\n" +
-                        "[5.789s][info][gc,heap        ] GC(3) DefNew: 78655K->0K(78656K)\n" +
-                        "[5.789s][info][gc,heap        ] GC(3) Tenured: 142112K->135957K(174784K)\n" +
-                        "[5.789s][info][gc,metaspace   ] GC(3) Metaspace: 7462K->7462K(1056768K)\n" +
-                        "[5.789s][info][gc             ] GC(3) Pause Young (Allocation Failure) 215M->132M(247M) 146.211ms\n" +
-                        "[5.789s][info][gc,cpu         ] GC(3) User=0.15s Sys=0.00s Real=0.15s";
 
         UnifiedGenerationalGCLogParser parser = (UnifiedGenerationalGCLogParser)
-                (new GCLogParserFactory().getParser(stringToBufferedReader(log)));
+                (new GCLogParserFactory().getParser(TestUtil.getGCLog("11GenerationalGCInterleave.log")));
 
-        SerialGCModel model = (SerialGCModel) parser.parse(stringToBufferedReader(log));
+        SerialGCModel model = (SerialGCModel) parser.parse(TestUtil.getGCLog("11GenerationalGCInterleave.log"));
         model.calculateDerivedInfo(new DefaultProgressListener());
         Assertions.assertNotNull(model);
 
@@ -1158,42 +712,10 @@ public class TestParser {
 
     @Test
     public void TestIncompleteGCLog() throws Exception {
-        String log =
-                "[0.510s][info][gc,heap      ] GC(0) CMS: 0K->24072K(174784K)\n" +
-                        "[0.510s][info][gc,metaspace ] GC(0) Metaspace: 6531K->6530K(1056768K)\n" +
-                        "[0.510s][info][gc           ] GC(0) Pause Young (Allocation Failure) 68M->32M(247M) 31.208ms\n" +
-                        "[0.510s][info][gc,cpu       ] GC(0) User=0.06s Sys=0.03s Real=0.03s\n" +
-                        "[3.231s][info][gc,start     ] GC(1) Pause Initial Mark\n" +
-                        "[3.235s][info][gc           ] GC(1) Pause Initial Mark 147M->147M(247M) 3.236ms\n" +
-                        "[3.235s][info][gc,cpu       ] GC(1) User=0.01s Sys=0.02s Real=0.03s\n" +
-                        "[3.235s][info][gc           ] GC(1) Concurrent Mark\n" +
-                        "[3.235s][info][gc,task      ] GC(1) Using 2 workers of 2 for marking\n" +
-                        "[3.257s][info][gc           ] GC(1) Concurrent Mark 22.229ms\n" +
-                        "[3.257s][info][gc,cpu       ] GC(1) User=0.07s Sys=0.00s Real=0.03s\n" +
-                        "[3.257s][info][gc           ] GC(1) Concurrent Preclean\n" +
-                        "[3.257s][info][gc           ] GC(1) Concurrent Preclean 0.264ms\n" +
-                        "[3.257s][info][gc,cpu       ] GC(1) User=0.00s Sys=0.00s Real=0.00s\n" +
-                        "[3.257s][info][gc,start     ] GC(1) Pause Remark\n" +
-                        "[3.259s][info][gc           ] GC(1) Pause Remark 149M->149M(247M) 1.991ms\n" +
-                        "[3.259s][info][gc,cpu       ] GC(1) User=0.02s Sys=0.03s Real=0.01s\n" +
-                        "[3.259s][info][gc           ] GC(1) Concurrent Sweep\n" +
-                        "[3.279s][info][gc           ] GC(1) Concurrent Sweep 19.826ms\n" +
-                        "[3.279s][info][gc,cpu       ] GC(1) User=0.03s Sys=0.00s Real=0.02s\n" +
-                        "[3.279s][info][gc           ] GC(1) Concurrent Reset\n" +
-                        "[3.280s][info][gc           ] GC(1) Concurrent Reset 0.386ms\n" +
-                        "[3.280s][info][gc,cpu       ] GC(1) User=0.00s Sys=0.00s Real=0.00s\n" +
-                        "[3.280s][info][gc,heap      ] GC(1) Old: 142662K->92308K(174784K)\n" +
-                        "[8.970s][info][gc,start     ] GC(2) Pause Full (Allocation Failure)\n" +
-                        "[8.970s][info][gc,phases,start] GC(2) Phase 1: Mark live objects\n" +
-                        "[9.026s][info][gc,phases      ] GC(2) Phase 1: Mark live objects 55.761ms\n" +
-                        "[9.026s][info][gc,phases,start] GC(2) Phase 2: Compute new object addresses\n" +
-                        "[9.051s][info][gc,phases      ] GC(2) Phase 2: Compute new object addresses 24.761ms\n" +
-                        "[9.051s][info][gc,phases,start] GC(2) Phase 3: Adjust pointers\n";
-
         UnifiedGenerationalGCLogParser parser = (UnifiedGenerationalGCLogParser)
-                (new GCLogParserFactory().getParser(stringToBufferedReader(log)));
+                (new GCLogParserFactory().getParser(TestUtil.getGCLog("IncompleteGCLog.log")));
 
-        CMSGCModel model = (CMSGCModel) parser.parse(stringToBufferedReader(log));
+        CMSGCModel model = (CMSGCModel) parser.parse(TestUtil.getGCLog("IncompleteGCLog.log"));
         model.calculateDerivedInfo(new DefaultProgressListener());
         Assertions.assertNotNull(model);
 
@@ -1203,90 +725,14 @@ public class TestParser {
 
     @Test
     public void testJDK8ConcurrentPrintDateTimeStamp() throws Exception {
-        String log = "2022-04-25T11:38:47.548+0800: 725.062: [GC pause (G1 Evacuation Pause) (young) (initial-mark) 725.062: [G1Ergonomics (CSet Construction) start choosing CSet, _pending_cards: 5369, predicted base time: 22.02 ms, remaining time: 177.98 ms, target pause time: 200.00 ms]\n" +
-                " 725.062: [G1Ergonomics (CSet Construction) add young regions to CSet, eden: 10 regions, survivors: 1 regions, predicted young region time: 2.34 ms]\n" +
-                " 725.062: [G1Ergonomics (CSet Construction) finish choosing CSet, eden: 10 regions, survivors: 1 regions, old: 0 regions, predicted pause time: 24.37 ms, target pause time: 200.00 ms]\n" +
-                ", 0.0182684 secs]\n" +
-                "   [Parallel Time: 17.4 ms, GC Workers: 4]\n" +
-                "      [GC Worker Start (ms): Min: 725063.0, Avg: 725063.0, Max: 725063.0, Diff: 0.0]\n" +
-                "      [Ext Root Scanning (ms): Min: 7.6, Avg: 7.9, Max: 8.4, Diff: 0.8, Sum: 31.6]\n" +
-                "      [Update RS (ms): Min: 2.6, Avg: 2.7, Max: 2.9, Diff: 0.3, Sum: 10.8]\n" +
-                "         [Processed Buffers: Min: 6, Avg: 6.8, Max: 7, Diff: 1, Sum: 27]\n" +
-                "      [Scan RS (ms): Min: 0.0, Avg: 0.0, Max: 0.0, Diff: 0.0, Sum: 0.0]\n" +
-                "      [Code Root Scanning (ms): Min: 0.0, Avg: 0.0, Max: 0.0, Diff: 0.0, Sum: 0.0]\n" +
-                "      [Object Copy (ms): Min: 5.4, Avg: 6.1, Max: 6.5, Diff: 1.1, Sum: 24.5]\n" +
-                "      [Termination (ms): Min: 0.0, Avg: 0.0, Max: 0.0, Diff: 0.0, Sum: 0.1]\n" +
-                "         [Termination Attempts: Min: 1, Avg: 4.8, Max: 8, Diff: 7, Sum: 19]\n" +
-                "      [GC Worker Other (ms): Min: 0.0, Avg: 0.0, Max: 0.0, Diff: 0.0, Sum: 0.1]\n" +
-                "      [GC Worker Total (ms): Min: 16.8, Avg: 16.8, Max: 16.8, Diff: 0.0, Sum: 67.1]\n" +
-                "      [GC Worker End (ms): Min: 725079.8, Avg: 725079.8, Max: 725079.8, Diff: 0.0]\n" +
-                "   [Code Root Fixup: 0.0 ms]\n" +
-                "   [Code Root Purge: 0.0 ms]\n" +
-                "   [Clear CT: 0.1 ms]\n" +
-                "   [Other: 0.7 ms]\n" +
-                "      [Choose CSet: 0.0 ms]\n" +
-                "      [Ref Proc: 0.1 ms]\n" +
-                "      [Ref Enq: 0.0 ms]\n" +
-                "      [Redirty Cards: 0.1 ms]\n" +
-                "      [Humongous Register: 0.0 ms]\n" +
-                "      [Humongous Reclaim: 0.0 ms]\n" +
-                "      [Free CSet: 0.0 ms]\n" +
-                "   [Eden: 320.0M(320.0M)->0.0B(320.0M) Survivors: 32768.0K->32768.0K Heap: 2223.9M(2560.0M)->1902.5M(2560.0M)]\n" +
-                " [Times: user=0.07 sys=0.00, real=0.02 secs]\n" +
-                /*
-                 * This test mainly test the line below. The format here is:
-                 * [DateStamp] [DateStamp] [TimeStamp] [TimeStamp] [Safepoint]
-                 * [Concurrent cycle phase]
-                 */
-                "2022-04-25T11:38:47.567+0800: 2022-04-25T11:38:47.567+0800: 725.081: 725.081: Total time for which application threads were stopped: 0.0227079 seconds, Stopping threads took: 0.0000889 seconds\n" +
-                "[GC concurrent-root-region-scan-start]\n" +
-                "2022-04-25T11:38:47.581+0800: 725.095: Application time: 0.0138476 seconds\n" +
-                "2022-04-25T11:38:47.585+0800: 725.099: Total time for which application threads were stopped: 0.0042001 seconds, Stopping threads took: 0.0000809 seconds\n" +
-                "2022-04-25T11:38:47.613+0800: 725.127: [GC concurrent-root-region-scan-end, 0.0460720 secs]\n" +
-                "2022-04-25T11:38:47.613+0800: 725.127: [GC concurrent-mark-start]\n" +
-                "2022-04-25T11:38:51.924+0800: 729.438: [GC pause (G1 Evacuation Pause) (young) 729.438: [G1Ergonomics (CSet Construction) start choosing CSet, _pending_cards: 4375, predicted base time: 22.74 ms, remaining time: 177.26 ms, target pause time: 200.00 ms]\n" +
-                " 729.438: [G1Ergonomics (CSet Construction) add young regions to CSet, eden: 10 regions, survivors: 1 regions, predicted young region time: 4.90 ms]\n" +
-                " 729.438: [G1Ergonomics (CSet Construction) finish choosing CSet, eden: 10 regions, survivors: 1 regions, old: 0 regions, predicted pause time: 27.64 ms, target pause time: 200.00 ms]\n" +
-                ", 0.0535660 secs]\n" +
-                "   [Parallel Time: 52.5 ms, GC Workers: 4]\n" +
-                "      [GC Worker Start (ms): Min: 729438.4, Avg: 729438.5, Max: 729438.5, Diff: 0.0]\n" +
-                "      [Ext Root Scanning (ms): Min: 5.2, Avg: 5.9, Max: 6.9, Diff: 1.8, Sum: 23.7]\n" +
-                "      [Update RS (ms): Min: 1.7, Avg: 2.5, Max: 3.3, Diff: 1.7, Sum: 10.0]\n" +
-                "         [Processed Buffers: Min: 4, Avg: 6.0, Max: 7, Diff: 3, Sum: 24]\n" +
-                "      [Scan RS (ms): Min: 0.0, Avg: 0.0, Max: 0.0, Diff: 0.0, Sum: 0.0]\n" +
-                "      [Code Root Scanning (ms): Min: 0.0, Avg: 0.0, Max: 0.0, Diff: 0.0, Sum: 0.0]\n" +
-                "      [Object Copy (ms): Min: 5.6, Avg: 5.7, Max: 6.1, Diff: 0.5, Sum: 22.9]\n" +
-                "      [Termination (ms): Min: 37.2, Avg: 37.5, Max: 38.2, Diff: 1.0, Sum: 149.9]\n" +
-                "         [Termination Attempts: Min: 1, Avg: 10.8, Max: 17, Diff: 16, Sum: 43]\n" +
-                "      [GC Worker Other (ms): Min: 0.0, Avg: 0.0, Max: 0.0, Diff: 0.0, Sum: 0.1]\n" +
-                "      [GC Worker Total (ms): Min: 51.4, Avg: 51.7, Max: 52.4, Diff: 0.9, Sum: 206.7]\n" +
-                "      [GC Worker End (ms): Min: 729489.9, Avg: 729490.1, Max: 729490.8, Diff: 0.9]\n" +
-                "   [Code Root Fixup: 0.0 ms]\n" +
-                "   [Code Root Purge: 0.0 ms]\n" +
-                "   [Clear CT: 0.1 ms]\n" +
-                "   [Other: 1.0 ms]\n" +
-                "      [Choose CSet: 0.0 ms]\n" +
-                "      [Ref Proc: 0.4 ms]\n" +
-                "      [Ref Enq: 0.0 ms]\n" +
-                "      [Redirty Cards: 0.0 ms]\n" +
-                "      [Humongous Register: 0.0 ms]\n" +
-                "      [Humongous Reclaim: 0.0 ms]\n" +
-                "      [Free CSet: 0.0 ms]\n" +
-                "   [Eden: 320.0M(320.0M)->0.0B(320.0M) Survivors: 32768.0K->32768.0K Heap: 2230.5M(2560.0M)->1906.2M(2560.0M)]\n" +
-                " [Times: user=0.06 sys=0.01, real=0.05 secs]\n" +
-                "2022-04-25T11:38:51.978+0800: 729.492: Total time for which application threads were stopped: 0.0578224 seconds, Stopping threads took: 0.0000709 seconds\n" +
-                "2022-04-25T11:38:52.409+0800: 729.923: Application time: 0.4310531 seconds\n" +
-                "2022-04-25T11:38:52.944+0800: 730.458: [GC concurrent-mark-end, 5.3312732 secs]\n" +
-                "2022-04-25T11:38:52.944+0800: 730.458: Application time: 0.1087156 seconds\n" +
-                "2022-04-25T11:38:52.949+0800: 730.463: [GC remark 2022-04-25T11:38:52.949+0800: 730.463: [Finalize Marking, 0.0014784 secs] 2022-04-25T11:38:52.950+0800: 730.464: [GC ref-proc, 0.0007278 secs] 2022-04-25T11:38:52.951+0800: 730.465: [Unloading, 0.1281692 secs], 0.1350560 secs]\n" +
-                " [Times: user=0.21 sys=0.01, real=0.13 secs]\n" +
-                "2022-04-25T11:38:53.084+0800: 730.598: Total time for which application threads were stopped: 0.1396855 seconds, Stopping threads took: 0.0000545 seconds\n" +
-                "2022-04-25T11:38:53.084+0800: 730.598: Application time: 0.0000928 seconds\n" +
-                "2022-04-25T11:38:53.089+0800: 730.603: [GC cleanup 1984M->1984M(2560M), 0.0016114 secs]\n" +
-                " [Times: user=0.01 sys=0.00, real=0.01 secs]\n";
+        /*
+         * This test mainly test the line below. The format here is:
+         * [DateStamp] [DateStamp] [TimeStamp] [TimeStamp] [Safepoint]
+         * [Concurrent cycle phase]
+         */
         PreUnifiedG1GCLogParser parser = (PreUnifiedG1GCLogParser)
-                (new GCLogParserFactory().getParser(stringToBufferedReader(log)));
-        G1GCModel model = (G1GCModel) parser.parse(stringToBufferedReader(log));
+                (new GCLogParserFactory().getParser(TestUtil.getGCLog("8ConcurrentPrintDateTimeStamp.log")));
+        G1GCModel model = (G1GCModel) parser.parse(TestUtil.getGCLog("8ConcurrentPrintDateTimeStamp.log"));
         model.calculateDerivedInfo(new DefaultProgressListener());
         Assertions.assertEquals(model.getGcEvents().size(), 3);
         Assertions.assertEquals(model.getGcEvents().get(0).getEventType(), GCEventType.YOUNG_GC);
@@ -1298,9 +744,8 @@ public class TestParser {
 
     @Test
     public void TestJDK8CMSPromotionFailed() throws Exception {
-        String log = "2021-09-24T22:54:19.430+0800: 23501.549: [GC (Allocation Failure) 2021-09-24T22:54:19.430+0800: 23501.550: [ParNew (promotion failed): 7689600K->7689600K(7689600K), 5.2751800 secs]2021-09-24T22:54:24.705+0800: 23506.825: [CMS: 9258265K->5393434K(12582912K), 14.5693099 secs] 16878013K->5393434K(20272512K), [Metaspace: 208055K->203568K(1253376K)], 19.8476364 secs] [Times: user=19.95 sys=0.05, real=19.85 secs]";
-        GCLogParser parser = new GCLogParserFactory().getParser(stringToBufferedReader(log));
-        CMSGCModel model = (CMSGCModel) parser.parse(stringToBufferedReader(log));
+        GCLogParser parser = new GCLogParserFactory().getParser(TestUtil.getGCLog("8CMSPromotionFailed.log"));
+        CMSGCModel model = (CMSGCModel) parser.parse(TestUtil.getGCLog("8CMSPromotionFailed.log"));
         model.calculateDerivedInfo(new DefaultProgressListener());
 
         Assertions.assertEquals(model.getGcEvents().size(), 1);
@@ -1317,22 +762,8 @@ public class TestParser {
 
     @Test
     public void TestJDK8CMSScavengeBeforeRemark() throws Exception {
-        String log = "2022-10-14T14:28:44.426+0800: 165.382: [GC (CMS Initial Mark) [1 CMS-initial-mark: 1308232K(2097152K)] 2715777K(4019584K), 0.2266431 secs] [Times: user=0.85 sys=0.03, real=0.23 secs] \n" +
-                "2022-10-14T14:28:44.653+0800: 165.609: [CMS-concurrent-mark-start]\n" +
-                "2022-10-14T14:28:46.815+0800: 167.771: [CMS-concurrent-mark: 2.082/2.161 secs] [Times: user=4.22 sys=0.58, real=2.16 secs] \n" +
-                "2022-10-14T14:28:46.815+0800: 167.771: [CMS-concurrent-preclean-start]\n" +
-                "2022-10-14T14:28:46.854+0800: 167.810: [CMS-concurrent-preclean: 0.038/0.039 secs] [Times: user=0.12 sys=0.01, real=0.04 secs] \n" +
-                "2022-10-14T14:28:46.855+0800: 167.811: [CMS-concurrent-abortable-preclean-start]\n" +
-                "2022-10-14T14:28:47.937+0800: 168.893: [GC (Allocation Failure) 2022-10-14T14:28:47.937+0800: 168.893: [ParNew: 1922431K->174720K(1922432K), 0.2928759 secs] 3230664K->1560308K(4019584K), 0.2931600 secs] [Times: user=0.83 sys=0.06, real=0.29 secs] \n" +
-                "2022-10-14T14:28:50.764+0800: 171.720: [CMS-concurrent-abortable-preclean: 3.498/3.909 secs] [Times: user=10.64 sys=1.14, real=3.91 secs] \n" +
-                "2022-10-14T14:28:50.765+0800: 171.721: [GC (CMS Final Remark) [YG occupancy: 1056998 K (1922432 K)]2022-10-14T14:28:50.765+0800: 171.721: [GC (CMS Final Remark) 2022-10-14T14:28:50.765+0800: 171.721: [ParNew: 1056998K->151245K(1922432K), 0.1588173 secs] 2442587K->1615175K(4019584K), 0.1590607 secs] [Times: user=0.49 sys=0.05, real=0.16 secs] \n" +
-                "2022-10-14T14:28:50.924+0800: 171.880: [Rescan (parallel) , 0.0482726 secs]2022-10-14T14:28:50.973+0800: 171.929: [weak refs processing, 0.0000506 secs]2022-10-14T14:28:50.973+0800: 171.929: [class unloading, 0.0809186 secs]2022-10-14T14:28:51.054+0800: 172.010: [scrub symbol table, 0.0649216 secs]2022-10-14T14:28:51.118+0800: 172.075: [scrub string table, 0.0045311 secs][1 CMS-remark: 1463930K(2097152K)] 1615175K(4019584K), 0.3629243 secs] [Times: user=0.83 sys=0.06, real=0.36 secs] \n" +
-                "2022-10-14T14:28:51.129+0800: 172.085: [CMS-concurrent-sweep-start]\n" +
-                "2022-10-14T14:28:51.881+0800: 172.837: [CMS-concurrent-sweep: 0.727/0.752 secs] [Times: user=1.41 sys=0.20, real=0.75 secs] \n" +
-                "2022-10-14T14:28:51.881+0800: 172.837: [CMS-concurrent-reset-start]\n" +
-                "2022-10-14T14:28:51.895+0800: 172.851: [CMS-concurrent-reset: 0.014/0.014 secs] [Times: user=0.03 sys=0.01, real=0.02 secs] ";
-        GCLogParser parser = new GCLogParserFactory().getParser(stringToBufferedReader(log));
-        CMSGCModel model = (CMSGCModel) parser.parse(stringToBufferedReader(log));
+        GCLogParser parser = new GCLogParserFactory().getParser(TestUtil.getGCLog("8CMSScavengeBeforeRemark.log"));
+        CMSGCModel model = (CMSGCModel) parser.parse(TestUtil.getGCLog("8CMSScavengeBeforeRemark.log"));
         model.calculateDerivedInfo(new DefaultProgressListener());
 
         Assertions.assertEquals(model.getGcEvents().size(), 3);
@@ -1353,42 +784,8 @@ public class TestParser {
 
     @Test
     public void TestJDK11CMSScavengeBeforeRemark() throws Exception {
-        String log = "[0.600s][info][gc,start     ] GC(1) Pause Young (Allocation Failure)\n" +
-                "[0.600s][info][gc,task      ] GC(1) Using 2 workers of 8 for evacuation\n" +
-                "[0.632s][info][gc,heap      ] GC(1) ParNew: 46079K->5120K(46080K)\n" +
-                "[0.632s][info][gc,heap      ] GC(1) CMS: 14224K->48865K(51200K)\n" +
-                "[0.632s][info][gc,metaspace ] GC(1) Metaspace: 6590K->6590K(1056768K)\n" +
-                "[0.632s][info][gc           ] GC(1) Pause Young (Allocation Failure) 58M->52M(95M) 32.662ms\n" +
-                "[0.632s][info][gc,cpu       ] GC(1) User=0.05s Sys=0.01s Real=0.03s\n" +
-                "[0.632s][info][gc,start     ] GC(2) Pause Initial Mark\n" +
-                "[0.635s][info][gc           ] GC(2) Pause Initial Mark 53M->53M(95M) 2.784ms\n" +
-                "[0.635s][info][gc,cpu       ] GC(2) User=0.03s Sys=0.00s Real=0.00s\n" +
-                "[0.635s][info][gc           ] GC(2) Concurrent Mark\n" +
-                "[0.635s][info][gc,task      ] GC(2) Using 2 workers of 2 for marking\n" +
-                "[0.642s][info][gc           ] GC(2) Concurrent Mark 6.796ms\n" +
-                "[0.642s][info][gc,cpu       ] GC(2) User=0.02s Sys=0.00s Real=0.01s\n" +
-                "[0.642s][info][gc           ] GC(2) Concurrent Preclean\n" +
-                "[0.642s][info][gc           ] GC(2) Concurrent Preclean 0.110ms\n" +
-                "[0.642s][info][gc,cpu       ] GC(2) User=0.02s Sys=0.00s Real=0.00s\n" +
-                "[0.642s][info][gc,start     ] GC(2) Pause Remark\n" +
-                "[0.642s][info][gc,start     ] GC(3) Pause Young (CMS Final Remark)\n" +
-                "[0.642s][info][gc,task      ] GC(3) Using 2 workers of 8 for evacuation\n" +
-                "[0.642s][info][gc,heap      ] GC(3) ParNew: 5923K->5921K(46080K)\n" +
-                "[0.642s][info][gc,heap      ] GC(3) CMS: 48865K->48865K(51200K)\n" +
-                "[0.642s][info][gc,metaspace ] GC(3) Metaspace: 6590K->6590K(1056768K)\n" +
-                "[0.642s][info][gc           ] GC(3) Pause Young (CMS Final Remark) 53M->53M(95M) 0.040ms\n" +
-                "[0.642s][info][gc,cpu       ] GC(3) User=0.07s Sys=0.00s Real=0.00s\n" +
-                "[0.646s][info][gc           ] GC(2) Pause Remark 53M->53M(95M) 3.259ms\n" +
-                "[0.646s][info][gc,cpu       ] GC(2) User=0.09s Sys=0.00s Real=0.00s\n" +
-                "[0.646s][info][gc           ] GC(2) Concurrent Sweep\n" +
-                "[0.654s][info][gc           ] GC(2) Concurrent Sweep 8.299ms\n" +
-                "[0.654s][info][gc,cpu       ] GC(2) User=0.01s Sys=0.00s Real=0.01s\n" +
-                "[0.654s][info][gc           ] GC(2) Concurrent Reset\n" +
-                "[0.654s][info][gc           ] GC(2) Concurrent Reset 0.046ms\n" +
-                "[0.654s][info][gc,cpu       ] GC(2) User=0.04s Sys=0.00s Real=0.00s\n" +
-                "[0.654s][info][gc,heap      ] GC(2) Old: 48865K->34645K(51200K)";
-        GCLogParser parser = new GCLogParserFactory().getParser(stringToBufferedReader(log));
-        CMSGCModel model = (CMSGCModel) parser.parse(stringToBufferedReader(log));
+        GCLogParser parser = new GCLogParserFactory().getParser(TestUtil.getGCLog("11CMSScavengeBeforeRemark.log"));
+        CMSGCModel model = (CMSGCModel) parser.parse(TestUtil.getGCLog("11CMSScavengeBeforeRemark.log"));
         model.calculateDerivedInfo(new DefaultProgressListener());
 
         Assertions.assertEquals(model.getGcEvents().size(), 3);
@@ -1409,42 +806,8 @@ public class TestParser {
 
     @Test
     public void TestJDK17SerialGCParser() throws Exception {
-        String log = "[0.008s][info][gc] Using Serial\n" +
-                "[0.008s][info][gc,init] Version: 17.0.1+12-39 (release)\n" +
-                "[0.008s][info][gc,init] CPUs: 8 total, 8 available\n" +
-                "[0.008s][info][gc,init] Memory: 16384M\n" +
-                "[0.008s][info][gc,init] Large Page Support: Disabled\n" +
-                "[0.008s][info][gc,init] NUMA Support: Disabled\n" +
-                "[0.008s][info][gc,init] Compressed Oops: Enabled (Zero based)\n" +
-                "[0.008s][info][gc,init] Heap Min Capacity: 100M\n" +
-                "[0.008s][info][gc,init] Heap Initial Capacity: 100M\n" +
-                "[0.008s][info][gc,init] Heap Max Capacity: 100M\n" +
-                "[0.008s][info][gc,init] Pre-touch: Disabled\n" +
-                "[0.008s][info][gc,metaspace] CDS archive(s) mapped at: [0x0000000800000000-0x0000000800bd4000-0x0000000800bd4000), size 12402688, SharedBaseAddress: 0x0000000800000000, ArchiveRelocationMode: 0.\n" +
-                "[0.008s][info][gc,metaspace] Compressed class space mapped at: 0x0000000800c00000-0x0000000840c00000, reserved size: 1073741824\n" +
-                "[0.008s][info][gc,metaspace] Narrow klass base: 0x0000000800000000, Narrow klass shift: 0, Narrow klass range: 0x100000000\n" +
-                "[0.173s][info][gc,start    ] GC(0) Pause Young (Allocation Failure)\n" +
-                "[0.194s][info][gc,heap     ] GC(0) DefNew: 40960K(46080K)->5120K(46080K) Eden: 40960K(40960K)->0K(40960K) From: 0K(5120K)->5120K(5120K)\n" +
-                "[0.194s][info][gc,heap     ] GC(0) Tenured: 0K(51200K)->14524K(51200K)\n" +
-                "[0.194s][info][gc,metaspace] GC(0) Metaspace: 137K(384K)->138K(384K) NonClass: 133K(256K)->134K(256K) Class: 4K(128K)->4K(128K)\n" +
-                "[0.194s][info][gc          ] GC(0) Pause Young (Allocation Failure) 40M->19M(95M) 21.766ms\n" +
-                "[0.194s][info][gc,cpu      ] GC(0) User=0.01s Sys=0.00s Real=0.02s\n" +
-                "[2.616s][info][gc,start       ] GC(1) Pause Full (Allocation Failure)\n" +
-                "[2.616s][info][gc,phases,start] GC(1) Phase 1: Mark live objects\n" +
-                "[2.665s][info][gc,phases      ] GC(1) Phase 1: Mark live objects 49.316ms\n" +
-                "[2.665s][info][gc,phases,start] GC(1) Phase 2: Compute new object addresses\n" +
-                "[2.677s][info][gc,phases      ] GC(1) Phase 2: Compute new object addresses 12.103ms\n" +
-                "[2.677s][info][gc,phases,start] GC(1) Phase 3: Adjust pointers\n" +
-                "[2.698s][info][gc,phases      ] GC(1) Phase 3: Adjust pointers 20.186ms\n" +
-                "[2.698s][info][gc,phases,start] GC(1) Phase 4: Move objects\n" +
-                "[2.708s][info][gc,phases      ] GC(1) Phase 4: Move objects 10.313ms\n" +
-                "[2.708s][info][gc,heap        ] GC(1) DefNew: 46079K(46080K)->36798K(46080K) Eden: 40960K(40960K)->36798K(40960K) From: 5119K(5120K)->0K(5120K)\n" +
-                "[2.708s][info][gc,heap        ] GC(1) Tenured: 51199K(51200K)->51199K(51200K)\n" +
-                "[2.708s][info][gc,metaspace   ] GC(1) Metaspace: 137K(384K)->137K(384K) NonClass: 133K(256K)->133K(256K) Class: 4K(128K)->4K(128K)\n" +
-                "[2.708s][info][gc             ] GC(1) Pause Full (Allocation Failure) 94M->85M(95M) 92.137ms\n" +
-                "[2.708s][info][gc,cpu         ] GC(1) User=0.09s Sys=0.00s Real=0.09s";
-        GCLogParser parser = new GCLogParserFactory().getParser(stringToBufferedReader(log));
-        SerialGCModel model = (SerialGCModel) parser.parse(stringToBufferedReader(log));
+        GCLogParser parser = new GCLogParserFactory().getParser(TestUtil.getGCLog("17SerialGCParser.log"));
+        SerialGCModel model = (SerialGCModel) parser.parse(TestUtil.getGCLog("17SerialGCParser.log"));
         model.calculateDerivedInfo(new DefaultProgressListener());
 
         GCEvent youngGC = model.getGcEvents().get(0);
@@ -1488,46 +851,8 @@ public class TestParser {
 
     @Test
     public void TestJDK17ParallelGCParser() throws Exception {
-        String log = "[0.017s][info][gc] Using Parallel\n" +
-                "[0.018s][info][gc,init] Version: 17.0.1+12-39 (release)\n" +
-                "[0.018s][info][gc,init] CPUs: 8 total, 8 available\n" +
-                "[0.018s][info][gc,init] Memory: 16384M\n" +
-                "[0.018s][info][gc,init] Large Page Support: Disabled\n" +
-                "[0.018s][info][gc,init] NUMA Support: Disabled\n" +
-                "[0.018s][info][gc,init] Compressed Oops: Enabled (Zero based)\n" +
-                "[0.018s][info][gc,init] Alignments: Space 512K, Generation 512K, Heap 2M\n" +
-                "[0.018s][info][gc,init] Heap Min Capacity: 100M\n" +
-                "[0.018s][info][gc,init] Heap Initial Capacity: 100M\n" +
-                "[0.018s][info][gc,init] Heap Max Capacity: 100M\n" +
-                "[0.018s][info][gc,init] Pre-touch: Disabled\n" +
-                "[0.018s][info][gc,init] Parallel Workers: 8\n" +
-                "[0.019s][info][gc,metaspace] CDS archive(s) mapped at: [0x0000000800000000-0x0000000800bd4000-0x0000000800bd4000), size 12402688, SharedBaseAddress: 0x0000000800000000, ArchiveRelocationMode: 0.\n" +
-                "[0.019s][info][gc,metaspace] Compressed class space mapped at: 0x0000000800c00000-0x0000000840c00000, reserved size: 1073741824\n" +
-                "[0.019s][info][gc,metaspace] Narrow klass base: 0x0000000800000000, Narrow klass shift: 0, Narrow klass range: 0x100000000\n" +
-                "[0.222s][info][gc,start    ] GC(0) Pause Young (Allocation Failure)\n" +
-                "[0.232s][info][gc,heap     ] GC(0) PSYoungGen: 38912K(45056K)->6137K(45056K) Eden: 38912K(38912K)->0K(38912K) From: 0K(6144K)->6137K(6144K)\n" +
-                "[0.232s][info][gc,heap     ] GC(0) ParOldGen: 0K(51200K)->13208K(51200K)\n" +
-                "[0.232s][info][gc,metaspace] GC(0) Metaspace: 135K(384K)->135K(384K) NonClass: 131K(256K)->131K(256K) Class: 4K(128K)->4K(128K)\n" +
-                "[0.232s][info][gc          ] GC(0) Pause Young (Allocation Failure) 38M->18M(94M) 10.085ms\n" +
-                "[0.232s][info][gc,cpu      ] GC(0) User=0.02s Sys=0.01s Real=0.01s\n" +
-                "[0.547s][info][gc,start    ] GC(1) Pause Full (Ergonomics)\n" +
-                "[0.548s][info][gc,phases,start] GC(1) Marking Phase\n" +
-                "[0.561s][info][gc,phases      ] GC(1) Marking Phase 13.555ms\n" +
-                "[0.561s][info][gc,phases,start] GC(1) Summary Phase\n" +
-                "[0.561s][info][gc,phases      ] GC(1) Summary Phase 0.006ms\n" +
-                "[0.561s][info][gc,phases,start] GC(1) Adjust Roots\n" +
-                "[0.561s][info][gc,phases      ] GC(1) Adjust Roots 0.238ms\n" +
-                "[0.561s][info][gc,phases,start] GC(1) Compaction Phase\n" +
-                "[0.568s][info][gc,phases      ] GC(1) Compaction Phase 6.917ms\n" +
-                "[0.568s][info][gc,phases,start] GC(1) Post Compact\n" +
-                "[0.568s][info][gc,phases      ] GC(1) Post Compact 0.222ms\n" +
-                "[0.569s][info][gc,heap        ] GC(1) PSYoungGen: 6128K(45056K)->0K(45056K) Eden: 0K(38912K)->0K(38912K) From: 6128K(6144K)->0K(6144K)\n" +
-                "[0.569s][info][gc,heap        ] GC(1) ParOldGen: 46504K(51200K)->38169K(51200K)\n" +
-                "[0.569s][info][gc,metaspace   ] GC(1) Metaspace: 135K(384K)->135K(384K) NonClass: 131K(256K)->131K(256K) Class: 4K(128K)->4K(128K)\n" +
-                "[0.569s][info][gc             ] GC(1) Pause Full (Ergonomics) 51M->37M(94M) 21.046ms\n" +
-                "[0.569s][info][gc,cpu         ] GC(1) User=0.04s Sys=0.00s Real=0.02s";
-        GCLogParser parser = new GCLogParserFactory().getParser(stringToBufferedReader(log));
-        ParallelGCModel model = (ParallelGCModel) parser.parse(stringToBufferedReader(log));
+        GCLogParser parser = new GCLogParserFactory().getParser(TestUtil.getGCLog("17ParallelGCParser.log"));
+        ParallelGCModel model = (ParallelGCModel) parser.parse(TestUtil.getGCLog("17ParallelGCParser.log"));
         model.calculateDerivedInfo(new DefaultProgressListener());
 
         GCEvent youngGC = model.getGcEvents().get(0);
@@ -1572,115 +897,9 @@ public class TestParser {
 
     @Test
     public void testJDK17ZGCParser() throws Exception {
-        String log =
-                "[0.105s][info][gc,init] Initializing The Z Garbage Collector\n" +
-                        "[0.105s][info][gc,init] Version: 17.0.1+12-39 (release)\n" +
-                        "[0.105s][info][gc,init] NUMA Support: Disabled\n" +
-                        "[0.105s][info][gc,init] CPUs: 8 total, 8 available\n" +
-                        "[0.106s][info][gc,init] Memory: 16384M\n" +
-                        "[0.106s][info][gc,init] Large Page Support: Disabled\n" +
-                        "[0.106s][info][gc,init] GC Workers: 2 (dynamic)\n" +
-                        "[0.107s][info][gc,init] Address Space Type: Contiguous/Unrestricted/Complete\n" +
-                        "[0.107s][info][gc,init] Address Space Size: 16000M x 3 = 48000M\n" +
-                        "[0.107s][info][gc,init] Min Capacity: 1000M\n" +
-                        "[0.107s][info][gc,init] Initial Capacity: 1000M\n" +
-                        "[0.107s][info][gc,init] Max Capacity: 1000M\n" +
-                        "[0.107s][info][gc,init] Medium Page Size: 16M\n" +
-                        "[0.107s][info][gc,init] Pre-touch: Disabled\n" +
-                        "[0.107s][info][gc,init] Uncommit: Implicitly Disabled (-Xms equals -Xmx)\n" +
-                        "[0.109s][info][gc,init] Runtime Workers: 5\n" +
-                        "[0.111s][info][gc     ] Using The Z Garbage Collector\n" +
-                        "[0.114s][info][gc,metaspace] CDS archive(s) mapped at: [0x0000000800000000-0x0000000800bac000-0x0000000800bac000), size 12238848, SharedBaseAddress: 0x0000000800000000, ArchiveRelocationMode: 0.\n" +
-                        "[0.114s][info][gc,metaspace] Compressed class space mapped at: 0x0000000800c00000-0x0000000840c00000, reserved size: 1073741824\n" +
-                        "[0.114s][info][gc,metaspace] Narrow klass base: 0x0000000800000000, Narrow klass shift: 0, Narrow klass range: 0x100000000\n" +
-                        "[0.918s][info][gc,start    ] GC(0) Garbage Collection (Warmup)\n" +
-                        "[0.918s][info][gc,task     ] GC(0) Using 2 workers\n" +
-                        "[0.918s][info][gc,phases   ] GC(0) Pause Mark Start 0.007ms\n" +
-                        "[0.939s][info][gc,phases   ] GC(0) Concurrent Mark 20.975ms\n" +
-                        "[0.939s][info][gc,phases   ] GC(0) Pause Mark End 0.031ms\n" +
-                        "[0.939s][info][gc,phases   ] GC(0) Concurrent Mark Free 0.001ms\n" +
-                        "[0.940s][info][gc,phases   ] GC(0) Concurrent Process Non-Strong References 0.238ms\n" +
-                        "[0.940s][info][gc,phases   ] GC(0) Concurrent Reset Relocation Set 0.001ms\n" +
-                        "[0.948s][info][gc,phases   ] GC(0) Concurrent Select Relocation Set 8.843ms\n" +
-                        "[0.949s][info][gc,phases   ] GC(0) Pause Relocate Start 0.008ms\n" +
-                        "[0.949s][info][gc,phases   ] GC(0) Concurrent Relocate 0.811ms\n" +
-                        "[0.950s][info][gc,load     ] GC(0) Load: 3.83/4.68/5.15\n" +
-                        "[0.950s][info][gc,mmu      ] GC(0) MMU: 2ms/98.4%, 5ms/99.4%, 10ms/99.6%, 20ms/99.8%, 50ms/99.9%, 100ms/100.0%\n" +
-                        "[0.950s][info][gc,marking  ] GC(0) Mark: 2 stripe(s), 2 proactive flush(es), 1 terminate flush(es), 0 completion(s), 0 continuation(s)\n" +
-                        "[0.950s][info][gc,marking  ] GC(0) Mark Stack Usage: 32M\n" +
-                        "[0.950s][info][gc,nmethod  ] GC(0) NMethods: 91 registered, 0 unregistered\n" +
-                        "[0.950s][info][gc,metaspace] GC(0) Metaspace: 0M used, 0M committed, 1032M reserved\n" +
-                        "[0.950s][info][gc,ref      ] GC(0) Soft: 5 encountered, 0 discovered, 0 enqueued\n" +
-                        "[0.950s][info][gc,ref      ] GC(0) Weak: 5 encountered, 0 discovered, 0 enqueued\n" +
-                        "[0.950s][info][gc,ref      ] GC(0) Final: 0 encountered, 0 discovered, 0 enqueued\n" +
-                        "[0.950s][info][gc,ref      ] GC(0) Phantom: 1 encountered, 0 discovered, 0 enqueued\n" +
-                        "[0.950s][info][gc,reloc    ] GC(0) Small Pages: 44 / 88M, Empty: 10M, Relocated: 1M, In-Place: 0\n" +
-                        "[0.950s][info][gc,reloc    ] GC(0) Medium Pages: 1 / 16M, Empty: 0M, Relocated: 0M, In-Place: 0\n" +
-                        "[0.950s][info][gc,reloc    ] GC(0) Large Pages: 0 / 0M, Empty: 0M, Relocated: 0M, In-Place: 0\n" +
-                        "[0.950s][info][gc,reloc    ] GC(0) Forwarding Usage: 0M\n" +
-                        "[0.950s][info][gc,heap     ] GC(0) Min Capacity: 1000M(100%)\n" +
-                        "[0.950s][info][gc,heap     ] GC(0) Max Capacity: 1000M(100%)\n" +
-                        "[0.950s][info][gc,heap     ] GC(0) Soft Max Capacity: 1000M(100%)\n" +
-                        "[0.950s][info][gc,heap     ] GC(0)                Mark Start          Mark End        Relocate Start      Relocate End           High               Low\n" +
-                        "[0.950s][info][gc,heap     ] GC(0)  Capacity:     1000M (100%)       1000M (100%)       1000M (100%)       1000M (100%)       1000M (100%)       1000M (100%)\n" +
-                        "[0.950s][info][gc,heap     ] GC(0)      Free:      896M (90%)         892M (89%)         902M (90%)         912M (91%)         912M (91%)         892M (89%)\n" +
-                        "[0.950s][info][gc,heap     ] GC(0)      Used:      104M (10%)         108M (11%)          98M (10%)          88M (9%)          108M (11%)          88M (9%)\n" +
-                        "[0.950s][info][gc,heap     ] GC(0)      Live:         -                65M (7%)           65M (7%)           65M (7%)             -                  -\n" +
-                        "[0.950s][info][gc,heap     ] GC(0) Allocated:         -                 4M (0%)            4M (0%)            3M (0%)             -                  -\n" +
-                        "[0.950s][info][gc,heap     ] GC(0)   Garbage:         -                38M (4%)           28M (3%)           18M (2%)             -                  -\n" +
-                        "[0.950s][info][gc,heap     ] GC(0) Reclaimed:         -                  -                10M (1%)           19M (2%)             -                  -\n" +
-                        "[0.950s][info][gc          ] GC(0) Garbage Collection (Warmup) 104M(10%)->88M(9%)\n" +
-                        "[10.417s][info][gc,stats    ] === Garbage Collection Statistics =======================================================================================================================\n" +
-                        "[10.417s][info][gc,stats    ]                                                              Last 10s              Last 10m              Last 10h                Total\n" +
-                        "[10.417s][info][gc,stats    ]                                                              Avg / Max             Avg / Max             Avg / Max             Avg / Max\n" +
-                        "[10.417s][info][gc,stats    ]   Collector: Garbage Collection Cycle                     52.097 / 71.589       52.097 / 71.589       52.097 / 71.589       52.097 / 71.589      ms\n" +
-                        "[10.417s][info][gc,stats    ]  Contention: Mark Segment Reset Contention                     0 / 1                 0 / 1                 0 / 1                 0 / 1           ops/s\n" +
-                        "[10.417s][info][gc,stats    ]  Contention: Mark SeqNum Reset Contention                      0 / 0                 0 / 0                 0 / 0                 0 / 0           ops/s\n" +
-                        "[10.417s][info][gc,stats    ]    Critical: Allocation Stall                                  0 / 0                 0 / 0                 0 / 0                 0 / 0           ops/s\n" +
-                        "[10.417s][info][gc,stats    ]    Critical: Allocation Stall                              0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms\n" +
-                        "[10.418s][info][gc,stats    ]    Critical: GC Locker Stall                                   0 / 0                 0 / 0                 0 / 0                 0 / 0           ops/s\n" +
-                        "[10.418s][info][gc,stats    ]    Critical: GC Locker Stall                               0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms\n" +
-                        "[10.418s][info][gc,stats    ]    Critical: Relocation Stall                                  0 / 0                 0 / 0                 0 / 0                 0 / 0           ops/s\n" +
-                        "[10.418s][info][gc,stats    ]    Critical: Relocation Stall                              0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms\n" +
-                        "[10.418s][info][gc,stats    ]      Memory: Allocation Rate                                  48 / 162              48 / 162              48 / 162              48 / 162         MB/s\n" +
-                        "[10.418s][info][gc,stats    ]      Memory: Out Of Memory                                     0 / 0                 0 / 0                 0 / 0                 0 / 0           ops/s\n" +
-                        "[10.418s][info][gc,stats    ]      Memory: Page Cache Flush                                  0 / 0                 0 / 0                 0 / 0                 0 / 0           MB/s\n" +
-                        "[10.418s][info][gc,stats    ]      Memory: Page Cache Hit L1                                 4 / 15                4 / 15                4 / 15                4 / 15          ops/s\n" +
-                        "[10.418s][info][gc,stats    ]      Memory: Page Cache Hit L2                                 0 / 0                 0 / 0                 0 / 0                 0 / 0           ops/s\n" +
-                        "[10.418s][info][gc,stats    ]      Memory: Page Cache Hit L3                                18 / 59               18 / 59               18 / 59               18 / 59          ops/s\n" +
-                        "[10.418s][info][gc,stats    ]      Memory: Page Cache Miss                                   0 / 1                 0 / 1                 0 / 1                 0 / 1           ops/s\n" +
-                        "[10.418s][info][gc,stats    ]      Memory: Uncommit                                          0 / 0                 0 / 0                 0 / 0                 0 / 0           MB/s\n" +
-                        "[10.418s][info][gc,stats    ]      Memory: Undo Object Allocation Failed                     0 / 0                 0 / 0                 0 / 0                 0 / 0           ops/s\n" +
-                        "[10.418s][info][gc,stats    ]      Memory: Undo Object Allocation Succeeded                  7 / 73                7 / 73                7 / 73                7 / 73          ops/s\n" +
-                        "[10.418s][info][gc,stats    ]      Memory: Undo Page Allocation                              0 / 0                 0 / 0                 0 / 0                 0 / 0           ops/s\n" +
-                        "[10.418s][info][gc,stats    ]       Phase: Concurrent Mark                              45.361 / 66.984       45.361 / 66.984       45.361 / 66.984       45.361 / 66.984      ms\n" +
-                        "[10.418s][info][gc,stats    ]       Phase: Concurrent Mark Continue                      0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms\n" +
-                        "[10.418s][info][gc,stats    ]       Phase: Concurrent Mark Free                          0.001 / 0.001         0.001 / 0.001         0.001 / 0.001         0.001 / 0.001       ms\n" +
-                        "[10.418s][info][gc,stats    ]       Phase: Concurrent Process Non-Strong References      0.423 / 0.697         0.423 / 0.697         0.423 / 0.697         0.423 / 0.697       ms\n" +
-                        "[10.418s][info][gc,stats    ]       Phase: Concurrent Relocate                           0.808 / 0.928         0.808 / 0.928         0.808 / 0.928         0.808 / 0.928       ms\n" +
-                        "[10.418s][info][gc,stats    ]       Phase: Concurrent Reset Relocation Set               0.001 / 0.001         0.001 / 0.001         0.001 / 0.001         0.001 / 0.001       ms\n" +
-                        "[10.418s][info][gc,stats    ]       Phase: Concurrent Select Relocation Set              4.461 / 8.843         4.461 / 8.843         4.461 / 8.843         4.461 / 8.843       ms\n" +
-                        "[10.418s][info][gc,stats    ]       Phase: Pause Mark End                                0.018 / 0.031         0.018 / 0.031         0.018 / 0.031         0.018 / 0.031       ms\n" +
-                        "[10.418s][info][gc,stats    ]       Phase: Pause Mark Start                              0.010 / 0.015         0.010 / 0.015         0.010 / 0.015         0.010 / 0.015       ms\n" +
-                        "[10.418s][info][gc,stats    ]       Phase: Pause Relocate Start                          0.007 / 0.008         0.007 / 0.008         0.007 / 0.008         0.007 / 0.008       ms\n" +
-                        "[10.418s][info][gc,stats    ]    Subphase: Concurrent Classes Purge                      0.039 / 0.060         0.039 / 0.060         0.039 / 0.060         0.039 / 0.060       ms\n" +
-                        "[10.418s][info][gc,stats    ]    Subphase: Concurrent Classes Unlink                     0.097 / 0.143         0.097 / 0.143         0.097 / 0.143         0.097 / 0.143       ms\n" +
-                        "[10.418s][info][gc,stats    ]    Subphase: Concurrent Mark                              44.745 / 66.798       44.745 / 66.798       44.745 / 66.798       44.745 / 66.798      ms\n" +
-                        "[10.418s][info][gc,stats    ]    Subphase: Concurrent Mark Try Flush                     0.185 / 0.349         0.185 / 0.349         0.185 / 0.349         0.185 / 0.349       ms\n" +
-                        "[10.418s][info][gc,stats    ]    Subphase: Concurrent Mark Try Terminate                 0.558 / 1.293         0.558 / 1.293         0.558 / 1.293         0.558 / 1.293       ms\n" +
-                        "[10.418s][info][gc,stats    ]    Subphase: Concurrent References Enqueue                 0.002 / 0.006         0.002 / 0.006         0.002 / 0.006         0.002 / 0.006       ms\n" +
-                        "[10.418s][info][gc,stats    ]    Subphase: Concurrent References Process                 0.020 / 0.034         0.020 / 0.034         0.020 / 0.034         0.020 / 0.034       ms\n" +
-                        "[10.418s][info][gc,stats    ]    Subphase: Concurrent Roots ClassLoaderDataGraph         0.058 / 0.161         0.058 / 0.161         0.058 / 0.161         0.058 / 0.161       ms\n" +
-                        "[10.418s][info][gc,stats    ]    Subphase: Concurrent Roots CodeCache                    0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms\n" +
-                        "[10.418s][info][gc,stats    ]    Subphase: Concurrent Roots JavaThreads                  0.100 / 0.147         0.100 / 0.147         0.100 / 0.147         0.100 / 0.147       ms\n" +
-                        "[10.418s][info][gc,stats    ]    Subphase: Concurrent Roots OopStorageSet                0.031 / 0.054         0.031 / 0.054         0.031 / 0.054         0.031 / 0.054       ms\n" +
-                        "[10.418s][info][gc,stats    ]    Subphase: Concurrent Weak Roots OopStorageSet           0.071 / 0.119         0.071 / 0.119         0.071 / 0.119         0.071 / 0.119       ms\n" +
-                        "[10.418s][info][gc,stats    ]    Subphase: Pause Mark Try Complete                       0.000 / 0.000         0.000 / 0.000         0.000 / 0.000         0.000 / 0.000       ms\n" +
-                        "[10.418s][info][gc,stats    ]      System: Java Threads                                     11 / 11               11 / 11               11 / 11               11 / 11          threads\n" +
-                        "[10.418s][info][gc,stats    ] =========================================================================================================================================================";
         UnifiedZGCLogParser parser = (UnifiedZGCLogParser)
-                (new GCLogParserFactory().getParser(stringToBufferedReader(log)));
-        ZGCModel model = (ZGCModel) parser.parse(stringToBufferedReader(log));
+                (new GCLogParserFactory().getParser(TestUtil.getGCLog("17ZGCParser.log")));
+        ZGCModel model = (ZGCModel) parser.parse(TestUtil.getGCLog("17ZGCParser.log"));
         model.calculateDerivedInfo(new DefaultProgressListener());
         Assertions.assertNotNull(model);
 
@@ -1710,89 +929,10 @@ public class TestParser {
 
     @Test
     public void testJDK17G1Parser() throws Exception {
-        String log =
-                "[0.020s][info][gc] Using G1\n" +
-                        "[0.022s][info][gc,init] Version: 17.0.1+12-39 (release)\n" +
-                        "[0.022s][info][gc,init] CPUs: 8 total, 8 available\n" +
-                        "[0.022s][info][gc,init] Memory: 16384M\n" +
-                        "[0.022s][info][gc,init] Large Page Support: Disabled\n" +
-                        "[0.022s][info][gc,init] NUMA Support: Disabled\n" +
-                        "[0.022s][info][gc,init] Compressed Oops: Enabled (Zero based)\n" +
-                        "[0.022s][info][gc,init] Heap Region Size: 1M\n" +
-                        "[0.022s][info][gc,init] Heap Min Capacity: 100M\n" +
-                        "[0.022s][info][gc,init] Heap Initial Capacity: 100M\n" +
-                        "[0.022s][info][gc,init] Heap Max Capacity: 100M\n" +
-                        "[0.022s][info][gc,init] Pre-touch: Disabled\n" +
-                        "[0.022s][info][gc,init] Parallel Workers: 8\n" +
-                        "[0.022s][info][gc,init] Concurrent Workers: 2\n" +
-                        "[0.022s][info][gc,init] Concurrent Refinement Workers: 8\n" +
-                        "[0.022s][info][gc,init] Periodic GC: Disabled\n" +
-                        "[0.024s][info][gc,metaspace] CDS archive(s) mapped at: [0x0000000800000000-0x0000000800bd4000-0x0000000800bd4000), size 12402688, SharedBaseAddress: 0x0000000800000000, ArchiveRelocationMode: 0.\n" +
-                        "[0.025s][info][gc,metaspace] Compressed class space mapped at: 0x0000000800c00000-0x0000000840c00000, reserved size: 1073741824\n" +
-                        "[0.025s][info][gc,metaspace] Narrow klass base: 0x0000000800000000, Narrow klass shift: 0, Narrow klass range: 0x100000000\n" +
-                        "[0.333s][info][gc,start    ] GC(0) Pause Young (Normal) (G1 Evacuation Pause)\n" +
-                        "[0.333s][info][gc,task     ] GC(0) Using 2 workers of 8 for evacuation\n" +
-                        "[0.354s][info][gc,phases   ] GC(0)   Pre Evacuate Collection Set: 0.0ms\n" +
-                        "[0.354s][info][gc,phases   ] GC(0)   Merge Heap Roots: 0.1ms\n" +
-                        "[0.354s][info][gc,phases   ] GC(0)   Evacuate Collection Set: 20.3ms\n" +
-                        "[0.354s][info][gc,phases   ] GC(0)   Post Evacuate Collection Set: 0.2ms\n" +
-                        "[0.354s][info][gc,phases   ] GC(0)   Other: 0.3ms\n" +
-                        "[0.354s][info][gc,heap     ] GC(0) Eden regions: 50->0(43)\n" +
-                        "[0.354s][info][gc,heap     ] GC(0) Survivor regions: 0->7(7)\n" +
-                        "[0.354s][info][gc,heap     ] GC(0) Old regions: 0->18\n" +
-                        "[0.354s][info][gc,heap     ] GC(0) Archive regions: 2->2\n" +
-                        "[0.354s][info][gc,heap     ] GC(0) Humongous regions: 1->1\n" +
-                        "[0.354s][info][gc,metaspace] GC(0) Metaspace: 87K(320K)->87K(320K) NonClass: 84K(192K)->84K(192K) Class: 3K(128K)->3K(128K)\n" +
-                        "[0.354s][info][gc          ] GC(0) Pause Young (Normal) (G1 Evacuation Pause) 51M->26M(100M) 20.955ms\n" +
-                        "[0.354s][info][gc,cpu      ] GC(0) User=0.03s Sys=0.01s Real=0.02s\n" +
-                        "[1.097s][info][gc          ] GC(1) Concurrent Mark Cycle\n" +
-                        "[1.097s][info][gc,marking  ] GC(1) Concurrent Clear Claimed Marks\n" +
-                        "[1.097s][info][gc,marking  ] GC(1) Concurrent Clear Claimed Marks 0.020ms\n" +
-                        "[1.097s][info][gc,marking  ] GC(1) Concurrent Scan Root Regions\n" +
-                        "[1.099s][info][gc,marking  ] GC(1) Concurrent Scan Root Regions 1.966ms\n" +
-                        "[1.099s][info][gc,marking  ] GC(1) Concurrent Mark\n" +
-                        "[1.099s][info][gc,marking  ] GC(1) Concurrent Mark From Roots\n" +
-                        "[1.099s][info][gc,task     ] GC(1) Using 2 workers of 2 for marking\n" +
-                        "[1.113s][info][gc,marking  ] GC(1) Concurrent Mark From Roots 14.489ms\n" +
-                        "[1.113s][info][gc,marking  ] GC(1) Concurrent Preclean\n" +
-                        "[1.113s][info][gc,marking  ] GC(1) Concurrent Preclean 0.061ms\n" +
-                        "[1.114s][info][gc,start    ] GC(1) Pause Remark\n" +
-                        "[1.114s][info][gc          ] GC(1) Pause Remark 82M->65M(100M) 0.341ms\n" +
-                        "[1.114s][info][gc,cpu      ] GC(1) User=0.00s Sys=0.00s Real=0.00s\n" +
-                        "[1.115s][info][gc,marking  ] GC(1) Concurrent Mark 15.656ms\n" +
-                        "[1.115s][info][gc,marking  ] GC(1) Concurrent Rebuild Remembered Sets\n" +
-                        "[1.121s][info][gc,marking  ] GC(1) Concurrent Rebuild Remembered Sets 6.891ms\n" +
-                        "[1.122s][info][gc,start    ] GC(1) Pause Cleanup\n" +
-                        "[1.122s][info][gc          ] GC(1) Pause Cleanup 65M->65M(100M) 0.056ms\n" +
-                        "[1.122s][info][gc,cpu      ] GC(1) User=0.00s Sys=0.00s Real=0.00s\n" +
-                        "[1.122s][info][gc,marking  ] GC(1) Concurrent Cleanup for Next Mark\n" +
-                        "[1.122s][info][gc,marking  ] GC(1) Concurrent Cleanup for Next Mark 0.417ms\n" +
-                        "[1.122s][info][gc          ] GC(1) Concurrent Mark Cycle 25.265ms\n" +
-                        "[1.715s][info][gc,start    ] GC(2) Pause Full (G1 Compaction Pause)\n" +
-                        "[1.715s][info][gc,phases,start] GC(2) Phase 1: Mark live objects\n" +
-                        "[1.729s][info][gc,phases      ] GC(2) Phase 1: Mark live objects 14.039ms\n" +
-                        "[1.729s][info][gc,phases,start] GC(2) Phase 2: Prepare for compaction\n" +
-                        "[1.730s][info][gc,phases      ] GC(2) Phase 2: Prepare for compaction 0.875ms\n" +
-                        "[1.730s][info][gc,phases,start] GC(2) Phase 3: Adjust pointers\n" +
-                        "[1.736s][info][gc,phases      ] GC(2) Phase 3: Adjust pointers 6.156ms\n" +
-                        "[1.736s][info][gc,phases,start] GC(2) Phase 4: Compact heap\n" +
-                        "[1.738s][info][gc,phases      ] GC(2) Phase 4: Compact heap 1.153ms\n" +
-                        "[1.738s][info][gc,heap        ] GC(2) Eden regions: 0->0(50)\n" +
-                        "[1.738s][info][gc,heap        ] GC(2) Survivor regions: 0->0(0)\n" +
-                        "[1.738s][info][gc,heap        ] GC(2) Old regions: 96->68\n" +
-                        "[1.738s][info][gc,heap        ] GC(2) Archive regions: 2->2\n" +
-                        "[1.738s][info][gc,heap        ] GC(2) Humongous regions: 2->1\n" +
-                        "[1.738s][info][gc,metaspace   ] GC(2) Metaspace: 87K(320K)->87K(320K) NonClass: 84K(192K)->84K(192K) Class: 3K(128K)->3K(128K)\n" +
-                        "[1.738s][info][gc             ] GC(2) Pause Full (G1 Compaction Pause) 98M->69M(100M) 22.935ms\n" +
-                        "[1.738s][info][gc,cpu         ] GC(2) User=0.04s Sys=0.00s Real=0.02s\n" +
-                        "[2.145s][info][gc          ] GC(3) Concurrent Undo Cycle\n" +
-                        "[2.145s][info][gc,marking  ] GC(3) Concurrent Cleanup for Next Mark\n" +
-                        "[2.145s][info][gc,marking  ] GC(3) Concurrent Cleanup for Next Mark 0.109ms\n" +
-                        "[2.145s][info][gc          ] GC(3) Concurrent Undo Cycle 0.125ms";
 
         UnifiedG1GCLogParser parser = (UnifiedG1GCLogParser)
-                (new GCLogParserFactory().getParser(stringToBufferedReader(log)));
-        G1GCModel model = (G1GCModel) parser.parse(stringToBufferedReader(log));
+                (new GCLogParserFactory().getParser(TestUtil.getGCLog("17G1Parser.log")));
+        G1GCModel model = (G1GCModel) parser.parse(TestUtil.getGCLog("17G1Parser.log"));
         model.calculateDerivedInfo(new DefaultProgressListener());
         // assert parsing success
         Assertions.assertNotNull(model);
@@ -1868,28 +1008,10 @@ public class TestParser {
 
     @Test
     public void testJDK17G1InferRegionSize() throws Exception {
-        String log =
-                "[1.715s][info][gc,start    ] GC(2) Pause Full (G1 Compaction Pause)\n" +
-                        "[1.715s][info][gc,phases,start] GC(2) Phase 1: Mark live objects\n" +
-                        "[1.729s][info][gc,phases      ] GC(2) Phase 1: Mark live objects 14.039ms\n" +
-                        "[1.729s][info][gc,phases,start] GC(2) Phase 2: Prepare for compaction\n" +
-                        "[1.730s][info][gc,phases      ] GC(2) Phase 2: Prepare for compaction 0.875ms\n" +
-                        "[1.730s][info][gc,phases,start] GC(2) Phase 3: Adjust pointers\n" +
-                        "[1.736s][info][gc,phases      ] GC(2) Phase 3: Adjust pointers 6.156ms\n" +
-                        "[1.736s][info][gc,phases,start] GC(2) Phase 4: Compact heap\n" +
-                        "[1.738s][info][gc,phases      ] GC(2) Phase 4: Compact heap 1.153ms\n" +
-                        "[1.738s][info][gc,heap        ] GC(2) Eden regions: 0->0(50)\n" +
-                        "[1.738s][info][gc,heap        ] GC(2) Survivor regions: 0->0(0)\n" +
-                        "[1.738s][info][gc,heap        ] GC(2) Old regions: 96->68\n" +
-                        "[1.738s][info][gc,heap        ] GC(2) Archive regions: 2->2\n" +
-                        "[1.738s][info][gc,heap        ] GC(2) Humongous regions: 2->1\n" +
-                        "[1.738s][info][gc,metaspace   ] GC(2) Metaspace: 87K(320K)->87K(320K) NonClass: 84K(192K)->84K(192K) Class: 3K(128K)->3K(128K)\n" +
-                        "[1.738s][info][gc             ] GC(2) Pause Full (G1 Compaction Pause) 98M->69M(100M) 22.935ms\n" +
-                        "[1.738s][info][gc,cpu         ] GC(2) User=0.04s Sys=0.00s Real=0.02s";
 
         UnifiedG1GCLogParser parser = (UnifiedG1GCLogParser)
-                (new GCLogParserFactory().getParser(stringToBufferedReader(log)));
-        G1GCModel model = (G1GCModel) parser.parse(stringToBufferedReader(log));
+                (new GCLogParserFactory().getParser(TestUtil.getGCLog("17G1InferRegionSize.log")));
+        G1GCModel model = (G1GCModel) parser.parse(TestUtil.getGCLog("17G1InferRegionSize.log"));
         model.calculateDerivedInfo(new DefaultProgressListener());
         // assert parsing success
         Assertions.assertNotNull(model);
@@ -1900,34 +1022,9 @@ public class TestParser {
 
     @Test
     public void testJDK8G1PrintGC() throws Exception {
-        String log =
-                "OpenJDK 64-Bit Server VM (25.322-b06) for linux-amd64 JRE (1.8.0_322-b06), built on Jan 27 2022 17:54:59 by \"mockbuild\" with gcc 4.8.5 20150623 (Red Hat 4.8.5-44)\n" +
-                        "Memory: 4k page, physical 32245912k(28375460k free), swap 0k(0k free)\n" +
-                        "CommandLine flags: -XX:CompressedClassSpaceSize=1065353216 -XX:ConcGCThreads=4 -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/var/log/hsy/dump.hprof -XX:InitialHeapSize=23521656832 -XX:MaxHeapSize=23521656832 -XX:MaxMetaspaceSize=1073741824 -XX:MetaspaceSize=536870912 -XX:ParallelGCThreads=4 -XX:+PrintGC -XX:+PrintGCDateStamps -XX:+PrintGCTimeStamps -XX:SurvivorRatio=8 -XX:ThreadStackSize=512 -XX:+UseCompressedClassPointers -XX:+UseCompressedOops -XX:+UseG1GC -XX:-UseGCLogFileRotation \n" +
-                        "25345.655: [GC pause (G1 Humongous Allocation) (young) (initial-mark) 19312M->18816M(22432M), 0.0259009 secs]\n" +
-                        "25345.681: [GC concurrent-root-region-scan-start]\n" +
-                        "25345.700: [GC concurrent-root-region-scan-end, 0.0187169 secs]\n" +
-                        "25345.700: [GC concurrent-mark-start]\n" +
-                        "25346.590: [GC pause (G1 Evacuation Pause) (young) 19948M->18868M(22432M), 0.0274763 secs]\n" +
-                        "25347.456: [GC pause (G1 Evacuation Pause) (young) 20097M->19456M(22432M), 0.8351748 secs]\n" +
-                        "25360.101: [GC concurrent-mark-end, 14.4015709 secs]\n" +
-                        "25360.104: [GC remark, 0.0943079 secs]\n" +
-                        "25360.201: [GC cleanup 21811M->21175M(22432M), 0.0354017 secs]\n" +
-                        "25360.237: [GC concurrent-cleanup-start]\n" +
-                        "25360.237: [GC concurrent-cleanup-end, 0.0002351 secs]\n" +
-                        "25365.325: [GC pause (G1 Evacuation Pause) (young)-- 22058M->22154M(22432M), 1.6706033 secs]\n" +
-                        "25367.056: [GC pause (G1 Evacuation Pause) (young) (initial-mark)-- 22330M->22330M(22432M), 2.2812162 secs]\n" +
-                        "25369.337: [GC concurrent-root-region-scan-start]\n" +
-                        "25369.338: [GC concurrent-root-region-scan-end, 0.0003028 secs]\n" +
-                        "25369.338: [GC concurrent-mark-start]\n" +
-                        "25369.342: [GC pause (G1 Evacuation Pause) (young) 22330M->22330M(22432M), 0.2968099 secs]\n" +
-                        "25369.642: [GC pause (G1 Evacuation Pause) (young) 22330M->22330M(22432M), 0.0045584 secs]\n" +
-                        "25369.649: [Full GC (Allocation Failure)  22330M->8207M(22432M), 27.9811092 secs]\n" +
-                        "25397.630: [GC concurrent-mark-abort]\n" +
-                        "25398.097: [GC pause (G1 Evacuation Pause) (young) 9327M->8249M(22432M), 0.0434199 secs]";
 
-        GCLogParser parser = new GCLogParserFactory().getParser(stringToBufferedReader(log));
-        G1GCModel model = (G1GCModel) parser.parse(stringToBufferedReader(log));
+        GCLogParser parser = new GCLogParserFactory().getParser(TestUtil.getGCLog("8G1PrintGC.log"));
+        G1GCModel model = (G1GCModel) parser.parse(TestUtil.getGCLog("8G1PrintGC.log"));
         model.calculateDerivedInfo(new DefaultProgressListener());
 
         Assertions.assertEquals(model.getGcEvents().stream().filter(GCEvent::isYoungGC).count(), 8);
@@ -1949,24 +1046,9 @@ public class TestParser {
 
     @Test
     public void testJDK8CMSPrintGC() throws Exception {
-        String log =
-                "0.486: [GC (Allocation Failure)  245362K->234628K(993280K), 0.1909734 secs]\n" +
-                        "1.068: [GC (Allocation Failure)  480316K->475102K(993280K), 0.2660193 secs]\n" +
-                        "1.334: [GC (CMS Initial Mark)  480684K(993280K), 0.0002189 secs]\n" +
-                        "1.653: [GC (CMS Final Remark)  633602K(993280K), 0.0015383 secs]\n" +
-                        "2.085: [GC (Allocation Failure)  720803K->608585K(993280K), 0.1361803 secs]\n" +
-                        "2.221: [GC (CMS Initial Mark)  608985K(993280K), 0.0001955 secs]\n" +
-                        "2.754: [GC (CMS Final Remark)  717779K(993280K), 0.0020208 secs]\n" +
-                        "3.441: [Full GC (Allocation Failure)  854181K->608527K(993280K), 0.1245185 secs]\n" +
-                        "3.566: [GC (CMS Initial Mark)  614159K(993280K), 0.0002204 secs]\n" +
-                        "4.080: [GC (CMS Final Remark)  718797K(993280K), 0.0014277 secs]\n" +
-                        "4.776: [Full GC (Allocation Failure)  854287K->608527K(993280K), 0.0073924 secs]\n" +
-                        "4.784: [GC (CMS Initial Mark)  614178K(993280K), 0.0001551 secs]\n" +
-                        "5.298: [GC (CMS Final Remark)  719210K(993280K), 0.0014780 secs]\n" +
-                        "5.986: [Full GC (Allocation Failure)  854287K->608527K(993280K), 0.0076610 secs]";
 
-        GCLogParser parser = new GCLogParserFactory().getParser(stringToBufferedReader(log));
-        CMSGCModel model = (CMSGCModel) parser.parse(stringToBufferedReader(log));
+        GCLogParser parser = new GCLogParserFactory().getParser(TestUtil.getGCLog("8CMSPrintGC.log"));
+        CMSGCModel model = (CMSGCModel) parser.parse(TestUtil.getGCLog("8CMSPrintGC.log"));
         model.calculateDerivedInfo(new DefaultProgressListener());
 
         Assertions.assertEquals(model.getGcEvents().stream().filter(GCEvent::isYoungGC).count(), 3);
@@ -1986,27 +1068,9 @@ public class TestParser {
     }
 
     public void testJDK11G1PrintGC() throws Exception {
-        String log =
-                "[0.100s] Using G1\n" +
-                        "[0.691s] GC(0) Pause Young (Normal) (G1 Evacuation Pause) 307M->305M(1000M) 60.851ms\n" +
-                        "[1.142s] GC(1) Pause Young (Normal) (G1 Evacuation Pause) 567M->567M(1000M) 110.104ms\n" +
-                        "[1.726s] GC(2) To-space exhausted\n" +
-                        "[1.726s] GC(2) Pause Young (Concurrent Start) (G1 Evacuation Pause) 829M->760M(1000M) 54.967ms\n" +
-                        "[1.726s] GC(3) Concurrent Cycle\n" +
-                        "[1.736s] GC(3) Pause Remark 763M->763M(1000M) 1.307ms\n" +
-                        "[1.741s] GC(3) Pause Cleanup 766M->766M(1000M) 0.293ms\n" +
-                        "[1.745s] GC(3) Concurrent Cycle 18.975ms\n" +
-                        "[2.677s] GC(4) To-space exhausted\n" +
-                        "[2.677s] GC(4) Pause Young (Prepare Mixed) (G1 Evacuation Pause) 999M->760M(1000M) 0.885ms\n" +
-                        "[3.637s] GC(5) To-space exhausted\n" +
-                        "[3.637s] GC(5) Pause Young (Mixed) (G1 Evacuation Pause) 999M->760M(1000M) 0.811ms\n" +
-                        "[4.597s] GC(6) To-space exhausted\n" +
-                        "[4.597s] GC(6) Pause Young (Mixed) (G1 Evacuation Pause) 999M->760M(1000M) 0.826ms\n" +
-                        "[5.557s] GC(7) To-space exhausted\n" +
-                        "[5.557s] GC(7) Pause Young (Mixed) (G1 Evacuation Pause) 999M->760M(1000M) 1.262ms";
 
-        GCLogParser parser = new GCLogParserFactory().getParser(stringToBufferedReader(log));
-        G1GCModel model = (G1GCModel) parser.parse(stringToBufferedReader(log));
+        GCLogParser parser = new GCLogParserFactory().getParser(TestUtil.getGCLog("11G1PrintGC.log"));
+        G1GCModel model = (G1GCModel) parser.parse(TestUtil.getGCLog("11G1PrintGC.log"));
         model.calculateDerivedInfo(new DefaultProgressListener());
 
         Assertions.assertEquals(model.getGcEvents().stream().filter(GCEvent::isYoungGC).count(), 7);
@@ -2028,53 +1092,9 @@ public class TestParser {
 
     @Test
     public void testJDK11CMSPrintGC() throws Exception {
-        String log =
-                "[0.026s] Using Concurrent Mark Sweep\n" +
-                        "[0.752s] GC(0) Pause Young (Allocation Failure) 239M->224M(970M) 226.267ms\n" +
-                        "[1.466s] GC(1) Pause Young (Allocation Failure) 464M->455M(970M) 324.075ms\n" +
-                        "[1.466s] GC(2) Pause Initial Mark 461M->461M(970M) 0.527ms\n" +
-                        "[1.466s] GC(2) Concurrent Mark\n" +
-                        "[1.478s] GC(2) Concurrent Mark 11.949ms\n" +
-                        "[1.478s] GC(2) Concurrent Preclean\n" +
-                        "[1.480s] GC(2) Concurrent Preclean 1.245ms\n" +
-                        "[1.480s] GC(2) Concurrent Abortable Preclean\n" +
-                        "[1.794s] GC(2) Concurrent Abortable Preclean 314.730ms\n" +
-                        "[1.796s] GC(2) Pause Remark 617M->617M(970M) 1.573ms\n" +
-                        "[1.796s] GC(2) Concurrent Sweep\n" +
-                        "[1.797s] GC(2) Concurrent Sweep 0.664ms\n" +
-                        "[1.797s] GC(2) Concurrent Reset\n" +
-                        "[1.800s] GC(2) Concurrent Reset 3.236ms\n" +
-                        "[2.328s] GC(3) Pause Young (Allocation Failure) 695M->595M(970M) 131.164ms\n" +
-                        "[2.328s] GC(4) Pause Initial Mark 600M->600M(970M) 0.143ms\n" +
-                        "[2.328s] GC(4) Concurrent Mark\n" +
-                        "[2.333s] GC(4) Concurrent Mark 4.815ms\n" +
-                        "[2.333s] GC(4) Concurrent Preclean\n" +
-                        "[2.334s] GC(4) Concurrent Preclean 0.828ms\n" +
-                        "[2.334s] GC(4) Concurrent Abortable Preclean\n" +
-                        "[2.860s] GC(4) Concurrent Abortable Preclean 526.685ms\n" +
-                        "[2.862s] GC(4) Pause Remark 702M->702M(970M) 1.094ms\n" +
-                        "[2.862s] GC(4) Concurrent Sweep\n" +
-                        "[2.862s] GC(4) Concurrent Sweep 0.846ms\n" +
-                        "[2.862s] GC(4) Concurrent Reset\n" +
-                        "[2.863s] GC(4) Concurrent Reset 0.524ms\n" +
-                        "[3.679s] GC(6) Pause Full (Allocation Failure) 834M->594M(970M) 141.054ms\n" +
-                        "[3.679s] GC(5) Pause Young (Allocation Failure) 834M->594M(970M) 141.110ms\n" +
-                        "[3.679s] GC(7) Pause Initial Mark 595M->595M(970M) 0.078ms\n" +
-                        "[3.679s] GC(7) Concurrent Mark\n" +
-                        "[3.685s] GC(7) Concurrent Mark 5.686ms\n" +
-                        "[3.685s] GC(7) Concurrent Preclean\n" +
-                        "[3.686s] GC(7) Concurrent Preclean 1.002ms\n" +
-                        "[3.686s] GC(7) Concurrent Abortable Preclean\n" +
-                        "[4.054s] GC(7) Concurrent Abortable Preclean 368.068ms\n" +
-                        "[4.055s] GC(7) Pause Remark 676M->676M(970M) 1.649ms\n" +
-                        "[4.056s] GC(7) Concurrent Sweep\n" +
-                        "[4.056s] GC(7) Concurrent Sweep 0.701ms\n" +
-                        "[4.056s] GC(7) Concurrent Reset\n" +
-                        "[4.057s] GC(7) Concurrent Reset 0.375ms\n" +
-                        "[4.679s] GC(8) Pause Young (Allocation Failure) 834M->594M(970M) 141.110ms";
 
-        GCLogParser parser = new GCLogParserFactory().getParser(stringToBufferedReader(log));
-        CMSGCModel model = (CMSGCModel) parser.parse(stringToBufferedReader(log));
+        GCLogParser parser = new GCLogParserFactory().getParser(TestUtil.getGCLog("11CMSPrintGC.log"));
+        CMSGCModel model = (CMSGCModel) parser.parse(TestUtil.getGCLog("11CMSPrintGC.log"));
         model.calculateDerivedInfo(new DefaultProgressListener());
 
         Assertions.assertEquals(model.getGcEvents().stream().filter(GCEvent::isYoungGC).count(), 5);
@@ -2095,121 +1115,9 @@ public class TestParser {
 
     @Test
     public void testJDK8G1LogConcurrencyProblem() throws Exception {
-        String log =
-                "2023-07-25T13:18:01.133+0000: 985158.576: Total time for which application threads were stopped: 0.1797145 seconds, Stopping threads took: 0.0000697 seconds\n" +
-                        "{Heap before GC invocations=162768 (full 0):\n" +
-                        " garbage-first heap   total 8388608K, used 5412863K [0x00000005c0000000, 0x00000005c0404000, 0x00000007c0000000)\n" +
-                        "  region size 4096K, 396 young (1622016K), 27 survivors (110592K)\n" +
-                        " Metaspace       used 104115K, capacity 115446K, committed 115584K, reserved 1150976K\n" +
-                        "  class space    used 12065K, capacity 13637K, committed 13696K, reserved 1048576K\n" +
-                        " 985162.173: [G1Ergonomics (Concurrent Cycles) initiate concurrent cycle, reason: concurrent cycle initiation requested]\n" +
-                        "2023-07-25T13:18:04.730+0000: 985162.173: [GC pause (G1 Evacuation Pause) (young) (initial-mark)\n" +
-                        "Desired survivor size 104857600 bytes, new threshold 15 (max 15)\n" +
-                        "- age   1:   62692328 bytes,   62692328 total\n" +
-                        "- age   2:   41370368 bytes,  104062696 total\n" +
-                        " 985162.173: [G1Ergonomics (CSet Construction) start choosing CSet, _pending_cards: 29094, predicted base time: 22.53 ms, remaining time: 177.47 ms, target pause time: 200.00 ms]\n" +
-                        " 985162.173: [G1Ergonomics (CSet Construction) add young regions to CSet, eden: 369 regions, survivors: 27 regions, predicted young region time: 185.54 ms]\n" +
-                        " 985162.173: [G1Ergonomics (CSet Construction) finish choosing CSet, eden: 369 regions, survivors: 27 regions, old: 0 regions, predicted pause time: 208.07 ms, target pause time: 200.00 ms]\n" +
-                        ", 0.1696146 secs]\n" +
-                        "   [Parallel Time: 167.9 ms, GC Workers: 4]\n" +
-                        "      [GC Worker Start (ms): Min: 985162173.6, Avg: 985162173.7, Max: 985162173.7, Diff: 0.0]\n" +
-                        "      [Ext Root Scanning (ms): Min: 3.4, Avg: 3.6, Max: 3.7, Diff: 0.3, Sum: 14.2]\n" +
-                        "      [Update RS (ms): Min: 18.0, Avg: 18.3, Max: 18.6, Diff: 0.6, Sum: 73.1]\n" +
-                        "         [Processed Buffers: Min: 29, Avg: 32.5, Max: 37, Diff: 8, Sum: 130]\n" +
-                        "      [Scan RS (ms): Min: 0.1, Avg: 0.3, Max: 0.5, Diff: 0.4, Sum: 1.3]\n" +
-                        "      [Code Root Scanning (ms): Min: 0.0, Avg: 0.0, Max: 0.0, Diff: 0.0, Sum: 0.0]\n" +
-                        "      [Object Copy (ms): Min: 144.9, Avg: 145.2, Max: 145.4, Diff: 0.5, Sum: 580.7]\n" +
-                        "      [Termination (ms): Min: 0.0, Avg: 0.0, Max: 0.0, Diff: 0.0, Sum: 0.0]\n" +
-                        "         [Termination Attempts: Min: 1, Avg: 1.0, Max: 1, Diff: 0, Sum: 4]\n" +
-                        "      [GC Worker Other (ms): Min: 0.0, Avg: 0.1, Max: 0.1, Diff: 0.0, Sum: 0.2]\n" +
-                        "      [GC Worker Total (ms): Min: 167.4, Avg: 167.4, Max: 167.4, Diff: 0.1, Sum: 669.5]\n" +
-                        "      [GC Worker End (ms): Min: 985162341.0, Avg: 985162341.0, Max: 985162341.1, Diff: 0.0]\n" +
-                        "   [Code Root Fixup: 0.1 ms]\n" +
-                        "   [Code Root Purge: 0.0 ms]\n" +
-                        "   [Clear CT: 0.3 ms]\n" +
-                        "   [Other: 1.3 ms]\n" +
-                        "      [Choose CSet: 0.0 ms]\n" +
-                        "      [Ref Proc: 0.3 ms]\n" +
-                        "      [Ref Enq: 0.0 ms]\n" +
-                        "      [Redirty Cards: 0.1 ms]\n" +
-                        "      [Humongous Register: 0.0 ms]\n" +
-                        "      [Humongous Reclaim: 0.0 ms]\n" +
-                        "      [Free CSet: 0.4 ms]\n" +
-                        "   [Eden: 1476.0M(1476.0M)->0.0B(1472.0M) Survivors: 108.0M->140.0M Heap: 5286.0M(8192.0M)->3842.0M(8192.0M)]\n" +
-                        "Heap after GC invocations=162769 (full 0):\n" +
-                        " garbage-first heap   total 8388608K, used 3934207K [0x00000005c0000000, 0x00000005c0404000, 0x00000007c0000000)\n" +
-                        "  region size 4096K, 35 young (143360K), 35 survivors (143360K)\n" +
-                        " Metaspace       used 104115K, capacity 115446K, committed 115584K, reserved 1150976K\n" +
-                        "  class space    used 12065K, capacity 13637K, committed 13696K, reserved 1048576K\n" +
-                        "}\n" +
-                        " [Times: user=0.59 sys=0.08, real=0.17 secs] \n" +
-                        "2023-07-25T13:18:04.900+0000: 985162.343: 2023-07-25T13:18:04.900+0000Total time for which application threads were stopped: 0.1701451 seconds, Stopping threads took: 0.0000861 seconds\n" +
-                        ": 985162.343: [GC concurrent-root-region-scan-start]\n" +
-                        "2023-07-25T13:18:05.074+0000: 985162.517: Total time for which application threads were stopped: 0.0004160 seconds, Stopping threads took: 0.0000960 seconds\n" +
-                        "2023-07-25T13:18:05.074+0000: 985162.517: Total time for which application threads were stopped: 0.0002714 seconds, Stopping threads took: 0.0000473 seconds\n" +
-                        "2023-07-25T13:18:05.150+0000: 985162.592: [GC concurrent-root-region-scan-end, 0.2497555 secs]\n" +
-                        "2023-07-25T13:18:05.150+0000: 985162.592: [GC concurrent-mark-start]\n" +
-                        "{Heap before GC invocations=162769 (full 0):\n" +
-                        " garbage-first heap   total 8388608K, used 5441535K [0x00000005c0000000, 0x00000005c0404000, 0x00000007c0000000)\n" +
-                        "  region size 4096K, 403 young (1650688K), 35 survivors (143360K)\n" +
-                        " Metaspace       used 104115K, capacity 115446K, committed 115584K, reserved 1150976K\n" +
-                        "  class space    used 12065K, capacity 13637K, committed 13696K, reserved 1048576K\n" +
-                        "2023-07-25T13:18:09.879+0000: 985167.321: [GC pause (G1 Evacuation Pause) (young)\n" +
-                        "Desired survivor size 106954752 bytes, new threshold 3 (max 15)\n" +
-                        "- age   1:   68236112 bytes,   68236112 total\n" +
-                        "- age   2:   38021144 bytes,  106257256 total\n" +
-                        "- age   3:   32498880 bytes,  138756136 total\n" +
-                        " 985167.321: [G1Ergonomics (CSet Construction) start choosing CSet, _pending_cards: 5429, predicted base time: 8.11 ms, remaining time: 191.89 ms, target pause time: 200.00 ms]\n" +
-                        " 985167.321: [G1Ergonomics (CSet Construction) add young regions to CSet, eden: 368 regions, survivors: 35 regions, predicted young region time: 175.85 ms]\n" +
-                        " 985167.321: [G1Ergonomics (CSet Construction) finish choosing CSet, eden: 368 regions, survivors: 35 regions, old: 0 regions, predicted pause time: 183.96 ms, target pause time: 200.00 ms]\n" +
-                        ", 0.2025873 secs]\n" +
-                        "   [Parallel Time: 200.5 ms, GC Workers: 4]\n" +
-                        "      [GC Worker Start (ms): Min: 985167321.5, Avg: 985167323.6, Max: 985167329.9, Diff: 8.4]\n" +
-                        "      [Ext Root Scanning (ms): Min: 0.0, Avg: 1.5, Max: 2.1, Diff: 2.1, Sum: 6.0]\n" +
-                        "      [Update RS (ms): Min: 0.0, Avg: 3.8, Max: 5.2, Diff: 5.2, Sum: 15.3]\n" +
-                        "         [Processed Buffers: Min: 0, Avg: 9.2, Max: 15, Diff: 15, Sum: 37]\n" +
-                        "      [Scan RS (ms): Min: 0.0, Avg: 0.1, Max: 0.2, Diff: 0.1, Sum: 0.3]\n" +
-                        "      [Code Root Scanning (ms): Min: 0.0, Avg: 0.0, Max: 0.0, Diff: 0.0, Sum: 0.0]\n" +
-                        "      [Object Copy (ms): Min: 192.0, Avg: 192.9, Max: 193.3, Diff: 1.4, Sum: 771.5]\n" +
-                        "      [Termination (ms): Min: 0.0, Avg: 0.0, Max: 0.0, Diff: 0.0, Sum: 0.0]\n" +
-                        "         [Termination Attempts: Min: 1, Avg: 1.0, Max: 1, Diff: 0, Sum: 4]\n" +
-                        "      [GC Worker Other (ms): Min: 0.0, Avg: 0.0, Max: 0.1, Diff: 0.0, Sum: 0.2]\n" +
-                        "      [GC Worker Total (ms): Min: 192.1, Avg: 198.4, Max: 200.5, Diff: 8.4, Sum: 793.5]\n" +
-                        "      [GC Worker End (ms): Min: 985167522.0, Avg: 985167522.0, Max: 985167522.0, Diff: 0.0]\n" +
-                        "   [Code Root Fixup: 0.1 ms]\n" +
-                        "   [Code Root Purge: 0.0 ms]\n" +
-                        "   [Clear CT: 0.2 ms]\n" +
-                        "   [Other: 1.7 ms]\n" +
-                        "      [Choose CSet: 0.0 ms]\n" +
-                        "      [Ref Proc: 0.8 ms]\n" +
-                        "      [Ref Enq: 0.0 ms]\n" +
-                        "      [Redirty Cards: 0.2 ms]\n" +
-                        "      [Humongous Register: 0.1 ms]\n" +
-                        "      [Humongous Reclaim: 0.0 ms]\n" +
-                        "      [Free CSet: 0.3 ms]\n" +
-                        "   [Eden: 1472.0M(1472.0M)->0.0B(1128.0M) Survivors: 140.0M->140.0M Heap: 5314.0M(8192.0M)->3874.0M(8192.0M)]\n" +
-                        "Heap after GC invocations=162770 (full 0):\n" +
-                        " garbage-first heap   total 8388608K, used 3966947K [0x00000005c0000000, 0x00000005c0404000, 0x00000007c0000000)\n" +
-                        "  region size 4096K, 35 young (143360K), 35 survivors (143360K)\n" +
-                        " Metaspace       used 104115K, capacity 115446K, committed 115584K, reserved 1150976K\n" +
-                        "  class space    used 12065K, capacity 13637K, committed 13696K, reserved 1048576K\n" +
-                        "}\n" +
-                        " [Times: user=0.69 sys=0.00, real=0.21 secs] \n" +
-                        "2023-07-25T13:18:10.081+0000: 985167.524: Total time for which application threads were stopped: 0.2031233 seconds, Stopping threads took: 0.0000777 seconds\n" +
-                        "2023-07-25T13:18:10.087+0000: 985167.530: Total time for which application threads were stopped: 0.0002854 seconds, Stopping threads took: 0.0000517 seconds\n" +
-                        "2023-07-25T13:18:10.101+0000: 985167.544: Total time for which application threads were stopped: 0.0003908 seconds, Stopping threads took: 0.0001074 seconds\n" +
-                        "2023-07-25T13:18:12.062+0000: 985169.504: [GC concurrent-mark-end, 6.9119339 secs]\n" +
-                        "2023-07-25T13:18:12.063+0000: 985169.505: [GC remark 2023-07-25T13:18:12.063+0000: 985169.506: [Finalize Marking, 0.0024793 secs] 2023-07-25T13:18:12.065+0000: 985169.508: [GC ref-proc, 0.0057246 secs] 2023-07-25T13:18:12.071+0000: 985169.514: [Unloading, 0.0814802 secs], 0.0967688 secs]\n" +
-                        " [Times: user=0.29 sys=0.04, real=0.09 secs] \n" +
-                        "2023-07-25T13:18:12.160+0000: 985169.602: Total time for which application threads were stopped: 0.0971229 seconds, Stopping threads took: 0.0000638 seconds\n" +
-                        "2023-07-25T13:18:12.168+0000: 985169.611: [GC cleanup 4513M->4501M(8192M), 0.0186332 secs]\n" +
-                        " [Times: user=0.05 sys=0.01, real=0.02 secs] \n" +
-                        "2023-07-25T13:18:12.187+0000: 985169.630: Total time for which application threads were stopped: 0.0198694 seconds, Stopping threads took: 0.0008214 seconds\n" +
-                        "2023-07-25T13:18:12.187+0000: 985169.630: [GC concurrent-cleanup-start]\n" +
-                        "2023-07-25T13:18:12.187+0000: 985169.630: [GC concurrent-cleanup-end, 0.0000653 secs]";
 
-        GCLogParser parser = new GCLogParserFactory().getParser(stringToBufferedReader(log));
-        G1GCModel model = (G1GCModel) parser.parse(stringToBufferedReader(log));
+        GCLogParser parser = new GCLogParserFactory().getParser(TestUtil.getGCLog("8G1LogConcurrencyProblem.log"));
+        G1GCModel model = (G1GCModel) parser.parse(TestUtil.getGCLog("8G1LogConcurrencyProblem.log"));
         model.calculateDerivedInfo(new DefaultProgressListener());
 
         Assertions.assertEquals(model.getGcEvents().stream().filter(GCEvent::isYoungGC).count(), 2);

@@ -1,0 +1,38 @@
+[0.017s][info][gc] Using Parallel
+[0.018s][info][gc,init] Version: 17.0.1+12-39 (release)
+[0.018s][info][gc,init] CPUs: 8 total, 8 available
+[0.018s][info][gc,init] Memory: 16384M
+[0.018s][info][gc,init] Large Page Support: Disabled
+[0.018s][info][gc,init] NUMA Support: Disabled
+[0.018s][info][gc,init] Compressed Oops: Enabled (Zero based)
+[0.018s][info][gc,init] Alignments: Space 512K, Generation 512K, Heap 2M
+[0.018s][info][gc,init] Heap Min Capacity: 100M
+[0.018s][info][gc,init] Heap Initial Capacity: 100M
+[0.018s][info][gc,init] Heap Max Capacity: 100M
+[0.018s][info][gc,init] Pre-touch: Disabled
+[0.018s][info][gc,init] Parallel Workers: 8
+[0.019s][info][gc,metaspace] CDS archive(s) mapped at: [0x0000000800000000-0x0000000800bd4000-0x0000000800bd4000), size 12402688, SharedBaseAddress: 0x0000000800000000, ArchiveRelocationMode: 0.
+[0.019s][info][gc,metaspace] Compressed class space mapped at: 0x0000000800c00000-0x0000000840c00000, reserved size: 1073741824
+[0.019s][info][gc,metaspace] Narrow klass base: 0x0000000800000000, Narrow klass shift: 0, Narrow klass range: 0x100000000
+[0.222s][info][gc,start    ] GC(0) Pause Young (Allocation Failure)
+[0.232s][info][gc,heap     ] GC(0) PSYoungGen: 38912K(45056K)->6137K(45056K) Eden: 38912K(38912K)->0K(38912K) From: 0K(6144K)->6137K(6144K)
+[0.232s][info][gc,heap     ] GC(0) ParOldGen: 0K(51200K)->13208K(51200K)
+[0.232s][info][gc,metaspace] GC(0) Metaspace: 135K(384K)->135K(384K) NonClass: 131K(256K)->131K(256K) Class: 4K(128K)->4K(128K)
+[0.232s][info][gc          ] GC(0) Pause Young (Allocation Failure) 38M->18M(94M) 10.085ms
+[0.232s][info][gc,cpu      ] GC(0) User=0.02s Sys=0.01s Real=0.01s
+[0.547s][info][gc,start    ] GC(1) Pause Full (Ergonomics)
+[0.548s][info][gc,phases,start] GC(1) Marking Phase
+[0.561s][info][gc,phases      ] GC(1) Marking Phase 13.555ms
+[0.561s][info][gc,phases,start] GC(1) Summary Phase
+[0.561s][info][gc,phases      ] GC(1) Summary Phase 0.006ms
+[0.561s][info][gc,phases,start] GC(1) Adjust Roots
+[0.561s][info][gc,phases      ] GC(1) Adjust Roots 0.238ms
+[0.561s][info][gc,phases,start] GC(1) Compaction Phase
+[0.568s][info][gc,phases      ] GC(1) Compaction Phase 6.917ms
+[0.568s][info][gc,phases,start] GC(1) Post Compact
+[0.568s][info][gc,phases      ] GC(1) Post Compact 0.222ms
+[0.569s][info][gc,heap        ] GC(1) PSYoungGen: 6128K(45056K)->0K(45056K) Eden: 0K(38912K)->0K(38912K) From: 6128K(6144K)->0K(6144K)
+[0.569s][info][gc,heap        ] GC(1) ParOldGen: 46504K(51200K)->38169K(51200K)
+[0.569s][info][gc,metaspace   ] GC(1) Metaspace: 135K(384K)->135K(384K) NonClass: 131K(256K)->131K(256K) Class: 4K(128K)->4K(128K)
+[0.569s][info][gc             ] GC(1) Pause Full (Ergonomics) 51M->37M(94M) 21.046ms
+[0.569s][info][gc,cpu         ] GC(1) User=0.04s Sys=0.00s Real=0.02s

@@ -1,0 +1,17 @@
+[1.715s][info][gc,start    ] GC(2) Pause Full (G1 Compaction Pause)
+[1.715s][info][gc,phases,start] GC(2) Phase 1: Mark live objects
+[1.729s][info][gc,phases      ] GC(2) Phase 1: Mark live objects 14.039ms
+[1.729s][info][gc,phases,start] GC(2) Phase 2: Prepare for compaction
+[1.730s][info][gc,phases      ] GC(2) Phase 2: Prepare for compaction 0.875ms
+[1.730s][info][gc,phases,start] GC(2) Phase 3: Adjust pointers
+[1.736s][info][gc,phases      ] GC(2) Phase 3: Adjust pointers 6.156ms
+[1.736s][info][gc,phases,start] GC(2) Phase 4: Compact heap
+[1.738s][info][gc,phases      ] GC(2) Phase 4: Compact heap 1.153ms
+[1.738s][info][gc,heap        ] GC(2) Eden regions: 0->0(50)
+[1.738s][info][gc,heap        ] GC(2) Survivor regions: 0->0(0)
+[1.738s][info][gc,heap        ] GC(2) Old regions: 96->68
+[1.738s][info][gc,heap        ] GC(2) Archive regions: 2->2
+[1.738s][info][gc,heap        ] GC(2) Humongous regions: 2->1
+[1.738s][info][gc,metaspace   ] GC(2) Metaspace: 87K(320K)->87K(320K) NonClass: 84K(192K)->84K(192K) Class: 3K(128K)->3K(128K)
+[1.738s][info][gc             ] GC(2) Pause Full (G1 Compaction Pause) 98M->69M(100M) 22.935ms
+[1.738s][info][gc,cpu         ] GC(2) User=0.04s Sys=0.00s Real=0.02s

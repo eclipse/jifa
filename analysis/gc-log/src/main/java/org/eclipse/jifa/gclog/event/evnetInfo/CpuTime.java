@@ -32,4 +32,12 @@ public class CpuTime {
         return String.format("User=%.2fs Sys=%.2fs Real=%.2fs", user / 1000, sys / 1000, real / 1000);
     }
 
+    public double getValue(String type) {
+        return switch (type) {
+            case "USER" -> user;
+            case "SYS" -> sys;
+            case "REAL" -> real;
+            default -> 0;
+        };
+    }
 }
