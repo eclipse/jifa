@@ -13,6 +13,7 @@
 package org.eclipse.jifa.server;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.SystemUtils;
 import org.eclipse.jifa.server.enums.FileType;
 import org.eclipse.jifa.server.enums.Role;
 import org.eclipse.jifa.server.service.AnalysisApiService;
@@ -66,6 +67,21 @@ class ReadyListener extends ConfigurationAccessor {
                     }
                 }
             }
+
+            openBrowser("http://localhost:" + config.getPort());
+        }
+    }
+
+    private void openBrowser(String url) {
+        try {
+            if (SystemUtils.IS_OS_WINDOWS) {
+                Runtime.getRuntime().exec("cmd /c start " + url);
+            } else if (SystemUtils.IS_OS_MAC) {
+                Runtime.getRuntime().exec("/usr/bin/open " + url);
+            }
+        } catch (IOException e) {
+            // ignored
+            e.printStackTrace();
         }
     }
 }
