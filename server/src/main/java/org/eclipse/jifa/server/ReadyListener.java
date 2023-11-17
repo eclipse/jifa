@@ -68,7 +68,9 @@ class ReadyListener extends ConfigurationAccessor {
                 }
             }
 
-            openBrowser("http://localhost:" + config.getPort());
+            if (config.isOpenBrowserWhenReady()) {
+                openBrowser("http://localhost:" + config.getPort());
+            }
         }
     }
 

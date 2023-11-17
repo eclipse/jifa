@@ -109,6 +109,7 @@ tasks.register('runStandaloneWorker', BootRun) {
     classpath(project.sourceSets.main.runtimeClasspath)
     mainClass.convention(mainClassName)
 
+    args('--jifa.role=standalone-worker', '--jifa.open-browser-when-ready=true')
     setJvmOptions(it)
 }
 
@@ -117,6 +118,7 @@ tasks.register('runStandaloneWorkerWithMysql', BootRun) {
     classpath(project.sourceSets.main.runtimeClasspath)
     mainClass.convention(mainClassName)
 
+    args('--jifa.role=standalone-worker', '--jifa.open-browser-when-ready=true')
     setJvmOptions(it)
     setDatabase(it)
 }

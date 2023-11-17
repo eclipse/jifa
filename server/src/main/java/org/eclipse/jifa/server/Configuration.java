@@ -142,6 +142,11 @@ public class Configuration {
      */
     private Path[] inputFiles;
 
+    /**
+     * Whether to open browser when server is ready
+     */
+    private boolean openBrowserWhenReady;
+
     @PostConstruct
     private void init() {
         if (role == Role.MASTER) {
