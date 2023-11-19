@@ -116,7 +116,6 @@ const tableProps = ref({
         }
         pushHistory(query.value.trim());
         processing.value = false;
-        input.value.focus();
         return r.pv;
       },
       paged: true
