@@ -51,6 +51,21 @@ const progressStatus = computed(() => {
 function analyze(options?) {
   let parameters;
   if (options) {
+    options = { ...options };
+    let additionalOptions = options.additional_options;
+    delete options.additional_options;
+    if (additionalOptions && additionalOptions.trim()) {
+      const pairs = additionalOptions.match(/(\w+)=('(?:\\.|[^'\\])*'|\S+)/g);
+
+      for (let pair of pairs) {
+        const index = pair.indexOf('=');
+        const key = pair.slice(0, index);
+        const value = pair.slice(index + 1);
+        // delete qouta on value if exists.
+        const cleanedValue = value.replace(/^'(.*)'$/, '$1');
+        options[key] = cleanedValue
+      }
+    }
     parameters = { options };
   }
   request('analyze', parameters)
