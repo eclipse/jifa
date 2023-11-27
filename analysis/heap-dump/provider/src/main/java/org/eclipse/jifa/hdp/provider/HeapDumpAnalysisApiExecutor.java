@@ -197,7 +197,9 @@ public class HeapDumpAnalysisApiExecutor extends AbstractApiExecutor<HeapDumpAna
 
     @Override
     protected void cachedAnalyzerRemoved(HeapDumpAnalyzer heapDumpAnalyzer) {
-        heapDumpAnalyzer.dispose();
+        if (heapDumpAnalyzer != null) {
+            heapDumpAnalyzer.dispose();
+        }
     }
 
     private File indexFile(Path target) {
