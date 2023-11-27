@@ -333,11 +333,11 @@ public abstract class AbstractApiExecutor<Analyzer> implements ApiExecutor {
     }
 
     public void release(@ApiParameterMeta(targetPath = true) Path target) {
-        cachedAnalyzer.invalidate(target);
+        cleanAndDisposeAnalyzerCache(target);
     }
 
     public void clean(@ApiParameterMeta(targetPath = true) Path target) {
-        cachedAnalyzer.invalidate(target);
+        cleanAndDisposeAnalyzerCache(target);
         File errorLog = errorLogFile(target);
         if (errorLog.exists()) {
             if (!errorLog.delete()) {
@@ -363,5 +363,14 @@ public abstract class AbstractApiExecutor<Analyzer> implements ApiExecutor {
      */
     protected int getCacheDuration() {
         return 8;
+    }
+
+    private void cleanAndDisposeAnalyzerCache(Path target) {
+        // Dispose snapshot synchronized to prevent from some problem caused by data inconsistency.
+        Analyzer analyzer = cachedAnalyzer.getIfPresent(target);
+        cachedAnalyzer.invalidate(target);
+        if (analyzer != null) {
+            cachedAnalyzerRemoved(analyzer);
+        }
     }
 }
