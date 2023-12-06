@@ -48,6 +48,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.eclipse.jifa.analysis.listener.ProgressListener.NoOpProgressListener;
@@ -79,6 +80,7 @@ public abstract class AbstractApiExecutor<Analyzer> implements ApiExecutor {
         cachedAnalyzer = Caffeine.newBuilder()
                                  .scheduler(Scheduler.systemScheduler())
                                  .softValues()
+                                 .expireAfterAccess(getCacheDuration(), TimeUnit.MINUTES)
                                  .removalListener((RemovalListener<Object, Analyzer>) (key, analyzer, cause) -> cachedAnalyzerRemoved(analyzer))
                                  .build();
     }
@@ -354,5 +356,12 @@ public abstract class AbstractApiExecutor<Analyzer> implements ApiExecutor {
 
     protected final boolean isActive(Path target) {
         return cachedAnalyzer.getIfPresent(target) != null || buildingAnalyzer.containsKey(target);
+    }
+
+    /**
+     * @return cache duration in minutes
+     */
+    protected int getCacheDuration() {
+        return 8;
     }
 }
