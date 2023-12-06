@@ -1,0 +1,4 @@
+[2023-12-03T00:00:09.884+0800] GC(22892) Pause Young (Normal) (G1 Evacuation Pause) 7816M->4804M(9728M) 52.476ms
+[2023-12-03T00:00:23.112+0800] GC(22893) Pause Young (Normal) (G1 Evacuation Pause) 7812M->4825M(9728M) 44.257ms
+[2023-12-03T00:00:37.770+0800] GC(22894) Pause Young (Normal) (G1 Evacuation Pause) 7817M->4830M(9728M) 44.456ms
+[2023-12-03T00:00:52.638+0800] GC(22895) Pause Young (Normal) (G1 Evacuation Pause) 7822M->4832M(9728M) 45.218ms

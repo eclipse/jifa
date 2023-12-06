@@ -1067,6 +1067,7 @@ public class TestParser {
         }
     }
 
+    @Test
     public void testJDK11G1PrintGC() throws Exception {
 
         GCLogParser parser = new GCLogParserFactory().getParser(TestUtil.getGCLog("11G1PrintGC.log"));
@@ -1087,6 +1088,20 @@ public class TestParser {
             if (event.isOldGC()) {
                 Assertions.assertEquals(2, event.getPhases().size());
             }
+        }
+
+        parser = new GCLogParserFactory().getParser(TestUtil.getGCLog("11G1PrintGC2.log"));
+        model = (G1GCModel) parser.parse(TestUtil.getGCLog("11G1PrintGC2.log"));
+        model.calculateDerivedInfo(new DefaultProgressListener());
+
+        Assertions.assertEquals(model.getGcEvents().stream().filter(GCEvent::isYoungGC).count(), 4);
+        Assertions.assertEquals(model.getGcEvents().stream().filter(GCEvent::isOldGC).count(), 0);
+        Assertions.assertEquals(model.getGcEvents().stream().filter(GCEvent::isFullGC).count(), 0);
+        for (GCEvent event : model.getGcEvents()) {
+            Assertions.assertTrue(event.isYoungGC());
+            Assertions.assertTrue(event.getDuration() > 0);
+            Assertions.assertNotNull(event.getCause());
+            Assertions.assertNotNull(event.getMemoryItem(HEAP));
         }
     }
 

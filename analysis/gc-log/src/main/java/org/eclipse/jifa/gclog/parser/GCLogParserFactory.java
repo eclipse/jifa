@@ -43,6 +43,7 @@ public class GCLogParserFactory {
             new ParserMetadataRule(": [GC", PRE_UNIFIED, GCCollectorType.UNKNOWN),
             new ParserMetadataRule("[info]", UNIFIED, GCCollectorType.UNKNOWN),
             new ParserMetadataRule("[gc]", UNIFIED, GCCollectorType.UNKNOWN),
+            new ParserMetadataRule("] GC(", UNIFIED, GCCollectorType.UNKNOWN),
 
             // collector
             new ParserMetadataRule("PSYoungGen", GCLogStyle.UNKNOWN, PARALLEL),
