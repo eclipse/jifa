@@ -32,7 +32,7 @@ spec:
   template:
     metadata:
       labels:
-        app: jifa-master
+        app: jifa
     spec:
       containers:
         - name: main-container
@@ -50,9 +50,14 @@ metadata:
   name: jifa-service
 spec:
   selector:
-    app: jifa-master
+    app: jifa
   ports:
-    - protocol: TCP
+    - name: http
+      protocol: TCP
       port: 80
+      targetPort: jifa-port
+    - name: https
+      protocol: TCP
+      port: 443
       targetPort: jifa-port
   type: LoadBalancer
