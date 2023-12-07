@@ -47,9 +47,8 @@ java {
 }
 
 def testTempPath = rootProject.projectDir.toPath().toAbsolutePath().resolve('.test-temp')
-if (!testTempPath.toFile().exists()) {
-    testTempPath.toFile().mkdir()
-}
+delete testTempPath.toFile()
+testTempPath.toFile().mkdir()
 
 test {
     testLogging.showStandardStreams = true
