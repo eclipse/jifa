@@ -129,6 +129,7 @@ onMounted(() => {
   useHeaderToolbar().set(toolBarComponent);
   window.addEventListener('beforeunload', beforeWindowUnload);
 
+  analysis.setPhase(Phase.INIT);
   axios
     .get(`/jifa-api/files/${props.target}`)
     .then((resp) => {
