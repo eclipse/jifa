@@ -10,10 +10,5 @@
 
     SPDX-License-Identifier: EPL-2.0
  -->
-<script setup lang="ts">
-import DownloadLink from '@/components/common/DownloadLink.vue';
-</script>
-<template>
-  <el-divider direction="vertical" />
-  <DownloadLink />
-</template>
+<script setup lang="ts"></script>
+<template></template>

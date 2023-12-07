@@ -146,6 +146,11 @@ public class AnalysisApiServiceImpl extends ConfigurationAccessor implements Ana
             return null;
         }
 
+        if (path.getFileName().toString().endsWith(".gz")) {
+            // demo file
+            return FileType.HEAP_DUMP;
+        }
+
         File file = path.toFile();
         byte[] content = new byte[(int) Math.min(file.length(), 16 * 1024)];
 

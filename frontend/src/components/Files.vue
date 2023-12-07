@@ -116,13 +116,6 @@ onMounted(() => {
           ></el-option>
         </el-select>
       </el-space>
-
-      <el-button style="margin-left: 10px" type="primary" plain @click="transferFormVisible = true">
-        {{ t('file.new') }}
-        <el-icon style="margin-left: 5px" size="16">
-          <Upload />
-        </el-icon>
-      </el-button>
     </div>
 
     <el-table
@@ -173,41 +166,12 @@ onMounted(() => {
           </div>
         </template>
         <template #default="{ row }">
-          <el-space :size="4">
-            <el-button size="small" type="primary" plain @click="analyze(row.type, row.uniqueName)"
-              >{{ t('file.analyze') }}
-              <el-icon class="el-icon--right">
-                <Histogram />
-              </el-icon>
-            </el-button>
-            <el-popover
-              placement="right"
-              :popper-style="{ 'min-width': '60px', width: '60px', padding: '5px 0' }"
-              trigger="click"
-              :show-arrow="false"
-            >
-              <template #reference>
-                <el-icon class="ej-file-operations" size="16">
-                  <MoreFilled />
-                </el-icon>
-              </template>
-              <template #default>
-                <div
-                  class="ej-file-operation"
-                  @click="window.open(`/jifa-api/files/${row.id}/download`)"
-                >
-                  <el-icon>
-                    <Download style="height: 14px" />
-                  </el-icon>
-                </div>
-                <div class="ej-file-operation" @click="deleteFile(row.id)">
-                  <el-icon>
-                    <Delete />
-                  </el-icon>
-                </div>
-              </template>
-            </el-popover>
-          </el-space>
+          <el-button size="small" type="primary" plain @click="analyze(row.type, row.uniqueName)"
+            >{{ t('file.analyze') }}
+            <el-icon class="el-icon--right">
+              <Histogram />
+            </el-icon>
+          </el-button>
         </template>
       </el-table-column>
     </el-table>

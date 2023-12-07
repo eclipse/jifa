@@ -69,18 +69,6 @@ const { toolbar } = useHeaderToolbar();
           </template>
         </el-popover>
 
-        <el-button
-          link
-          tag="a"
-          class="ej-header-button"
-          @click="env.loginFormVisible = true"
-          v-else
-        >
-          {{ t('header.login') }}
-        </el-button>
-
-        <el-divider direction="vertical" />
-
         <el-popover
           placement="bottom"
           :show-arrow="false"

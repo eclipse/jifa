@@ -11,9 +11,6 @@
     SPDX-License-Identifier: EPL-2.0
  -->
 <script setup lang="ts">
-import DownloadLink from '@/components/common/DownloadLink.vue';
-import { SetUp } from '@element-plus/icons-vue';
-import { t } from '@/i18n/i18n';
 import { useAnalysisApiRequester } from '@/composables/analysis-api-requester';
 import { Phase, useAnalysisStore } from '@/stores/analysis';
 
@@ -28,14 +25,5 @@ function clean() {
 }
 </script>
 <template>
-  <el-divider direction="vertical" />
-  <DownloadLink />
-
-  <template v-if="analysis.phase === Phase.SUCCESS || analysis.phase === Phase.FAILURE">
-    <el-divider direction="vertical" />
-
-    <el-button link class="ej-header-button" :icon="SetUp" @click="clean">
-      {{ t('analysis.setting') }}
-    </el-button>
-  </template>
+  <template v-if="analysis.phase === Phase.SUCCESS || analysis.phase === Phase.FAILURE"> </template>
 </template>

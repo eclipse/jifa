@@ -12,7 +12,6 @@
  -->
 <script setup lang="ts">
 import { gct, t } from '@/i18n/i18n';
-import DownloadLink from '@/components/common/DownloadLink.vue';
 import { ArrowLeftBold, List, Rank, SetUp } from '@element-plus/icons-vue';
 import { useGCLogData } from '@/stores/gc-log-data';
 import { Phase, useAnalysisStore } from '@/stores/analysis';
@@ -30,9 +29,6 @@ function gotoComparison() {
 </script>
 <template>
   <template v-if="!showComparisonView">
-    <el-divider direction="vertical" />
-    <DownloadLink />
-
     <template v-if="analysis.phase === Phase.SUCCESS">
       <el-divider direction="vertical" />
 
