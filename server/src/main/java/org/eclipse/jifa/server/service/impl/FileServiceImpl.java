@@ -260,7 +260,7 @@ public class FileServiceImpl extends ConfigurationAccessor implements FileServic
         newFile.setUniqueName(uniqueName);
         newFile.setOriginalName(file.getName());
         newFile.setType(type);
-        newFile.setSize(file.lastModified());
+        newFile.setSize(file.length());
         fileRepo.save(newFile);
 
         return uniqueName;
