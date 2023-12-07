@@ -121,5 +121,7 @@ export default {
     heapDump,
     gclog,
     threadDump,
+
+    banner: '如果你喜欢这个项目，可以在 {GitHub} 上为它点个星'
   }
 };

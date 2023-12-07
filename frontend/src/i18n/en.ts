@@ -121,5 +121,7 @@ export default {
     heapDump,
     gclog,
     threadDump,
+
+    banner: 'If you like this project, give it a star on {GitHub}'
   }
 };

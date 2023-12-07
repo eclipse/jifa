@@ -23,6 +23,7 @@ import eclipseLogoUrlForDark from '@/assets/eclipse_incubation_horizontal_dark.s
 import { t } from '@/i18n/i18n';
 import { useEnv } from '@/stores/env';
 import { useHeaderToolbar } from '@/composables/header-toolbar';
+import { useDebouncedRef } from '@/composables/debounced-ref';
 
 const logo = computed(() => (isDark.value ? eclipseLogoUrlForDark : eclipseLogoUrl));
 
@@ -38,6 +39,23 @@ const localeOptions = computed(() => {
 const themeSwitchColor = computed(() => (isDark.value ? '#1a1a1a' : '#ffffff'));
 
 const { toolbar } = useHeaderToolbar();
+
+const width = useDebouncedRef(window.innerWidth);
+const height = useDebouncedRef(window.innerHeight);
+
+const bannerVisible = computed(() => width.value >= 1000);
+
+function handleResize() {
+  width.value = window.innerWidth;
+}
+
+onMounted(() => {
+  window.addEventListener('resize', handleResize);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('resize', handleResize);
+});
 </script>
 <template>
   <header class="header">
@@ -104,6 +122,27 @@ const { toolbar } = useHeaderToolbar();
       </div>
     </div>
   </header>
+  <div class="banner" v-if="bannerVisible">
+    <el-alert
+      style="width: 420px; overflow: hidden; flex-shrink: 0"
+      :type="isDark ? 'success' : 'info'"
+      center
+    >
+      <template #title>
+        <i18n-t keypath="jifa.banner" tag="span">
+          <template v-slot:GitHub>
+            <a
+              style="text-decoration: underline"
+              href="https://github.com/eclipse/jifa"
+              target="_blank"
+              >GitHub</a
+            >
+          </template>
+        </i18n-t>
+        ⭐
+      </template>
+    </el-alert>
+  </div>
 </template>
 
 <style scoped>
@@ -116,6 +155,17 @@ const { toolbar } = useHeaderToolbar();
   overflow: hidden;
   border-bottom: 1px solid var(--el-border-color);
   background-color: var(--el-bg-color);
+}
+
+.banner {
+  position: fixed;
+  top: 0;
+  left: 300px;
+  right: 300px;
+  height: var(--ej-header-height);
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .container {
