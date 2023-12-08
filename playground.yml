@@ -52,10 +52,6 @@ spec:
   selector:
     app: jifa
   ports:
-    - name: http
-      protocol: TCP
-      port: 80
-      targetPort: jifa-port
     - name: https
       protocol: TCP
       port: 443
