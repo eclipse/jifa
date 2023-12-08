@@ -123,12 +123,8 @@ onUnmounted(() => {
       </div>
     </div>
   </header>
-  <div class="banner" v-if="bannerVisible && !bannerClosed" >
-    <el-alert
-      :type="isDark ? 'success' : 'info'"
-      center
-      @close="bannerClosed = true;"
-    >
+  <div class="banner" v-if="bannerVisible && !bannerClosed">
+    <el-alert :type="isDark ? 'success' : 'info'" center @close="bannerClosed = true">
       <template #title>
         <i18n-t keypath="jifa.banner" tag="span">
           <template v-slot:GitHub>
