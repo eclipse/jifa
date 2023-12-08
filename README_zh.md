@@ -25,6 +25,8 @@ Eclipse Jifa 是一个致力于提高问题排查效率的开源项目。
 
 ## 快速上手
 
+### [在线演示 🛝](https://jifa.dragonwell-jdk.io)
+
 ### 本地运行 Jifa
 
 ```shell

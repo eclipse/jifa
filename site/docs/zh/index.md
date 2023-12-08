@@ -11,6 +11,9 @@ hero:
       text: 快速上手
       link: /zh/guide/getting-started
     - theme: alt
+      text: 在线演示
+      link: https://jifa.dragonwell-jdk.io
+    - theme: alt
       text: GitHub
       link: https://github.com/eclipse/jifa
 

@@ -11,6 +11,9 @@ hero:
       text: Get Started
       link: /guide/getting-started
     - theme: alt
+      text: Playground
+      link: https://jifa.dragonwell-jdk.io
+    - theme: alt
       text: View on GitHub
       link: https://github.com/eclipse/jifa
 
