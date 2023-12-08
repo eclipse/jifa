@@ -44,6 +44,7 @@ const width = useDebouncedRef(window.innerWidth);
 const height = useDebouncedRef(window.innerHeight);
 
 const bannerVisible = computed(() => width.value >= 1000);
+const bannerClosed = ref(false);
 
 function handleResize() {
   width.value = window.innerWidth;
@@ -122,11 +123,11 @@ onUnmounted(() => {
       </div>
     </div>
   </header>
-  <div class="banner" v-if="bannerVisible">
+  <div class="banner" v-if="bannerVisible && !bannerClosed" >
     <el-alert
-      style="width: 420px; overflow: hidden; flex-shrink: 0"
       :type="isDark ? 'success' : 'info'"
       center
+      @close="bannerClosed = true;"
     >
       <template #title>
         <i18n-t keypath="jifa.banner" tag="span">
@@ -160,8 +161,9 @@ onUnmounted(() => {
 .banner {
   position: fixed;
   top: 0;
-  left: 300px;
-  right: 300px;
+  left: calc((100vw - 420px) / 2);
+  right: calc((100vw - 420px) / 2);
+  width: 420px;
   height: var(--ej-header-height);
   display: flex;
   justify-content: center;
