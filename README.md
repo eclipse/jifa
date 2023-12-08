@@ -25,6 +25,8 @@ Please refer to [GitHub Pages](https://eclipse.github.io/jifa) for more informat
 
 ## Quick Start
 
+### [Playground 🛝](https://jifa.dragonwell-jdk.io)
+
 ### Run Jifa Locally
 
 ```shell
