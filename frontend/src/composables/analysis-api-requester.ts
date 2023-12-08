@@ -53,7 +53,7 @@ function byStomp(resolve: (req: Requester) => void) {
   const resRejMap = new Map<number, ResRej>();
 
   const client = new Client({
-    brokerURL: `ws://${location.host}/jifa-stomp`,
+    brokerURL: `${'https:' === location.protocol ? 'wss' : 'ws'}://${location.host}/jifa-stomp`,
     reconnectDelay: 5000
   });
 
