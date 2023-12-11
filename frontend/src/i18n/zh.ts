@@ -18,6 +18,7 @@ export default {
   jifa: {
     common: {
       confirm: '确定',
+      cancel: '取消',
       submit: '提交',
       back: '返回',
       operations: '操作',

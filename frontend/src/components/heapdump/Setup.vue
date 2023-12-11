@@ -12,8 +12,14 @@
  -->
 <script setup lang="ts">
 import { hdt } from '@/components/heapdump/utils';
+import { Phase, useAnalysisStore } from '@/stores/analysis';
 import { InfoFilled } from '@element-plus/icons-vue';
 import { t } from '@/i18n/i18n';
+
+import { useAnalysisApiRequester } from '@/composables/analysis-api-requester';
+
+const { request } = useAnalysisApiRequester();
+const analysis = useAnalysisStore();
 
 const emit = defineEmits(['confirmAnalysisOptions']);
 
@@ -27,7 +33,16 @@ const options = reactive({
 });
 
 function onConfirm() {
-  emit('confirmAnalysisOptions', options);
+  request('clean').then(() => {
+    analysis.leaveGuard = false;
+    analysis.setPhase(Phase.INIT)
+    analysis.setShowSetupPage(false);
+    emit('confirmAnalysisOptions', options);
+  });
+}
+
+function onCancel() {
+  analysis.setShowSetupPage(false);
 }
 
 const enableDiscard = computed(() => options.discard_objects);
@@ -183,6 +198,9 @@ const enableDiscard = computed(() => options.discard_objects);
     </el-form-item>
     <el-form-item>
       <el-button type="primary" @click="onConfirm">{{ t('common.confirm') }}</el-button>
+      <el-button @click="onCancel" v-if="analysis.phase !== Phase.INIT && analysis.phase !== Phase.SETUP">
+        {{ t('common.cancel') }}
+      </el-button>
     </el-form-item>
   </el-form>
 </template>

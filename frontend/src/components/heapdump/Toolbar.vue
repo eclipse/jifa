@@ -20,12 +20,11 @@ import { Phase, useAnalysisStore } from '@/stores/analysis';
 const { request } = useAnalysisApiRequester();
 
 const analysis = useAnalysisStore();
-function clean() {
-  request('clean').then(() => {
-    useAnalysisStore().leaveGuard = false;
-    location.reload();
-  });
+
+function showSetup() {
+  analysis.setShowSetupPage(true)
 }
+
 </script>
 <template>
   <el-divider direction="vertical" />
@@ -34,7 +33,7 @@ function clean() {
   <template v-if="analysis.phase === Phase.SUCCESS || analysis.phase === Phase.FAILURE">
     <el-divider direction="vertical" />
 
-    <el-button link class="ej-header-button" :icon="SetUp" @click="clean">
+    <el-button link class="ej-header-button" :icon="SetUp" @click="showSetup">
       {{ t('analysis.setting') }}
     </el-button>
   </template>

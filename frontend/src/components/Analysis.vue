@@ -180,6 +180,13 @@ onUnmounted(() => {
     <div class="ej-common-view-div" v-if="analysis.phase == Phase.INIT" v-loading="true"></div>
     <div
       class="ej-common-view-div"
+      style="display: flex; flex-direction: column; justify-content: center; align-items: center"
+      v-else-if="analysis.phase === Phase.SETUP || analysis.showSetupPage === true"
+    >
+      <component :is="setupComponent" @confirmAnalysisOptions="analyze"></component>
+    </div>
+    <div
+      class="ej-common-view-div"
       style="display: flex; flex-direction: column; justify-content: start"
       v-else-if="analysis.phase == Phase.ANALYZING || analysis.phase == Phase.FAILURE"
     >
@@ -202,13 +209,6 @@ onUnmounted(() => {
         <p style="font-weight: bold">{{ t('analysis.log') }}</p>
         <p v-if="log" style="white-space: pre-line">{{ log }}</p>
       </div>
-    </div>
-    <div
-      class="ej-common-view-div"
-      style="display: flex; flex-direction: column; justify-content: center; align-items: center"
-      v-else-if="analysis.phase === Phase.SETUP"
-    >
-      <component :is="setupComponent" @confirmAnalysisOptions="analyze"></component>
     </div>
     <component :is="analysisComponent" v-else-if="analysis.phase == Phase.SUCCESS"></component>
   </transition>
