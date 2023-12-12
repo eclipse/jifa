@@ -53,7 +53,7 @@ public class ElasticWorkerRelatedTasks extends ConfigurationAccessor {
 
     @Scheduled(initialDelay = 1, fixedDelay = 1, timeUnit = TimeUnit.MINUTES)
     void terminateInconsistentInstances() {
-        lockSupport.runUnderLock(elasticWorkerScheduler::terminateInconsistentInstancesQuietly, this.getClass().getSimpleName());
+        lockSupport.runUnderLock(elasticWorkerScheduler::terminateInconsistentInstancesQuietly, this.getClass().getSimpleName() + "#terminateInconsistentInstances");
     }
 
     @Scheduled(initialDelay = 1, fixedDelay = 1, timeUnit = TimeUnit.MINUTES)
@@ -72,6 +72,6 @@ public class ElasticWorkerRelatedTasks extends ConfigurationAccessor {
                     }
                 }
             });
-        }, this.getClass().getSimpleName());
+        }, this.getClass().getSimpleName() + "#terminateUnhealthyInstances");
     }
 }
