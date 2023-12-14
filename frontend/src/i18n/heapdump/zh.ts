@@ -19,7 +19,16 @@ export default {
     descOfStrictness: "'分析失败时的策略' 表示当分析过程中遇到错误时的后续动作",
     descOfStopStrictness: '终止分析',
     descOfWarnStrictness: '报告警告信息并继续分析',
-    descOfPermissiveStrictness: '报告警告信息，尝试修复错误并继续分析'
+    descOfPermissiveStrictness: '报告警告信息，尝试修复错误并继续分析',
+    labelOfDiscardObjects: '丢弃部分对象',
+    descOfDiscardObjects: '分析的时候丢弃部分对象，以减少 jifa 的堆内存占用，防止 OOM',
+    descOfDiscardObjectsDetail: '如果堆内存特别巨大的话，其中某一类 objects 的数量可能会超过 2,147,483,639 这个限制，从而导致 1. analyze 无法为其创建索引数组而解析失败, 2. jifa 本身OOM 而解析失败. 这个选项可以通过指定丢弃类和丢弃比例的方式来丢弃一部分 objects，从而避免这些问题（如果堆内存特别巨大，建议开启此选项）',
+    labelOfDiscardObjectsRatio: "丢弃比例",
+    descOfDiscardObjectsRatio: '丢弃的百分比，数值范围：0 ~ 100. 匹配了 discard pattern 的类将会被根据这个比例进行随机丢弃.',
+    labelOfDiscardObjectsPattern: '丢弃规则',
+    descOfDiscardObjectsPattern: '丢弃类的正则匹配表达式，最好选择一些不会引用其他 object 的类，例如: byte\\[\\]，java\\.lang\\.String\ 或者 java\\.lang\\.String\\[\\] （记得对关键字进行转义）.',
+    labelAdditionalAnalyseOptions: '其他选项',
+    descAdditionalAnalyseOptions: 'Eclipse Memory Analyser 支持的其他选项, 详情: https://help.eclipse.org/latest/index.jsp?topic=%2Forg.eclipse.mat.ui.help%2Ftasks%2Fconfigure_mat.html'
   },
 
   tab: {

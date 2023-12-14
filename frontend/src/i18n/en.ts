@@ -18,6 +18,7 @@ export default {
   jifa: {
     common: {
       confirm: 'Confirm',
+      cancel: 'Cancel',
       submit: 'Submit',
       back: 'Back',
       operations: 'Operations',

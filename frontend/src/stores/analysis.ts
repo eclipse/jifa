@@ -31,7 +31,9 @@ export const useAnalysisStore = defineStore('analysis', {
 
     phase: null as Phase | null,
 
-    leaveGuard: true
+    leaveGuard: true,
+
+    showSetupPage: false
   }),
 
   actions: {
@@ -47,6 +49,10 @@ export const useAnalysisStore = defineStore('analysis', {
 
     setPhase(phase: Phase | null) {
       this.phase = phase;
+    },
+
+    setShowSetupPage(showSetupPage: boolean) {
+      this.showSetupPage = showSetupPage
     }
   }
 });
