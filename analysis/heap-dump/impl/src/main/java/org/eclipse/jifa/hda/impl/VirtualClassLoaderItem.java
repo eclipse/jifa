@@ -17,6 +17,7 @@ import org.eclipse.jifa.common.annotation.UseAccessor;
 import org.eclipse.jifa.hda.api.AnalysisException;
 import org.eclipse.mat.SnapshotException;
 import org.eclipse.mat.query.Bytes;
+import org.eclipse.mat.query.IContextObject;
 import org.eclipse.mat.query.IContextObjectSet;
 import org.eclipse.mat.query.IStructuredResult;
 import org.eclipse.mat.snapshot.ISnapshot;
@@ -83,7 +84,11 @@ public class VirtualClassLoaderItem extends DominatorTree.ClassLoaderItem {
 
     @Override
     public int[] getObjectIds() {
-        return ((IContextObjectSet) results.getContext(e)).getObjectIds();
+        IContextObject context = results.getContext(e);
+        if (context instanceof IContextObjectSet set) {
+            return set.getObjectIds();
+        }
+        return null;
     }
 
     @Override
