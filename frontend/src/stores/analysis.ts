@@ -52,7 +52,7 @@ export const useAnalysisStore = defineStore('analysis', {
     },
 
     setShowSetupPage(showSetupPage: boolean) {
-      this.showSetupPage = showSetupPage
+      this.showSetupPage = showSetupPage;
     }
   }
 });

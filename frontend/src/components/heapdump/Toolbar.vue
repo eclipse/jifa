@@ -22,9 +22,8 @@ const { request } = useAnalysisApiRequester();
 const analysis = useAnalysisStore();
 
 function showSetup() {
-  analysis.setShowSetupPage(true)
+  analysis.setShowSetupPage(true);
 }
-
 </script>
 <template>
   <el-divider direction="vertical" />

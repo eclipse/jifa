@@ -35,7 +35,7 @@ const options = reactive({
 function onConfirm() {
   request('clean').then(() => {
     analysis.leaveGuard = false;
-    analysis.setPhase(Phase.INIT)
+    analysis.setPhase(Phase.INIT);
     analysis.setShowSetupPage(false);
     emit('confirmAnalysisOptions', options);
   });
@@ -154,7 +154,8 @@ const enableDiscard = computed(() => options.discard_objects);
         clearable
         class="discard-pattern-form-input"
         @keydown.enter="(e) => e.preventDefault()"
-      > </el-input>
+      >
+      </el-input>
     </el-form-item>
     <el-form-item :label="hdt('option.labelOfDiscardObjectsRatio')" v-if="enableDiscard">
       <el-input
@@ -162,7 +163,8 @@ const enableDiscard = computed(() => options.discard_objects);
         placeholder="0~100"
         class="discard-ratio-form-input"
         @keydown.enter="(e) => e.preventDefault()"
-      > </el-input>
+      >
+      </el-input>
     </el-form-item>
     <!-- Discard Objects end -->
     <el-form-item :label="hdt('option.labelAdditionalAnalyseOptions')">
@@ -172,7 +174,8 @@ const enableDiscard = computed(() => options.discard_objects);
         class="additional-options-form-input"
         clearable
         @keydown.enter="(e) => e.preventDefault()"
-      > </el-input>
+      >
+      </el-input>
       <el-popover
         placement="top"
         :width="600"
@@ -198,7 +201,10 @@ const enableDiscard = computed(() => options.discard_objects);
     </el-form-item>
     <el-form-item>
       <el-button type="primary" @click="onConfirm">{{ t('common.confirm') }}</el-button>
-      <el-button @click="onCancel" v-if="analysis.phase !== Phase.INIT && analysis.phase !== Phase.SETUP">
+      <el-button
+        @click="onCancel"
+        v-if="analysis.phase !== Phase.INIT && analysis.phase !== Phase.SETUP"
+      >
         {{ t('common.cancel') }}
       </el-button>
     </el-form-item>

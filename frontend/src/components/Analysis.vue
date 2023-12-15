@@ -63,7 +63,7 @@ function analyze(options?) {
         const value = pair.slice(index + 1);
         // delete qouta on value if exists.
         const cleanedValue = value.replace(/^'(.*)'$/, '$1');
-        options[key] = cleanedValue
+        options[key] = cleanedValue;
       }
     }
     parameters = { options };
