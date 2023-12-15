@@ -158,7 +158,7 @@ public class Configuration {
                 Validate.notBlank(serviceAccountName,
                                   "jifa.service-account-name must be set and not blank when role is master and scheduling strategy is elastic");
                 Validate.notBlank(elasticWorkerImage,
-                                  "jifa.elastic-worker-image name must be set and not blank when role is master and  scheduling strategy is elastic");
+                                  "jifa.elastic-worker-image name must be set and not blank when role is master and scheduling strategy is elastic");
             }
         }
 

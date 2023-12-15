@@ -54,6 +54,6 @@ public class FileRelatedTasks extends ConfigurationAccessor {
                 taskScheduler.schedule(() -> transferringFileRepo.deleteById(file.getId()),
                                        Instant.now().plusSeconds(30));
             }
-        }, this.getClass().getSimpleName());
+        }, this.getClass().getSimpleName() + "#processTimeoutTransferringFiles");
     }
 }

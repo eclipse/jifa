@@ -18,6 +18,7 @@ import { useSelectedObject } from '@/composables/heapdump/selected-object';
 import CommonTable from '@/components/heapdump/CommonTable.vue';
 import { hdt } from '@/components/heapdump/utils';
 import { commonMenu as menu } from '@/components/heapdump/menu';
+import { OBJECT_TYPE } from '@/components/heapdump/type';
 
 const { selectedObjectId } = useSelectedObject();
 
@@ -113,7 +114,12 @@ const tableProps = ref({
     }
   ],
 
-  hasChildren: () => true,
+  hasChildren: (d) => {
+    if (parameters.groupBy === 'BY_PACKAGE') {
+      return d.objectType == OBJECT_TYPE.PACKAGE;
+    }
+    return true;
+  },
 
   defaultSortProperty: {
     prop: 'retainedHeap',
@@ -128,7 +134,7 @@ const tableProps = ref({
   },
 
   onRowClick: (d) => {
-    if (d.hasOwnProperty('objectId')) {
+    if (d.hasOwnProperty('objectId') && parameters.groupBy !== 'BY_PACKAGE') {
       selectedObjectId.value = d.objectId;
     }
   },

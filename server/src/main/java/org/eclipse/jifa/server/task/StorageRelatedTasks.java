@@ -67,7 +67,7 @@ public class StorageRelatedTasks extends ConfigurationAccessor {
             do {
                 fileService.deleteOldestFile();
             } while (shouldClean());
-        }, this.getClass().getSimpleName());
+        }, this.getClass().getSimpleName() + "#cleanup");
 
     }
 
@@ -85,7 +85,7 @@ public class StorageRelatedTasks extends ConfigurationAccessor {
                     storageService.scavenge(type, name);
                 }
             }
-        }, this.getClass().getSimpleName());
+        }, this.getClass().getSimpleName() + "#sync");
     }
 
     private boolean shouldClean() {

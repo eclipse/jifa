@@ -51,6 +51,21 @@ const progressStatus = computed(() => {
 function analyze(options?) {
   let parameters;
   if (options) {
+    options = { ...options };
+    let additionalOptions = options.additional_options;
+    delete options.additional_options;
+    if (additionalOptions && additionalOptions.trim()) {
+      const pairs = additionalOptions.match(/(\w+)=('(?:\\.|[^'\\])*'|\S+)/g);
+
+      for (let pair of pairs) {
+        const index = pair.indexOf('=');
+        const key = pair.slice(0, index);
+        const value = pair.slice(index + 1);
+        // delete qouta on value if exists.
+        const cleanedValue = value.replace(/^'(.*)'$/, '$1');
+        options[key] = cleanedValue;
+      }
+    }
     parameters = { options };
   }
   request('analyze', parameters)
@@ -165,6 +180,13 @@ onUnmounted(() => {
     <div class="ej-common-view-div" v-if="analysis.phase == Phase.INIT" v-loading="true"></div>
     <div
       class="ej-common-view-div"
+      style="display: flex; flex-direction: column; justify-content: center; align-items: center"
+      v-else-if="analysis.phase === Phase.SETUP || analysis.showSetupPage === true"
+    >
+      <component :is="setupComponent" @confirmAnalysisOptions="analyze"></component>
+    </div>
+    <div
+      class="ej-common-view-div"
       style="display: flex; flex-direction: column; justify-content: start"
       v-else-if="analysis.phase == Phase.ANALYZING || analysis.phase == Phase.FAILURE"
     >
@@ -187,13 +209,6 @@ onUnmounted(() => {
         <p style="font-weight: bold">{{ t('analysis.log') }}</p>
         <p v-if="log" style="white-space: pre-line">{{ log }}</p>
       </div>
-    </div>
-    <div
-      class="ej-common-view-div"
-      style="display: flex; flex-direction: column; justify-content: center; align-items: center"
-      v-else-if="analysis.phase === Phase.SETUP"
-    >
-      <component :is="setupComponent" @confirmAnalysisOptions="analyze"></component>
     </div>
     <component :is="analysisComponent" v-else-if="analysis.phase == Phase.SUCCESS"></component>
   </transition>

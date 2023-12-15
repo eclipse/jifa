@@ -17,11 +17,9 @@ import { Phase, useAnalysisStore } from '@/stores/analysis';
 const { request } = useAnalysisApiRequester();
 
 const analysis = useAnalysisStore();
-function clean() {
-  request('clean').then(() => {
-    useAnalysisStore().leaveGuard = false;
-    location.reload();
-  });
+
+function showSetup() {
+  analysis.setShowSetupPage(true);
 }
 </script>
 <template>
