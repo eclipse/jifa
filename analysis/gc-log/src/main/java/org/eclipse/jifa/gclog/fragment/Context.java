@@ -82,32 +82,40 @@ public class Context {
         @Override
         public int compare(String o1, String o2) {
             Matcher matcher;
-            String timestampString1, timestampString2;
+            String timestampString1 = null, timestampString2 = null;
             if ((matcher = timestampPattern.matcher(o1)).matches()) {
                 timestampString1 = matcher.group(1);
-            } else {
-                // string2 in prior to string1:
-                // string1 doesn't match, thus place it at the tail of the list.
-                return 1;
             }
             if ((matcher = timestampPattern.matcher(o2)).matches()) {
                 timestampString2 = matcher.group(1);
-            } else {
+            }
+            if (timestampString1 == null && timestampString2 == null) {
+                return 0;
+            } else if (timestampString1 == null) {
+                // string2 in prior to string1:
+                // string1 doesn't match, thus place it at the tail of the list.
+                return 1;
+            } else if (timestampString2 == null) {
                 // place string1 in prior to string2:
                 // string2 doesn't match, thus place string1 before it.
                 return -1;
             }
-            //return Double.parseDouble(timestampString1) > Double.parseDouble(timestampString2) ? 1 : -1;
+
             if (timestampString1.equals(timestampString2)) {
-                if (isPrecedent(o1)) {
-                    // place string1 in prior to string2:
-                    return -1;
+                boolean string1IsPrecedent = isPrecedent(o1), string2IsPrecedent = isPrecedent(o2);
+                if (string1IsPrecedent == string2IsPrecedent) {
+                    // both string1 and string2 are precedent or
+                    // neither one is precedent
+                    return 0;
+                } else {
+                    if (string1IsPrecedent) {
+                        // place string1 in prior to string2:
+                        return -1;
+                    } else {
+                        // place string2 in prior to string1:
+                        return 1;
+                    }
                 }
-                if (isPrecedent(o2)) {
-                    // place string2 in prior to string1:
-                    return 1;
-                }
-                return 0;
             } else {
                 return Double.parseDouble(timestampString1) > Double.parseDouble(timestampString2) ? 1 : -1;
             }
