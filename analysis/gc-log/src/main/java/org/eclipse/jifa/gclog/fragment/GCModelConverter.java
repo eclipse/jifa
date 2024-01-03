@@ -76,7 +76,7 @@ public class GCModelConverter {
             if (gcEvent.getDuration() == Constant.UNKNOWN_DOUBLE) {
                 return;
             }
-            result.add(new Metric(timestamp, buildLabel(), "GC_COST_TIME", gcEvent.getDuration()));
+            result.add(new Metric(timestamp, buildLabel("type", gcEvent.getEventType().getName()), "GC_COST_TIME", gcEvent.getDuration()));
         }
 
         private void addMetricPause() {
