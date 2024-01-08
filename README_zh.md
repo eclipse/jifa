@@ -19,7 +19,7 @@
 
 ## 简介
 
-Eclipse Jifa 是一个致力于提高问题排查效率的开源项目。
+Eclipse Jifa 是一款在线的堆转储、GC 日志和线程转储分析工具。
 
 关于项目的更多信息请访问 [GitHub Pages](https://eclipse.github.io/jifa/zh/)。
 
