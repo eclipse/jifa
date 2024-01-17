@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# Copyright (c) 2023 Contributors to the Eclipse Foundation
+# Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
 #
 # See the NOTICE file(s) distributed with this work for additional
 # information regarding copyright ownership.
@@ -25,7 +25,7 @@ my $tmp_path = '/tmp/.jifa_licence_tmp';
 
 my $license_1 =
 '/********************************************************************************
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -38,7 +38,7 @@ my $license_1 =
  ********************************************************************************/';
 
 my $license_2 =
-'# Copyright (c) 2023 Contributors to the Eclipse Foundation
+'# Copyright (c) 2024 Contributors to the Eclipse Foundation
 #
 # See the NOTICE file(s) distributed with this work for additional
 # information regarding copyright ownership.
@@ -51,7 +51,7 @@ my $license_2 =
 
 my $license_3 =
 '<!--
-    Copyright (c) 2023 Contributors to the Eclipse Foundation
+    Copyright (c) 2024 Contributors to the Eclipse Foundation
 
     See the NOTICE file(s) distributed with this work for additional
     information regarding copyright ownership.
