@@ -134,12 +134,12 @@ public class TestHeapDumpAnalyzerImpl {
 
     @Test
     public void testGetSummaryOfDirectByteBuffers() {
-        ANALYZER.getSummaryOfDirectByteBuffers();
+        ANALYZER.getSummaryOfDirectByteBuffers("all");
     }
 
     @Test
     public void testGetDirectByteBuffers() {
-        ANALYZER.getDirectByteBuffers(1, 10);
+        ANALYZER.getDirectByteBuffers("all", 1, 10);
     }
 
     @Test
