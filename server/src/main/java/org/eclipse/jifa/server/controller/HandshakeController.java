@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -65,6 +65,7 @@ public class HandshakeController extends ConfigurationAccessor {
                                      config.isAllowRegistration(),
                                      cipherService.getPublicKeyString(),
                                      oauth2LoginLinks,
+                                     config.getDisabledFileTransferMethods(),
                                      user);
     }
 }

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -26,8 +26,8 @@ public enum ServerErrorCode implements ErrorCode {
     UNSUPPORTED_API("Unsupported API"),
     FILE_TRANSFER_INCOMPLETE("File transfer incomplete"),
     FILE_TYPE_MISMATCH("File type mismatch"),
+    FILE_TRANSFER_METHOD_DISABLED("File transfer method disabled"),
     STATIC_WORKER_UNAVAILABLE("Static worker Unavailable"),
-
     ELASTIC_WORKER_NOT_READY("Elastic worker not ready"),
     ELASTIC_WORKER_STARTUP_FAILURE("Elastic worker startup failure");
 

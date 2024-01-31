@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -165,6 +165,11 @@ public class FileTransferRequest {
                 context.buildConstraintViolationWithTemplate(notNullTemplate)
                        .addPropertyNode("method")
                        .addConstraintViolation();
+                context.disableDefaultConstraintViolation();
+                return false;
+            }
+
+            if (request.method == FileTransferMethod.UPLOAD) {
                 context.disableDefaultConstraintViolation();
                 return false;
             }
