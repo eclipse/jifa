@@ -10,6 +10,9 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
+/**
+ * @author Denghui Dong
+ */
 {
   const template = document.createElement('template');
 
