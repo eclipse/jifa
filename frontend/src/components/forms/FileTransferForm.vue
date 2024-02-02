@@ -1,5 +1,5 @@
 <!--
-    Copyright (c) 2023 Contributors to the Eclipse Foundation
+    Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
 
     See the NOTICE file(s) distributed with this work for additional
     information regarding copyright ownership.
@@ -265,6 +265,15 @@ function close(done: any) {
   }
   done();
 }
+
+function isEnabled(method: string) {
+  for (let m of env.disabledFileTransferMethods) {
+    if (m === method) {
+      return false
+    }
+  }
+  return true
+}
 </script>
 <template>
   <el-dialog
@@ -286,7 +295,7 @@ function close(done: any) {
     >
       <el-form-item :label="_t('transferMethod')" prop="method">
         <el-radio-group v-model="params.method">
-          <el-radio-button label="UPLOAD">
+          <el-radio-button label="UPLOAD" v-if="isEnabled('UPLOAD')">
             <div class="ej-file-transfer-method-button">
               <el-icon style="margin-right: 8px" size="14">
                 <Upload />
@@ -294,7 +303,7 @@ function close(done: any) {
               {{ _t('upload') }}
             </div>
           </el-radio-button>
-          <el-radio-button label="OSS">
+          <el-radio-button label="OSS" v-if="isEnabled('OSS')">
             <div class="ej-file-transfer-method-button">
               <el-icon style="margin-right: 8px" size="14">
                 <UploadFilled />
@@ -302,7 +311,7 @@ function close(done: any) {
               OSS
             </div>
           </el-radio-button>
-          <el-radio-button label="S3">
+          <el-radio-button label="S3" v-if="isEnabled('S3')">
             <div class="ej-file-transfer-method-button">
               <el-icon style="margin-right: 8px" size="14">
                 <UploadFilled />
@@ -310,7 +319,7 @@ function close(done: any) {
               S3
             </div>
           </el-radio-button>
-          <el-radio-button label="SCP">
+          <el-radio-button label="SCP" v-if="isEnabled('SCP')">
             <div class="ej-file-transfer-method-button">
               <el-icon style="margin-right: 8px" size="14">
                 <Connection />
@@ -318,7 +327,7 @@ function close(done: any) {
               SCP
             </div>
           </el-radio-button>
-          <el-radio-button label="URL">
+          <el-radio-button label="URL" v-if="isEnabled('URL')">
             <div class="ej-file-transfer-method-button">
               <el-icon style="margin-right: 8px" size="14">
                 <Link />
@@ -327,7 +336,7 @@ function close(done: any) {
             </div>
           </el-radio-button>
 
-          <el-radio-button label="TEXT" :disabled="(params.type as String) === 'HEAP_DUMP'">
+          <el-radio-button label="TEXT" :disabled="(params.type as String) === 'HEAP_DUMP'" v-if="isEnabled('TEXT')">
             <div class="ej-file-transfer-method-button">
               <el-icon style="margin-right: 8px" size="14">
                 <Document />

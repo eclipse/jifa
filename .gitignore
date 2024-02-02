@@ -29,3 +29,5 @@ cloud/
 bin
 
 .test-temp
+
+.java-version

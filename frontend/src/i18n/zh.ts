@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -101,7 +101,7 @@ export default {
       filename: '文件名',
       text: '文本',
 
-      dragOrClickToUpload: '将文件拖拽到此处 或 点击进行文件选择',
+      dragOrClickToUpload: '拖拽文件至此处或点击进行上传',
 
       host: '主机',
       user: '用户',
