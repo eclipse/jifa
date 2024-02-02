@@ -49,7 +49,7 @@ public class TestJFRAnalyzer {
                 .filter(item -> item.getTask().getName().equals("dd-profiler-recording-scheduler")).findAny();
         Assertions.assertTrue(optional.isPresent());
         TaskCPUTime tct = optional.get();
-        SimpleFlameGraph g = SimpleFlameGraph.parse((JavaThreadCPUTime)tct);
+        SimpleFlameGraph g = SimpleFlameGraph.parse((JavaThreadCPUTime) tct);
 
         Assertions.assertEquals(9000000L, g.totalSampleValue.longValue());
 
@@ -59,7 +59,7 @@ public class TestJFRAnalyzer {
         optional = cpuTimes.stream().filter(item -> item.getTask().getName().equals("http-nio-8080-exec-1")).findAny();
         Assertions.assertTrue(optional.isPresent());
         tct = optional.get();
-        g = SimpleFlameGraph.parse((JavaThreadCPUTime)tct);
+        g = SimpleFlameGraph.parse((JavaThreadCPUTime) tct);
 
         list = g.queryLeafNodes(9);
         Assertions.assertEquals(list.size(), 10);
@@ -76,7 +76,7 @@ public class TestJFRAnalyzer {
         Path path = createTmpFileForResource("native.jfr");
         JFRAnalyzer analyzer = new JFRAnalyzerImpl();
         AnalysisRequest request = new AnalysisRequest(path, DimensionBuilder.NATIVE_EXECUTION_SAMPLES);
-        AnalysisResult result = analyzer.execute(request,ProgressListener.NoOpProgressListener);
+        AnalysisResult result = analyzer.execute(request, ProgressListener.NoOpProgressListener);
         Assertions.assertNotNull(result.getNativeExecutionSamples());
 
         List<TaskCount> nativeSamples = result.getNativeExecutionSamples().getList();

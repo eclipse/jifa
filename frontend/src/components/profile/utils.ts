@@ -18,7 +18,7 @@ export const toReadableValue = (unit: string, value: number) => {
     value = Math.round(value / 1000000);
     const ms = value % 1000;
     if (ms > 0) {
-      result = ms + 'ms'
+      result = ms + 'ms';
     }
 
     // to second
@@ -99,4 +99,4 @@ export const toReadableValue = (unit: string, value: number) => {
   } else {
     return value.toLocaleString();
   }
-}
+};

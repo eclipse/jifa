@@ -28,7 +28,7 @@ public class RecordedMethod extends SymbolBase {
     private boolean hidden;
 
     public boolean isEquals(Object b) {
-        if (! (b instanceof RecordedMethod)) {
+        if (!(b instanceof RecordedMethod)) {
             return false;
         }
 

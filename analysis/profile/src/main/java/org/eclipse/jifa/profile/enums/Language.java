@@ -11,6 +11,7 @@
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
 package org.eclipse.jifa.profile.enums;
+
 public enum Language {
     JAVA("java"),
     GO("go");

@@ -13,17 +13,18 @@
 package org.eclipse.jifa.profile.enums;
 
 public enum FileFormat {
-    JFR(new String[] {".jfr"}),
-    PPROF(new String[] {".pprof", ".profile"}),
-    COLLAPSED(new String[] {".collapsed"}),
-    TEXT(new String[] {".txt"});
+    JFR(new String[]{".jfr"}),
+    PPROF(new String[]{".pprof", ".profile"}),
+    COLLAPSED(new String[]{".collapsed"}),
+    TEXT(new String[]{".txt"});
 
     FileFormat(String[] patterns) {
         this.patterns = patterns;
     }
 
     private final String[] patterns;
-    private static final FileFormat[] FORMATS = new FileFormat[] { JFR, PPROF, COLLAPSED, TEXT };
+    private static final FileFormat[] FORMATS = new FileFormat[]{JFR, PPROF, COLLAPSED, TEXT};
+
     public static FileFormat of(String fileName) {
         if (fileName == null || fileName.isEmpty()) {
             return null;

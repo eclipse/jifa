@@ -70,7 +70,7 @@ public class RecordedEvent {
 
         Object value = getValue("startTime");
         if (value instanceof IQuantity) {
-            IQuantity v = (IQuantity)value;
+            IQuantity v = (IQuantity) value;
             startTime = toNanos(v, UnitLookup.EPOCH_NS);
         }
 
@@ -224,7 +224,7 @@ public class RecordedEvent {
         if (endTime < 0) {
             Object value = getValue("duration");
             if (value instanceof IQuantity) {
-                endTime = startTime + toNanos((IQuantity)value, UnitLookup.NANOSECOND);
+                endTime = startTime + toNanos((IQuantity) value, UnitLookup.NANOSECOND);
             } else {
                 throw new RuntimeException("should not reach here");
             }

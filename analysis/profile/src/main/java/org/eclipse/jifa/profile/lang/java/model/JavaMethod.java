@@ -37,7 +37,7 @@ public class JavaMethod extends Method {
             return false;
         }
 
-        if (! (b instanceof JavaMethod)) {
+        if (!(b instanceof JavaMethod)) {
             return false;
         }
 

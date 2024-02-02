@@ -43,9 +43,11 @@ public class WallClockExtractor extends Extractor {
         private long begin = 0;
         private long end = 0;
         private long sampleCount = 0;
+
         TaskWallClockData(RecordedThread thread) {
             super(thread);
         }
+
         void updateTime(long time) {
             if (begin == 0 || time < begin) {
                 begin = time;
@@ -54,6 +56,7 @@ public class WallClockExtractor extends Extractor {
                 end = time;
             }
         }
+
         long getDuration() {
             return end - begin;
         }
@@ -61,6 +64,7 @@ public class WallClockExtractor extends Extractor {
 
     static class TaskWallClockData2 extends TaskData {
         private long total = 0;
+
         TaskWallClockData2(RecordedThread thread) {
             super(thread);
         }

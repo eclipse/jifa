@@ -30,11 +30,11 @@ public class PerfDimensionFactory {
     static final Filter FILTER_CLASS = Filter.of("Class", null);
     static final Filter FILTER_METHOD = Filter.of("Method", null);
 
-    private static final GraphType[] ALL_GRAPHS = new GraphType[] { GraphType.FLAME_GRAPH, GraphType.ACTIVITY_GRAPH };
-    private static final GraphType[] FLAME = new GraphType[] { GraphType.FLAME_GRAPH};
-    private static final GraphType[] ACTIVITY = new GraphType[] { GraphType.ACTIVITY_GRAPH};
+    private static final GraphType[] ALL_GRAPHS = new GraphType[]{GraphType.FLAME_GRAPH, GraphType.ACTIVITY_GRAPH};
+    private static final GraphType[] FLAME = new GraphType[]{GraphType.FLAME_GRAPH};
+    private static final GraphType[] ACTIVITY = new GraphType[]{GraphType.ACTIVITY_GRAPH};
 
-    static final Filter[] FILTERS = new Filter[] {FILTER_THREAD, FILTER_CLASS, FILTER_METHOD};
+    static final Filter[] FILTERS = new Filter[]{FILTER_THREAD, FILTER_CLASS, FILTER_METHOD};
 
     static final PerfDimension DIM_CPU_TIME = PerfDimension.of(ProfileDimension.CPU.getKey(), ProfileDimension.CPU.getDesc(), FILTERS, Unit.NANO_SECOND, FLAME);
 

@@ -91,7 +91,7 @@ public class AllocationsExtractor extends Extractor {
 
             if (data.getSamples() != null) {
                 threadAllocation.setAllocations(data.allocations);
-                threadAllocation.setSamples(data.getSamples().entrySet() .stream().collect(
+                threadAllocation.setSamples(data.getSamples().entrySet().stream().collect(
                         Collectors.toMap(
                                 e -> StackTraceUtil.build(e.getKey(), context.getSymbols()),
                                 Map.Entry::getValue,

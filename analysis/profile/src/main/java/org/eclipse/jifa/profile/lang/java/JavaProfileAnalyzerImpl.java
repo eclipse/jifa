@@ -212,7 +212,7 @@ public class JavaProfileAnalyzerImpl implements ProfileAnalyzer {
 
         if (gcCPUTime > 0 && (taskSet == null || taskSet.isEmpty() || isTaskNameIn("GC Threads", taskSet))) {
             Object[] o = new Object[3];
-            o[0] = map.processSymbols(new String[] {"GC", "JVM"});
+            o[0] = map.processSymbols(new String[]{"GC", "JVM"});
             o[1] = gcCPUTime;
             o[2] = "GC Threads";
             os.add(o);

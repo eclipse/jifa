@@ -15,6 +15,7 @@ package org.eclipse.jifa.profile.api;
 
 import org.eclipse.jifa.profile.vo.BasicMetadata;
 import org.eclipse.jifa.profile.vo.FlameGraph;
+
 import java.util.List;
 
 public interface ProfileAnalyzer {

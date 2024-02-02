@@ -269,10 +269,10 @@ function close(done: any) {
 function isEnabled(method: string) {
   for (let m of env.disabledFileTransferMethods) {
     if (m === method) {
-      return false
+      return false;
     }
   }
-  return true
+  return true;
 }
 </script>
 <template>
@@ -336,7 +336,11 @@ function isEnabled(method: string) {
             </div>
           </el-radio-button>
 
-          <el-radio-button label="TEXT" :disabled="(params.type as String) === 'HEAP_DUMP'" v-if="isEnabled('TEXT')">
+          <el-radio-button
+            label="TEXT"
+            :disabled="(params.type as String) === 'HEAP_DUMP'"
+            v-if="isEnabled('TEXT')"
+          >
             <div class="ej-file-transfer-method-button">
               <el-icon style="margin-right: 8px" size="14">
                 <Document />

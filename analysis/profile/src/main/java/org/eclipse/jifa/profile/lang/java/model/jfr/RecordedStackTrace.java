@@ -26,7 +26,7 @@ public class RecordedStackTrace extends SymbolBase {
     private List<RecordedFrame> frames;
 
     public boolean isEquals(Object b) {
-        if (! (b instanceof RecordedStackTrace)) {
+        if (!(b instanceof RecordedStackTrace)) {
             return false;
         }
 

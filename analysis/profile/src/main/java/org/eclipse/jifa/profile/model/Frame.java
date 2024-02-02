@@ -49,7 +49,7 @@ public class Frame extends SymbolBase {
     }
 
     public boolean isEquals(Object b) {
-        if (! (b instanceof Frame)) {
+        if (!(b instanceof Frame)) {
             return false;
         }
 

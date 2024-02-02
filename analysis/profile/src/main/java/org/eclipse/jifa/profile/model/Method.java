@@ -36,7 +36,7 @@ public class Method extends SymbolBase {
     }
 
     public boolean isEquals(Object b) {
-        if (! (b instanceof Method)) {
+        if (!(b instanceof Method)) {
             return false;
         }
 

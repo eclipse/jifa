@@ -13,7 +13,7 @@
 
 <script setup lang="ts">
 import { useAnalysisApiRequester } from '@/composables/analysis-api-requester';
-import '@/components/profile/flame-graph.js'
+import '@/components/profile/flame-graph.js';
 import { toReadableValue } from '@/components/profile/utils';
 import { CircleCloseFilled, FullScreen, Search, Filter } from '@element-plus/icons-vue';
 import { t } from '@/i18n/i18n';
@@ -60,10 +60,15 @@ const checkedCount = computed(() => {
     }
   }
   return count;
-})
+});
 
 function rootTextGenerator(ds: any, information: any) {
-  return 'Total ' + perfDimensions.value[selectedDimensionIndex.value].key + ": " + format(information.totalWeight);
+  return (
+    'Total ' +
+    perfDimensions.value[selectedDimensionIndex.value].key +
+    ': ' +
+    format(information.totalWeight)
+  );
 }
 
 function textGenerator(ds: any, frame: number) {
@@ -71,7 +76,7 @@ function textGenerator(ds: any, frame: number) {
 }
 
 function titleGenerator(ds: any, frame: number, information: any) {
-  const text = information.text
+  const text = information.text;
   let i1 = text.lastIndexOf('.');
   if (i1 > 0) {
     let i2 = text.lastIndexOf('.', i1 - 1);
@@ -91,7 +96,7 @@ function titleGenerator(ds: any, frame: number, information: any) {
 }
 
 function detailsGenerator(ds: any, frame: number, information: any) {
-  const text = information.text
+  const text = information.text;
   let i1 = text.lastIndexOf('.');
   if (i1 > 0) {
     let i2 = text.lastIndexOf('.', i1 - 1);
@@ -107,7 +112,7 @@ function detailsGenerator(ds: any, frame: number, information: any) {
         p = text.substring(0, i2);
       }
       if (p) {
-        return {'package': p};
+        return { package: p };
       }
     }
   }
@@ -115,10 +120,10 @@ function detailsGenerator(ds: any, frame: number, information: any) {
 }
 
 function footTextGenerator(dataSource: any, frame: number, information: any) {
-  let sw = information.selfWeight
-  let w = information.weight
-  let tw = information.totalWeight
-  let value = Math.round(w / tw * 100 * 100) / 100;
+  let sw = information.selfWeight;
+  let w = information.weight;
+  let tw = information.totalWeight;
+  let value = Math.round((w / tw) * 100 * 100) / 100;
   if (w === sw || sw === 0) {
     return value + '% - ' + format(w);
   }
@@ -126,9 +131,9 @@ function footTextGenerator(dataSource: any, frame: number, information: any) {
 }
 
 function hashCodeGenerator(ds: any, frame: number, information: any) {
-  let text = information.text
+  let text = information.text;
   if (text.startsWith('java') || text.startsWith('jdk') || text.startsWith('JVM')) {
-    return 0
+    return 0;
   }
   let i1 = text.lastIndexOf('.');
   if (i1 !== -1) {
@@ -139,12 +144,12 @@ function hashCodeGenerator(ds: any, frame: number, information: any) {
     text = text.substring(0, i2);
   }
 
-  let hash = 0
+  let hash = 0;
   for (let i = 0; i < text.length; i++) {
-    hash = 31 * hash + (text.charCodeAt(i) & 0xFF)
-    hash &= 0xffffffff
+    hash = 31 * hash + (text.charCodeAt(i) & 0xff);
+    hash &= 0xffffffff;
   }
-  return hash
+  return hash;
 }
 
 function format(v: number) {
@@ -170,9 +175,9 @@ async function queryGraph() {
 
 async function queryFlameGraph(include: boolean, taskSet: any) {
   let options = {
-    "dimension" : perfDimensions.value[selectedDimensionIndex.value].key,
-    'include': include,
-    'taskSet': taskSet
+    dimension: perfDimensions.value[selectedDimensionIndex.value].key,
+    include: include,
+    taskSet: taskSet
   };
 
   flameGraph.value = document.getElementById('flame-graph');
@@ -197,7 +202,8 @@ function onDimensionIndexChange() {
 async function onSelectedFilterIndexChange() {
   if (selectedFilterIndex.value !== null) {
     toggleFilterValuesChecked.value = true;
-    let filterName = perfDimensions.value[selectedDimensionIndex.value].filters[selectedFilterIndex.value].key;
+    let filterName =
+      perfDimensions.value[selectedDimensionIndex.value].filters[selectedFilterIndex.value].key;
     await queryFlameGraph(false, []);
     if (filterName === 'Thread') {
       buildFilterValueByThreads();
@@ -236,21 +242,21 @@ function buildFilterValueByThreads() {
   }
 
   fv.sort((i, j) => {
-    return j.weight - i.weight
+    return j.weight - i.weight;
   });
 
   filterValuesMap.value = map;
   filterValueList.value = fv;
   topFilterValueList.value = fv.slice(0, 200);
   filter.value = null;
-  flameGraph.value.configuration.stackTraceFilter = filter.value
+  flameGraph.value.configuration.stackTraceFilter = filter.value;
 
   refreshFlameGraph();
 }
 
 function buildFilterValueByClass() {
-  buildFilterValue(d => {
-    let v = symbolTable.value[d[0][d[0].length - 1]]
+  buildFilterValue((d) => {
+    let v = symbolTable.value[d[0][d[0].length - 1]];
     if (v) {
       let index = v.lastIndexOf('.');
       if (index >= 0) {
@@ -258,13 +264,13 @@ function buildFilterValueByClass() {
       }
       return v;
     } else {
-      return "undefined";
+      return 'undefined';
     }
   });
 }
 
 function buildFilterValueByMethod() {
-  buildFilterValue(d => symbolTable.value[d[0][d[0].length - 1]])
+  buildFilterValue((d) => symbolTable.value[d[0][d[0].length - 1]]);
 }
 
 function buildFilterValue(keyExtractor: any) {
@@ -295,22 +301,25 @@ function buildFilterValue(keyExtractor: any) {
   }
 
   fv.sort((i, j) => {
-    return j.weight - i.weight
+    return j.weight - i.weight;
   });
 
   filterValuesMap.value = map;
   filterValueList.value = fv;
   topFilterValueList.value = fv.slice(0, 200);
   filter.value = (d, s) => {
-    return filterValuesMap.value[keyExtractor(s)] ? filterValuesMap.value[keyExtractor(s)].checked : false;
-  }
+    return filterValuesMap.value[keyExtractor(s)]
+      ? filterValuesMap.value[keyExtractor(s)].checked
+      : false;
+  };
 
   flameGraph.value.configuration.stackTraceFilter = filter.value;
   refreshFlameGraph();
 }
 
 async function handleFilterValuesChecked(checked: boolean, index: number) {
-  let filterName = perfDimensions.value[selectedDimensionIndex.value].filters[selectedFilterIndex.value].key;
+  let filterName =
+    perfDimensions.value[selectedDimensionIndex.value].filters[selectedFilterIndex.value].key;
   if (filterName === 'Thread') {
     let taskSet = [];
     let include = !toggleFilterValuesChecked.value;
@@ -337,10 +346,11 @@ async function handleFilterValuesChecked(checked: boolean, index: number) {
 
 async function handleToggleFilterValuesChecked() {
   for (let v of filterValueList.value) {
-    v.checked = toggleFilterValuesChecked.value
+    v.checked = toggleFilterValuesChecked.value;
   }
 
-  let filterName = perfDimensions.value[selectedDimensionIndex.value].filters[selectedFilterIndex.value].key;
+  let filterName =
+    perfDimensions.value[selectedDimensionIndex.value].filters[selectedFilterIndex.value].key;
   if (filterName === 'Thread') {
     clearFlameGraph();
     if (toggleFilterValuesChecked.value) {
@@ -363,7 +373,7 @@ function restoreFlameGraph() {
   flameGraph.value.dataSource = {
     format: 'line',
     data: flameGraphDataSource.value
-  }
+  };
 }
 
 function refreshFlameGraph() {
@@ -377,7 +387,7 @@ function clearFlameGraph() {
 }
 
 function openFlameGraphModal() {
-  flameGraphModalVisible.value = true
+  flameGraphModalVisible.value = true;
   nextTick(() => {
     let flameGraphModal = window.document.getElementById('flame-graph-in-modal');
     flameGraphModal.configuration = configuration.value;
@@ -385,7 +395,7 @@ function openFlameGraphModal() {
       format: 'line',
       data: flameGraphDataSource.value
     };
-  })
+  });
 }
 
 async function queryByTaskName() {
@@ -412,20 +422,42 @@ async function queryByTaskName() {
   await queryFlameGraph(include, taskSet);
 }
 
-onUnmounted(() => {
-});
+onUnmounted(() => {});
 </script>
 
 <template>
   <div class="ej-common-view-div">
-    <div style="width: 75%;">
-      <el-select v-model="selectedDimensionIndex" placeholder="Select" style="width: 250px;" @change="onDimensionIndexChange">
-        <el-option v-for="(item, index) in perfDimensions" :key="index" :label="item.key" :value="index" />
+    <div style="width: 75%">
+      <el-select
+        v-model="selectedDimensionIndex"
+        placeholder="Select"
+        style="width: 250px"
+        @change="onDimensionIndexChange"
+      >
+        <el-option
+          v-for="(item, index) in perfDimensions"
+          :key="index"
+          :label="item.key"
+          :value="index"
+        />
       </el-select>
-      <span style="color: rgba(0,0,0,0.6); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-left:10px;" v-if="totalWeight">
+      <span
+        style="
+          color: rgba(0, 0, 0, 0.6);
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          margin-left: 10px;
+        "
+        v-if="totalWeight"
+      >
         {{ format(totalWeight) + ' ' + t('profile.flameGraph.copyMethod') }}
       </span>
-      <el-icon style="float: right; margin-top:5px; margin-right: 30px;" @click="openFlameGraphModal"><FullScreen /></el-icon>
+      <el-icon
+        style="float: right; margin-top: 5px; margin-right: 30px"
+        @click="openFlameGraphModal"
+        ><FullScreen
+      /></el-icon>
     </div>
 
     <div class="ej-profile-container">
@@ -433,10 +465,12 @@ onUnmounted(() => {
         <flame-graph id="flame-graph" downward></flame-graph>
       </div>
 
-      <el-dialog v-model="flameGraphModalVisible" :show-close="false" style="width:90%;">
+      <el-dialog v-model="flameGraphModalVisible" :show-close="false" style="width: 90%">
         <template #header="{ close, titleId, titleClass }">
           <div class="modal-header">
-            <h4 :id="titleId" :class="titleClass">{{perfDimensions[selectedDimensionIndex].key}}</h4>
+            <h4 :id="titleId" :class="titleClass">
+              {{ perfDimensions[selectedDimensionIndex].key }}
+            </h4>
             <el-button type="default" @click="close">
               <el-icon><CircleCloseFilled /></el-icon>
               Close
@@ -447,44 +481,107 @@ onUnmounted(() => {
       </el-dialog>
 
       <div class="ej-profile-inspector">
-        <div style="width:90%;">
-          <el-icon :size="20" style="vertical-align: middle; margin-right: 10px;"><Filter /></el-icon>
-          <el-select v-model="selectedFilterIndex" placeholder="Select" style="width: 300px" @change="onSelectedFilterIndexChange">
-            <el-option v-for="(item, index) in selectedDimensionIndex !== null ? perfDimensions[selectedDimensionIndex].filters : []"
-                       :key="index" :label="item.key" :value="index" />
+        <div style="width: 90%">
+          <el-icon :size="20" style="vertical-align: middle; margin-right: 10px"
+            ><Filter
+          /></el-icon>
+          <el-select
+            v-model="selectedFilterIndex"
+            placeholder="Select"
+            style="width: 300px"
+            @change="onSelectedFilterIndexChange"
+          >
+            <el-option
+              v-for="(item, index) in selectedDimensionIndex !== null
+                ? perfDimensions[selectedDimensionIndex].filters
+                : []"
+              :key="index"
+              :label="item.key"
+              :value="index"
+            />
           </el-select>
 
-          <div style="margin-top: 10px;">
-            <el-checkbox v-model="toggleFilterValuesChecked" @change="handleToggleFilterValuesChecked" style="float:right;"/>
+          <div style="margin-top: 10px">
+            <el-checkbox
+              v-model="toggleFilterValuesChecked"
+              @change="handleToggleFilterValuesChecked"
+              style="float: right"
+            />
             <div>
-              <span style="font-size: 12px; color: rgba(0,0,0,0.6);margin-top: 10px; margin-right: 10px; float: right">{{ checkedCount }}/{{filterValueList.length }}</span>
-              <div v-if="selectedDimensionIndex != null && perfDimensions[selectedDimensionIndex].filters[selectedFilterIndex].key === 'Thread'">
-                <el-icon :size="20" style="vertical-align: middle; margin-right: 10px;"><Search /></el-icon>
-                <el-input v-model="taskName" :placeholder="t('profile.placeholder.threadName')" style="width: 70%" @change="queryByTaskName"/>
+              <span
+                style="
+                  font-size: 12px;
+                  color: rgba(0, 0, 0, 0.6);
+                  margin-top: 10px;
+                  margin-right: 10px;
+                  float: right;
+                "
+                >{{ checkedCount }}/{{ filterValueList.length }}</span
+              >
+              <div
+                v-if="
+                  selectedDimensionIndex != null &&
+                  perfDimensions[selectedDimensionIndex].filters[selectedFilterIndex].key ===
+                    'Thread'
+                "
+              >
+                <el-icon :size="20" style="vertical-align: middle; margin-right: 10px"
+                  ><Search
+                /></el-icon>
+                <el-input
+                  v-model="taskName"
+                  :placeholder="t('profile.placeholder.threadName')"
+                  style="width: 70%"
+                  @change="queryByTaskName"
+                />
               </div>
             </div>
           </div>
         </div>
 
         <div style="overflow: auto">
-          <ul style="margin-top:10px;padding:0;">
-            <li v-for="(item, index) in topFilterValueList" style="width: 90%; flex-grow: 1; overflow: auto">
-              <div style="width: 100%; display: flex; flex-direction: row; justify-content: space-between; align-items: center">
-                <div style="font-size: 16px; width:5%;">🧵</div>
-                <div style="width: 95%; ">
-                  <div style="float: right;">
-                    <el-checkbox v-model="filterValueList[index].checked" @change="checked => handleFilterValuesChecked(checked, index)" />
+          <ul style="margin-top: 10px; padding: 0">
+            <li
+              v-for="(item, index) in topFilterValueList"
+              style="width: 90%; flex-grow: 1; overflow: auto"
+            >
+              <div
+                style="
+                  width: 100%;
+                  display: flex;
+                  flex-direction: row;
+                  justify-content: space-between;
+                  align-items: center;
+                "
+              >
+                <div style="font-size: 16px; width: 5%">🧵</div>
+                <div style="width: 95%">
+                  <div style="float: right">
+                    <el-checkbox
+                      v-model="filterValueList[index].checked"
+                      @change="(checked) => handleFilterValuesChecked(checked, index)"
+                    />
                   </div>
-                  <div style="width: 90%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                  <div
+                    style="
+                      width: 90%;
+                      white-space: nowrap;
+                      overflow: hidden;
+                      text-overflow: ellipsis;
+                    "
+                  >
                     <span>{{ item.key }}</span>
-                    <div style="font-size: 12px; color: rgba(0,0,0,0.6)">
+                    <div style="font-size: 12px; color: rgba(0, 0, 0, 0.6)">
                       {{ format(filterValueList[index].weight) }}
                     </div>
-                    <el-progress :percentage="Math.round(filterValueList[index].weight/totalWeight * 100)" :color="filterValueList[index].checked ? '#ff8200' : 'grey'"/>
+                    <el-progress
+                      :percentage="Math.round((filterValueList[index].weight / totalWeight) * 100)"
+                      :color="filterValueList[index].checked ? '#ff8200' : 'grey'"
+                    />
                   </div>
                 </div>
               </div>
-              <hr style="border: 0; border-top: 1px solid #ccc;"/>
+              <hr style="border: 0; border-top: 1px solid #ccc" />
             </li>
           </ul>
         </div>

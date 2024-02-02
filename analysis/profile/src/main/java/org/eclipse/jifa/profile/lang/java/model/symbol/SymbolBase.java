@@ -16,6 +16,7 @@ public abstract class SymbolBase {
     private Integer hashCode = null;
 
     public abstract int genHashCode();
+
     public abstract boolean isEquals(Object b);
 
     public boolean equals(Object b) {

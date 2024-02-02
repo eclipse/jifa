@@ -34,6 +34,6 @@ public class JavaThreadCPUTime extends TaskCPUTime {
     }
 
     public long totalCPUTimeExcludeVMOperations() {
-       return super.totalCPUTime();
+        return super.totalCPUTime();
     }
 }

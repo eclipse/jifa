@@ -32,7 +32,7 @@ public class StackTrace extends SymbolBase {
     }
 
     public boolean isEquals(Object b) {
-        if (! (b instanceof StackTrace)) {
+        if (!(b instanceof StackTrace)) {
             return false;
         }
 

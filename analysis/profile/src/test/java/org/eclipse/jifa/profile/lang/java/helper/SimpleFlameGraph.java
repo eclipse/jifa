@@ -126,7 +126,7 @@ public class SimpleFlameGraph {
                 }
             }
         } else {
-            for (SimpleFlameGraphNode child: children) {
+            for (SimpleFlameGraphNode child : children) {
                 queryLeafNodes(child, leafKw, threshold, resultList);
             }
         }
@@ -145,7 +145,7 @@ public class SimpleFlameGraph {
         }
 
         if (children != null && !children.isEmpty()) {
-            for (SimpleFlameGraphNode child: children) {
+            for (SimpleFlameGraphNode child : children) {
                 clearPrintFlag(child);
             }
         }
@@ -169,7 +169,7 @@ public class SimpleFlameGraph {
                 }
             }
         } else {
-            for (SimpleFlameGraphNode child: children) {
+            for (SimpleFlameGraphNode child : children) {
                 matchAndSetPrintFlag(child, leafKw, threshold);
                 if (child.isPrint()) {
                     if (currentNode != null) {
@@ -224,7 +224,7 @@ public class SimpleFlameGraph {
         }
 
         if (children != null && !children.isEmpty()) {
-            for (SimpleFlameGraphNode child: children) {
+            for (SimpleFlameGraphNode child : children) {
                 if (!child.isPrint()) {
                     continue;
                 }

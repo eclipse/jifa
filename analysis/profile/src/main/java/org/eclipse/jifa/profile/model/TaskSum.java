@@ -21,8 +21,10 @@ public class TaskSum extends TaskResultBase {
     public TaskSum() {
         super(null);
     }
+
     public TaskSum(Task task) {
         super(task);
     }
+
     private long sum;
 }

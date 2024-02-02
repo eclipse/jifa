@@ -21,24 +21,24 @@ public class TestDescriptorUtil {
         DescriptorUtil util = new DescriptorUtil();
 
         Assertions.assertEquals(util.decodeMethodArgs(
-                "(Ljava/lang/String;I[[ZJ)D"),
+                        "(Ljava/lang/String;I[[ZJ)D"),
                 "(String, int, boolean[][], long)"
                 // "(java.lang.String, int, boolean[][], long)"
         );
 
         Assertions.assertEquals(util.decodeMethodArgs(
-                "(I)V"),
+                        "(I)V"),
                 "(int)"
         );
 
         Assertions.assertEquals(util.decodeMethodArgs(
-                "(Ljava/io/DataOutput;I)V"),
+                        "(Ljava/io/DataOutput;I)V"),
                 "(DataOutput, int)"
                 // "(java.io.DataOutput, int)"
         );
 
         Assertions.assertEquals(util.decodeMethodArgs(
-                "(Ljava/lang/Class;Ljava/util/List;Ljava/util/List;)Ljdk/jfr/EventType"),
+                        "(Ljava/lang/Class;Ljava/util/List;Ljava/util/List;)Ljdk/jfr/EventType"),
                 "(Class, List, List)"
                 // "(java.lang.Class, java.util.List, java.util.List)"
         );

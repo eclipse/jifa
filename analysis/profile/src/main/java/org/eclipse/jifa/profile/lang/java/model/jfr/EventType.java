@@ -12,5 +12,5 @@
  ********************************************************************************/
 package org.eclipse.jifa.profile.lang.java.model.jfr;
 
-public record EventType (String name) {
+public record EventType(String name) {
 }

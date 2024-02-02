@@ -21,5 +21,6 @@ public class TaskAllocatedMemory extends TaskSum {
     public TaskAllocatedMemory() {
         super(null);
     }
+
     private long allocatedMemory;
 }

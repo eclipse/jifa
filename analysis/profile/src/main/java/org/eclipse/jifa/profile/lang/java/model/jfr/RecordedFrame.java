@@ -39,7 +39,7 @@ public class RecordedFrame extends SymbolBase {
     }
 
     public boolean isEquals(Object b) {
-        if (! (b instanceof RecordedFrame)) {
+        if (!(b instanceof RecordedFrame)) {
             return false;
         }
 

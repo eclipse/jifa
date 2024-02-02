@@ -34,7 +34,7 @@ export interface HandshakeResponse {
   publicKey: PublicKey;
   oauth2LoginLinks: object;
   user?: User;
-  disabledFileTransferMethods: [],
+  disabledFileTransferMethods: [];
 }
 
 const tokenKey = 'jifa-token';
@@ -92,7 +92,7 @@ export const useEnv = defineStore('env', {
         this.loginFormVisible = true;
       }
 
-      this.disabledFileTransferMethods = data.disabledFileTransferMethods
+      this.disabledFileTransferMethods = data.disabledFileTransferMethods;
     },
 
     logout() {

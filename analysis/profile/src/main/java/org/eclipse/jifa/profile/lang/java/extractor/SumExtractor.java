@@ -17,11 +17,13 @@ import org.eclipse.jifa.profile.model.TaskData;
 import org.eclipse.jifa.profile.lang.java.model.jfr.RecordedEvent;
 import org.eclipse.jifa.profile.lang.java.model.jfr.RecordedStackTrace;
 import org.eclipse.jifa.profile.lang.java.model.jfr.RecordedThread;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
 import org.eclipse.jifa.profile.model.Task;
 import org.eclipse.jifa.profile.model.TaskSum;
 

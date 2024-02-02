@@ -44,7 +44,7 @@ public class RecordedThread {
             f.setAccessible(true);
             Object value = f.get(imcThread);
             if (value instanceof IQuantity) {
-                this.osThreadId = ((IQuantity)value).longValue();
+                this.osThreadId = ((IQuantity) value).longValue();
             }
         } catch (Exception e) {
             log.error(e.getMessage(), e);
