@@ -21,6 +21,7 @@ include ':analysis:heap-dump:provider'
 include ':analysis:heap-dump:hook'
 include ':analysis:gc-log'
 include ':analysis:thread-dump'
+include ':analysis:profile'
 include ':server'
 
 include ':frontend'

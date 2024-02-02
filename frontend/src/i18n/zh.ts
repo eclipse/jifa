@@ -13,6 +13,7 @@
 import heapDump from './heapdump/zh'
 import gclog from './gclog/zh'
 import threadDump from './threaddump/zh'
+import profile from './profile/zh'
 
 export default {
   jifa: {
@@ -58,6 +59,7 @@ export default {
       heapDump: '堆内存快照',
       GCLog: 'GC 日志',
       threadDump: '线程快照',
+      jfr: 'JFR',
 
       new: '新文件',
 
@@ -122,5 +124,6 @@ export default {
     heapDump,
     gclog,
     threadDump,
+    profile
   }
 };

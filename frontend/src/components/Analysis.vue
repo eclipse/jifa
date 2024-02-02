@@ -1,5 +1,5 @@
 <!--
-    Copyright (c) 2023 Contributors to the Eclipse Foundation
+    Copyright (c) 2024 Contributors to the Eclipse Foundation
 
     See the NOTICE file(s) distributed with this work for additional
     information regarding copyright ownership.
@@ -61,7 +61,7 @@ function analyze(options?) {
         const index = pair.indexOf('=');
         const key = pair.slice(0, index);
         const value = pair.slice(index + 1);
-        // delete qouta on value if exists.
+        // delete quotes on value if exists.
         const cleanedValue = value.replace(/^'(.*)'$/, '$1');
         options[key] = cleanedValue;
       }

@@ -19,7 +19,7 @@
 
 ## Introduction
 
-Online Analyzer for Heap Dump, GC Log, and Thread Dump.
+Online Analyzer for Heap Dump, GC Log, Thread Dump and JFR.
 
 Please refer to [GitHub Pages](https://eclipse.github.io/jifa) for more information.
 

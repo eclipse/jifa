@@ -134,6 +134,10 @@ watchEffect(() => {
         params.method = 'UPLOAD';
         break;
       }
+      case 'PROFILE': {
+        params.method = 'UPLOAD';
+        break;
+      }
       case 'GC_LOG': {
         params.filename = 'gc.log';
         textSample.value = `[3.779s][info][gc,start      ] GC(10) Pause Young (Normal) (G1 Evacuation Pause)

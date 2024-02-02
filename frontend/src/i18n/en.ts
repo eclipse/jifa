@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -13,6 +13,7 @@
 import heapDump from './heapdump/en'
 import gclog from './gclog/en'
 import threadDump from './threaddump/en'
+import profile from './profile/en'
 
 export default {
   jifa: {
@@ -58,6 +59,7 @@ export default {
       heapDump: 'Heap Dump',
       GCLog: 'GC Log',
       threadDump: 'Thread Dump',
+      jfr: 'JFR',
 
       new: 'New File',
 
@@ -122,5 +124,6 @@ export default {
     heapDump,
     gclog,
     threadDump,
+    profile,
   }
 };
