@@ -84,6 +84,8 @@ public class CPUTimeExtractor extends Extractor {
     private long parallelGCWallTime = 0;
     private long serialGCWallTime = 0;
 
+    private boolean isWallClock = false;
+
     public CPUTimeExtractor(JFRAnalysisContext context) {
         super(context, INTERESTED);
 
@@ -152,7 +154,9 @@ public class CPUTimeExtractor extends Extractor {
         }
 
         if (this.context.isExecutionSampleEventTypeId(event.getSettingFor().getEventId())) {
-            if (EventConstant.INTERVAL.equals(event.getString("name"))) {
+            if (EventConstant.WALL.equals(event.getString("name"))) {
+                this.isWallClock = true;
+            } else if (EventConstant.INTERVAL.equals(event.getString("name"))) {
                 // async-profiler is "interval"
                 this.intervalAsync = Long.parseLong(event.getString("value"));
                 this.executionSampleByJFR = false;
@@ -276,6 +280,9 @@ public class CPUTimeExtractor extends Extractor {
 
     private List<TaskCPUTime> buildThreadCPUTime() {
         List<TaskCPUTime> threadCPUTimes = new ArrayList<>();
+        if (this.isWallClock) {
+            return threadCPUTimes;
+        }
         for (CpuTaskData data : this.data.values()) {
             if (data.getSamples() == null && data.vmOperations == null) {
                 continue;

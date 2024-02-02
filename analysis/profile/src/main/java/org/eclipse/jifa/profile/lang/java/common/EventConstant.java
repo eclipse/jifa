@@ -27,7 +27,7 @@ public abstract class EventConstant {
     public static String THREAD_START = "jdk.ThreadStart";
     public static String THREAD_CPU_LOAD = "jdk.ThreadCPULoad";
     public static String EXECUTION_SAMPLE = "jdk.ExecutionSample";
-    public static String WALL_CLOCK_SAMPLE = "jdk.MethodSample";
+    public static String WALL_CLOCK_SAMPLE = "jdk.ExecutionSample";
     public static String NATIVE_EXECUTION_SAMPLE = "jdk.NativeMethodSample";
     public static String EXECUTE_VM_OPERATION = "jdk.ExecuteVMOperation";
 
@@ -55,4 +55,6 @@ public abstract class EventConstant {
 
     public static String PERIOD = "period";
     public static String INTERVAL = "interval";
+
+    public static String WALL = "wall";
 }

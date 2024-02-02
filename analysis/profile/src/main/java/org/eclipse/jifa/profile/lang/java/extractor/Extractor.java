@@ -34,7 +34,6 @@ public abstract class Extractor extends EventVisitor {
             put(EventConstant.THREAD_CPU_LOAD, EventVisitor::visitThreadCPULoad);
             put(EventConstant.PROCESS_CPU_LOAD, EventVisitor::visitProcessCPULoad);
             put(EventConstant.EXECUTION_SAMPLE, EventVisitor::visitExecutionSample);
-            put(EventConstant.WALL_CLOCK_SAMPLE, EventVisitor::visitMethodSample);
             put(EventConstant.NATIVE_EXECUTION_SAMPLE, EventVisitor::visitNativeExecutionSample);
             put(EventConstant.EXECUTE_VM_OPERATION, EventVisitor::visitExecuteVMOperation);
             put(EventConstant.OBJECT_ALLOCATION_IN_NEW_TLAB, EventVisitor::visitObjectAllocationInNewTLAB);

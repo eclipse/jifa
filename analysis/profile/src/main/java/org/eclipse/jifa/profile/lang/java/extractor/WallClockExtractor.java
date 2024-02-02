@@ -30,12 +30,12 @@ import java.util.stream.Collectors;
 
 @Slf4j
 public class WallClockExtractor extends Extractor {
+    private static final int ASYNC_PROFILER_DEFAULT_INTERVAL = 50 * 1000 * 1000;
 
     private static final List<String> INTERESTED = Collections.unmodifiableList(new ArrayList<>() {
         {
             add(EventConstant.ACTIVE_SETTING);
             add(EventConstant.WALL_CLOCK_SAMPLE);
-            add(EventConstant.SOCKET_CONNECT);
         }
     });
 
@@ -62,16 +62,7 @@ public class WallClockExtractor extends Extractor {
         }
     }
 
-    static class TaskWallClockData2 extends TaskData {
-        private long total = 0;
-
-        TaskWallClockData2(RecordedThread thread) {
-            super(thread);
-        }
-    }
-
     private final Map<Long, TaskWallClockData> data = new HashMap<>();
-    private final Map<Long, TaskWallClockData2> socketConnectData = new HashMap<>();
     private long methodSampleEventId = -1;
     private long interval; // nano
 
@@ -88,20 +79,16 @@ public class WallClockExtractor extends Extractor {
         return data.computeIfAbsent(thread.getJavaThreadId(), i -> new TaskWallClockData(thread));
     }
 
-    TaskWallClockData2 getSocketConnectThreadData(RecordedThread thread) {
-        return socketConnectData.computeIfAbsent(thread.getJavaThreadId(), i -> new TaskWallClockData2(thread));
-    }
-
     @Override
     void visitActiveSetting(RecordedEvent event) {
         if (event.getSettingFor().getEventId() == methodSampleEventId
-                && EventConstant.INTERVAL.equals(event.getString("name"))) {
-            this.interval = Long.parseLong(event.getString("value"));
+                && EventConstant.WALL.equals(event.getString("name"))) {
+            this.interval = Long.parseLong(event.getString("value")) * 1000 * 1000;
         }
     }
 
     @Override
-    void visitMethodSample(RecordedEvent event) {
+    void visitExecutionSample(RecordedEvent event) {
         RecordedStackTrace stackTrace = event.getStackTrace();
         if (stackTrace == null) {
             return;
@@ -124,51 +111,12 @@ public class WallClockExtractor extends Extractor {
         taskWallClockData.sampleCount++;
     }
 
-    @Override
-    void visitSocketConnect(RecordedEvent event) {
-        RecordedStackTrace stackTrace = event.getStackTrace();
-        if (stackTrace == null) {
-            return;
-        }
-        if (stackTrace.getFrames() != null) {
-            int n = 0;
-            for (RecordedFrame frame : stackTrace.getFrames()) {
-                if ("java.net.Socket".equals(frame.getMethod().getType().getFullName())
-                        && "connect".equals(frame.getMethod().getName())) {
-                    break;
-                }
-                n++;
-            }
-            if (n != 0) {
-                stackTrace.setFrames(stackTrace.getFrames().subList(n, stackTrace.getFrames().size()));
-            }
-        }
-
-        RecordedThread thread = event.getThread("eventThread");
-        if (thread == null) {
-            thread = event.getThread("sampledThread");
-        }
-        if (thread == null) {
-            return;
-        }
-        TaskWallClockData2 taskWallClockData = getSocketConnectThreadData(thread);
-
-        if (taskWallClockData.getSamples() == null) {
-            taskWallClockData.setSamples(new HashMap<>());
-        }
-
-        long duration = event.getDurationNano();
-
-        taskWallClockData.getSamples().compute(stackTrace, (k, v) -> v == null ? duration : v + duration);
-        taskWallClockData.total += duration;
-    }
-
     private List<TaskSum> buildThreadWallClock() {
         List<TaskSum> taskSumList = new ArrayList<>();
 
         if (this.interval <= 0) {
-            log.warn("need profiling interval to calculate approximate wall clock time");
-            return taskSumList;
+            this.interval = ASYNC_PROFILER_DEFAULT_INTERVAL;
+            log.warn("use default interval: " + ASYNC_PROFILER_DEFAULT_INTERVAL / 1000 / 1000 + " ms");
         }
         Map<Long, TaskSum> map = new HashMap<>();
         for (TaskWallClockData data : this.data.values()) {
@@ -185,35 +133,6 @@ public class WallClockExtractor extends Extractor {
                             Map.Entry::getValue,
                             Long::sum)
             ));
-            map.put(data.getThread().getJavaThreadId(), taskSum);
-        }
-
-        for (TaskWallClockData2 data : this.socketConnectData.values()) {
-            if (data.getSamples() == null) {
-                continue;
-            }
-            TaskSum taskSum = map.get(data.getThread().getJavaThreadId());
-            if (taskSum == null) {
-                taskSum = new TaskSum();
-                taskSum.setTask(context.getThread(data.getThread()));
-            }
-
-            taskSum.setSum(data.total + taskSum.getSum());
-
-            Map<StackTrace, Long> samples = taskSum.getSamples();
-            Map<StackTrace, Long> samples2 = data.getSamples().entrySet().stream().collect(
-                    Collectors.toMap(
-                            e -> StackTraceUtil.build(e.getKey(), context.getSymbols()),
-                            Map.Entry::getValue,
-                            Long::sum));
-            if (samples == null || samples.isEmpty()) {
-                taskSum.setSamples(samples2);
-            } else {
-                samples2.forEach((stackTrace, value) -> {
-                    samples.compute(stackTrace, (k, v) -> v == null ? value : value + v);
-                });
-            }
-
             map.put(data.getThread().getJavaThreadId(), taskSum);
         }
 

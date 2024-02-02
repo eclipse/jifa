@@ -14,6 +14,7 @@ package org.eclipse.jifa.profile.lang.java.extractor;
 
 import org.eclipse.jifa.profile.lang.java.common.EventConstant;
 import org.eclipse.jifa.profile.lang.java.model.jfr.RecordedEvent;
+import org.eclipse.jifa.profile.lang.java.util.TimeUtil;
 import org.eclipse.jifa.profile.model.DimensionResult;
 import org.eclipse.jifa.profile.lang.java.model.AnalysisResult;
 import org.eclipse.jifa.profile.model.TaskCount;
@@ -23,9 +24,11 @@ import java.util.Collections;
 import java.util.List;
 
 public class CPUSampleExtractor extends CountExtractor {
+    private boolean isWallClock = false;
     protected static final List<String> INTERESTED = Collections.unmodifiableList(new ArrayList<String>() {
         {
             add(EventConstant.EXECUTION_SAMPLE);
+            add(EventConstant.ACTIVE_SETTING);
         }
     });
 
@@ -36,6 +39,23 @@ public class CPUSampleExtractor extends CountExtractor {
     @Override
     void visitExecutionSample(RecordedEvent event) {
         visitEvent(event);
+    }
+
+    @Override
+    void visitActiveSetting(RecordedEvent event) {
+        if (this.context.isExecutionSampleEventTypeId(event.getSettingFor().getEventId())) {
+            if (EventConstant.WALL.equals(event.getString("name"))) {
+                this.isWallClock = true;
+            }
+        }
+    }
+
+    public List<TaskCount> buildTaskCounts() {
+        if (this.isWallClock) {
+            return new ArrayList<>();
+        } else {
+            return super.buildTaskCounts();
+        }
     }
 
     @Override

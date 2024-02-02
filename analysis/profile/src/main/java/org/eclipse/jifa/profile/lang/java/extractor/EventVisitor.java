@@ -55,10 +55,6 @@ public abstract class EventVisitor {
         throw new UnsupportedOperationException();
     }
 
-    void visitMethodSample(RecordedEvent event) {
-        throw new UnsupportedOperationException();
-    }
-
     void visitNativeExecutionSample(RecordedEvent event) {
         throw new UnsupportedOperationException();
     }
