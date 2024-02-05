@@ -44,7 +44,7 @@ dependencies {
 
     implementation 'io.kubernetes:client-java:18.0.1'
 
-    implementation 'com.mysql:mysql-connector-j:8.0.33'
+    implementation 'com.mysql:mysql-connector-j:8.2.0'
     runtimeOnly 'com.h2database:h2:2.2.220'
 
     implementation 'com.hierynomus:sshj:0.35.0'
