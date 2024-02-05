@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -12,14 +12,14 @@
  ********************************************************************************/
 package org.eclipse.jifa.server.repository;
 
-import org.eclipse.jifa.server.condition.StaticCluster;
-import org.eclipse.jifa.server.domain.entity.static_cluster.StaticWorkerEntity;
+import org.eclipse.jifa.server.condition.Cluster;
+import org.eclipse.jifa.server.domain.entity.cluster.StaticWorkerEntity;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
-@StaticCluster
+@Cluster
 @Repository
 public interface StaticWorkerRepo extends CrudRepository<StaticWorkerEntity, Long> {
 

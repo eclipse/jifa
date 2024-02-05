@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -41,13 +41,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jifa.common.util.ExecutorFactory;
 import org.eclipse.jifa.common.util.Validate;
 import org.eclipse.jifa.server.ConfigurationAccessor;
-import org.eclipse.jifa.server.condition.StorageAccessible;
 import org.eclipse.jifa.server.domain.dto.FileTransferRequest;
 import org.eclipse.jifa.server.enums.FileType;
 import org.eclipse.jifa.server.service.CipherService;
 import org.eclipse.jifa.server.service.StorageService;
 import org.eclipse.jifa.server.support.FileTransferListener;
-import org.springframework.context.annotation.Conditional;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -69,7 +67,6 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicLong;
 
-@Conditional(StorageAccessible.class)
 @Service
 public class StorageServiceImpl extends ConfigurationAccessor implements StorageService {
 

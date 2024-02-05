@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -13,9 +13,8 @@
 package org.eclipse.jifa.server.task;
 
 import org.eclipse.jifa.server.ConfigurationAccessor;
-import org.eclipse.jifa.server.condition.ElasticSchedulingStrategy;
 import org.eclipse.jifa.server.condition.Master;
-import org.eclipse.jifa.server.domain.entity.elastic_cluster.ElasticWorkerEntity;
+import org.eclipse.jifa.server.domain.entity.cluster.ElasticWorkerEntity;
 import org.eclipse.jifa.server.enums.ElasticWorkerState;
 import org.eclipse.jifa.server.repository.ElasticWorkerRepo;
 import org.eclipse.jifa.server.service.ElasticWorkerScheduler;
@@ -30,7 +29,6 @@ import static org.eclipse.jifa.server.Constant.HTTP_HEALTH_CHECK_MAPPING;
 import static org.eclipse.jifa.server.domain.dto.HttpRequestToWorker.createGetRequest;
 
 @Master
-@ElasticSchedulingStrategy
 @Component
 public class ElasticWorkerRelatedTasks extends ConfigurationAccessor {
 
@@ -63,7 +61,7 @@ public class ElasticWorkerRelatedTasks extends ConfigurationAccessor {
 
             elasticWorkers.forEach(elasticWorker -> {
                 try {
-                    workerService.sendRequestAndBlock(elasticWorker, createGetRequest(HTTP_HEALTH_CHECK_MAPPING, null, Void.class));
+                    workerService.syncRequest(elasticWorker, createGetRequest(HTTP_HEALTH_CHECK_MAPPING, null, Void.class));
                 } catch (Throwable t) {
                     elasticWorkerRepo.deleteById(elasticWorker.getId());
                     try {

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -14,7 +14,6 @@ package org.eclipse.jifa.server;
 
 import org.eclipse.jifa.common.util.Validate;
 import org.eclipse.jifa.server.enums.Role;
-import org.eclipse.jifa.server.enums.SchedulingStrategy;
 import org.springframework.beans.factory.annotation.Autowired;
 
 public abstract class ConfigurationAccessor {
@@ -44,11 +43,6 @@ public abstract class ConfigurationAccessor {
 
     protected final boolean isMaster() {
         return getRole() == Role.MASTER;
-    }
-
-    protected final SchedulingStrategy getSchedulingStrategy() {
-        assert isMaster();
-        return config.getSchedulingStrategy();
     }
 
     protected final void mustBe(Role... roles) {

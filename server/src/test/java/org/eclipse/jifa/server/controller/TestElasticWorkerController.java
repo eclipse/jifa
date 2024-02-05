@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -13,11 +13,7 @@
 package org.eclipse.jifa.server.controller;
 
 import org.eclipse.jifa.server.Constant;
-import org.eclipse.jifa.server.domain.dto.HttpRequestToWorker;
-import org.eclipse.jifa.server.domain.entity.cluster.WorkerEntity;
-import org.eclipse.jifa.server.domain.entity.shared.file.FileEntity;
 import org.eclipse.jifa.server.enums.ElasticWorkerState;
-import org.eclipse.jifa.server.service.ElasticWorkerService;
 import org.eclipse.jifa.server.service.WorkerService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,8 +24,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.util.concurrent.CompletableFuture;
-
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -37,7 +31,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(
         properties = {
                 "jifa.role=master",
-                "jifa.scheduling-strategy=elastic",
                 "jifa.storage-pvc-name=storage-pvc",
                 "jifa.service-account-name=service-account",
                 "jifa.elastic-worker-image=image"
@@ -54,22 +47,7 @@ public class TestElasticWorkerController {
 
     @BeforeEach
     public void before() {
-        Mockito.when(workerService.asElasticWorkerService()).thenReturn(new ElasticWorkerService() {
-            @Override
-            public ElasticWorkerState getState(long workerId) {
-                return ElasticWorkerState.READY;
-            }
-
-            @Override
-            public WorkerEntity resolveForAnalysisApiRequest(FileEntity target) {
-                throw new UnsupportedOperationException();
-            }
-
-            @Override
-            public <Response> CompletableFuture<Response> sendRequest(WorkerEntity worker, HttpRequestToWorker<Response> request) {
-                throw new UnsupportedOperationException();
-            }
-        });
+        Mockito.when(workerService.getElasticWorkerState(1)).thenReturn(ElasticWorkerState.READY);
     }
 
     @Test
