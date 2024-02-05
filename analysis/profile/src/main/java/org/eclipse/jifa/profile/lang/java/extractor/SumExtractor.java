@@ -71,7 +71,7 @@ public abstract class SumExtractor extends Extractor {
             TaskSum ts = new TaskSum();
             Task ta = new Task();
             ta.setId(data.getThread().getJavaThreadId());
-            ta.setName(data.getThread().getJavaName());
+            ta.setName(context.getThread(data.getThread()).getName());
             ts.setTask(ta);
 
             if (data.getSamples() != null) {

@@ -14,15 +14,13 @@ package org.eclipse.jifa.profile.lang.java.extractor;
 
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jifa.profile.lang.java.common.EventConstant;
-import org.eclipse.jifa.profile.model.TaskData;
+import org.eclipse.jifa.profile.lang.java.model.AnalysisResult;
 import org.eclipse.jifa.profile.lang.java.model.jfr.RecordedEvent;
-import org.eclipse.jifa.profile.lang.java.model.jfr.RecordedFrame;
 import org.eclipse.jifa.profile.lang.java.model.jfr.RecordedStackTrace;
 import org.eclipse.jifa.profile.lang.java.model.jfr.RecordedThread;
 import org.eclipse.jifa.profile.lang.java.util.StackTraceUtil;
 import org.eclipse.jifa.profile.model.DimensionResult;
-import org.eclipse.jifa.profile.lang.java.model.AnalysisResult;
-import org.eclipse.jifa.profile.model.StackTrace;
+import org.eclipse.jifa.profile.model.TaskData;
 import org.eclipse.jifa.profile.model.TaskSum;
 
 import java.util.*;
@@ -66,6 +64,8 @@ public class WallClockExtractor extends Extractor {
     private long methodSampleEventId = -1;
     private long interval; // nano
 
+    private boolean isWallClockEvents = false;
+
     public WallClockExtractor(JFRAnalysisContext context) {
         super(context, INTERESTED);
 
@@ -81,9 +81,18 @@ public class WallClockExtractor extends Extractor {
 
     @Override
     void visitActiveSetting(RecordedEvent event) {
-        if (event.getSettingFor().getEventId() == methodSampleEventId
-                && EventConstant.WALL.equals(event.getString("name"))) {
-            this.interval = Long.parseLong(event.getString("value")) * 1000 * 1000;
+        if (EventConstant.EVENT.equals(event.getString("name")) && EventConstant.WALL.equals(event.getString("value"))) {
+            this.isWallClockEvents = true;
+        }
+
+        if (event.getSettingFor().getEventId() == methodSampleEventId) {
+            if (EventConstant.WALL.equals(event.getString("name"))) {
+                this.isWallClockEvents = true;
+                this.interval = Long.parseLong(event.getString("value")) * 1000 * 1000;
+            }
+            if (EventConstant.INTERVAL.equals(event.getString("name"))) {
+                this.interval = Long.parseLong(event.getString("value")) * 1000 * 1000;
+            }
         }
     }
 
@@ -113,6 +122,9 @@ public class WallClockExtractor extends Extractor {
 
     private List<TaskSum> buildThreadWallClock() {
         List<TaskSum> taskSumList = new ArrayList<>();
+        if (!isWallClockEvents) {
+            return taskSumList;
+        }
 
         if (this.interval <= 0) {
             this.interval = ASYNC_PROFILER_DEFAULT_INTERVAL;

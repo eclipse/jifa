@@ -20,9 +20,7 @@ import org.eclipse.jifa.profile.lang.java.common.ProfileDimension;
 import org.eclipse.jifa.profile.lang.java.model.AnalysisResult;
 import org.eclipse.jifa.profile.lang.java.request.AnalysisRequest;
 import org.eclipse.jifa.profile.lang.java.request.DimensionBuilder;
-import org.eclipse.jifa.profile.lang.java.util.VMOperationUtil;
 import org.eclipse.jifa.profile.lang.PerfDimensionFactory;
-import org.eclipse.jifa.profile.lang.java.model.JavaThreadCPUTime;
 import org.eclipse.jifa.profile.model.*;
 import org.eclipse.jifa.profile.vo.BasicMetadata;
 import org.eclipse.jifa.profile.vo.FlameGraph;
@@ -70,8 +68,7 @@ public class JavaProfileAnalyzerImpl implements ProfileAnalyzer {
         SymbolMap symbolTable = new SymbolMap();
         if (dimension == ProfileDimension.CPU) {
             DimensionResult<TaskCPUTime> cpuTime = result.getCpuTime();
-            long gcCPUTime = result.getGcCPUTime();
-            generateCpuTime(cpuTime, gcCPUTime, os, names, symbolTable, include, taskSet);
+            generateCpuTime(cpuTime, os, names, symbolTable, include, taskSet);
         } else {
             DimensionResult<? extends TaskResultBase> DimensionResult = switch (dimension) {
                 case CPU_SAMPLE -> result.getCpuSample();
@@ -151,7 +148,7 @@ public class JavaProfileAnalyzerImpl implements ProfileAnalyzer {
         return false;
     }
 
-    private void generateCpuTime(DimensionResult<TaskCPUTime> result, long gcCPUTime, List<Object[]> os,
+    private void generateCpuTime(DimensionResult<TaskCPUTime> result, List<Object[]> os,
                                  Map<String, Long> names, SymbolMap map, boolean include, List<String> taskSet) {
         List<TaskCPUTime> list = result.getList();
         for (TaskCPUTime ct : list) {
@@ -164,26 +161,6 @@ public class JavaProfileAnalyzerImpl implements ProfileAnalyzer {
                     if (isTaskNameIn(ct.getTask().getName(), taskSet)) {
                         continue;
                     }
-                }
-            }
-
-            if (ct instanceof JavaThreadCPUTime jtct) {
-                Map<String, Long> vmOperations = jtct.getVmOperations();
-                if (vmOperations != null && !vmOperations.isEmpty()) {
-                    vmOperations.keySet().forEach(item -> {
-                        long time = vmOperations.get(item);
-                        StackTrace st = VMOperationUtil.makeStackTrace(item);
-                        Frame[] frames = st.getFrames();
-                        String[] fs = new String[frames.length];
-                        for (int i = frames.length - 1, j = 0; i >= 0; i--, j++) {
-                            fs[j] = frames[i].toString();
-                        }
-                        Object[] o = new Object[3];
-                        o[0] = map.processSymbols(fs);
-                        o[1] = time;
-                        o[2] = ct.getTask().getName();
-                        os.add(o);
-                    });
                 }
             }
 
@@ -206,17 +183,9 @@ public class JavaProfileAnalyzerImpl implements ProfileAnalyzer {
                     o[2] = ct.getTask().getName();
                     os.add(o);
                 }
+
                 names.put(ct.getTask().getName(), taskTotalTime);
             }
-        }
-
-        if (gcCPUTime > 0 && (taskSet == null || taskSet.isEmpty() || isTaskNameIn("GC Threads", taskSet))) {
-            Object[] o = new Object[3];
-            o[0] = map.processSymbols(new String[]{"GC", "JVM"});
-            o[1] = gcCPUTime;
-            o[2] = "GC Threads";
-            os.add(o);
-            names.put("GC Threads", gcCPUTime);
         }
     }
 

@@ -32,11 +32,10 @@ public class StackTrace extends SymbolBase {
     }
 
     public boolean isEquals(Object b) {
-        if (!(b instanceof StackTrace)) {
+        if (!(b instanceof StackTrace t2)) {
             return false;
         }
 
-        StackTrace t2 = (StackTrace) b;
         return truncated == t2.truncated && Arrays.equals(frames, t2.frames);
     }
 }

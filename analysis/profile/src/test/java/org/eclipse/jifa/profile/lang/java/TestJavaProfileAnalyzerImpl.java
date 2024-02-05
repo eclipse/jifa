@@ -39,7 +39,7 @@ public class TestJavaProfileAnalyzerImpl {
 
     @BeforeAll
     public static void init() throws Exception {
-        Path path = createTmpFileForResource("main.jfr");
+        Path path = createTmpFileForResource("jfr.jfr");
         Method buildAnalyzer = ProfileAnalysisApiExecutor.class.getDeclaredMethod("buildAnalyzer", Path.class, Map.class, ProgressListener.class);
         buildAnalyzer.setAccessible(true);
         Map<String, String> options = new HashMap<>();

@@ -36,11 +36,9 @@ public class Method extends SymbolBase {
     }
 
     public boolean isEquals(Object b) {
-        if (!(b instanceof Method)) {
+        if (!(b instanceof Method m2)) {
             return false;
         }
-
-        Method m2 = (Method) b;
 
         return Objects.equals(packageName, m2.getPackageName())
                 && Objects.equals(type, m2.getType())
@@ -54,17 +52,17 @@ public class Method extends SymbolBase {
         }
 
         String str;
-        if (this.descriptor != null && includeDescriptor) {
+        if (this.descriptor != null && !this.descriptor.isEmpty() && includeDescriptor) {
             str = String.format("%s%s", this.name, this.descriptor);
         } else {
             str = this.name;
         }
 
-        if (this.type != null) {
+        if (this.type != null && !this.type.isEmpty()) {
             str = String.format("%s.%s", this.type, str);
         }
 
-        if (this.packageName != null) {
+        if (this.packageName != null && !this.packageName.isEmpty()) {
             str = String.format("%s.%s", this.packageName, str);
         }
 

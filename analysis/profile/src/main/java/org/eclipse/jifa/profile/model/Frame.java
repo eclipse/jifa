@@ -49,11 +49,9 @@ public class Frame extends SymbolBase {
     }
 
     public boolean isEquals(Object b) {
-        if (!(b instanceof Frame)) {
+        if (!(b instanceof Frame f2)) {
             return false;
         }
-
-        Frame f2 = (Frame) b;
 
         return line == f2.getLine() && method.equals(f2.getMethod());
     }

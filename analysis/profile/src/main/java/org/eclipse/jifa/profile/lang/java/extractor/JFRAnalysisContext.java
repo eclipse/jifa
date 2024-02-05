@@ -26,6 +26,7 @@ import java.util.*;
 public class JFRAnalysisContext {
     private final Map<String, Long> eventTypeIds = new HashMap<>();
     private final Map<Long, JavaThread> threads = new HashMap<>();
+    private final Map<String, Long> threadNameMap = new HashMap<>();
     @Getter
     private final List<RecordedEvent> events = new ArrayList<>();
     @Getter
@@ -39,33 +40,42 @@ public class JFRAnalysisContext {
         this.request = request;
     }
 
-    public Long getEventTypeId(String event) {
+    public synchronized Long getEventTypeId(String event) {
         return eventTypeIds.get(event);
     }
 
-    public void putEventTypeId(String key, Long id) {
+    public synchronized void putEventTypeId(String key, Long id) {
         eventTypeIds.put(key, id);
         if (EventConstant.EXECUTION_SAMPLE.equals(key)) {
             executionSampleEventTypeIds.add(id);
         }
     }
 
-    public boolean isExecutionSampleEventTypeId(long id) {
+    public synchronized boolean isExecutionSampleEventTypeId(long id) {
         return executionSampleEventTypeIds.contains(id);
     }
 
-    public JavaThread getThread(RecordedThread thread) {
+    public synchronized JavaThread getThread(RecordedThread thread) {
         return threads.computeIfAbsent(thread.getJavaThreadId(), id -> {
+
             JavaThread javaThread = new JavaThread();
             javaThread.setId(id);
             javaThread.setJavaId(thread.getJavaThreadId());
             javaThread.setOsId(thread.getOSThreadId());
-            javaThread.setName(thread.getJavaName());
+
+            String name = thread.getJavaName();
+            if (id < 0) {
+                Long sequence = threadNameMap.compute(thread.getJavaName(), (k, v) -> v == null ? 0 : v + 1);
+                if (sequence > 0) {
+                    name += "-" + sequence;
+                }
+            }
+            javaThread.setName(name);
             return javaThread;
         });
     }
 
-    public void addEvent(RecordedEvent event) {
+    public synchronized void addEvent(RecordedEvent event) {
         this.events.add(event);
     }
 }

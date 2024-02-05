@@ -24,7 +24,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class CPUSampleExtractor extends CountExtractor {
-    private boolean isWallClock = false;
+    private boolean isWallClockEvents = false;
     protected static final List<String> INTERESTED = Collections.unmodifiableList(new ArrayList<String>() {
         {
             add(EventConstant.EXECUTION_SAMPLE);
@@ -45,13 +45,16 @@ public class CPUSampleExtractor extends CountExtractor {
     void visitActiveSetting(RecordedEvent event) {
         if (this.context.isExecutionSampleEventTypeId(event.getSettingFor().getEventId())) {
             if (EventConstant.WALL.equals(event.getString("name"))) {
-                this.isWallClock = true;
+                this.isWallClockEvents = true;
             }
+        }
+        if (EventConstant.EVENT.equals(event.getString("name")) && EventConstant.WALL.equals(event.getString("value"))) {
+            this.isWallClockEvents = true;
         }
     }
 
     public List<TaskCount> buildTaskCounts() {
-        if (this.isWallClock) {
+        if (this.isWallClockEvents) {
             return new ArrayList<>();
         } else {
             return super.buildTaskCounts();

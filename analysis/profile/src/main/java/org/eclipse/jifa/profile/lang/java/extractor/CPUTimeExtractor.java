@@ -14,16 +14,12 @@ package org.eclipse.jifa.profile.lang.java.extractor;
 
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jifa.profile.lang.java.common.EventConstant;
-import org.eclipse.jifa.profile.model.TaskData;
-import org.eclipse.jifa.profile.lang.java.model.jfr.RecordedEvent;
-import org.eclipse.jifa.profile.lang.java.model.jfr.RecordedStackTrace;
-import org.eclipse.jifa.profile.lang.java.model.jfr.RecordedThread;
+import org.eclipse.jifa.profile.lang.java.model.jfr.*;
+import org.eclipse.jifa.profile.model.*;
 import org.eclipse.jifa.profile.lang.java.util.GCUtil;
 import org.eclipse.jifa.profile.lang.java.util.StackTraceUtil;
 import org.eclipse.jifa.profile.lang.java.util.TimeUtil;
-import org.eclipse.jifa.profile.model.DimensionResult;
 import org.eclipse.jifa.profile.lang.java.model.AnalysisResult;
-import org.eclipse.jifa.profile.model.TaskCPUTime;
 import org.eclipse.jifa.profile.lang.java.model.JavaThreadCPUTime;
 
 import java.time.Duration;
@@ -34,13 +30,12 @@ import java.util.stream.Collectors;
 @Slf4j
 public class CPUTimeExtractor extends Extractor {
 
-    private static final List<String> INTERESTED = Collections.unmodifiableList(new ArrayList<String>() {
+    private static final List<String> INTERESTED = Collections.unmodifiableList(new ArrayList<>() {
         {
             add(EventConstant.UNSIGNED_INT_FLAG);
             add(EventConstant.GARBAGE_COLLECTION);
             add(EventConstant.ACTIVE_SETTING);
             add(EventConstant.CPU_INFORMATION);
-            add(EventConstant.CPC_RUNTIME_INFORMATION);
             add(EventConstant.ENV_VAR);
             add(EventConstant.THREAD_START);
             add(EventConstant.THREAD_CPU_LOAD);
@@ -48,7 +43,7 @@ public class CPUTimeExtractor extends Extractor {
         }
     });
 
-    static class CpuTaskData extends TaskData {
+    private static class CpuTaskData extends TaskData {
         CpuTaskData(RecordedThread thread) {
             super(thread);
         }
@@ -62,8 +57,6 @@ public class CPUTimeExtractor extends Extractor {
         long sampleCount;
 
         boolean firstThreadCPULoadEventIsFired;
-
-        Map<String, Long> vmOperations;
     }
 
     private static final int ASYNC_PROFILER_DEFAULT_INTERVAL = 10 * 1000 * 1000;
@@ -72,10 +65,10 @@ public class CPUTimeExtractor extends Extractor {
     private long period = -1;
 
     private long threadCPULoadEventId = -1;
-    private boolean executionSampleByJFR = true;
+    private boolean profiledByJFR = true;
 
     private int cpuCores;
-    private long intervalAsync; // unit: nano
+    private long intervalAsyncProfiler; // unit: nano
     private long intervalJFR; // unit: nano
 
     private int concurrentGCThreads = -1;
@@ -84,7 +77,11 @@ public class CPUTimeExtractor extends Extractor {
     private long parallelGCWallTime = 0;
     private long serialGCWallTime = 0;
 
-    private boolean isWallClock = false;
+    private boolean isWallClockEvents = false;
+
+    private static final RecordedStackTrace DUMMY_STACK_TRACE = newDummyStackTrace("", "", "NO Frame");
+    private static final RecordedThread DUMMY_THREAD = new RecordedThread("Dummy Thread", -1L, -1L);
+    private static final RecordedThread GC_THREAD = new RecordedThread("GC Thread", -10L, -10L);
 
     public CPUTimeExtractor(JFRAnalysisContext context) {
         super(context, INTERESTED);
@@ -95,27 +92,8 @@ public class CPUTimeExtractor extends Extractor {
         }
     }
 
-    private long calcProcCpuLoadPeriod(JFRAnalysisContext context) {
-        List<RecordedEvent> events = context.getEvents();
-        List<RecordedEvent> cpuLoadEvents = events.stream().filter(
-                item -> EventConstant.PROCESS_CPU_LOAD.equals(item.getEventType().name())).toList();
-        if (cpuLoadEvents.size() < 2) {
-            throw new RuntimeException(String.format("at least 2 %s events needed", EventConstant.PROCESS_CPU_LOAD));
-        }
-
-        long start = cpuLoadEvents.get(0).getStartTimeNanos();
-        long end = cpuLoadEvents.get(cpuLoadEvents.size() - 1).getStartTimeNanos();
-        return (end - start) / (cpuLoadEvents.size() - 1);
-    }
-
     CpuTaskData getThreadData(RecordedThread thread) {
         return data.computeIfAbsent(thread.getJavaThreadId(), i -> new CpuTaskData(thread));
-    }
-
-    CpuTaskData getFakeThread() {
-        long threadId = -1L;
-        return data.computeIfAbsent(threadId, i -> new CpuTaskData(
-                new RecordedThread(-1L, "Fake$Thread", -1L, -1L)));
     }
 
     private void updatePeriod(String value) {
@@ -153,13 +131,17 @@ public class CPUTimeExtractor extends Extractor {
             updatePeriod(event.getValue("value"));
         }
 
+        if (EventConstant.EVENT.equals(event.getString("name")) && EventConstant.WALL.equals(event.getString("value"))) {
+            this.isWallClockEvents = true;
+        }
+
         if (this.context.isExecutionSampleEventTypeId(event.getSettingFor().getEventId())) {
             if (EventConstant.WALL.equals(event.getString("name"))) {
-                this.isWallClock = true;
+                this.isWallClockEvents = true;
             } else if (EventConstant.INTERVAL.equals(event.getString("name"))) {
                 // async-profiler is "interval"
-                this.intervalAsync = Long.parseLong(event.getString("value"));
-                this.executionSampleByJFR = false;
+                this.intervalAsyncProfiler = Long.parseLong(event.getString("value"));
+                this.profiledByJFR = false;
             } else if (EventConstant.PERIOD.equals(event.getString("name"))) {
                 // JFR is "period"
                 try {
@@ -175,13 +157,6 @@ public class CPUTimeExtractor extends Extractor {
     void visitCPUInformation(RecordedEvent event) {
         if (cpuCores == 0) {
             cpuCores = event.getInt("hwThreads");
-        }
-    }
-
-    @Override
-    void visitCPCRuntimeInformation(RecordedEvent event) {
-        if (event.getInt("availableProcessors") > 0) {
-            cpuCores = event.getInt("availableProcessors");
         }
     }
 
@@ -220,23 +195,10 @@ public class CPUTimeExtractor extends Extractor {
     }
 
     @Override
-    void visitProcessCPULoad(RecordedEvent event) {
-        if (period == -1) {
-            throw new IllegalStateException("invalid period");
-        }
-        CpuTaskData cpuTaskData = getFakeThread();
-        long nanos = period;
-        cpuTaskData.user += (long) (event.getFloat("jvmUser") * nanos);
-        cpuTaskData.system += (long) (event.getFloat("jvmSystem") * nanos);
-
-        throw new RuntimeException("should not reach here");
-    }
-
-    @Override
     void visitExecutionSample(RecordedEvent event) {
         RecordedStackTrace stackTrace = event.getStackTrace();
         if (stackTrace == null) {
-            return;
+            stackTrace = DUMMY_STACK_TRACE;
         }
 
         RecordedThread thread = event.getThread("eventThread");
@@ -244,7 +206,7 @@ public class CPUTimeExtractor extends Extractor {
             thread = event.getThread("sampledThread");
         }
         if (thread == null) {
-            return;
+            thread = DUMMY_THREAD;
         }
         CpuTaskData cpuTaskData = getThreadData(thread);
 
@@ -256,65 +218,36 @@ public class CPUTimeExtractor extends Extractor {
         cpuTaskData.sampleCount++;
     }
 
-    @Override
-    void visitExecuteVMOperation(RecordedEvent event) {
-        RecordedThread caller = event.getThread("caller");
-        if (caller == null) {
-            caller = event.getThread("eventThread");
-        }
-
-        CpuTaskData cpuTaskData = getThreadData(caller);
-
-        String operation = event.getString("operation");
-        if (cpuTaskData.vmOperations == null) {
-            cpuTaskData.vmOperations = new HashMap<>();
-        }
-
-        long duration = event.getDuration().toNanos();
-        cpuTaskData.vmOperations.compute(operation, (k, d) -> duration + (d == null ? 0 : d));
-    }
-
-    private boolean isSerialVMOperation(String name) {
-        return "HandshakeOneThread".equals(name);
-    }
-
     private List<TaskCPUTime> buildThreadCPUTime() {
         List<TaskCPUTime> threadCPUTimes = new ArrayList<>();
-        if (this.isWallClock) {
+        if (this.isWallClockEvents) {
             return threadCPUTimes;
         }
         for (CpuTaskData data : this.data.values()) {
-            if (data.getSamples() == null && data.vmOperations == null) {
+            if (data.getSamples() == null) {
                 continue;
             }
             JavaThreadCPUTime threadCPUTime = new JavaThreadCPUTime();
             threadCPUTime.setTask(context.getThread(data.getThread()));
 
             if (data.getSamples() != null) {
-                if (this.executionSampleByJFR) {
+                if (this.profiledByJFR) {
                     if (intervalJFR <= 0) {
                         throw new RuntimeException("need profiling interval to calculate approximate CPU time");
                     }
                     long cpuTimeMax = (data.user + data.system) * cpuCores;
                     long sampleTime = data.sampleCount * intervalJFR;
-                    threadCPUTime.setUser(Math.min(sampleTime, cpuTimeMax));
+                    if (cpuTimeMax == 0) {
+                        threadCPUTime.setUser(sampleTime);
+                    } else {
+                        threadCPUTime.setUser(Math.min(sampleTime, cpuTimeMax));
+                    }
                     threadCPUTime.setSystem(0);
                 } else {
-                    if (intervalAsync <= 0) {
-                        String interval = System.getProperty("asyncProfilerCpuIntervalMs");
-                        if (interval != null && !interval.isEmpty()) {
-                            try {
-                                intervalAsync = Long.parseLong(interval) * 1000 * 1000;
-                            } catch (Exception e) {
-                                log.error(e.getMessage(), e);
-                            }
-                        }
-                        if (intervalAsync <= 0) {
-                            log.info("use default cpu interval 10ms");
-                            intervalAsync = ASYNC_PROFILER_DEFAULT_INTERVAL;
-                        }
+                    if (intervalAsyncProfiler <= 0) {
+                        intervalAsyncProfiler = detectAsyncProfilerInterval();
                     }
-                    threadCPUTime.setUser(data.sampleCount * intervalAsync);
+                    threadCPUTime.setUser(data.sampleCount * intervalAsyncProfiler);
                     threadCPUTime.setSystem(0);
                 }
 
@@ -326,18 +259,20 @@ public class CPUTimeExtractor extends Extractor {
                 ));
             }
 
-            if (data.vmOperations != null && this.executionSampleByJFR) {
-                Map<String, Long> vmOperations = new HashMap<>();
-                for (Map.Entry<String, Long> vmOperation : data.vmOperations.entrySet()) {
-                    vmOperations.put(
-                            vmOperation.getKey(),
-                            vmOperation.getValue() * (isSerialVMOperation(vmOperation.getKey()) ? 1 : cpuCores)
-                    );
-                }
-                threadCPUTime.setVmOperations(vmOperations);
-            }
-
             threadCPUTimes.add(threadCPUTime);
+        }
+
+        if (this.profiledByJFR) {
+            long gcTime = buildGCCpuTime();
+            if (gcTime > 0) {
+                JavaThreadCPUTime gc = new JavaThreadCPUTime();
+                gc.setTask(context.getThread(GC_THREAD));
+                gc.setUser(gcTime);
+                Map<StackTrace, Long> gcSamples = new HashMap<>();
+                gcSamples.put(StackTraceUtil.build(newDummyStackTrace("", "JVM", "GC"), context.getSymbols()), 1L);
+                gc.setSamples(gcSamples);
+                threadCPUTimes.add(gc);
+            }
         }
 
         threadCPUTimes.sort((o1, o2) -> {
@@ -359,10 +294,41 @@ public class CPUTimeExtractor extends Extractor {
     @Override
     public void fillResult(AnalysisResult result) {
         DimensionResult<TaskCPUTime> cpuResult = new DimensionResult<>();
-        cpuResult.setList(buildThreadCPUTime());
+        List<TaskCPUTime> list = buildThreadCPUTime();
+        cpuResult.setList(list);
         result.setCpuTime(cpuResult);
-        if (this.executionSampleByJFR) {
-            result.setGcCPUTime(buildGCCpuTime());
+    }
+
+    private static RecordedStackTrace newDummyStackTrace(String packageName, String className, String methodName) {
+        RecordedStackTrace st = new RecordedStackTrace();
+        List<RecordedFrame> list = new ArrayList<>();
+        RecordedFrame f = new RecordedFrame();
+        RecordedMethod m = new RecordedMethod();
+        RecordedClass c = new RecordedClass();
+        c.setPackageName(packageName);
+        c.setName(className);
+        m.setType(c);
+        f.setMethod(m);
+        m.setName(methodName);
+        list.add(f);
+        st.setFrames(list);
+        return st;
+    }
+
+    private static long detectAsyncProfilerInterval() {
+        long interval = 0;
+        String intervalStr = System.getProperty("asyncProfilerCpuIntervalMs");
+        if (intervalStr != null && !intervalStr.isEmpty()) {
+            try {
+                interval = Long.parseLong(intervalStr) * 1000 * 1000;
+            } catch (Exception e) {
+                log.error(e.getMessage(), e);
+            }
         }
+        if (interval <= 0) {
+            log.info("use default cpu interval 10ms");
+            interval = ASYNC_PROFILER_DEFAULT_INTERVAL;
+        }
+        return interval;
     }
 }

@@ -12,28 +12,7 @@
  ********************************************************************************/
 package org.eclipse.jifa.profile.lang.java.model;
 
-import lombok.Getter;
-import lombok.Setter;
 import org.eclipse.jifa.profile.model.TaskCPUTime;
 
-import java.util.Map;
-
-@Setter
-@Getter
 public class JavaThreadCPUTime extends TaskCPUTime {
-    private Map<String, Long> vmOperations;
-
-    public long totalCPUTime() {
-        long result = super.totalCPUTime();
-        if (vmOperations != null) {
-            for (Long d : vmOperations.values()) {
-                result += d;
-            }
-        }
-        return result;
-    }
-
-    public long totalCPUTimeExcludeVMOperations() {
-        return super.totalCPUTime();
-    }
 }

@@ -14,9 +14,9 @@ package org.eclipse.jifa.profile.lang.java.helper;
 
 import org.apache.commons.lang3.tuple.Triple;
 import org.eclipse.jifa.profile.lang.java.model.JavaThreadCPUTime;
-import org.eclipse.jifa.profile.lang.java.util.VMOperationUtil;
 import org.eclipse.jifa.profile.model.StackTrace;
 import org.eclipse.jifa.profile.model.Frame;
+import org.eclipse.jifa.profile.model.TaskCount;
 import org.eclipse.jifa.profile.model.TaskResultBase;
 
 import java.math.BigDecimal;
@@ -33,7 +33,7 @@ public class SimpleFlameGraph {
 
     public static SimpleFlameGraph parse(JavaThreadCPUTime tct) {
         SimpleFlameGraph g = new SimpleFlameGraph();
-        long totalCpuTime = tct.totalCPUTimeExcludeVMOperations();
+        long totalCpuTime = tct.totalCPUTime();
         Map<StackTrace, Long> samples = tct.getSamples();
 
         if (samples != null) {
@@ -44,14 +44,6 @@ public class SimpleFlameGraph {
             samples.keySet().forEach(item -> {
                 long count = samples.get(item);
                 g.addStackTrace(item, stackTraceCpuTime * count);
-            });
-        }
-
-        Map<String, Long> vmOperations = tct.getVmOperations();
-        if (vmOperations != null && !vmOperations.isEmpty()) {
-            vmOperations.keySet().forEach(item -> {
-                long time = vmOperations.get(item);
-                g.addStackTrace(VMOperationUtil.makeStackTrace(item), time);
             });
         }
 

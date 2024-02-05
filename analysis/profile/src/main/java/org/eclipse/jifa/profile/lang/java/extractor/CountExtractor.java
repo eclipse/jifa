@@ -70,7 +70,7 @@ public abstract class CountExtractor extends Extractor {
             TaskCount ts = new TaskCount();
             Task ta = new Task();
             ta.setId(data.getThread().getJavaThreadId());
-            ta.setName(data.getThread().getJavaName());
+            ta.setName(context.getThread(data.getThread()).getName());
             ts.setTask(ta);
 
             if (data.getSamples() != null) {

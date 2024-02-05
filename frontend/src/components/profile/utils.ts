@@ -13,6 +13,8 @@
 export const toReadableValue = (unit: string, value: number) => {
   if (unit === 'ns') {
     let result = '';
+    // to ns
+    const ns = value % 1000000;
 
     // to ms
     value = Math.round(value / 1000000);
@@ -44,12 +46,17 @@ export const toReadableValue = (unit: string, value: number) => {
     }
 
     if (result.length === 0) {
-      result = '0ms';
+      if (ns > 0) {
+        return ns + "ns";
+      } else {
+        return '0ms';
+      }
     }
 
     return result;
   } else if (unit === 'byte') {
     let result = '';
+    const bytes = value % 1024;
 
     // to Kilobytes
     value = Math.round(value / 1024);
@@ -92,7 +99,11 @@ export const toReadableValue = (unit: string, value: number) => {
     }
 
     if (result.length === 0) {
-      result = '0B';
+      if (bytes == 0) {
+        return '0B';
+      } else {
+        return bytes + "bytes"
+      }
     }
 
     return result;

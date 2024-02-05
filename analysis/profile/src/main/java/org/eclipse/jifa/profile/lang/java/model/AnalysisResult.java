@@ -25,8 +25,6 @@ public class AnalysisResult {
 
     private DimensionResult<TaskCPUTime> cpuTime;
 
-    private long gcCPUTime = 0;
-
     private DimensionResult<TaskCount> cpuSample;
 
     private DimensionResult<TaskSum> wallClock;

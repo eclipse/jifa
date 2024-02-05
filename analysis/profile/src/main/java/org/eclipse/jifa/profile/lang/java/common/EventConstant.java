@@ -54,7 +54,8 @@ public abstract class EventConstant {
     public static String THREAD_SLEEP = "jdk.ThreadSleep";
 
     public static String PERIOD = "period";
-    public static String INTERVAL = "interval";
 
+    public static String INTERVAL = "interval";
     public static String WALL = "wall";
+    public static String EVENT = "event";
 }

@@ -30,7 +30,7 @@ public class RecordedThread {
     @Setter
     private long osThreadId;
 
-    public RecordedThread(long id, String javaName, long javaThreadId, long osThreadId) {
+    public RecordedThread(String javaName, long javaThreadId, long osThreadId) {
         this.javaName = javaName;
         this.javaThreadId = javaThreadId;
         this.osThreadId = osThreadId;
