@@ -38,6 +38,7 @@ import net.schmizz.sshj.xfer.scp.SCPDownloadClient;
 import net.schmizz.sshj.xfer.scp.SCPFileTransfer;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.eclipse.jifa.common.enums.CommonErrorCode;
 import org.eclipse.jifa.common.util.ExecutorFactory;
 import org.eclipse.jifa.common.util.Validate;
 import org.eclipse.jifa.server.ConfigurationAccessor;
@@ -78,12 +79,26 @@ public class StorageServiceImpl extends ConfigurationAccessor implements Storage
 
     private KeyProvider sshKeyProvider;
 
+    private boolean available;
+
     public StorageServiceImpl(CipherService cipherService) {
         this.cipherService = cipherService;
     }
 
     @PostConstruct
     private void init() {
+        if (isElasticWorker()) {
+            return;
+        }
+
+        if (isMaster()) {
+            if (config.getStoragePath() == null) {
+                return;
+            }
+
+            // TODO: check k8s environment
+        }
+
         basePath = config.getStoragePath();
         Validate.isTrue(Files.isDirectory(basePath));
 
@@ -107,20 +122,24 @@ public class StorageServiceImpl extends ConfigurationAccessor implements Storage
         };
 
         executor = ExecutorFactory.newExecutor("File Transfer");
+        available = true;
     }
 
     @Override
     public long getAvailableSpace() throws IOException {
+        Validate.isTrue(available, CommonErrorCode.INTERNAL_ERROR);
         return Files.getFileStore(basePath).getUsableSpace();
     }
 
     @Override
     public long getTotalSpace() throws IOException {
+        Validate.isTrue(available, CommonErrorCode.INTERNAL_ERROR);
         return Files.getFileStore(basePath).getTotalSpace();
     }
 
     @Override
     public void handleTransfer(FileTransferRequest request, String destFilename, FileTransferListener listener) {
+        Validate.isTrue(available, CommonErrorCode.INTERNAL_ERROR);
         Path destination = provision(request.getType(), destFilename);
         executor.execute(() -> {
             boolean success = false;
@@ -149,6 +168,7 @@ public class StorageServiceImpl extends ConfigurationAccessor implements Storage
 
     @Override
     public long handleUpload(FileType type, MultipartFile file, String destFilename) throws IOException {
+        Validate.isTrue(available, CommonErrorCode.INTERNAL_ERROR);
         Path destination = provision(type, destFilename);
         try {
             file.transferTo(destination);
@@ -161,6 +181,7 @@ public class StorageServiceImpl extends ConfigurationAccessor implements Storage
 
     @Override
     public void handleLocalFile(FileType type, Path path, String destFilename) throws IOException {
+        Validate.isTrue(available, CommonErrorCode.INTERNAL_ERROR);
         Path destination = provision(type, destFilename);
         try {
             Files.copy(path, destination);
@@ -172,17 +193,20 @@ public class StorageServiceImpl extends ConfigurationAccessor implements Storage
 
     @Override
     public Path locationOf(FileType type, String name) {
+        Validate.isTrue(available, CommonErrorCode.INTERNAL_ERROR);
         return basePath.resolve(type.getStorageDirectoryName()).resolve(name).resolve(name);
     }
 
     @Override
     public void scavenge(FileType type, String name) {
+        Validate.isTrue(available, CommonErrorCode.INTERNAL_ERROR);
         Path directory = basePath.resolve(type.getStorageDirectoryName()).resolve(name);
         FileUtils.deleteQuietly(directory.toFile());
     }
 
     @Override
     public Map<FileType, Set<String>> getAllFiles() {
+        Validate.isTrue(available, CommonErrorCode.INTERNAL_ERROR);
         Map<FileType, Set<String>> map = new HashMap<>();
         for (FileType type : FileType.values()) {
             Path directory = basePath.resolve(type.getStorageDirectoryName());
@@ -194,6 +218,11 @@ public class StorageServiceImpl extends ConfigurationAccessor implements Storage
             }
         }
         return map;
+    }
+
+    @Override
+    public boolean available() {
+        return available;
     }
 
     private Path provision(FileType type, String name) {

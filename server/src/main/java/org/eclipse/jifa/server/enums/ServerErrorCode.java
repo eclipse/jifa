@@ -29,7 +29,9 @@ public enum ServerErrorCode implements ErrorCode {
     FILE_TRANSFER_METHOD_DISABLED("File transfer method disabled"),
     STATIC_WORKER_UNAVAILABLE("Static worker Unavailable"),
     ELASTIC_WORKER_NOT_READY("Elastic worker not ready"),
-    ELASTIC_WORKER_STARTUP_FAILURE("Elastic worker startup failure");
+    ELASTIC_WORKER_STARTUP_FAILURE("Elastic worker startup failure"),
+    NO_AVAILABLE_LOCATION("No available location"),
+    ;
 
     private final String message;
 

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
+ * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -13,14 +13,14 @@
 package org.eclipse.jifa.server.repository;
 
 import org.eclipse.jifa.server.condition.Cluster;
-import org.eclipse.jifa.server.domain.entity.cluster.FileStaticWorkerBindEntity;
+import org.eclipse.jifa.server.domain.entity.cluster.StaticWorkerLabelEntity;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.Optional;
+import java.util.List;
 
 @Cluster
 @Repository
-public interface FileStaticWorkerBindRepo extends CrudRepository<FileStaticWorkerBindEntity, Long> {
-    Optional<FileStaticWorkerBindEntity> findByFileId(long fileId);
+public interface StaticWorkerLabelRepo extends CrudRepository<StaticWorkerLabelEntity, Long> {
+    List<StaticWorkerLabelEntity> findByLabel(String label);
 }

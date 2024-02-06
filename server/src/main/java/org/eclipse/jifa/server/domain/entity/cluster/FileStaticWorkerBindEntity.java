@@ -13,20 +13,18 @@
 package org.eclipse.jifa.server.domain.entity.cluster;
 
 import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapsId;
 import jakarta.persistence.OneToOne;
 import lombok.Getter;
 import lombok.Setter;
+import org.eclipse.jifa.server.domain.entity.shared.BaseEntity;
 import org.eclipse.jifa.server.domain.entity.shared.file.FileEntity;
 
 @Entity(name = "file_static_worker_binds")
 @Getter
 @Setter
-public class FileStaticWorkerBind {
-    @Id
-    private Long id;
+public class FileStaticWorkerBindEntity extends BaseEntity  {
 
     @OneToOne
     @MapsId

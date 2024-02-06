@@ -10,12 +10,12 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-package org.eclipse.jifa.server.domain.dto;
+package org.eclipse.jifa.server.enums;
 
-import org.eclipse.jifa.server.domain.entity.cluster.StaticWorkerEntity;
+public enum FileLocationRule {
+    LABELED_STATIC_WORKERS,
 
-public record FileLocation(boolean useSharedStorage, StaticWorkerEntity staticWorker) {
-    public boolean valid() {
-        return useSharedStorage || staticWorker != null;
-    }
+    STATIC_WORKERS,
+
+    SHARED_STORAGE
 }

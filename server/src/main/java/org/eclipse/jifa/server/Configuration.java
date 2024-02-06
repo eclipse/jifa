@@ -19,6 +19,7 @@ import jakarta.validation.constraints.Positive;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jifa.common.util.Validate;
 import org.eclipse.jifa.server.enums.FileTransferMethod;
 import org.eclipse.jifa.server.enums.Role;
@@ -151,14 +152,16 @@ public class Configuration {
 
     @PostConstruct
     private void init() {
-//            if (StringUtils.isNotBlank(storagePVCName)) {
-//                Validate.notBlank(serviceAccountName,
-//                                  "jifa.service-account-name must be set and not blank when storage-pvc-name is set");
-//                Validate.notBlank(elasticWorkerImage,
-//                                  "jifa.elastic-worker-image name must be set and not blank when storage-pve-name is set");
-//
-//            }
-        if (role != Role.MASTER) {
+        if (role == Role.MASTER) {
+            if (storagePath != null) {
+                Validate.notBlank(storagePVCName,
+                                  "jifa.service-pvc-name must be set and not blank when storage-path is set for master");
+                Validate.notBlank(serviceAccountName,
+                                  "jifa.service-account-name must be set and not blank when storage-path is set for master");
+                Validate.notBlank(elasticWorkerImage,
+                                  "jifa.elastic-worker-image name must be set and not blank when storage-path is set for master");
+            }
+        } else {
             Validate.notNull(storagePath, "jifa.storage-path must be set");
         }
 

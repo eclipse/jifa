@@ -15,6 +15,7 @@ package org.eclipse.jifa.server.service.impl;
 import io.netty.channel.ChannelOption;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 import io.netty.handler.timeout.WriteTimeoutHandler;
+import org.eclipse.jifa.common.domain.exception.ShouldNotReachHereException;
 import org.eclipse.jifa.common.util.Validate;
 import org.eclipse.jifa.server.ConfigurationAccessor;
 import org.eclipse.jifa.server.Constant;
@@ -22,7 +23,9 @@ import org.eclipse.jifa.server.condition.Master;
 import org.eclipse.jifa.server.domain.dto.FileLocation;
 import org.eclipse.jifa.server.domain.dto.HttpRequestToWorker;
 import org.eclipse.jifa.server.domain.entity.cluster.ElasticWorkerEntity;
+import org.eclipse.jifa.server.domain.entity.cluster.FileLocationRuleEntity;
 import org.eclipse.jifa.server.domain.entity.cluster.StaticWorkerEntity;
+import org.eclipse.jifa.server.domain.entity.cluster.StaticWorkerLabelEntity;
 import org.eclipse.jifa.server.domain.entity.cluster.WorkerEntity;
 import org.eclipse.jifa.server.domain.entity.shared.file.FileEntity;
 import org.eclipse.jifa.server.domain.entity.shared.user.UserEntity;
@@ -32,7 +35,11 @@ import org.eclipse.jifa.server.enums.ElasticWorkerPurpose;
 import org.eclipse.jifa.server.enums.ElasticWorkerState;
 import org.eclipse.jifa.server.enums.FileType;
 import org.eclipse.jifa.server.repository.ElasticWorkerRepo;
+import org.eclipse.jifa.server.repository.FileLocationRuleRepo;
+import org.eclipse.jifa.server.repository.StaticWorkerLabelRepo;
+import org.eclipse.jifa.server.repository.StaticWorkerRepo;
 import org.eclipse.jifa.server.service.ElasticWorkerScheduler;
+import org.eclipse.jifa.server.service.StorageService;
 import org.eclipse.jifa.server.service.UserService;
 import org.eclipse.jifa.server.service.WorkerService;
 import org.jetbrains.annotations.NotNull;
@@ -69,6 +76,7 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.time.Instant;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -81,30 +89,35 @@ import static org.eclipse.jifa.common.util.GsonHolder.GSON;
 import static org.eclipse.jifa.server.Constant.HTTP_API_PREFIX;
 import static org.eclipse.jifa.server.domain.entity.cluster.ElasticWorkerEntity.MAX_FAILURE_MESSAGE_LENGTH;
 import static org.eclipse.jifa.server.enums.ElasticWorkerPurpose.FILE_ANALYSIS;
+import static org.eclipse.jifa.server.enums.ServerErrorCode.NO_AVAILABLE_LOCATION;
 
 @Master
 @Service
 public class WorkerServiceImpl extends ConfigurationAccessor implements WorkerService {
 
     private final UserService userService;
-
     protected final WebClient webClient;
-
     private static final int DELETION_DELAY = 60;
-
+    private final StorageService storageService;
+    private final FileLocationRuleRepo fileLocationRuleRepo;
+    private final StaticWorkerRepo staticWorkerRepo;
+    private final StaticWorkerLabelRepo staticWorkerLabelRepo;
     private final ElasticWorkerRepo elasticWorkerRepo;
-
     private final ElasticWorkerScheduler elasticWorkerScheduler;
-
     private final TaskScheduler taskScheduler;
-
     private final RetryTemplate retryTemplateForAcquiringElasticWorker;
 
     protected WorkerServiceImpl(UserService userService,
-                                ElasticWorkerRepo elasticWorkerRepo,
-                                ElasticWorkerScheduler elasticWorkerScheduler,
+                                StorageService storageService,
+                                FileLocationRuleRepo fileLocationRuleRepo,
+                                StaticWorkerRepo staticWorkerRepo, StaticWorkerLabelRepo staticWorkerLabelRepo,
+                                ElasticWorkerRepo elasticWorkerRepo, ElasticWorkerScheduler elasticWorkerScheduler,
                                 TaskScheduler taskScheduler) {
         this.userService = userService;
+        this.storageService = storageService;
+        this.fileLocationRuleRepo = fileLocationRuleRepo;
+        this.staticWorkerRepo = staticWorkerRepo;
+        this.staticWorkerLabelRepo = staticWorkerLabelRepo;
         this.elasticWorkerRepo = elasticWorkerRepo;
         this.elasticWorkerScheduler = elasticWorkerScheduler;
         this.taskScheduler = taskScheduler;
@@ -137,6 +150,134 @@ public class WorkerServiceImpl extends ConfigurationAccessor implements WorkerSe
         backOffPolicy.setMinBackOffPeriod(500);
         backOffPolicy.setMaxBackOffPeriod(5000);
         retryTemplateForAcquiringElasticWorker.setBackOffPolicy(new UniformRandomBackOffPolicy());
+    }
+
+    @Override
+    public FileLocation decideLocationForNewFile(UserEntity user, FileType type) {
+        FileLocationRuleEntity rule = null;
+        if (fileLocationRuleRepo.count() > 0) {
+            // find by user and file type
+            rule = fileLocationRuleRepo.findByUserAndFileType(user, type);
+            if (rule == null) {
+                // find by user
+                rule = fileLocationRuleRepo.findByUserAndFileType(user, null);
+            }
+            if (rule == null) {
+                // find by file type
+                rule = fileLocationRuleRepo.findByUserAndFileType(null, type);
+            }
+            if (rule == null) {
+                // default
+                rule = fileLocationRuleRepo.findByUserAndFileType(null, null);
+            }
+        }
+
+        Optional<StaticWorkerEntity> staticWorker;
+
+        if (rule == null) {
+            if (storageService.available()) {
+                return new FileLocation(true, null);
+            }
+
+            staticWorker = staticWorkerRepo.findFirstByOrderByAvailableSpaceDesc();
+        } else {
+
+            switch (rule.getRule()) {
+                case SHARED_STORAGE -> {
+                    return new FileLocation(true, null);
+                }
+
+                case STATIC_WORKERS -> {
+                    staticWorker = staticWorkerRepo.findFirstByOrderByAvailableSpaceDesc();
+                }
+
+                case LABELED_STATIC_WORKERS -> {
+                    staticWorker = staticWorkerLabelRepo.findByLabel(rule.getLabel()).stream()
+                                                        .sorted(Comparator.comparingLong(e -> e.getStaticWorker().getAvailableSpace()))
+                                                        .reduce((f, s) -> s).map(StaticWorkerLabelEntity::getStaticWorker);
+                }
+
+                default -> throw new ShouldNotReachHereException();
+            }
+        }
+
+        if (staticWorker.isPresent()) {
+            return new FileLocation(false, staticWorker.get());
+        }
+
+        throw CE(NO_AVAILABLE_LOCATION);
+    }
+
+    @Override
+    public long forwardUploadRequestToStaticWorker(StaticWorkerEntity worker, FileType type, MultipartFile file) throws Throwable {
+        MultipartBodyBuilder builder = new MultipartBodyBuilder();
+        try {
+            builder.part("file", new ByteArrayResource(file.getBytes()))
+                   .filename(file.getOriginalFilename() != null ? file.getOriginalFilename() : Constant.DEFAULT_FILENAME)
+                   .contentType(MediaType.APPLICATION_OCTET_STREAM);
+            builder.part("type", type.name());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        UriBuilder uriBuilder = new DefaultUriBuilderFactory().builder()
+                                                              .scheme("http")
+                                                              .host(worker.getHostAddress())
+                                                              .port(worker.getPort())
+                                                              .path(HTTP_API_PREFIX + "/files/upload");
+
+        WebClient.RequestBodySpec spec = webClient.method(HttpMethod.POST)
+                                                  .uri(uriBuilder.build());
+
+        String jwtToken = userService.getCurrentUserJwtTokenOrNull();
+        if (jwtToken != null) {
+            spec.header(HttpHeaders.AUTHORIZATION, "Bearer " + jwtToken);
+        }
+
+        return spec.contentType(MediaType.MULTIPART_FORM_DATA)
+                   .body(BodyInserters.fromMultipartData(builder.build()))
+                   .exchangeToMono(response -> {
+                       if (!response.statusCode().is2xxSuccessful()) {
+                           return response.createError();
+                       }
+                       return response.bodyToMono(String.class).map(s -> GSON.fromJson(s, Long.class));
+                   }).toFuture().get();
+    }
+
+    @Override
+    public Resource forwardDownloadRequestToStaticWorker(StaticWorkerEntity worker, long fileId) throws Throwable {
+        Validate.isTrue(isMaster(), INTERNAL_ERROR);
+        UriBuilder uriBuilder = new DefaultUriBuilderFactory().builder()
+                                                              .scheme("http")
+                                                              .host(worker.getHostAddress())
+                                                              .port(worker.getPort())
+                                                              .path(HTTP_API_PREFIX + "/files/" + fileId + "/download");
+        return new UrlResource(uriBuilder.build()) {
+            @Override
+            protected void customizeConnection(@NotNull HttpURLConnection con) throws IOException {
+                super.customizeConnection(con);
+                String jwtToken = userService.getCurrentUserJwtTokenOrNull();
+                if (jwtToken != null) {
+                    con.setRequestProperty(HttpHeaders.AUTHORIZATION, "Bearer " + userService.getCurrentUserJwtTokenOrNull());
+                }
+            }
+        };
+    }
+
+    @Override
+    public ElasticWorkerState getElasticWorkerState(long workerId) {
+        return elasticWorkerRepo.findById(workerId).orElseThrow(() -> CE(INTERNAL_ERROR))
+                                .getState();
+    }
+
+    @Override
+    public ElasticWorkerEntity requestElasticWorkerForAnalysisApiRequest(FileEntity target) {
+        ElasticWorkerEntity worker = acquireElasticWorkerForAnalysis(target);
+        return switch (worker.getState()) {
+            case READY -> worker;
+            case STARTING -> throw new ElasticWorkerNotReadyException(worker.getId());
+            case FAILURE -> throw CE(INTERNAL_ERROR);
+        };
     }
 
     @Override
@@ -217,92 +358,16 @@ public class WorkerServiceImpl extends ConfigurationAccessor implements WorkerSe
         }).toFuture();
     }
 
-    @Override
-    public ElasticWorkerEntity requestElasticWorkerForAnalysisApiRequest(FileEntity target) {
-        ElasticWorkerEntity worker = acquireForAnalysis(target);
-        return switch (worker.getState()) {
-            case READY -> worker;
-            case STARTING -> throw new ElasticWorkerNotReadyException(worker.getId());
-            case FAILURE -> throw CE(INTERNAL_ERROR);
-        };
-    }
-
-    @Override
-    public FileLocation decideLocationForNewFile(UserEntity user, FileType type) {
-        return new FileLocation(true, null);
-    }
-
-    @Override
-    public long forwardUploadRequestToStaticWorker(StaticWorkerEntity worker, FileType type, MultipartFile file) throws Throwable {
-        MultipartBodyBuilder builder = new MultipartBodyBuilder();
-        try {
-            builder.part("file", new ByteArrayResource(file.getBytes()))
-                   .filename(file.getOriginalFilename() != null ? file.getOriginalFilename() : Constant.DEFAULT_FILENAME)
-                   .contentType(MediaType.APPLICATION_OCTET_STREAM);
-            builder.part("type", type.name());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        UriBuilder uriBuilder = new DefaultUriBuilderFactory().builder()
-                                                              .scheme("http")
-                                                              .host(worker.getHostAddress())
-                                                              .port(worker.getPort())
-                                                              .path(HTTP_API_PREFIX + "/files/upload");
-
-        WebClient.RequestBodySpec spec = webClient.method(HttpMethod.POST)
-                                                  .uri(uriBuilder.build());
-
-        String jwtToken = userService.getCurrentUserJwtTokenOrNull();
-        if (jwtToken != null) {
-            spec.header(HttpHeaders.AUTHORIZATION, "Bearer " + jwtToken);
-        }
-
-        return spec.contentType(MediaType.MULTIPART_FORM_DATA)
-                   .body(BodyInserters.fromMultipartData(builder.build()))
-                   .exchangeToMono(response -> {
-                       if (!response.statusCode().is2xxSuccessful()) {
-                           return response.createError();
-                       }
-                       return response.bodyToMono(String.class).map(s -> GSON.fromJson(s, Long.class));
-                   }).toFuture().get();
-    }
-
-    @Override
-    public Resource forwardDownloadRequestToStaticWorker(StaticWorkerEntity worker, long fileId) throws Throwable {
-        Validate.isTrue(isMaster(), INTERNAL_ERROR);
-        UriBuilder uriBuilder = new DefaultUriBuilderFactory().builder()
-                                                              .scheme("http")
-                                                              .host(worker.getHostAddress())
-                                                              .port(worker.getPort())
-                                                              .path(HTTP_API_PREFIX + "/files/" + fileId + "/download");
-        return new UrlResource(uriBuilder.build()) {
-            @Override
-            protected void customizeConnection(@NotNull HttpURLConnection con) throws IOException {
-                super.customizeConnection(con);
-                String jwtToken = userService.getCurrentUserJwtTokenOrNull();
-                if (jwtToken != null) {
-                    con.setRequestProperty(HttpHeaders.AUTHORIZATION, "Bearer " + userService.getCurrentUserJwtTokenOrNull());
-                }
-            }
-        };
-    }
-
-    @Override
-    public ElasticWorkerState getElasticWorkerState(long workerId) {
-        return elasticWorkerRepo.findById(workerId).orElseThrow(() -> CE(INTERNAL_ERROR))
-                                .getState();
-    }
-
-    private ElasticWorkerEntity acquireForAnalysis(FileEntity target) {
-        return acquire(FILE_ANALYSIS, target.getId(), () -> {
+    private ElasticWorkerEntity acquireElasticWorkerForAnalysis(FileEntity target) {
+        return AcquireElasticWorker(FILE_ANALYSIS, target.getId(), () -> {
+            // TODO: need improvements
             long GB = 1024 * 1024 * 1024L;
             return (long) Math.max(GB, 1.3 * target.getSize());
         });
     }
 
     @SuppressWarnings("SameParameterValue")
-    private ElasticWorkerEntity acquire(ElasticWorkerPurpose purpose, long referenceId, Supplier<Long> requestedMemorySizeSupplier) {
+    private ElasticWorkerEntity AcquireElasticWorker(ElasticWorkerPurpose purpose, long referenceId, Supplier<Long> requestedMemorySizeSupplier) {
         return retryTemplateForAcquiringElasticWorker.execute(c -> {
 
             Optional<ElasticWorkerEntity> optional = elasticWorkerRepo.findByPurposeAndReferenceId(purpose, referenceId);
