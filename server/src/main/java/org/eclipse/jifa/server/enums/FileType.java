@@ -22,7 +22,7 @@ public enum FileType {
 
     THREAD_DUMP("thread-dump"),
 
-    PROFILE("profile");
+    JFR("jfr");
 
     private final String storageDirectoryName;
 

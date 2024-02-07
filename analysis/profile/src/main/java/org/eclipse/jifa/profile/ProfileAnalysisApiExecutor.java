@@ -28,7 +28,7 @@ import java.util.function.Predicate;
 public class ProfileAnalysisApiExecutor extends AbstractApiExecutor<ProfileAnalyzer> {
     @Override
     public String namespace() {
-        return "profile";
+        return "jfr";
     }
 
     @Override

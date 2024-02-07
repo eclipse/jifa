@@ -78,4 +78,4 @@ export const THREAD_DUMP = def(
   ThreadDump
 );
 
-export const PROFILE = def('PROFILE', 'jfr', 'profile', ProfileToolBar, null, Profile);
+export const JFR = def('JFR', 'jfr', 'jfr', ProfileToolBar, null, Profile);

@@ -134,7 +134,7 @@ watchEffect(() => {
         params.method = 'UPLOAD';
         break;
       }
-      case 'PROFILE': {
+      case 'JFR': {
         params.method = 'UPLOAD';
         break;
       }

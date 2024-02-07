@@ -13,8 +13,7 @@
 package org.eclipse.jifa.profile.enums;
 
 public enum Language {
-    JAVA("java"),
-    GO("go");
+    JAVA("java");
 
     private final String lang;
 
@@ -24,9 +23,5 @@ public enum Language {
 
     public static boolean isJava(String lang) {
         return JAVA.lang.equalsIgnoreCase(lang);
-    }
-
-    public static boolean isGo(String lang) {
-        return GO.lang.equalsIgnoreCase(lang);
     }
 }
