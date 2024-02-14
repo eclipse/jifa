@@ -51,7 +51,7 @@ dependencies {
 
     implementation 'com.aliyun.oss:aliyun-sdk-oss:3.17.0'
 
-    implementation 'com.amazonaws:aws-java-sdk-s3:1.12.506'
+    implementation 'com.amazonaws:aws-java-sdk-s3:1.12.657'
 
     // test
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
