@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -125,10 +125,10 @@ public class K8SWorkerScheduler extends ConfigurationAccessor implements Elastic
                                         .serviceAccountName(config.getServiceAccountName())
                                         .restartPolicy("Never"));
 
-                api.createNamespacedPod(K8S_NAMESPACE, pod, null, null, null, null);
+                api.createNamespacedPod(K8S_NAMESPACE, pod).execute();
 
                 while (true) {
-                    pod = api.readNamespacedPod(podName, K8S_NAMESPACE, null);
+                    pod = api.readNamespacedPod(podName, K8S_NAMESPACE).execute();
                     V1PodStatus status = pod.getStatus();
                     String podIP = status != null ? status.getPodIP() : null;
                     if (podIP != null) {
@@ -152,7 +152,7 @@ public class K8SWorkerScheduler extends ConfigurationAccessor implements Elastic
                             }
                         }
                     }
-                    pod = api.readNamespacedPod(podName, K8S_NAMESPACE, null);
+                    pod = api.readNamespacedPod(podName, K8S_NAMESPACE).execute();
                 }
             } catch (Throwable t) {
                 if (t instanceof ApiException apiException) {
@@ -170,13 +170,13 @@ public class K8SWorkerScheduler extends ConfigurationAccessor implements Elastic
 
     @Override
     public void terminate(long identity) throws ApiException {
-        api.deleteNamespacedPod(buildPodUniqueName(identity), K8S_NAMESPACE, null, null, 0, null, null, null);
+        api.deleteNamespacedPod(buildPodUniqueName(identity), K8S_NAMESPACE).execute();
     }
 
     @Override
     public void terminateInconsistentInstancesQuietly() {
         try {
-            V1PodList pods = api.listNamespacedPod(K8S_NAMESPACE, null, null, null, null, null, null, null, null, null, null);
+            V1PodList pods = api.listNamespacedPod(K8S_NAMESPACE).execute();
             for (V1Pod pod : pods.getItems()) {
                 try {
                     if (pod.getMetadata() == null) {
