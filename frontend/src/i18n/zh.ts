@@ -59,7 +59,7 @@ export default {
       heapDump: '堆内存快照',
       GCLog: 'GC 日志',
       threadDump: '线程快照',
-      jfr: 'JFR',
+      jfr: 'JFR 文件',
 
       new: '新文件',
 

@@ -441,22 +441,16 @@ onUnmounted(() => {});
           :value="index"
         />
       </el-select>
-      <span
-        style="
-          color: rgba(0, 0, 0, 0.6);
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          margin-left: 10px;
-        "
-        v-if="totalWeight"
-      >
-        {{ format(totalWeight) + ' ' + t('profile.flameGraph.copyMethod') }}
-      </span>
+      <el-text v-if="totalWeight" style="margin-left: 10px;">
+        {{ format(totalWeight) + ' '}}
+      </el-text>
+      <el-text type="info" v-if="totalWeight">
+        {{ t('profile.flameGraph.copyMethod') }}
+      </el-text>
       <el-icon
-        style="float: right; margin-top: 5px; margin-right: 30px"
+        style="float: right; margin-top: 5px; margin-right: 30px; cursor: pointer"
         @click="openFlameGraphModal"
-        ><FullScreen
+      ><FullScreen
       /></el-icon>
     </div>
 
@@ -471,7 +465,7 @@ onUnmounted(() => {});
             <h4 :id="titleId" :class="titleClass">
               {{ perfDimensions[selectedDimensionIndex].key }}
             </h4>
-            <el-button type="default" @click="close">
+            <el-button @click="close">
               <el-icon><CircleCloseFilled /></el-icon>
               Close
             </el-button>

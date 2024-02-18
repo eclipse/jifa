@@ -59,7 +59,7 @@ export default {
       heapDump: 'Heap Dump',
       GCLog: 'GC Log',
       threadDump: 'Thread Dump',
-      jfr: 'JFR',
+      jfr: 'JFR File',
 
       new: 'New File',
 
