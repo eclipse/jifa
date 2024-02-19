@@ -21,6 +21,6 @@ public class TestProfileAnalysisApiExecutor {
     @Test
     public void test() {
         ProfileAnalysisApiExecutor executor = new ProfileAnalysisApiExecutor();
-        Assertions.assertEquals("jfr", executor.namespace());
+        Assertions.assertEquals("jfr-file", executor.namespace());
     }
 }
