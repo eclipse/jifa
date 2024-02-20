@@ -38,6 +38,7 @@ const flameGraphDataSource = ref(null);
 const flameGraphEmptyData = ref({ format: 'line', data: [] });
 const taskName = ref(null);
 const flameGraphModalVisible = ref(false);
+const hasData = ref(false);
 
 onMounted(() => {
   loading.value = true;
@@ -188,6 +189,11 @@ async function queryFlameGraph(include: boolean, taskSet: any) {
     threadSplit.value = response.threadSplit;
     symbolTable.value = response.symbolTable;
     flameGraphDataSource.value = response.data;
+    if (flameGraphDataSource.value.length == 0) {
+      hasData.value = false;
+    } else {
+      hasData.value = true;
+    }
     flameGraph.value.dataSource = {
       format: 'line',
       data: response.data
@@ -196,6 +202,7 @@ async function queryFlameGraph(include: boolean, taskSet: any) {
 }
 
 function onDimensionIndexChange() {
+  toggleFilterValuesChecked.value = true;
   queryGraph();
 }
 
@@ -336,15 +343,28 @@ async function handleFilterValuesChecked(checked: boolean, index: number) {
     }
     clearFlameGraph();
     if (!toggleFilterValuesChecked.value && taskSet.length === 0) {
+      hasData.value = false;
       return;
     }
     await queryFlameGraph(include, taskSet);
   } else {
-    restoreFlameGraph();
+    if (flameGraph.value.dataSource && flameGraph.value.dataSource.data.length == 0) {
+      restoreFlameGraph();
+    } else {
+      refreshFlameGraph();
+    }
+    let anyChecked = false;
+    for (let v of filterValueList.value) {
+        if (v.checked) {
+          anyChecked = true;
+          break;
+        }
+    }
+    hasData.value = anyChecked;
   }
 }
 
-async function handleToggleFilterValuesChecked() {
+async function handleToggleFilterValuesChecked(checked: boolean) {
   for (let v of filterValueList.value) {
     v.checked = toggleFilterValuesChecked.value;
   }
@@ -355,6 +375,8 @@ async function handleToggleFilterValuesChecked() {
     clearFlameGraph();
     if (toggleFilterValuesChecked.value) {
       await queryFlameGraph(false, null);
+    } else {
+      hasData.value = false;
     }
   } else {
     if (toggleFilterValuesChecked.value) {
@@ -363,8 +385,10 @@ async function handleToggleFilterValuesChecked() {
       } else {
         refreshFlameGraph();
       }
+      hasData.value = true;
     } else {
       clearFlameGraph();
+      hasData.value = false;
     }
   }
 }
@@ -427,62 +451,64 @@ onUnmounted(() => {});
 
 <template>
   <div class="ej-common-view-div">
-    <div style="width: 75%">
-      <el-select
-        v-model="selectedDimensionIndex"
-        placeholder="Select"
-        style="width: 250px"
-        @change="onDimensionIndexChange"
-      >
-        <el-option
-          v-for="(item, index) in perfDimensions"
-          :key="index"
-          :label="item.key"
-          :value="index"
-        />
-      </el-select>
-      <el-text v-if="totalWeight" style="margin-left: 10px;">
-        {{ format(totalWeight) + ' '}}
-      </el-text>
-      <el-text type="info" v-if="totalWeight">
-        {{ t('profile.flameGraph.copyMethod') }}
-      </el-text>
-      <el-icon
-        style="float: right; margin-top: 5px; margin-right: 30px; cursor: pointer"
-        @click="openFlameGraphModal"
-      ><FullScreen
-      /></el-icon>
-    </div>
+    <div style="height: 100%; width: 100%; display: flex;">
+      <div class="ej-profile-container">
+        <div style="height: 35px; flex-shrink: 0; padding: 0 15px;">
+          <el-select
+            v-model="selectedDimensionIndex"
+            placeholder="Select"
+            style="width: 250px"
+            @change="onDimensionIndexChange"
+          >
+            <el-option
+              v-for="(item, index) in perfDimensions"
+              :key="index"
+              :label="item.key"
+              :value="index"
+            />
+          </el-select>
 
-    <div class="ej-profile-container">
-      <div class="ej-profile-main">
-        <flame-graph id="flame-graph" downward></flame-graph>
+          <el-text v-if="totalWeight" style="margin-left: 10px;">
+            {{ format(totalWeight) + ' '}}
+          </el-text>
+          <el-text type="info" v-if="totalWeight">
+            {{ t('profile.flameGraph.copyMethod') }}
+          </el-text>
+
+          <el-icon style="float: right; margin-top: 5px; margin-right: 10px; cursor: pointer" @click="openFlameGraphModal" v-if="hasData">
+            <FullScreen/>
+          </el-icon>
+        </div>
+
+        <el-empty description="No Data" v-if="!hasData"/>
+
+        <div class="ej-profile-main">
+          <flame-graph id="flame-graph" downward></flame-graph>
+        </div>
+
+        <el-dialog v-model="flameGraphModalVisible" :show-close="false" style="width: 90%">
+          <template #header="{ close, titleId, titleClass }">
+            <div class="modal-header">
+              <h4 :id="titleId" :class="titleClass">
+                {{ perfDimensions[selectedDimensionIndex].key }}
+              </h4>
+              <el-button @click="close">
+                <el-icon><CircleCloseFilled /></el-icon>
+                Close
+              </el-button>
+            </div>
+          </template>
+          <flame-graph id="flame-graph-in-modal" downward></flame-graph>
+        </el-dialog>
       </div>
 
-      <el-dialog v-model="flameGraphModalVisible" :show-close="false" style="width: 90%">
-        <template #header="{ close, titleId, titleClass }">
-          <div class="modal-header">
-            <h4 :id="titleId" :class="titleClass">
-              {{ perfDimensions[selectedDimensionIndex].key }}
-            </h4>
-            <el-button @click="close">
-              <el-icon><CircleCloseFilled /></el-icon>
-              Close
-            </el-button>
-          </div>
-        </template>
-        <flame-graph id="flame-graph-in-modal" downward></flame-graph>
-      </el-dialog>
-
       <div class="ej-profile-inspector">
-        <div style="width: 90%">
-          <el-icon :size="20" style="vertical-align: middle; margin-right: 10px"
-            ><Filter
-          /></el-icon>
+        <div style="display: flex; flex-direction: row;">
+          <el-icon :size="20" style="vertical-align: middle; margin-right: 10px" ><Filter/></el-icon>
           <el-select
             v-model="selectedFilterIndex"
             placeholder="Select"
-            style="width: 300px"
+            style="width: 270px"
             @change="onSelectedFilterIndexChange"
           >
             <el-option
@@ -494,86 +520,71 @@ onUnmounted(() => {});
               :value="index"
             />
           </el-select>
+        </div>
 
-          <div style="margin-top: 10px">
-            <el-checkbox
-              v-model="toggleFilterValuesChecked"
-              @change="handleToggleFilterValuesChecked"
-              style="float: right"
+        <div style="margin-top: 10px;">
+          <el-checkbox
+            v-model="toggleFilterValuesChecked"
+            @change="(checked) => handleToggleFilterValuesChecked(checked)"
+            style="float: right"
+          />
+          <span
+            style="
+              font-size: 12px;
+              color: rgba(0, 0, 0, 0.6);
+              margin-top: 10px;
+              margin-right: 10px;
+              float: right;
+            "
+            >{{ checkedCount }}/{{ filterValueList.length }}</span
+          >
+          <div
+            v-if="
+              selectedDimensionIndex != null &&
+              perfDimensions[selectedDimensionIndex].filters[selectedFilterIndex].key ===
+                'Thread'
+            "
+          >
+            <el-icon :size="20" style="vertical-align: middle; margin-right: 10px" ><Search /></el-icon>
+            <el-input
+              v-model="taskName"
+              :placeholder="t('profile.placeholder.threadName')"
+              style="width: 70%"
+              @change="queryByTaskName"
             />
-            <div>
-              <span
-                style="
-                  font-size: 12px;
-                  color: rgba(0, 0, 0, 0.6);
-                  margin-top: 10px;
-                  margin-right: 10px;
-                  float: right;
-                "
-                >{{ checkedCount }}/{{ filterValueList.length }}</span
-              >
-              <div
-                v-if="
-                  selectedDimensionIndex != null &&
-                  perfDimensions[selectedDimensionIndex].filters[selectedFilterIndex].key ===
-                    'Thread'
-                "
-              >
-                <el-icon :size="20" style="vertical-align: middle; margin-right: 10px"
-                  ><Search
-                /></el-icon>
-                <el-input
-                  v-model="taskName"
-                  :placeholder="t('profile.placeholder.threadName')"
-                  style="width: 70%"
-                  @change="queryByTaskName"
-                />
-              </div>
-            </div>
           </div>
         </div>
 
-        <div style="overflow: auto">
-          <ul style="margin-top: 10px; padding: 0">
-            <li
-              v-for="(item, index) in topFilterValueList"
-              style="width: 90%; flex-grow: 1; overflow: auto"
-            >
-              <div
-                style="
-                  width: 100%;
-                  display: flex;
-                  flex-direction: row;
-                  justify-content: space-between;
-                  align-items: center;
-                "
-              >
-                <div style="font-size: 16px; width: 5%">🧵</div>
-                <div style="width: 95%">
-                  <div style="float: right">
-                    <el-checkbox
-                      v-model="filterValueList[index].checked"
-                      @change="(checked) => handleFilterValuesChecked(checked, index)"
-                    />
+        <div style="width:100%; height: 100%; overflow: auto;">
+          <ul style="margin-top: 10px; padding: 0;">
+            <li v-for="(item, index) in topFilterValueList" >
+              <div style="width: 100%; display: flex; flex-direction: row; justify-content: space-between; align-items: center;">
+                <div style="font-size: 16px; width: 20px;">🧵</div>
+
+                <div
+                  style="
+                    width:250px;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                  "
+                >
+                  <span>{{ item.key }}</span>
+
+                  <div style="font-size: 12px; color: rgba(0, 0, 0, 0.6)">
+                    {{ format(filterValueList[index].weight) }}
                   </div>
-                  <div
-                    style="
-                      width: 90%;
-                      white-space: nowrap;
-                      overflow: hidden;
-                      text-overflow: ellipsis;
-                    "
-                  >
-                    <span>{{ item.key }}</span>
-                    <div style="font-size: 12px; color: rgba(0, 0, 0, 0.6)">
-                      {{ format(filterValueList[index].weight) }}
-                    </div>
-                    <el-progress
-                      :percentage="Math.round((filterValueList[index].weight / totalWeight) * 100)"
-                      :color="filterValueList[index].checked ? '#ff8200' : 'grey'"
-                    />
-                  </div>
+
+                  <el-progress
+                    :percentage="Math.round((filterValueList[index].weight / totalWeight) * 100)"
+                    :color="filterValueList[index].checked ? '#ff8200' : 'grey'"
+                  />
                 </div>
+
+                <el-checkbox
+                  v-model="filterValueList[index].checked"
+                  @change="(checked) => handleFilterValuesChecked(checked, index)"
+                />
               </div>
               <hr style="border: 0; border-top: 1px solid #ccc" />
             </li>
@@ -588,7 +599,8 @@ onUnmounted(() => {});
 .ej-profile-container {
   height: 100%;
   display: flex;
-  flex-direction: row;
+  flex-grow: 1;
+  flex-direction: column;
   justify-content: space-between;
 }
 
@@ -604,12 +616,8 @@ onUnmounted(() => {});
 
 .ej-profile-inspector {
   height: 100%;
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  width: 25%;
+  width: 300px;
   margin-left: 7px;
-  margin-top: 10px;
 }
 
 .modal-header {
