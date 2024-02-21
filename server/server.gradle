@@ -27,7 +27,7 @@ dependencies {
     implementation project(':analysis')
 
     runtimeOnly project(':analysis:heap-dump:provider')
-    runtimeOnly project(':analysis:profile')
+    runtimeOnly project(':analysis:jfr')
     runtimeOnly project(':analysis:gc-log')
     runtimeOnly project(':analysis:thread-dump')
 
