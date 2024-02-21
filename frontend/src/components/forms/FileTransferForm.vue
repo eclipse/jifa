@@ -338,7 +338,7 @@ function isEnabled(method: string) {
 
           <el-radio-button
             label="TEXT"
-            :disabled="(params.type as String) === 'HEAP_DUMP'"
+            :disabled="(params.type as String) === 'HEAP_DUMP' || (params.type as String) === 'JFR_FILE'"
             v-if="isEnabled('TEXT')"
           >
             <div class="ej-file-transfer-method-button">
