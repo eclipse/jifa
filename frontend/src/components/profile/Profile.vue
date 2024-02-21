@@ -17,6 +17,7 @@ import '@/components/profile/flame-graph.js';
 import { toReadableValue } from '@/components/profile/utils';
 import { CircleCloseFilled, FullScreen, Search, Filter } from '@element-plus/icons-vue';
 import { t } from '@/i18n/i18n';
+import type { Column } from 'element-plus';
 
 const { request } = useAnalysisApiRequester();
 
@@ -163,7 +164,7 @@ const configuration = ref({
   footTextGenerator: footTextGenerator,
   hashCodeGenerator: hashCodeGenerator,
   stackTraceFilter: null,
-  showHelpButton: true
+  showHelpButton: false
 });
 
 async function queryGraph() {
@@ -353,10 +354,10 @@ async function handleFilterValuesChecked(checked: boolean, index: number) {
     }
     let anyChecked = false;
     for (let v of filterValueList.value) {
-        if (v.checked) {
-          anyChecked = true;
-          break;
-        }
+      if (v.checked) {
+        anyChecked = true;
+        break;
+      }
     }
     hasData.value = anyChecked;
   }
@@ -444,71 +445,82 @@ async function queryByTaskName() {
   await queryFlameGraph(include, taskSet);
 }
 
+const columns: Column[] = [
+  {
+    key: 'key',
+    dataKey: 'key',
+    width: 300,
+    style: {
+      padding: '0 10px 0 0'
+    }
+  }
+];
+
 onUnmounted(() => {});
 </script>
 
 <template>
   <div class="ej-common-view-div">
-    <div style="height: 100%; width: 100%; display: flex;">
+    <div style="height: 100%; width: 100%; display: flex">
       <div class="ej-profile-container">
-        <div style="height: 35px; flex-shrink: 0; padding: 0 15px;">
-          <el-select
-            v-model="selectedDimensionIndex"
-            placeholder="Select"
-            style="width: 250px"
-            @change="onDimensionIndexChange"
+        <div style="height: 32px; width: 100%; display: flex; align-items: center">
+          <div style="flex-grow: 1; display: flex; align-items: center; overflow: hidden">
+            <el-select
+              v-model="selectedDimensionIndex"
+              placeholder="Select"
+              style="width: 210px"
+              @change="onDimensionIndexChange"
+            >
+              <el-option
+                v-for="(item, index) in perfDimensions"
+                :key="index"
+                :label="item.key"
+                :value="index"
+              />
+            </el-select>
+
+            <el-text v-if="totalWeight" truncated style="margin-left: 8px">
+              {{ format(totalWeight) + ' ' }}
+            </el-text>
+
+            <el-text type="info" v-if="totalWeight" truncated style="margin-left: 8px">
+              {{ t('profile.flameGraph.copyMethod') }}
+            </el-text>
+          </div>
+
+          <el-icon
+            style="flex-shrink: 0; cursor: pointer"
+            @click="openFlameGraphModal"
+            v-if="hasData"
           >
-            <el-option
-              v-for="(item, index) in perfDimensions"
-              :key="index"
-              :label="item.key"
-              :value="index"
-            />
-          </el-select>
-
-          <el-text v-if="totalWeight" style="margin-left: 10px;">
-            {{ format(totalWeight) + ' '}}
-          </el-text>
-          <el-text type="info" v-if="totalWeight">
-            {{ t('profile.flameGraph.copyMethod') }}
-          </el-text>
-
-          <el-icon style="float: right; margin-top: 5px; margin-right: 10px; cursor: pointer" @click="openFlameGraphModal" v-if="hasData">
-            <FullScreen/>
+            <FullScreen />
           </el-icon>
         </div>
 
-        <el-empty description="No Data" v-if="!hasData"/>
+        <el-empty description="No Data" v-if="!hasData" />
 
         <div class="ej-profile-main">
           <flame-graph id="flame-graph" downward></flame-graph>
         </div>
 
-        <el-dialog v-model="flameGraphModalVisible" :show-close="false" style="width: 90%">
-          <template #header="{ close, titleId, titleClass }">
-            <div class="modal-header">
-              <h4 :id="titleId" :class="titleClass">
-                {{ perfDimensions[selectedDimensionIndex].key }}
-              </h4>
-              <el-button @click="close">
-                <el-icon><CircleCloseFilled /></el-icon>
-                Close
-              </el-button>
-            </div>
-          </template>
+        <el-dialog v-model="flameGraphModalVisible" fullscreen>
           <flame-graph id="flame-graph-in-modal" downward></flame-graph>
         </el-dialog>
       </div>
 
       <div class="ej-profile-inspector">
-        <div style="display: flex; flex-direction: row;">
-          <el-icon :size="20" style="vertical-align: middle; margin-right: 10px" ><Filter/></el-icon>
+        <div>
           <el-select
             v-model="selectedFilterIndex"
             placeholder="Select"
-            style="width: 270px"
+            style="width: 100%"
             @change="onSelectedFilterIndexChange"
           >
+            <template #prefix>
+              <el-icon size="16">
+                <Filter />
+              </el-icon>
+            </template>
             <el-option
               v-for="(item, index) in selectedDimensionIndex !== null
                 ? perfDimensions[selectedDimensionIndex].filters
@@ -520,73 +532,100 @@ onUnmounted(() => {});
           </el-select>
         </div>
 
-        <div style="margin-top: 10px;">
-          <el-checkbox
-            v-model="toggleFilterValuesChecked"
-            @change="(checked) => handleToggleFilterValuesChecked(checked)"
-            style="float: right"
-          />
-          <span
-            style="
-              font-size: 12px;
-              color: rgba(0, 0, 0, 0.6);
-              margin-top: 10px;
-              margin-right: 10px;
-              float: right;
-            "
-            >{{ checkedCount }}/{{ filterValueList.length }}</span
+        <div
+          style="margin-top: 8px"
+          v-if="
+            selectedDimensionIndex != null &&
+            perfDimensions[selectedDimensionIndex].filters[selectedFilterIndex].key === 'Thread'
+          "
+        >
+          <el-input
+            v-model="taskName"
+            :placeholder="t('profile.placeholder.threadName')"
+            style="width: 100%"
+            @change="queryByTaskName"
           >
-          <div
-            v-if="
-              selectedDimensionIndex != null &&
-              perfDimensions[selectedDimensionIndex].filters[selectedFilterIndex].key ===
-                'Thread'
-            "
-          >
-            <el-icon :size="20" style="vertical-align: middle; margin-right: 10px" ><Search /></el-icon>
-            <el-input
-              v-model="taskName"
-              :placeholder="t('profile.placeholder.threadName')"
-              style="width: 70%"
-              @change="queryByTaskName"
-            />
-          </div>
+            <template #prefix>
+              <el-icon :size="16">
+                <Search />
+              </el-icon>
+            </template>
+          </el-input>
         </div>
 
-        <div style="width:100%; height: 100%; overflow: auto;">
-          <ul style="margin-top: 10px; padding: 0;">
-            <li v-for="(item, index) in topFilterValueList" >
-              <div style="width: 100%; display: flex; flex-direction: row; justify-content: space-between; align-items: center;">
-                <div style="font-size: 16px; width: 20px;">🧵</div>
-
-                <div
-                  style="
-                    width:250px;
-                    white-space: nowrap;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                  "
-                >
-                  <span>{{ item.key }}</span>
-
-                  <div style="font-size: 12px; color: rgba(0, 0, 0, 0.6)">
-                    {{ format(filterValueList[index].weight) }}
+        <div style="margin-top: 8px; flex-grow: 1; overflow: hidden">
+          <el-auto-resizer>
+            <template #default="{ height, width }">
+              <el-table-v2
+                :columns="columns"
+                :data="topFilterValueList"
+                :width="width"
+                :height="height"
+                :header-height="30"
+                :row-height="65"
+              >
+                <template #header>
+                  <div
+                    style="width: 100%; display: flex; justify-content: end; align-items: center"
+                  >
+                    <el-text truncated> {{ checkedCount }}/{{ filterValueList.length }}</el-text>
+                    <el-checkbox
+                      v-model="toggleFilterValuesChecked"
+                      @change="(checked) => handleToggleFilterValuesChecked(checked)"
+                      style="margin-left: 8px; margin-right: 4px; height: 16px"
+                    />
                   </div>
+                </template>
+                <template #cell="{ rowData: data, rowIndex: index }">
+                  <div
+                    style="
+                      width: 100%;
+                      height: 100%;
+                      display: flex;
+                      justify-content: space-between;
+                      align-items: center;
+                    "
+                  >
+                    <div
+                      style="
+                        height: 100%;
+                        flex-grow: 1;
+                        padding: 5px;
+                        overflow: hidden;
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: space-between;
+                      "
+                    >
+                      <div>
+                        <el-text truncated>
+                          {{ data.key }}
+                        </el-text>
+                      </div>
+                      <div>
+                        <el-text tag="b" size="small" truncated>
+                          {{ format(filterValueList[index].weight) }}
+                        </el-text>
+                      </div>
+                      <div style="width: 100%">
+                        <el-progress
+                          :percentage="
+                            Math.round((filterValueList[index].weight / totalWeight) * 100)
+                          "
+                          :color="filterValueList[index].checked ? '#ff8200' : 'grey'"
+                        />
+                      </div>
+                    </div>
 
-                  <el-progress
-                    :percentage="Math.round((filterValueList[index].weight / totalWeight) * 100)"
-                    :color="filterValueList[index].checked ? '#ff8200' : 'grey'"
-                  />
-                </div>
-
-                <el-checkbox
-                  v-model="filterValueList[index].checked"
-                  @change="(checked) => handleFilterValuesChecked(checked, index)"
-                />
-              </div>
-              <hr style="border: 0; border-top: 1px solid #ccc" />
-            </li>
-          </ul>
+                    <el-checkbox
+                      v-model="filterValueList[index].checked"
+                      @change="(checked) => handleFilterValuesChecked(checked, index)"
+                    />
+                  </div>
+                </template>
+              </el-table-v2>
+            </template>
+          </el-auto-resizer>
         </div>
       </div>
     </div>
@@ -600,6 +639,7 @@ onUnmounted(() => {});
   flex-grow: 1;
   flex-direction: column;
   justify-content: space-between;
+  overflow: hidden;
 }
 
 .ej-profile-main {
@@ -607,7 +647,7 @@ onUnmounted(() => {});
   flex-grow: 1;
   background-color: var(--el-bg-color);
   border-radius: var(--ej-common-border-radius);
-  padding: 5px 8px;
+  padding: 5px 0;
   overflow: hidden;
   margin-top: 5px;
 }
@@ -615,7 +655,10 @@ onUnmounted(() => {});
 .ej-profile-inspector {
   height: 100%;
   width: 300px;
-  margin-left: 7px;
+  margin-left: 15px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .modal-header {

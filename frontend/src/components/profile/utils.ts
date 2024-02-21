@@ -47,7 +47,7 @@ export const toReadableValue = (unit: string, value: number) => {
 
     if (result.length === 0) {
       if (ns > 0) {
-        return ns + "ns";
+        return ns + 'ns';
       } else {
         return '0ms';
       }
@@ -102,7 +102,7 @@ export const toReadableValue = (unit: string, value: number) => {
       if (bytes == 0) {
         return '0B';
       } else {
-        return bytes + "bytes"
+        return bytes + 'bytes';
       }
     }
 

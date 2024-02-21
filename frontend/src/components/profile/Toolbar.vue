@@ -12,28 +12,8 @@
  -->
 <script setup lang="ts">
 import DownloadLink from '@/components/common/DownloadLink.vue';
-import { SetUp } from '@element-plus/icons-vue';
-import { t } from '@/i18n/i18n';
-import { useAnalysisApiRequester } from '@/composables/analysis-api-requester';
-import { Phase, useAnalysisStore } from '@/stores/analysis';
-
-const { request } = useAnalysisApiRequester();
-
-const analysis = useAnalysisStore();
-
-function showSetup() {
-  analysis.setShowSetupPage(true);
-}
 </script>
 <template>
   <el-divider direction="vertical" />
   <DownloadLink />
-
-  <template v-if="analysis.phase === Phase.SUCCESS || analysis.phase === Phase.FAILURE">
-    <el-divider direction="vertical" />
-
-    <el-button link class="ej-header-button" :icon="SetUp" @click="showSetup">
-      {{ t('analysis.setting') }}
-    </el-button>
-  </template>
 </template>

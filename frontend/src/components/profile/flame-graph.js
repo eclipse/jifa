@@ -899,7 +899,6 @@
 
       this.$frameHeight = 24;
 
-      this.$fgHGap = 15;
       this.$fgVGap = 0;
       this.$fgVEndGap = 5;
       this.$xGap = 0.2;
@@ -1193,7 +1192,14 @@
         this.$colorBarDiv.style.display = 'flex';
       }
 
-      this.$helpButton.style.visibility = this.$$showHelpButton ? 'visible' : 'hidden';
+      if (this.$$showHelpButton) {
+        this.$helpButton.style.visibility = 'visible';
+        this.$fgHGap = 15;
+      } else {
+        this.$helpButton.style.visibility = 'hidden';
+        this.$fgHGap = 0;
+      }
+
       let rect = this.$canvas.getBoundingClientRect();
 
       this.$stackTraceMaxDrawnDepth = 0;

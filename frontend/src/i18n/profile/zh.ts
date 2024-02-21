@@ -15,7 +15,7 @@ export default {
   },
 
   flameGraph: {
-    copyMethod: '(复制方法名：[CMD] + [C] 或者 [Ctrl] + [C])',
+    copyMethod: '（复制方法名：[CMD] + [C] 或者 [Ctrl] + [C]）',
   },
 
   placeholder: {
