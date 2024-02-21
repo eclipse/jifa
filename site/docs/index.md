@@ -30,4 +30,8 @@ features:
     link: ./guide/thread-dump-analysis
     icon: 🔒
     details: "Features: Thread & Thread Pool Analysis, Java Monitors Analysis, Aggregated Stack Trace Views, etc."
+  - title: JFR Analysis
+    link: ./guide/jfr-analysis
+    icon: 🧬
+    details: "Function: Parse JFR files and generate hotspot views for CPU, Memory Allocation, Lock, File IO, Socket IO, Wall Clock and other dimensions. Can help locate various application performance issues."
 ---

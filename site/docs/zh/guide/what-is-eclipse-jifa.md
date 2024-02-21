@@ -10,6 +10,7 @@ Eclipse Jifa（简称 Jifa）的名字由 “**J**ava **I**ssues **F**inding **A
 - [堆快照分析](./heap-dump-analysis.md)
 - [GC 日志分析](./gc-log-analysis.md)
 - [线程快照分析](./thread-dump-analysis.md)
+- [JFR分析](./jfr-analysis.md)
 
 在设计上，由两部分组成：
 
