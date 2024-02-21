@@ -13,9 +13,9 @@
 
 <script setup lang="ts">
 import { useAnalysisApiRequester } from '@/composables/analysis-api-requester';
-import '@/components/profile/flame-graph.js';
-import { toReadableValue } from '@/components/profile/utils';
-import { CircleCloseFilled, FullScreen, Search, Filter } from '@element-plus/icons-vue';
+import '@/components/jfr/flame-graph.js';
+import { toReadableValue } from '@/components/jfr/utils';
+import { FullScreen, Search, Filter } from '@element-plus/icons-vue';
 import { t } from '@/i18n/i18n';
 import type { Column } from 'element-plus';
 
@@ -462,7 +462,7 @@ onUnmounted(() => {});
 <template>
   <div class="ej-common-view-div">
     <div style="height: 100%; width: 100%; display: flex">
-      <div class="ej-profile-container">
+      <div class="ej-jfr-container">
         <div style="height: 32px; width: 100%; display: flex; align-items: center">
           <div style="flex-grow: 1; display: flex; align-items: center; overflow: hidden">
             <el-select
@@ -484,7 +484,7 @@ onUnmounted(() => {});
             </el-text>
 
             <el-text type="info" v-if="totalWeight" truncated style="margin-left: 8px">
-              {{ t('profile.flameGraph.copyMethod') }}
+              {{ t('jfr.flameGraph.copyMethod') }}
             </el-text>
           </div>
 
@@ -497,9 +497,9 @@ onUnmounted(() => {});
           </el-icon>
         </div>
 
-        <el-empty description="No Data" v-if="!hasData" />
+        <el-empty :image-size="200" :description="t('common.noData')" v-if="!hasData" />
 
-        <div class="ej-profile-main">
+        <div class="ej-jfr-main">
           <flame-graph id="flame-graph" downward></flame-graph>
         </div>
 
@@ -508,7 +508,7 @@ onUnmounted(() => {});
         </el-dialog>
       </div>
 
-      <div class="ej-profile-inspector">
+      <div class="ej-jfr-inspector">
         <div>
           <el-select
             v-model="selectedFilterIndex"
@@ -541,7 +541,7 @@ onUnmounted(() => {});
         >
           <el-input
             v-model="taskName"
-            :placeholder="t('profile.placeholder.threadName')"
+            :placeholder="t('jfr.placeholder.threadName')"
             style="width: 100%"
             @change="queryByTaskName"
           >
@@ -633,7 +633,7 @@ onUnmounted(() => {});
 </template>
 
 <style scoped>
-.ej-profile-container {
+.ej-jfr-container {
   height: 100%;
   display: flex;
   flex-grow: 1;
@@ -642,7 +642,7 @@ onUnmounted(() => {});
   overflow: hidden;
 }
 
-.ej-profile-main {
+.ej-jfr-main {
   height: 100%;
   flex-grow: 1;
   background-color: var(--el-bg-color);
@@ -652,7 +652,7 @@ onUnmounted(() => {});
   margin-top: 5px;
 }
 
-.ej-profile-inspector {
+.ej-jfr-inspector {
   height: 100%;
   width: 300px;
   margin-left: 15px;

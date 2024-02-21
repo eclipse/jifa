@@ -13,7 +13,7 @@
 import heapDump from './heapdump/en'
 import gclog from './gclog/en'
 import threadDump from './threaddump/en'
-import profile from './profile/en'
+import jfr from '@/i18n/jfr/en'
 
 export default {
   jifa: {
@@ -124,6 +124,6 @@ export default {
     heapDump,
     gclog,
     threadDump,
-    profile,
+    jfr,
   }
 };

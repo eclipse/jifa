@@ -20,8 +20,8 @@ import HeapDumpToolBar from '@/components/heapdump/Toolbar.vue';
 import ThreadDump from '@/components/threaddump/ThreadDump.vue';
 import ThreadDumpToolBar from '@/components/threaddump/Toolbar.vue';
 
-import Profile from '@/components/profile/Profile.vue';
-import ProfileToolBar from '@/components/profile/Toolbar.vue';
+import Jfr from '@/components/jfr/Jfr.vue';
+import JfrToolBar from '@/components/jfr/Toolbar.vue';
 
 export const fileTypeMap = new Map<string, FileType>();
 
@@ -78,4 +78,4 @@ export const THREAD_DUMP = def(
   ThreadDump
 );
 
-export const JFR = def('JFR_FILE', 'jfr', 'jfr-file', ProfileToolBar, null, Profile);
+export const JFR = def('JFR_FILE', 'jfr', 'jfr-file', JfrToolBar, null, Jfr);

@@ -90,7 +90,7 @@
                 position: fixed;
                 top: 0;
                 left: 0;
-                z-index: 1
+                z-index: 5
             }
 
             #frame-postcard {
@@ -1185,6 +1185,7 @@
 
       if (this.$totalWeight === 0) {
         this.$helpButton.style.visibility = 'hidden';
+        this.$sibling = null;
         return;
       }
 
