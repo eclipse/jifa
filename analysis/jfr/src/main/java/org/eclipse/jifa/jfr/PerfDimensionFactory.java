@@ -53,11 +53,9 @@ public class PerfDimensionFactory {
 
     static final PerfDimension DIM_SOCKET_WRITE_SIZE = PerfDimension.of(ProfileDimension.SOCKET_WRITE_SIZE.getKey(), ProfileDimension.SOCKET_WRITE_SIZE.getDesc(), FILTERS, Unit.BYTE);
 
-    static final PerfDimension DIM_LOCK_ACQUIRE = PerfDimension.of(ProfileDimension.LOCK_ACQUIRE.getKey(), ProfileDimension.LOCK_ACQUIRE.getDesc(), FILTERS);
-
-    static final PerfDimension DIM_LOCK_WAIT_TIME = PerfDimension.of(ProfileDimension.LOCK_WAIT_TIME.getKey(), ProfileDimension.LOCK_WAIT_TIME.getDesc(), FILTERS, Unit.NANO_SECOND);
-
     static final PerfDimension DIM_SYNCHRONIZATION = PerfDimension.of(ProfileDimension.SYNCHRONIZATION.getKey(), ProfileDimension.SYNCHRONIZATION.getDesc(), FILTERS, Unit.NANO_SECOND);
+
+    static final PerfDimension DIM_THREAD_PARK = PerfDimension.of(ProfileDimension.THREAD_PARK.getKey(), ProfileDimension.THREAD_PARK.getDesc(), FILTERS, Unit.NANO_SECOND);
 
     static final PerfDimension DIM_CLASS_LOAD_WALL_TIME = PerfDimension.of(ProfileDimension.CLASS_LOAD_WALL_TIME.getKey(), ProfileDimension.CLASS_LOAD_WALL_TIME.getDesc(), FILTERS, Unit.NANO_SECOND);
 
@@ -80,9 +78,8 @@ public class PerfDimensionFactory {
                 DIM_SOCKET_READ_SIZE,
                 DIM_SOCKET_WRITE_TIME,
                 DIM_SOCKET_WRITE_SIZE,
-                DIM_LOCK_ACQUIRE,
-                DIM_LOCK_WAIT_TIME,
                 DIM_SYNCHRONIZATION,
+                DIM_THREAD_PARK,
                 DIM_CLASS_LOAD_WALL_TIME,
                 DIM_CLASS_LOAD_COUNT,
                 DIM_THREAD_SLEEP_TIME,

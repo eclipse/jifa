@@ -390,15 +390,14 @@ public class TestJFRAnalyzer {
     }
 
     @Test
-    public void testLock() throws IOException {
+    public void testSynchronization() throws IOException {
         Path path = createTmpFileForResource("jfr.jfr");
-        JFRAnalyzerImpl analyzer = new JFRAnalyzerImpl(path,
-                DimensionBuilder.LOCK_WAIT_TIME | DimensionBuilder.LOCK_ACQUIRE | DimensionBuilder.SYNCHRONIZATION,
+        JFRAnalyzerImpl analyzer = new JFRAnalyzerImpl(path, DimensionBuilder.SYNCHRONIZATION,
                 null, ProgressListener.NoOpProgressListener);
         AnalysisResult result = analyzer.getResult();
-        Assertions.assertNotNull(result.getLockWaitTime());
-        Assertions.assertFalse(result.getLockWaitTime().getList().isEmpty());
-        List<TaskSum> taskSumList = result.getLockWaitTime().getList();
+        Assertions.assertNotNull(result.getSynchronization());
+        Assertions.assertFalse(result.getSynchronization().getList().isEmpty());
+        List<TaskSum> taskSumList = result.getSynchronization().getList();
         Optional<TaskSum> optional =
                 taskSumList.stream().filter(item -> item.getTask().getName().equals("Thread-2")).findAny();
         Assertions.assertTrue(optional.isPresent());
@@ -412,35 +411,27 @@ public class TestJFRAnalyzer {
         Assertions.assertTrue(t.isPresent());
         Assertions.assertEquals(33093, Long.valueOf(t.get().getMiddle()));
         Assertions.assertEquals("100.0", t.get().getRight());
+    }
 
-        Assertions.assertNotNull(result.getLockAcquire());
-        Assertions.assertFalse(result.getLockAcquire().getList().isEmpty());
-        List<TaskCount> taskCountList = result.getLockAcquire().getList();
-        Optional<TaskCount> optional2 = taskCountList.stream().filter(item -> item.getTask().getName().equals("Thread-2")).findAny();
-        Assertions.assertTrue(optional2.isPresent());
-        TaskCount ta2 = optional2.get();
-        g = SimpleFlameGraph.parse(ta2);
-        Assertions.assertEquals(1, g.totalSampleValue.longValue());
-        list = g.queryLeafNodes(20);
-        Assertions.assertEquals(1, list.size());
-        t = list.stream().filter(item -> item.getLeft().contains("java.io.PrintStream.println(String)")).findAny();
-        Assertions.assertTrue(t.isPresent());
-        Assertions.assertEquals(1, Long.valueOf(t.get().getMiddle()));
-        Assertions.assertEquals("100.0", t.get().getRight());
-
-        Assertions.assertNotNull(result.getSynchronization());
-        Assertions.assertFalse(result.getSynchronization().getList().isEmpty());
-        taskSumList = result.getSynchronization().getList();
-        optional = taskSumList.stream().filter(item -> item.getTask().getName().equals("JFR Periodic Tasks")).findAny();
+    @Test
+    public void testThreadPark() throws IOException {
+        Path path = createTmpFileForResource("jfr.jfr");
+        JFRAnalyzerImpl analyzer = new JFRAnalyzerImpl(path, DimensionBuilder.THREAD_PARK,
+                null, ProgressListener.NoOpProgressListener);
+        AnalysisResult result = analyzer.getResult();
+        Assertions.assertNotNull(result.getThreadPark());
+        Assertions.assertFalse(result.getThreadPark().getList().isEmpty());
+        List<TaskSum> taskSumList = result.getThreadPark().getList();
+        Optional<TaskSum> optional = taskSumList.stream().filter(item -> item.getTask().getName().equals("Thread-5")).findAny();
         Assertions.assertTrue(optional.isPresent());
-        ta = optional.get();
-        g = SimpleFlameGraph.parse(ta);
-        Assertions.assertEquals(20175, nanoToMillis(g.totalSampleValue.longValue()));
-        list = g.queryLeafNodes(20);
+        TaskSum ta = optional.get();
+        SimpleFlameGraph g = SimpleFlameGraph.parse(ta);
+        Assertions.assertEquals(999, nanoToMillis(g.totalSampleValue.longValue()));
+        List<Triple<String, String, String>>  list = g.queryLeafNodes(20);
         Assertions.assertEquals(1, list.size());
-        t = list.stream().filter(item -> item.getLeft().contains("java.lang.Object.wait(long)")).findAny();
+        Optional<Triple<String, String, String>>  t = list.stream().filter(item -> item.getLeft().contains("sun.misc.Unsafe.park(boolean, long)")).findAny();
         Assertions.assertTrue(t.isPresent());
-        Assertions.assertEquals(20175, nanoToMillis(Long.valueOf(t.get().getMiddle())));
+        Assertions.assertEquals(999, nanoToMillis(Long.valueOf(t.get().getMiddle())));
         Assertions.assertEquals("100.0", t.get().getRight());
     }
 

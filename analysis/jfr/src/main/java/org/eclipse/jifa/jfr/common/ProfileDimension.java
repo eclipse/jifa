@@ -31,17 +31,15 @@ public enum ProfileDimension {
     SOCKET_READ_TIME(1 << 11, "Socket Read Time"),
     SOCKET_WRITE_TIME(1 << 12, "Socket Write Time"),
 
-    LOCK_ACQUIRE(1 << 13, "Lock Acquire"),
+    SYNCHRONIZATION(1 << 13, "Synchronization"),
+    THREAD_PARK(1 << 14, "Thread Park"),
 
-    LOCK_WAIT_TIME(1 << 14, "Lock Wait Time"),
-    SYNCHRONIZATION(1 << 15, "Synchronization"),
+    CLASS_LOAD_COUNT(1 << 15, "Class Load Count"),
+    CLASS_LOAD_WALL_TIME(1 << 16, "Class Load Wall Time"),
 
-    CLASS_LOAD_COUNT(1 << 16, "Class Load Count"),
-    CLASS_LOAD_WALL_TIME(1 << 17, "Class Load Wall Time"),
+    THREAD_SLEEP(1 << 17, "Thread Sleep Time"),
 
-    PROBLEMS(1 << 18, "Problem"),
-
-    THREAD_SLEEP(1 << 21, "Thread Sleep Time");
+    PROBLEMS(1 << 20, "Problem");
 
     @Getter
     private final int value;

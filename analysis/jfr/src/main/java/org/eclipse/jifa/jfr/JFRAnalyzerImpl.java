@@ -108,9 +108,8 @@ public class JFRAnalyzerImpl implements JFRAnalyzer {
                 case SOCKET_READ_SIZE -> result.getSocketReadSize();
                 case SOCKET_WRITE_TIME -> result.getSocketWriteTime();
                 case SOCKET_WRITE_SIZE -> result.getSocketWriteSize();
-                case LOCK_ACQUIRE -> result.getLockAcquire();
-                case LOCK_WAIT_TIME -> result.getLockWaitTime();
                 case SYNCHRONIZATION -> result.getSynchronization();
+                case THREAD_PARK -> result.getThreadPark();
                 case CLASS_LOAD_COUNT -> result.getClassLoadCount();
                 case CLASS_LOAD_WALL_TIME -> result.getClassLoadWallTime();
                 case THREAD_SLEEP -> result.getThreadSleepTime();
@@ -424,9 +423,8 @@ public class JFRAnalyzerImpl implements JFRAnalyzer {
                 put(DimensionBuilder.SOCKET_WRITE_TIME, new SocketWriteTimeExtractor(context));
                 put(DimensionBuilder.SOCKET_WRITE_SIZE, new SocketWriteSizeExtractor(context));
 
-                put(DimensionBuilder.LOCK_WAIT_TIME, new LockWaitTimeExtractor(context));
-                put(DimensionBuilder.LOCK_ACQUIRE, new LockAcquireExtractor(context));
                 put(DimensionBuilder.SYNCHRONIZATION, new SynchronizationExtractor(context));
+                put(DimensionBuilder.THREAD_PARK, new ThreadParkExtractor(context));
 
                 put(DimensionBuilder.CLASS_LOAD_COUNT, new ClassLoadCountExtractor(context));
                 put(DimensionBuilder.CLASS_LOAD_WALL_TIME, new ClassLoadWallTimeExtractor(context));

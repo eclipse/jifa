@@ -45,11 +45,8 @@ public abstract class Extractor extends EventVisitor {
 
             put(EventConstant.SOCKET_READ, EventVisitor::visitSocketRead);
             put(EventConstant.SOCKET_WRITE, EventVisitor::visitSocketWrite);
-            put(EventConstant.SOCKET_CONNECT, EventVisitor::visitSocketConnect);
 
-            put(EventConstant.JAVA_MONITOR_ENTER, EventVisitor::visitJavaMonitorEnter);
-
-            put(EventConstant.JAVA_MONITOR_WAIT, EventVisitor::visitJavaMonitorWait);
+            put(EventConstant.JAVA_MONITOR_ENTER, EventVisitor::visitMonitorEnter);
             put(EventConstant.THREAD_PARK, EventVisitor::visitThreadPark);
 
             put(EventConstant.CLASS_LOAD, EventVisitor::visitClassLoad);

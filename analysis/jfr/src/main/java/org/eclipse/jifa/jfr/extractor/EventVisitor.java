@@ -91,11 +91,7 @@ public abstract class EventVisitor {
         throw new UnsupportedOperationException();
     }
 
-    void visitJavaMonitorEnter(RecordedEvent event) {
-        throw new UnsupportedOperationException();
-    }
-
-    void visitJavaMonitorWait(RecordedEvent event) {
+    void visitMonitorEnter(RecordedEvent event) {
         throw new UnsupportedOperationException();
     }
 
@@ -108,10 +104,6 @@ public abstract class EventVisitor {
     }
 
     void visitThreadSleep(RecordedEvent event) {
-        throw new UnsupportedOperationException();
-    }
-
-    void visitSocketConnect(RecordedEvent event) {
         throw new UnsupportedOperationException();
     }
 }

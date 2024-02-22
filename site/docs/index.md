@@ -33,5 +33,5 @@ features:
   - title: JFR Analysis
     link: ./guide/jfr-analysis
     icon: 🧬
-    details: "Function: Parse JFR files and generate hotspot views for CPU, Memory Allocation, Lock, File IO, Socket IO, Wall Clock and other dimensions. Can help locate various application performance issues."
+    details: "Features: Parse JFR files and generate hotspot views for CPU, Memory Allocation, Lock, File IO, Socket IO, Wall Clock and other dimensions. Can help locate various application performance issues."
 ---

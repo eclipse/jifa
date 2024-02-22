@@ -28,16 +28,15 @@ public class DimensionBuilder {
     public static final int SOCKET_READ_TIME = ProfileDimension.SOCKET_READ_TIME.getValue();
     public static final int SOCKET_WRITE_SIZE = ProfileDimension.SOCKET_WRITE_SIZE.getValue();
     public static final int SOCKET_WRITE_TIME = ProfileDimension.SOCKET_WRITE_TIME.getValue();
-    public static final int LOCK_WAIT_TIME = ProfileDimension.LOCK_WAIT_TIME.getValue();
-    public static final int LOCK_ACQUIRE = ProfileDimension.LOCK_ACQUIRE.getValue();
     public static final int SYNCHRONIZATION = ProfileDimension.SYNCHRONIZATION.getValue();
+    public static final int THREAD_PARK = ProfileDimension.THREAD_PARK.getValue();
     public static final int CLASS_LOAD_COUNT = ProfileDimension.CLASS_LOAD_COUNT.getValue();
     public static final int CLASS_LOAD_WALL_TIME = ProfileDimension.CLASS_LOAD_WALL_TIME.getValue();
     public static final int THREAD_SLEEP = ProfileDimension.THREAD_SLEEP.getValue();
 
     public static final int ALL = CPU | CPU_SAMPLE | WALL_CLOCK | NATIVE_EXECUTION_SAMPLES
             | ALLOC | MEM | FILE_IO_TIME | FILE_WRITE_SIZE | FILE_READ_SIZE | SOCKET_READ_SIZE | SOCKET_WRITE_SIZE
-            | SOCKET_READ_TIME | SOCKET_WRITE_TIME | LOCK_WAIT_TIME | LOCK_ACQUIRE | SYNCHRONIZATION
+            | SOCKET_READ_TIME | SOCKET_WRITE_TIME | SYNCHRONIZATION | THREAD_PARK
             | CLASS_LOAD_COUNT | CLASS_LOAD_WALL_TIME | THREAD_SLEEP;
 
     private int dimensions = 0;
@@ -111,13 +110,8 @@ public class DimensionBuilder {
         return this;
     }
 
-    public DimensionBuilder enableLockAcquire() {
-        this.dimensions |= LOCK_ACQUIRE;
-        return this;
-    }
-
-    public DimensionBuilder enableLockWaitTime() {
-        this.dimensions |= LOCK_WAIT_TIME;
+    public DimensionBuilder enableThreadPark() {
+        this.dimensions |= THREAD_PARK;
         return this;
     }
 

@@ -26,8 +26,6 @@ public class SynchronizationExtractor extends SumExtractor {
     protected static final List<String> INTERESTED = Collections.unmodifiableList(new ArrayList<>() {
         {
             add(EventConstant.JAVA_MONITOR_ENTER);
-            add(EventConstant.JAVA_MONITOR_WAIT);
-            add(EventConstant.THREAD_PARK);
         }
     });
 
@@ -36,12 +34,7 @@ public class SynchronizationExtractor extends SumExtractor {
     }
 
     @Override
-    void visitJavaMonitorEnter(RecordedEvent event) {
-        visitEvent(event, event.getDurationNano());
-    }
-
-    @Override
-    void visitJavaMonitorWait(RecordedEvent event) {
+    void visitMonitorEnter(RecordedEvent event) {
         visitEvent(event, event.getDurationNano());
     }
 

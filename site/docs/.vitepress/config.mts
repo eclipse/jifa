@@ -136,7 +136,7 @@ export default defineConfig({
               {text: '堆快照分析', link: '/zh/guide/heap-dump-analysis'},
               {text: 'GC 日志分析', link: '/zh/guide/gc-log-analysis'},
               {text: '线程快照分析', link: '/zh/guide/thread-dump-analysis'},
-              {text: 'JFR分析', link: '/zh/guide/jfr-analysis'},
+              {text: 'JFR 分析', link: '/zh/guide/jfr-analysis'},
             ]
           },
           {

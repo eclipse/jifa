@@ -49,11 +49,9 @@ public class AnalysisResult {
 
     private DimensionResult<TaskSum> socketWriteTime;
 
-    private DimensionResult<TaskSum> lockWaitTime;
-
-    private DimensionResult<TaskCount> lockAcquire;
-
     private DimensionResult<TaskSum> synchronization;
+
+    private DimensionResult<TaskSum> threadPark;
 
     private DimensionResult<TaskCount> classLoadCount;
 

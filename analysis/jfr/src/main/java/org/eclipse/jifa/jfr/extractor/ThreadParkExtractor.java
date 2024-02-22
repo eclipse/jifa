@@ -22,19 +22,19 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class LockWaitTimeExtractor extends SumExtractor {
-    protected static final List<String> INTERESTED = Collections.unmodifiableList(new ArrayList<String>() {
+public class ThreadParkExtractor extends SumExtractor {
+    protected static final List<String> INTERESTED = Collections.unmodifiableList(new ArrayList<>() {
         {
-            add(EventConstant.JAVA_MONITOR_ENTER);
+            add(EventConstant.THREAD_PARK);
         }
     });
 
-    public LockWaitTimeExtractor(JFRAnalysisContext context) {
+    public ThreadParkExtractor(JFRAnalysisContext context) {
         super(context, INTERESTED);
     }
 
     @Override
-    void visitJavaMonitorEnter(RecordedEvent event) {
+    void visitThreadPark(RecordedEvent event) {
         visitEvent(event);
     }
 
@@ -47,6 +47,6 @@ public class LockWaitTimeExtractor extends SumExtractor {
     public void fillResult(AnalysisResult result) {
         DimensionResult<TaskSum> tsResult = new DimensionResult<>();
         tsResult.setList(buildTaskSums());
-        result.setLockWaitTime(tsResult);
+        result.setThreadPark(tsResult);
     }
 }

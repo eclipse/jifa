@@ -18,12 +18,10 @@ import com.google.gson.stream.JsonWriter;
 
 import java.io.IOException;
 
-@SuppressWarnings({"JavadocDeclaration", "JavadocLinkAsPlainText"})
 public class EnumTypeAdaptor<T> extends TypeAdapter<T> {
     public EnumTypeAdaptor() {
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     public void write(JsonWriter out, T value) throws IOException {
         out.jsonValue("\"" + value.toString() + "\"");

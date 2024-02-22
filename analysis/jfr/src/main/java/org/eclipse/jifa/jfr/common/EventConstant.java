@@ -43,13 +43,10 @@ public abstract class EventConstant {
     public static String SOCKET_WRITE = "jdk.SocketWrite";
 
     public static String JAVA_MONITOR_ENTER = "jdk.JavaMonitorEnter";
-
     public static String JAVA_MONITOR_WAIT = "jdk.JavaMonitorWait";
     public static String THREAD_PARK = "jdk.ThreadPark";
 
     public static String CLASS_LOAD = "jdk.ClassLoad";
-
-    public static String SOCKET_CONNECT = "cpc.SocketConnect";
 
     public static String THREAD_SLEEP = "jdk.ThreadSleep";
 
