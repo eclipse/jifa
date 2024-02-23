@@ -27,6 +27,7 @@ dependencies {
     jacocoAggregation project(':analysis:heap-dump:impl')
     jacocoAggregation project(':analysis:heap-dump:provider')
     jacocoAggregation project(':analysis:thread-dump')
+    jacocoAggregation project(':analysis:jfr')
     jacocoAggregation project(':server')
 }
 

@@ -25,6 +25,7 @@ import com.google.gson.TypeAdapter;
 import com.google.gson.TypeAdapterFactory;
 import com.google.gson.reflect.TypeToken;
 import org.eclipse.jifa.common.annotation.UseAccessor;
+import org.eclipse.jifa.common.annotation.UseGsonEnumAdaptor;
 
 import java.lang.reflect.Type;
 import java.time.LocalDateTime;
@@ -39,6 +40,7 @@ public interface GsonHolder {
      * The gson instance used by all jifa java code
      */
     Gson GSON = new GsonBuilder().registerTypeAdapterFactory(new TypeFactory())
+                                 .registerTypeAdapterFactory(new EnumTypeFactory())
                                  .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeTypeAdapter())
                                  .serializeSpecialFloatingPointValues()
                                  .create();
@@ -55,6 +57,18 @@ public interface GsonHolder {
             Class<? super T> t = type.getRawType();
             if (t.isAnnotationPresent(UseAccessor.class)) {
                 return new AccessorBasedTypeAdaptor<>(gson);
+            } else {
+                return null;
+            }
+        }
+    }
+
+    class EnumTypeFactory implements TypeAdapterFactory {
+
+        public <T> TypeAdapter<T> create(final Gson gson, final TypeToken<T> type) {
+            Class<? super T> t = type.getRawType();
+            if (t.isAnnotationPresent(UseGsonEnumAdaptor.class)) {
+                return new EnumTypeAdaptor<>();
             } else {
                 return null;
             }
