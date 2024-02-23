@@ -13,12 +13,12 @@
 
 package org.eclipse.jifa.jfr.api;
 
-import org.eclipse.jifa.jfr.vo.BasicMetadata;
+import org.eclipse.jifa.jfr.vo.Metadata;
 import org.eclipse.jifa.jfr.vo.FlameGraph;
 
 import java.util.List;
 
 public interface JFRAnalyzer {
-    BasicMetadata metadata();
+    Metadata metadata();
     FlameGraph getFlameGraph(String dimension, boolean include, List<String> taskSet);
 }

@@ -18,6 +18,6 @@ import org.eclipse.jifa.jfr.model.PerfDimension;
 
 @Setter
 @Getter
-public class BasicMetadata {
+public class Metadata {
     private PerfDimension[] perfDimensions;
 }

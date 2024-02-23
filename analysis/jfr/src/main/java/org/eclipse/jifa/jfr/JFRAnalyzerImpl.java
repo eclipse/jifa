@@ -26,7 +26,7 @@ import org.eclipse.jifa.jfr.model.jfr.RecordedEvent;
 import org.eclipse.jifa.jfr.request.AnalysisRequest;
 import org.eclipse.jifa.jfr.request.DimensionBuilder;
 import org.eclipse.jifa.jfr.model.*;
-import org.eclipse.jifa.jfr.vo.BasicMetadata;
+import org.eclipse.jifa.jfr.vo.Metadata;
 import org.eclipse.jifa.jfr.vo.FlameGraph;
 import org.openjdk.jmc.common.item.IItem;
 import org.openjdk.jmc.common.item.IItemCollection;
@@ -80,8 +80,8 @@ public class JFRAnalyzerImpl implements JFRAnalyzer {
     }
 
     @Override
-    public BasicMetadata metadata() {
-        BasicMetadata basic = new BasicMetadata();
+    public Metadata metadata() {
+        Metadata basic = new Metadata();
         basic.setPerfDimensions(PerfDimensionFactory.PERF_DIMENSIONS);
         return basic;
     }

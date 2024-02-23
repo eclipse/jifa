@@ -22,7 +22,7 @@ import org.eclipse.jifa.jfr.model.JavaThreadCPUTime;
 import org.eclipse.jifa.jfr.request.DimensionBuilder;
 import org.eclipse.jifa.jfr.helper.SimpleFlameGraph;
 import org.eclipse.jifa.jfr.model.*;
-import org.eclipse.jifa.jfr.vo.BasicMetadata;
+import org.eclipse.jifa.jfr.vo.Metadata;
 import org.eclipse.jifa.jfr.vo.FlameGraph;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -37,12 +37,12 @@ import java.util.*;
 public class TestJFRAnalyzer {
 
     @Test
-    public void testBasicMetadata() throws IOException, InvocationTargetException, IllegalAccessException, NoSuchMethodException {
+    public void testMetadata() throws IOException, InvocationTargetException, IllegalAccessException, NoSuchMethodException {
         Path path = createTmpFileForResource("jfr.jfr");
         Method buildAnalyzer = JFRAnalysisApiExecutor.class.getDeclaredMethod("buildAnalyzer", Path.class, Map.class, ProgressListener.class);
         buildAnalyzer.setAccessible(true);
         JFRAnalyzer analyzer = (JFRAnalyzer) buildAnalyzer.invoke(new JFRAnalysisApiExecutor(), path, null, ProgressListener.NoOpProgressListener);
-        BasicMetadata meta = analyzer.metadata();
+        Metadata meta = analyzer.metadata();
         Assertions.assertNotNull(meta.getPerfDimensions());
         Assertions.assertTrue(meta.getPerfDimensions().length > 0);
     }
