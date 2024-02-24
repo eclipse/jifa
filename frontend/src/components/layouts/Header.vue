@@ -23,6 +23,7 @@ import eclipseLogoUrlForDark from '@/assets/eclipse_incubation_horizontal_dark.s
 import { t } from '@/i18n/i18n';
 import { useEnv } from '@/stores/env';
 import { useHeaderToolbar } from '@/composables/header-toolbar';
+import { useRouter } from 'vue-router';
 
 const logo = computed(() => (isDark.value ? eclipseLogoUrlForDark : eclipseLogoUrl));
 
@@ -37,14 +38,21 @@ const localeOptions = computed(() => {
 
 const themeSwitchColor = computed(() => (isDark.value ? '#1a1a1a' : '#ffffff'));
 
+const router = useRouter();
+
 const { toolbar } = useHeaderToolbar();
 </script>
 <template>
   <header class="header">
     <div class="container">
       <div class="left-side">
-        <img style="height: calc(var(--ej-header-height) - 4px)" alt="" :src="logo" />
-        <span class="project-name">Jifa</span>
+        <img
+          style="height: calc(var(--ej-header-height) - 4px); cursor: pointer"
+          alt=""
+          :src="logo"
+          @click="router.push({ name: 'Files' })"
+        />
+        <span class="project-name" @click="router.push({ name: 'Files' })">Jifa</span>
 
         <template v-if="toolbar">
           <component :is="toolbar" />
@@ -146,7 +154,7 @@ const { toolbar } = useHeaderToolbar();
   font-size: 18px;
   font-weight: 600;
   letter-spacing: 3px;
-  cursor: default;
+  cursor: pointer;
 }
 
 .right-side {
