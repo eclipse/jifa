@@ -11,6 +11,7 @@ Currently, Jifa primarily supports the following features:
 - [Heap Dump Analysis](./heap-dump-analysis.md)
 - [GC Log Analysis](./gc-log-analysis.md)
 - [Thread Dump Analysis](./thread-dump-analysis.md)
+- [JFR Analysis](./jfr-analysis.md)
 
 In terms of the design, Jifa consists of two main parts:
 

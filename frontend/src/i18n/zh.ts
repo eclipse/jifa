@@ -13,6 +13,7 @@
 import heapDump from './heapdump/zh'
 import gclog from './gclog/zh'
 import threadDump from './threaddump/zh'
+import jfr from '@/i18n/jfr/zh'
 
 export default {
   jifa: {
@@ -58,6 +59,7 @@ export default {
       heapDump: '堆内存快照',
       GCLog: 'GC 日志',
       threadDump: '线程快照',
+      jfr: 'JFR 文件',
 
       new: '新文件',
 
@@ -122,7 +124,8 @@ export default {
     heapDump,
     gclog,
     threadDump,
+    jfr,
 
-    banner: '如果你喜欢这个项目，可以在 {GitHub} 上为它点个星'
+    banner: '如果你喜欢这个项目，可以在 {GitHub} 上为它点个星',
   }
 };

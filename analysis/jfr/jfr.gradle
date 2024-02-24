@@ -1,0 +1,29 @@
+/********************************************************************************
+ * Copyright (c) 2024 Contributors to the Eclipse Foundation
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information regarding copyright ownership.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ ********************************************************************************/
+plugins {
+    id 'java-library'
+}
+
+apply from: "$rootDir/gradle/java.gradle"
+
+jar {
+    archiveBaseName.set("jfr")
+}
+
+dependencies {
+    api project(':analysis')
+    implementation 'org.openjdk.jmc:flightrecorder:8.2.0'
+    implementation 'org.openjdk.jmc:flightrecorder.rules:8.2.0'
+    implementation 'org.openjdk.jmc:flightrecorder.rules.jdk:8.2.0'
+    implementation group: 'org.ow2.asm', name: 'asm', version: '9.3'
+}

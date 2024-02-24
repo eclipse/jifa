@@ -15,7 +15,7 @@ package org.eclipse.jifa.analysis.listener;
 
 /**
  * Progress listener of the analysis.
- * Currently, it is only used for the fist analysis.
+ * Currently, it is only used for the first analysis.
  */
 public interface ProgressListener {
 

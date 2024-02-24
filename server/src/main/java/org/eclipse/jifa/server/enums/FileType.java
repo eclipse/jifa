@@ -20,7 +20,9 @@ public enum FileType {
 
     GC_LOG("gc-log"),
 
-    THREAD_DUMP("thread-dump" );
+    THREAD_DUMP("thread-dump"),
+
+    JFR_FILE("jfr-file");
 
     private final String storageDirectoryName;
 
