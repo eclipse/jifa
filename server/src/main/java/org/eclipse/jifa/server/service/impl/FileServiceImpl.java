@@ -158,11 +158,13 @@ public class FileServiceImpl extends ConfigurationAccessor implements FileServic
         FileEntity file = getFileEntityByIdAndCheckAuthority(fileId);
 
         if (isMaster()) {
-            // forward the request to the static worker
-            FileStaticWorkerBindEntity bind = fileStaticWorkerBindRepo.findByFileId(file.getId()).orElseThrow(() -> CE(INTERNAL_ERROR));
-            workerService.syncRequest(bind.getStaticWorker(),
-                                      createDeleteRequest("/files/" + fileId, null, Void.class));
-            return;
+            Optional<FileStaticWorkerBindEntity> optional = fileStaticWorkerBindRepo.findByFileId(file.getId());
+            if (optional.isPresent()) {
+                // forward the request to the static worker
+                workerService.syncRequest(optional.get().getStaticWorker(),
+                                          createDeleteRequest("/files/" + fileId, null, Void.class));
+                return;
+            }
         }
 
         doDelete(file);
