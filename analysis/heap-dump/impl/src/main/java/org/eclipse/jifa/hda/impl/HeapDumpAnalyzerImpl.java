@@ -1864,21 +1864,21 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer {
             Map<String, Object> args = new HashMap<>();
             IResultTree tree = queryByCommand(context, "dominator_tree -groupBy " + groupBy.name(), args);
             switch (groupBy) {
-                case NONE:
+                case NONE: {
                     Object parent = Helper.fetchObjectInResultTree(tree, idPathInResultTree);
                     return
                             buildDefaultItems(context.snapshot, tree, tree.getChildren(parent), ascendingOrder, sortBy,
                                               null, null, new PagingRequest(page, pageSize), parentObjectId);
-                case BY_CLASS:
+                }
+                case BY_CLASS: {
                     Object object = Helper.fetchObjectInResultTree(tree, idPathInResultTree);
                     List<?> elements = object == null ? Collections.emptyList() : tree.getChildren(object);
                     return buildClassItems(context.snapshot, tree, elements, ascendingOrder, sortBy, null, null, new PagingRequest(page
                             , pageSize));
-                case BY_CLASSLOADER:
-                    List<?> children = new ExoticTreeFinder(tree)
-                            .setGetChildrenCallback(tree::getChildren)
-                            .setPredicate((theTree, theNode) -> theTree.getContext(theNode).getObjectId())
-                            .findChildrenOf(parentObjectId);
+                }
+                case BY_CLASSLOADER: {
+                    Object parent = Helper.fetchObjectInResultTree(tree, idPathInResultTree);
+                    List<?> children = tree.getChildren(parent);
 
                     if (children != null) {
                         return buildClassLoaderItems(context.snapshot, tree, children, ascendingOrder, sortBy, null,
@@ -1886,7 +1886,8 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer {
                     } else {
                         return PageView.empty();
                     }
-                case BY_PACKAGE:
+                }
+                case BY_PACKAGE: {
                     Object targetParentNode = new ExoticTreeFinder(tree)
                             .setGetChildrenCallback(node -> {
                                 Map<String, ?> subPackages = ReflectionUtil.getFieldValueOrNull(node, "subPackages");
@@ -1930,6 +1931,7 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer {
                     } else {
                         return PageView.empty();
                     }
+                }
                 default:
                     throw new AnalysisException("Should not reach here");
             }

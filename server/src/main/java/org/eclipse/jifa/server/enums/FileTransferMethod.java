@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -16,5 +16,5 @@ package org.eclipse.jifa.server.enums;
  * File Transfer Method
  */
 public enum FileTransferMethod {
-    OSS, S3, SCP, URL, TEXT
+    OSS, S3, SCP, URL, TEXT, UPLOAD
 }

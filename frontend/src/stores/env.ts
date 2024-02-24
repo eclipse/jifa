@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -34,6 +34,7 @@ export interface HandshakeResponse {
   publicKey: PublicKey;
   oauth2LoginLinks: object;
   user?: User;
+  disabledFileTransferMethods: [],
 }
 
 const tokenKey = 'jifa-token';
@@ -57,7 +58,9 @@ export const useEnv = defineStore('env', {
 
     user: null as User | null,
     publicKey: null as PublicKey | null,
-    uploadHeader: {} // used by upload
+    uploadHeader: {}, // used by upload
+
+    disabledFileTransferMethods: []
   }),
 
   getters: {
@@ -88,6 +91,8 @@ export const useEnv = defineStore('env', {
       } else if (!this.allowAnonymousAccess) {
         this.loginFormVisible = true;
       }
+
+      this.disabledFileTransferMethods = data.disabledFileTransferMethods
     },
 
     logout() {

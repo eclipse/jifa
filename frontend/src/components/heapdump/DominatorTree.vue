@@ -38,10 +38,17 @@ const className = {
   label: () => hdt('column.className'),
   minWidth: 250,
   content: (d) => d.label,
-  icon: (d) =>
-    parameters.groupBy === 'BY_CLASS'
-      ? ICONS.objects.class
-      : getIcon(d.gCRoot, d.objectType, d.objType),
+  icon: (d) => {
+    if (parameters.groupBy === 'BY_CLASS') {
+      return ICONS.objects.class;
+    }
+    if (parameters.groupBy === 'BY_CLASSLOADER') {
+      if (d.__meta.tier === 1) {
+        return ICONS.objects.class;
+      }
+    }
+    return getIcon(d.gCRoot, d.objectType, d.objType);
+  },
   prefix: (d) => d.prefix,
   suffix: (d) => d.suffix
 };
@@ -52,7 +59,12 @@ const objects = {
   align: 'right',
   sortable: true,
   property: 'Objects',
-  content: (d) => prettyCount(d.objects)
+  content: (d) => {
+    if (parameters.groupBy === 'BY_CLASSLOADER' && d.__meta.tier >= 2) {
+      return '';
+    }
+    return prettyCount(d.objects);
+  }
 };
 
 const shallowHeap = {
@@ -117,6 +129,9 @@ const tableProps = ref({
   hasChildren: (d) => {
     if (parameters.groupBy === 'BY_PACKAGE') {
       return d.objectType == OBJECT_TYPE.PACKAGE;
+    }
+    if (parameters.groupBy === 'BY_CLASSLOADER' && d.__meta.tier >= 2) {
+      return false;
     }
     return true;
   },

@@ -25,6 +25,7 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: false
+    open-in-view: false
   task.scheduling.pool.size: 8
 
 server:

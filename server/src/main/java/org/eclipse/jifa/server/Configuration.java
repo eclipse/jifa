@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -20,6 +20,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jifa.common.util.Validate;
+import org.eclipse.jifa.server.enums.FileTransferMethod;
 import org.eclipse.jifa.server.enums.Role;
 import org.eclipse.jifa.server.enums.SchedulingStrategy;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -27,6 +28,8 @@ import org.springframework.validation.annotation.Validated;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collections;
+import java.util.Set;
 
 import static org.eclipse.jifa.server.Constant.DEFAULT_PORT;
 
@@ -146,6 +149,12 @@ public class Configuration {
      * Whether to open browser when server is ready
      */
     private boolean openBrowserWhenReady;
+
+
+    /**
+     * The disabled file transfer methods.
+     */
+    private Set<FileTransferMethod> disabledFileTransferMethods = Collections.emptySet();
 
     @PostConstruct
     private void init() {

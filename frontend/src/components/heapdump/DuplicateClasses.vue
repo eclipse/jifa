@@ -12,11 +12,11 @@
  -->
 <script setup lang="ts">
 import CommonTable from '@/components/heapdump/CommonTable.vue';
-import { getIcon, ICONS } from '@/components/heapdump/icon-helper';
-import { prettyCount } from '@/support/utils';
-import { useSelectedObject } from '@/composables/heapdump/selected-object';
-import { OBJECT_TYPE } from '@/components/heapdump/type';
-import { Search } from '@element-plus/icons-vue';
+import {getIcon, ICONS} from '@/components/heapdump/icon-helper';
+import {prettyCount} from '@/support/utils';
+import {useSelectedObject} from '@/composables/heapdump/selected-object';
+import {OBJECT_TYPE} from '@/components/heapdump/type';
+import {Search} from '@element-plus/icons-vue';
 
 const { selectedObjectId } = useSelectedObject();
 
@@ -125,3 +125,8 @@ const tableProps = ref({
     <CommonTable v-bind="tableProps" />
   </div>
 </template>
+<style scoped>
+:deep(.el-input-group__prepend) {
+  background-color: var(--el-fill-color-blank);
+}
+</style>

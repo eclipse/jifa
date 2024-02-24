@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -12,6 +12,7 @@
  ********************************************************************************/
 package org.eclipse.jifa.server.util;
 
+import org.eclipse.jifa.common.domain.exception.ShouldNotReachHereException;
 import org.eclipse.jifa.server.domain.dto.FileTransferRequest;
 import org.eclipse.jifa.server.enums.FileTransferMethod;
 
@@ -25,6 +26,7 @@ public abstract class FileTransferUtil {
             case SCP -> request.getScpSourcePath();
             case URL -> request.getUrl();
             case TEXT -> request.getFilename();
+            case UPLOAD -> throw new ShouldNotReachHereException();
         };
 
         String name = source.substring(source.lastIndexOf(java.io.File.separatorChar) + 1);

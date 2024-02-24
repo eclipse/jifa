@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2020, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -42,16 +42,16 @@ dependencies {
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
     implementation 'org.springframework.retry:spring-retry'
 
-    implementation 'io.kubernetes:client-java:18.0.1'
+    implementation 'io.kubernetes:client-java:20.0.0'
 
-    implementation 'com.mysql:mysql-connector-j:8.0.33'
+    implementation 'com.mysql:mysql-connector-j:8.2.0'
     runtimeOnly 'com.h2database:h2:2.2.220'
 
     implementation 'com.hierynomus:sshj:0.35.0'
 
     implementation 'com.aliyun.oss:aliyun-sdk-oss:3.17.0'
 
-    implementation 'com.amazonaws:aws-java-sdk-s3:1.12.506'
+    implementation 'com.amazonaws:aws-java-sdk-s3:1.12.657'
 
     // test
     testImplementation 'org.springframework.boot:spring-boot-starter-test'

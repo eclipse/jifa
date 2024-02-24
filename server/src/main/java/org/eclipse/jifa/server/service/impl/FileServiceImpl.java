@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -31,6 +31,7 @@ import org.eclipse.jifa.server.domain.entity.shared.file.TransferringFileEntity;
 import org.eclipse.jifa.server.domain.entity.shared.user.UserEntity;
 import org.eclipse.jifa.server.domain.entity.static_cluster.FileStaticWorkerBind;
 import org.eclipse.jifa.server.domain.entity.static_cluster.StaticWorkerEntity;
+import org.eclipse.jifa.server.enums.FileTransferMethod;
 import org.eclipse.jifa.server.enums.FileTransferState;
 import org.eclipse.jifa.server.enums.FileType;
 import org.eclipse.jifa.server.enums.SchedulingStrategy;
@@ -72,6 +73,7 @@ import static org.eclipse.jifa.server.enums.Role.MASTER;
 import static org.eclipse.jifa.server.enums.Role.STANDALONE_WORKER;
 import static org.eclipse.jifa.server.enums.ServerErrorCode.ACCESS_DENIED;
 import static org.eclipse.jifa.server.enums.ServerErrorCode.FILE_NOT_FOUND;
+import static org.eclipse.jifa.server.enums.ServerErrorCode.FILE_TRANSFER_METHOD_DISABLED;
 import static org.eclipse.jifa.server.enums.ServerErrorCode.FILE_TYPE_MISMATCH;
 import static org.eclipse.jifa.server.enums.ServerErrorCode.UNAVAILABLE;
 
@@ -177,6 +179,8 @@ public class FileServiceImpl extends ConfigurationAccessor implements FileServic
     public long handleTransferRequest(FileTransferRequest request) {
         mustNotBe(ELASTIC_WORKER);
 
+        Validate.isFalse(config.getDisabledFileTransferMethods().contains(request.getMethod()), FILE_TRANSFER_METHOD_DISABLED);
+
         if (isMaster() && getSchedulingStrategy() == SchedulingStrategy.STATIC) {
             StaticWorkerEntity worker = workerService.asStaticWorkerService().selectForFileTransferRequest(request);
             return workerService.sendRequestAndBlock(worker,
@@ -215,6 +219,8 @@ public class FileServiceImpl extends ConfigurationAccessor implements FileServic
     @Override
     public long handleUploadRequest(FileType type, MultipartFile file) throws Throwable {
         mustNotBe(ELASTIC_WORKER);
+
+        Validate.isFalse(config.getDisabledFileTransferMethods().contains(FileTransferMethod.UPLOAD), FILE_TRANSFER_METHOD_DISABLED);
 
         if (isMaster() && getSchedulingStrategy() == SchedulingStrategy.STATIC) {
             StaticWorkerEntity worker = workerService.asStaticWorkerService().selectForFileUpload(type, file);
