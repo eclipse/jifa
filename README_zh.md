@@ -19,7 +19,7 @@
 
 ## 简介
 
-Eclipse Jifa 是一款在线的堆转储、GC 日志和线程转储分析工具。
+Eclipse Jifa 是一款在线分析工具，支持分析 Java 堆转储、GC 日志、线程转储以及 JFR 文件。
 
 关于项目的更多信息请访问 [GitHub Pages](https://eclipse.github.io/jifa/zh/)。
 
