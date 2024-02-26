@@ -34,7 +34,7 @@ export default defineConfig({
           {text: 'Home', link: '/'},
           {text: 'Guide', link: '/guide/what-is-eclipse-jifa'},
           {
-            text: '0.2.0',
+            text: '0.3.0-SNAPSHOT',
             items: [
               {
                 text: 'Changelog',
@@ -108,7 +108,7 @@ export default defineConfig({
           {text: '主页', link: '/zh/'},
           {text: '指南', link: '/zh/guide/what-is-eclipse-jifa'},
           {
-            text: '0.2.0',
+            text: '0.3.0-SNAPSHOT',
             items: [
               {
                 text: '更新日志',
