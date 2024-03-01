@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -16,7 +16,7 @@ import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jifa.server.ConfigurationAccessor;
 import org.eclipse.jifa.server.condition.StaticWorker;
-import org.eclipse.jifa.server.domain.entity.static_cluster.StaticWorkerEntity;
+import org.eclipse.jifa.server.domain.entity.cluster.StaticWorkerEntity;
 import org.eclipse.jifa.server.repository.StaticWorkerRepo;
 import org.eclipse.jifa.server.service.StorageService;
 import org.springframework.scheduling.TaskScheduler;

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -10,23 +10,21 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-package org.eclipse.jifa.server.domain.entity.static_cluster;
+package org.eclipse.jifa.server.domain.entity.cluster;
 
 import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapsId;
 import jakarta.persistence.OneToOne;
 import lombok.Getter;
 import lombok.Setter;
+import org.eclipse.jifa.server.domain.entity.shared.BaseEntity;
 import org.eclipse.jifa.server.domain.entity.shared.file.FileEntity;
 
 @Entity(name = "file_static_worker_binds")
 @Getter
 @Setter
-public class FileStaticWorkerBind {
-    @Id
-    private Long id;
+public class FileStaticWorkerBindEntity extends BaseEntity  {
 
     @OneToOne
     @MapsId

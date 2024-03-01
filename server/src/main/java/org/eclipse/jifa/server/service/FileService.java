@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -17,12 +17,14 @@ import org.eclipse.jifa.server.domain.dto.FileTransferProgress;
 import org.eclipse.jifa.server.domain.dto.FileTransferRequest;
 import org.eclipse.jifa.server.domain.dto.FileView;
 import org.eclipse.jifa.server.domain.dto.NamedResource;
+import org.eclipse.jifa.server.domain.entity.cluster.StaticWorkerEntity;
 import org.eclipse.jifa.server.domain.entity.shared.file.FileEntity;
 import org.eclipse.jifa.server.enums.FileType;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Optional;
 
 public interface FileService {
 
@@ -47,4 +49,6 @@ public interface FileService {
     FileEntity getFileByUniqueName(String uniqueName, FileType expectedFileType);
 
     void deleteOldestFile();
+
+    Optional<StaticWorkerEntity> getStaticWorkerByFile(FileEntity file);
 }

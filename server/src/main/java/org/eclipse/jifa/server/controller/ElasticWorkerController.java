@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -12,7 +12,6 @@
  ********************************************************************************/
 package org.eclipse.jifa.server.controller;
 
-import org.eclipse.jifa.server.condition.ElasticSchedulingStrategy;
 import org.eclipse.jifa.server.condition.Master;
 import org.eclipse.jifa.server.enums.ElasticWorkerState;
 import org.eclipse.jifa.server.service.WorkerService;
@@ -22,7 +21,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @Master
-@ElasticSchedulingStrategy
 @RestController
 @RequestMapping("elastic-workers")
 public class ElasticWorkerController {
@@ -35,6 +33,6 @@ public class ElasticWorkerController {
 
     @GetMapping("{worker_id}/state")
     public ElasticWorkerState state(@PathVariable("worker_id") long workId) {
-        return workerService.asElasticWorkerService().getState(workId);
+        return workerService.getElasticWorkerState(workId);
     }
 }

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -12,42 +12,33 @@
  ********************************************************************************/
 package org.eclipse.jifa.server.service;
 
-import org.eclipse.jifa.common.domain.exception.ShouldNotReachHereException;
+import org.eclipse.jifa.server.domain.dto.FileLocation;
 import org.eclipse.jifa.server.domain.dto.HttpRequestToWorker;
+import org.eclipse.jifa.server.domain.entity.cluster.ElasticWorkerEntity;
+import org.eclipse.jifa.server.domain.entity.cluster.StaticWorkerEntity;
 import org.eclipse.jifa.server.domain.entity.cluster.WorkerEntity;
 import org.eclipse.jifa.server.domain.entity.shared.file.FileEntity;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
+import org.eclipse.jifa.server.domain.entity.shared.user.UserEntity;
+import org.eclipse.jifa.server.enums.ElasticWorkerState;
+import org.eclipse.jifa.server.enums.FileType;
+import org.springframework.core.io.Resource;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 public interface WorkerService {
 
-    WorkerEntity resolveForAnalysisApiRequest(FileEntity target);
+    FileLocation decideLocationForNewFile(UserEntity user, FileType type);
 
-    <Response> CompletableFuture<Response> sendRequest(WorkerEntity worker, HttpRequestToWorker<Response> request);
+    long forwardUploadRequestToStaticWorker(StaticWorkerEntity worker, FileType type, MultipartFile file) throws Throwable;
 
-    default <Response> Response sendRequestAndBlock(WorkerEntity worker, HttpRequestToWorker<Response> request) {
-        try {
-            return sendRequest(worker, request).get();
-        } catch (Throwable t) {
-            if (t instanceof RuntimeException re) {
-                throw re;
-            }
-            if (t instanceof ExecutionException ee) {
-                if (ee.getCause() instanceof WebClientResponseException re) {
-                    throw re;
-                }
-            }
-            throw new RuntimeException(t);
-        }
-    }
+    Resource forwardDownloadRequestToStaticWorker(StaticWorkerEntity worker, long fileId) throws Throwable;
 
-    default StaticWorkerService asStaticWorkerService() {
-        throw new ShouldNotReachHereException();
-    }
+    ElasticWorkerState getElasticWorkerState(long workerId);
 
-    default ElasticWorkerService asElasticWorkerService() {
-        throw new ShouldNotReachHereException();
-    }
+    ElasticWorkerEntity requestElasticWorkerForAnalysisApiRequest(FileEntity target);
+
+    <Response> Response syncRequest(WorkerEntity worker, HttpRequestToWorker<Response> request);
+
+    <Response> CompletableFuture<Response> asyncRequest(WorkerEntity worker, HttpRequestToWorker<Response> request);
 }

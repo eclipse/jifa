@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -104,9 +104,13 @@ public class AnalysisApiServiceImpl extends ConfigurationAccessor implements Ana
 
         if (isMaster()) {
             assert workerService != null;
-            WorkerEntity worker = workerService.resolveForAnalysisApiRequest(file);
-            return workerService.sendRequest(worker, createPostRequest(Constant.HTTP_ANALYSIS_API_MAPPING, request, byte[].class));
+            WorkerEntity dest = fileService.getStaticWorkerByFile(file).orElse(null);
+            if (dest == null) {
+                dest = workerService.requestElasticWorkerForAnalysisApiRequest(file);
+            }
+            return workerService.asyncRequest(dest, createPostRequest(Constant.HTTP_ANALYSIS_API_MAPPING, request, byte[].class));
         }
+
         String namespace = request.namespace();
         String api = request.api();
         AnalysisApiArgumentResolver resolver =

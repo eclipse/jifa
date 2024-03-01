@@ -38,7 +38,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jifa.common.util.Validate;
 import org.eclipse.jifa.server.ConfigurationAccessor;
-import org.eclipse.jifa.server.condition.ElasticCluster;
+import org.eclipse.jifa.server.condition.Cluster;
 import org.eclipse.jifa.server.repository.ElasticWorkerRepo;
 import org.eclipse.jifa.server.service.ElasticWorkerScheduler;
 import org.springframework.stereotype.Service;
@@ -56,7 +56,7 @@ import static org.eclipse.jifa.server.Constant.K8S_NAMESPACE;
 import static org.eclipse.jifa.server.Constant.POD_NAME_PREFIX;
 import static org.eclipse.jifa.server.Constant.WORKER_CONTAINER_NAME;
 
-@ElasticCluster
+@Cluster
 @Service
 @Slf4j
 public class K8SWorkerScheduler extends ConfigurationAccessor implements ElasticWorkerScheduler {

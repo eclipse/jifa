@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -12,8 +12,8 @@
  ********************************************************************************/
 package org.eclipse.jifa.server.repository;
 
-import org.eclipse.jifa.server.condition.ElasticCluster;
-import org.eclipse.jifa.server.domain.entity.elastic_cluster.ElasticWorkerEntity;
+import org.eclipse.jifa.server.condition.Cluster;
+import org.eclipse.jifa.server.domain.entity.cluster.ElasticWorkerEntity;
 import org.eclipse.jifa.server.enums.ElasticWorkerPurpose;
 import org.eclipse.jifa.server.enums.ElasticWorkerState;
 import org.springframework.data.repository.CrudRepository;
@@ -22,7 +22,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
-@ElasticCluster
+@Cluster
 @Repository
 public interface ElasticWorkerRepo extends CrudRepository<ElasticWorkerEntity, Long> {
 

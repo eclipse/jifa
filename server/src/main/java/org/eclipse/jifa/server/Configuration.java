@@ -19,10 +19,10 @@ import jakarta.validation.constraints.Positive;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jifa.common.util.Validate;
 import org.eclipse.jifa.server.enums.FileTransferMethod;
 import org.eclipse.jifa.server.enums.Role;
-import org.eclipse.jifa.server.enums.SchedulingStrategy;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
 
@@ -81,11 +81,6 @@ public class Configuration {
      * The database password
      */
     private String databasePassword;
-
-    /**
-     * The scheduling strategy.
-     */
-    private SchedulingStrategy schedulingStrategy;
 
     /**
      * The name of PersistentVolumeClaim.
@@ -150,7 +145,6 @@ public class Configuration {
      */
     private boolean openBrowserWhenReady;
 
-
     /**
      * The disabled file transfer methods.
      */
@@ -159,21 +153,19 @@ public class Configuration {
     @PostConstruct
     private void init() {
         if (role == Role.MASTER) {
-            Validate.notNull(schedulingStrategy,
-                             "jifa.scheduling-strategy must be set when role is master");
-            if (schedulingStrategy == SchedulingStrategy.ELASTIC) {
+            if (storagePath != null) {
                 Validate.notBlank(storagePVCName,
-                                  "jifa.storage-pvc-name must be set and not blank when role is master and scheduling strategy is elastic");
+                                  "jifa.service-pvc-name must be set and not blank when storage-path is set for master");
                 Validate.notBlank(serviceAccountName,
-                                  "jifa.service-account-name must be set and not blank when role is master and scheduling strategy is elastic");
+                                  "jifa.service-account-name must be set and not blank when storage-path is set for master");
                 Validate.notBlank(elasticWorkerImage,
-                                  "jifa.elastic-worker-image name must be set and not blank when role is master and scheduling strategy is elastic");
+                                  "jifa.elastic-worker-image name must be set and not blank when storage-path is set for master");
             }
+        } else {
+            Validate.notNull(storagePath, "jifa.storage-path must be set");
         }
 
-        if (role != Role.MASTER || schedulingStrategy != SchedulingStrategy.STATIC) {
-            Validate.notNull(storagePath, "jifa.storage-path must be set");
-
+        if (storagePath != null) {
             storagePath = storagePath.toAbsolutePath();
 
             if (Files.exists(storagePath) || storagePath.toFile().mkdirs()) {

@@ -17,24 +17,25 @@ import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jifa.common.domain.vo.PageView;
 import org.eclipse.jifa.common.util.Validate;
 import org.eclipse.jifa.server.ConfigurationAccessor;
+import org.eclipse.jifa.server.Constant;
 import org.eclipse.jifa.server.component.CurrentStaticWorker;
 import org.eclipse.jifa.server.domain.converter.EntityConverter;
 import org.eclipse.jifa.server.domain.converter.FileViewConverter;
+import org.eclipse.jifa.server.domain.dto.FileLocation;
 import org.eclipse.jifa.server.domain.dto.FileTransferProgress;
 import org.eclipse.jifa.server.domain.dto.FileTransferRequest;
 import org.eclipse.jifa.server.domain.dto.FileView;
 import org.eclipse.jifa.server.domain.dto.NamedResource;
+import org.eclipse.jifa.server.domain.entity.cluster.FileStaticWorkerBindEntity;
+import org.eclipse.jifa.server.domain.entity.cluster.StaticWorkerEntity;
 import org.eclipse.jifa.server.domain.entity.shared.file.BaseFileEntity;
 import org.eclipse.jifa.server.domain.entity.shared.file.DeletedFileEntity;
 import org.eclipse.jifa.server.domain.entity.shared.file.FileEntity;
 import org.eclipse.jifa.server.domain.entity.shared.file.TransferringFileEntity;
 import org.eclipse.jifa.server.domain.entity.shared.user.UserEntity;
-import org.eclipse.jifa.server.domain.entity.static_cluster.FileStaticWorkerBind;
-import org.eclipse.jifa.server.domain.entity.static_cluster.StaticWorkerEntity;
 import org.eclipse.jifa.server.enums.FileTransferMethod;
 import org.eclipse.jifa.server.enums.FileTransferState;
 import org.eclipse.jifa.server.enums.FileType;
-import org.eclipse.jifa.server.enums.SchedulingStrategy;
 import org.eclipse.jifa.server.repository.DeletedFileRepo;
 import org.eclipse.jifa.server.repository.FileRepo;
 import org.eclipse.jifa.server.repository.FileStaticWorkerBindRepo;
@@ -156,14 +157,15 @@ public class FileServiceImpl extends ConfigurationAccessor implements FileServic
 
         FileEntity file = getFileEntityByIdAndCheckAuthority(fileId);
 
-        if (isMaster() && getSchedulingStrategy() == SchedulingStrategy.STATIC) {
-            // forward the request to the static worker
-            FileStaticWorkerBind bind = fileStaticWorkerBindRepo.findByFileId(file.getId()).orElseThrow(() -> CE(INTERNAL_ERROR));
-            workerService.sendRequestAndBlock(bind.getStaticWorker(),
-                                              createDeleteRequest("/files/" + fileId, null, Void.class));
-            return;
+        if (isMaster()) {
+            Optional<FileStaticWorkerBindEntity> optional = fileStaticWorkerBindRepo.findByFileId(file.getId());
+            if (optional.isPresent()) {
+                // forward the request to the static worker
+                workerService.syncRequest(optional.get().getStaticWorker(),
+                                          createDeleteRequest("/files/" + fileId, null, Void.class));
+                return;
+            }
         }
-        assert storageService != null;
 
         doDelete(file);
     }
@@ -181,10 +183,13 @@ public class FileServiceImpl extends ConfigurationAccessor implements FileServic
 
         Validate.isFalse(config.getDisabledFileTransferMethods().contains(request.getMethod()), FILE_TRANSFER_METHOD_DISABLED);
 
-        if (isMaster() && getSchedulingStrategy() == SchedulingStrategy.STATIC) {
-            StaticWorkerEntity worker = workerService.asStaticWorkerService().selectForFileTransferRequest(request);
-            return workerService.sendRequestAndBlock(worker,
-                                                     createPostRequest("/files/transfer", request, Long.class));
+        if (isMaster()) {
+            FileLocation location = workerService.decideLocationForNewFile(userService.getCurrentUser(), request.getType());
+            assert location.valid();
+            if (!location.useSharedStorage()) {
+                return workerService.syncRequest(location.staticWorker(),
+                                                 createPostRequest("/files/transfer", request, Long.class));
+            }
         }
 
         TransferringFileEntity transferringFile = new TransferringFileEntity();
@@ -222,16 +227,18 @@ public class FileServiceImpl extends ConfigurationAccessor implements FileServic
 
         Validate.isFalse(config.getDisabledFileTransferMethods().contains(FileTransferMethod.UPLOAD), FILE_TRANSFER_METHOD_DISABLED);
 
-        if (isMaster() && getSchedulingStrategy() == SchedulingStrategy.STATIC) {
-            StaticWorkerEntity worker = workerService.asStaticWorkerService().selectForFileUpload(type, file);
-            return workerService.asStaticWorkerService().handleUploadRequest(worker, type, file);
+        if (isMaster()) {
+            FileLocation location = workerService.decideLocationForNewFile(userService.getCurrentUser(), type);
+            if (!location.useSharedStorage()) {
+                return workerService.forwardUploadRequestToStaticWorker(location.staticWorker(), type, file);
+            }
         }
 
         String uniqueName = generateFileUniqueName();
-        String originalName = file.getOriginalFilename();
+        String originalName = file.getOriginalFilename() != null ? file.getOriginalFilename() : Constant.DEFAULT_FILENAME;
         long size = storageService.handleUpload(type, file, uniqueName);
 
-        FileStaticWorkerBind bind = isStaticWorker() ? new FileStaticWorkerBind() : null;
+        FileStaticWorkerBindEntity bind = isStaticWorker() ? new FileStaticWorkerBindEntity() : null;
         if (bind != null) {
             bind.setStaticWorker(currentStaticWorker.getEntity());
         }
@@ -277,17 +284,21 @@ public class FileServiceImpl extends ConfigurationAccessor implements FileServic
         mustNotBe(ELASTIC_WORKER);
 
         FileEntity file = getFileEntityByIdAndCheckAuthority(fileId);
-        Resource resource;
-        if (isMaster() && getSchedulingStrategy() == SchedulingStrategy.STATIC) {
+        Resource resource = null;
+        if (isMaster()) {
             // forward the request to the static worker
-            FileStaticWorkerBind bind = fileStaticWorkerBindRepo.findByFileId(file.getId())
-                                                                .orElseThrow(() -> CE(INTERNAL_ERROR));
-            resource = workerService.asStaticWorkerService()
-                                    .handleDownloadRequest(bind.getStaticWorker(), file.getId());
-        } else {
+            FileStaticWorkerBindEntity bind = fileStaticWorkerBindRepo.findByFileId(file.getId())
+                                                                      .orElseThrow(() -> CE(INTERNAL_ERROR));
+            if (bind != null) {
+                resource = workerService.forwardDownloadRequestToStaticWorker(bind.getStaticWorker(), file.getId());
+            }
+        }
+
+        if (resource == null) {
             resource = new FileSystemResource(storageService.locationOf(file.getType(), file.getUniqueName()));
             Validate.isTrue(resource.exists(), INTERNAL_ERROR);
         }
+
         return new NamedResource(file.getOriginalName(), resource);
     }
 
@@ -299,6 +310,11 @@ public class FileServiceImpl extends ConfigurationAccessor implements FileServic
             doDelete(file);
             log.info("File '{} ({})' is deleted", file.getOriginalName(), file.getUniqueName());
         }
+    }
+
+    @Override
+    public Optional<StaticWorkerEntity> getStaticWorkerByFile(FileEntity file) {
+        return fileStaticWorkerBindRepo.findByFileId(file.getId()).map(FileStaticWorkerBindEntity::getStaticWorker);
     }
 
     private FileEntity getFileEntityByIdAndCheckAuthority(long id) {
@@ -326,14 +342,12 @@ public class FileServiceImpl extends ConfigurationAccessor implements FileServic
     }
 
     private void doDelete(FileEntity file) {
-        assert isWorker() || (isMaster() && getSchedulingStrategy() == SchedulingStrategy.STATIC);
-
-        FileStaticWorkerBind staticBind = isStaticWorker() ? fileStaticWorkerBindRepo.findByFileId(file.getId()).orElseThrow(() -> CE(INTERNAL_ERROR)) : null;
+        FileStaticWorkerBindEntity bind = isStaticWorker() ? fileStaticWorkerBindRepo.findByFileId(file.getId()).orElseThrow(() -> CE(INTERNAL_ERROR)) : null;
 
         DeletedFileEntity deletedFile = EntityConverter.convert(file);
         transactionTemplate.executeWithoutResult(status -> {
-            if (staticBind != null) {
-                fileStaticWorkerBindRepo.deleteById(staticBind.getId());
+            if (bind != null) {
+                fileStaticWorkerBindRepo.deleteById(bind.getId());
             }
             fileRepo.deleteById(file.getId());
             deletedFileRepo.save(deletedFile);
@@ -407,7 +421,7 @@ public class FileServiceImpl extends ConfigurationAccessor implements FileServic
 
             FileEntity file = EntityConverter.convert(transferringFile);
 
-            FileStaticWorkerBind bind = isStaticWorker() ? new FileStaticWorkerBind() : null;
+            FileStaticWorkerBindEntity bind = isStaticWorker() ? new FileStaticWorkerBindEntity() : null;
 
             if (bind != null) {
                 bind.setStaticWorker(currentStaticWorker.getEntity());
