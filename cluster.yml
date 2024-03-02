@@ -175,7 +175,6 @@ spec:
               value: password
           args:
             - --jifa.role=master
-            - --jifa.scheduling-strategy=elastic
             - --jifa.storage-pvc-name=jifa-pvc
             - --jifa.storage-path=/jifa-storage
             - --jifa.service-account-name=jifa-service-account

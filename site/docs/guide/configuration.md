@@ -70,20 +70,9 @@ Type：String
 
 Default：Read from the environment variable `MYSQL_PASSWORD`, and `jifa` is used if it's not set.
 
-## scheduling-strategy
-
-The scheduling strategy.
-
-Type: Enum
-
-- `STATIC`
-- `ELASTIC`
-
-Default: null
-
 ## storage-pvc-name
 
-The name of PersistentVolumeClaim used in an elastic cluster.
+The name of PersistentVolumeClaim used in the cluster.
 
 Type: String
 
@@ -91,7 +80,7 @@ Default: null
 
 ## service-account-name
 
-The name of ServiceAccount used in an elastic cluster.
+The name of ServiceAccount used in the cluster.
 
 Type: String
 
@@ -99,7 +88,7 @@ Default: null
 
 ## elastic-worker-image
 
-Docker image used in an elastic cluster to run `WORKER` nodes.
+Docker image used in the cluster to run `ELASTIC_WORKER` nodes.
 
 Type: String
 
@@ -107,7 +96,7 @@ Default: null
 
 ## elastic-worker-jvm-options
 
-JVM options used by `WORKER` nodes in an elastic cluster
+JVM options used by `ELASTIC_WORKER` nodes in the cluster
 
 Type：String
 
@@ -115,7 +104,7 @@ Default：null
 
 ## elastic-worker-port
 
-The service port of `WORKER` nodes in an elastic cluster.
+The service port of `ELASTIC_WORKER` nodes in the cluster.
 
 Type: int
 
@@ -123,8 +112,8 @@ Default: 8102
 
 ## elastic-worker-idle-threshold
 
-The idle threshold of `WORKER` nodes in an elastic cluster, in minutes, with a minimum value of 2. When a `WORKER` node
-is idle for more than this threshold, it will automatically stop.
+The idle threshold of `ELASTIC_WORKER` nodes in the cluster, in minutes, with a minimum value of 2. When
+a `ELASTIC_WORKER` node is idle for more than this threshold, it will automatically stop.
 
 Type: int
 
