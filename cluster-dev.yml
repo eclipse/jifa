@@ -1,4 +1,4 @@
-# Copyright (c) 2023 Contributors to the Eclipse Foundation
+# Copyright (c) 2024 Contributors to the Eclipse Foundation
 #
 # See the NOTICE file(s) distributed with this work for additional
 # information regarding copyright ownership.
@@ -175,7 +175,6 @@ spec:
               value: password
           args:
             - --jifa.role=master
-            - --jifa.scheduling-strategy=elastic
             - --jifa.storage-pvc-name=jifa-pvc
             - --jifa.storage-path=/jifa-storage
             - --jifa.service-account-name=jifa-service-account
