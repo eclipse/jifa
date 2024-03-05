@@ -1,4 +1,4 @@
-# Copyright (c) 2023 Contributors to the Eclipse Foundation
+# Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
 #
 # See the NOTICE file(s) distributed with this work for additional
 # information regarding copyright ownership.
@@ -15,6 +15,7 @@ jifa:
   database-name: ${MYSQL_DATABASE:jifa}
   database-user: ${MYSQL_USER:jifa}
   database-password: ${MYSQL_PASSWORD:jifa}
+  disabled-file-transfer-methods: [ scp ]
 
 spring:
   servlet:
