@@ -11,12 +11,19 @@
     SPDX-License-Identifier: EPL-2.0
  -->
 <script setup lang="ts">
-import {useClipboard} from '@vueuse/core';
-import {Connection, CopyDocument, Document, Link, Upload, UploadFilled} from '@element-plus/icons-vue';
-import {fileTypeMap} from '@/composables/file-types';
+import { useClipboard } from '@vueuse/core';
+import {
+  Connection,
+  CopyDocument,
+  Document,
+  Link,
+  Upload,
+  UploadFilled
+} from '@element-plus/icons-vue';
+import { fileTypeMap } from '@/composables/file-types';
 import axios from 'axios';
-import {useEnv} from '@/stores/env';
-import {t} from '@/i18n/i18n';
+import { useEnv } from '@/stores/env';
+import { t } from '@/i18n/i18n';
 
 defineProps({
   visible: Boolean
@@ -269,16 +276,16 @@ function isEnabled(method: string) {
 }
 
 const dialogWidth = computed(() => {
-  return env.disabledFileTransferMethods.length > 0 ? '640px' : '710px'
-})
+  return env.disabledFileTransferMethods.length > 0 ? '640px' : '710px';
+});
 </script>
 <template>
   <el-dialog
-      :model-value="visible"
-      @update:model-value="(newValue: boolean) => $emit('update:visible', newValue)"
-      :before-close="close"
-      :title="t('file.new')"
-      :width="dialogWidth"
+    :model-value="visible"
+    @update:model-value="(newValue: boolean) => $emit('update:visible', newValue)"
+    :before-close="close"
+    :title="t('file.new')"
+    :width="dialogWidth"
   >
     <el-form
       label-position="right"
@@ -335,7 +342,9 @@ const dialogWidth = computed(() => {
 
           <el-radio-button
             label="TEXT"
-            :disabled="(params.type as String) === 'HEAP_DUMP' || (params.type as String) === 'JFR_FILE'"
+            :disabled="
+              (params.type as String) === 'HEAP_DUMP' || (params.type as String) === 'JFR_FILE'
+            "
             v-if="isEnabled('TEXT')"
           >
             <div class="ej-file-transfer-method-button">

@@ -12,11 +12,11 @@
  -->
 <script setup lang="ts">
 import CommonTable from '@/components/heapdump/CommonTable.vue';
-import {getIcon, ICONS} from '@/components/heapdump/icon-helper';
-import {prettyCount} from '@/support/utils';
-import {useSelectedObject} from '@/composables/heapdump/selected-object';
-import {OBJECT_TYPE} from '@/components/heapdump/type';
-import {Search} from '@element-plus/icons-vue';
+import { getIcon, ICONS } from '@/components/heapdump/icon-helper';
+import { prettyCount } from '@/support/utils';
+import { useSelectedObject } from '@/composables/heapdump/selected-object';
+import { OBJECT_TYPE } from '@/components/heapdump/type';
+import { Search } from '@element-plus/icons-vue';
 
 const { selectedObjectId } = useSelectedObject();
 
