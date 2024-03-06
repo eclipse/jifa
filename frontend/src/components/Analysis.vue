@@ -104,7 +104,10 @@ function pollProgress() {
               offset: 200,
               duration: 500,
               showClose: false,
-              onClose: () => analysis.setPhase(Phase.SUCCESS)
+              onClose: () => {
+                analysis.setPhase(Phase.SUCCESS);
+                log.value = '';
+              }
             }),
           500
         );
