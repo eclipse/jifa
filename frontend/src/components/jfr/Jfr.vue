@@ -572,7 +572,7 @@ onUnmounted(() => {});
                     <el-checkbox
                       v-model="toggleFilterValuesChecked"
                       @change="(checked) => handleToggleFilterValuesChecked(checked)"
-                      style="margin-left: 8px; margin-right: 4px; height: 16px"
+                      style="margin-left: 8px; margin-right: 10px; height: 16px"
                     />
                   </div>
                 </template>

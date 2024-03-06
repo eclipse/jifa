@@ -137,7 +137,7 @@ onMounted(() => {
               <el-text size="small" style="font-weight: 600" truncated>{{
                 gct('detail.eventType')
               }}</el-text>
-              <el-select size="small" v-model="filter.eventType" clearable>
+              <el-select size="small" v-model="filter.eventType" style="width: 170px" clearable>
                 <el-option
                   v-for="option in metadata.parentEventTypes"
                   :key="option"
@@ -149,7 +149,7 @@ onMounted(() => {
               <el-text size="small" style="font-weight: 600; margin-left: 10px" truncated
                 >{{ gct('gcCause') }}
               </el-text>
-              <el-select size="small" v-model="filter.gcCause" clearable>
+              <el-select size="small" v-model="filter.gcCause" style="width: 170px" clearable>
                 <el-option
                   v-for="option in metadata.causes"
                   :key="option"
