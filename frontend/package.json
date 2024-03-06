@@ -12,14 +12,14 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
-    "@element-plus/icons-vue": "^2.1.0",
+    "@element-plus/icons-vue": "^2.3.1",
     "@stomp/stompjs": "^7.0.0",
     "@vueuse/core": "^10.3.0",
     "axios": "^1.6.0",
     "axios-retry": "^3.8.0",
     "chart.js": "^4.4.0",
     "echarts": "^5.4.3",
-    "element-plus": "^2.3.12",
+    "element-plus": "^2.6.0",
     "js-base64": "^3.7.5",
     "js-cookie": "^3.0.5",
     "jsencrypt": "^3.3.2",
