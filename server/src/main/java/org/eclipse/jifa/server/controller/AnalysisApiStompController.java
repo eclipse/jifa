@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -59,6 +59,7 @@ public class AnalysisApiStompController {
                   @Header(name = Constant.STOMP_ANALYSIS_API_REQUEST_ID_KEY, required = false, defaultValue = "") String requestId,
                   Message<byte[]> message) {
         StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
+        assert accessor != null;
         JifaAuthenticationToken token = (JifaAuthenticationToken) accessor.getUser();
         SecurityContextHolder.getContext().setAuthentication(token != null ? token : ANONYMOUS);
 

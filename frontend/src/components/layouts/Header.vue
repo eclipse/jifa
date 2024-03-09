@@ -1,5 +1,5 @@
 <!--
-    Copyright (c) 2023 Contributors to the Eclipse Foundation
+    Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
 
     See the NOTICE file(s) distributed with this work for additional
     information regarding copyright ownership.
@@ -60,34 +60,36 @@ const { toolbar } = useHeaderToolbar();
       </div>
 
       <div class="right-side">
-        <el-popover
-          placement="bottom"
-          :show-arrow="false"
-          :popper-style="{ 'min-width': '90px', width: '90px', padding: '5px 0' }"
-          v-if="env.loggedIn"
-        >
-          <template #reference>
-            <el-text style="cursor: pointer">{{ env.user?.name }}</el-text>
-          </template>
-          <template #default>
-            <div class="popover-item" @click="env.logout()">
-              <Logout :size="18" style="margin-right: 5px; height: 18px" />
-              {{ t('header.logout') }}
-            </div>
-          </template>
-        </el-popover>
+        <template v-if="env.allowLogin">
+          <el-popover
+            placement="bottom"
+            :show-arrow="false"
+            :popper-style="{ 'min-width': '90px', width: '90px', padding: '5px 0' }"
+            v-if="env.loggedIn"
+          >
+            <template #reference>
+              <el-text style="cursor: pointer">{{ env.user?.name }}</el-text>
+            </template>
+            <template #default>
+              <div class="popover-item" @click="env.logout()">
+                <Logout :size="18" style="margin-right: 5px; height: 18px" />
+                {{ t('header.logout') }}
+              </div>
+            </template>
+          </el-popover>
 
-        <el-button
-          link
-          tag="a"
-          class="ej-header-button"
-          @click="env.loginFormVisible = true"
-          v-else
-        >
-          {{ t('header.login') }}
-        </el-button>
+          <el-button
+            link
+            tag="a"
+            class="ej-header-button"
+            @click="env.loginFormVisible = true"
+            v-else
+          >
+            {{ t('header.login') }}
+          </el-button>
 
-        <el-divider direction="vertical" />
+          <el-divider direction="vertical" />
+        </template>
 
         <el-popover
           placement="bottom"

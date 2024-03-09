@@ -19,7 +19,6 @@ import jakarta.validation.constraints.Positive;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jifa.common.util.Validate;
 import org.eclipse.jifa.server.enums.FileTransferMethod;
 import org.eclipse.jifa.server.enums.Role;
@@ -116,14 +115,19 @@ public class Configuration {
     private int elasticWorkerIdleThreshold = 5;
 
     /**
-     * Whether to allow anonymous access, default is true
+     * Whether to allow login, false by default
+     */
+    private boolean allowLogin = false;
+
+    /**
+     * Whether to allow anonymous access, true by default
      */
     private boolean allowAnonymousAccess = true;
 
     /**
-     * Whether to allow registration, default is true
+     * Whether to allow registration, false by default
      */
-    private boolean allowRegistration = true;
+    private boolean allowRegistration = false;
 
     /**
      * default admin username
@@ -170,6 +174,17 @@ public class Configuration {
 
             if (Files.exists(storagePath) || storagePath.toFile().mkdirs()) {
                 Validate.isTrue(Files.isDirectory(storagePath), "jifa.storage-path must be a directory");
+            }
+        }
+
+        if (!allowLogin) {
+            if (!allowAnonymousAccess) {
+                allowAnonymousAccess = true;
+                log.debug("Set jifa.allow-anonymous-access to true because jifa.allow-login is disabled");
+            }
+            if (allowRegistration) {
+                allowRegistration = false;
+                log.debug("Set jifa.registration to true because jifa.allow-login is disabled");
             }
         }
     }

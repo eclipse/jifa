@@ -29,6 +29,7 @@ export interface PublicKey {
 }
 
 export interface HandshakeResponse {
+  allowLogin: boolean;
   allowAnonymousAccess: boolean;
   allowRegistration: boolean;
   publicKey: PublicKey;
@@ -50,6 +51,7 @@ function goHome() {
 
 export const useEnv = defineStore('env', {
   state: () => ({
+    allowLogin: false,
     allowAnonymousAccess: false,
     allowRegistration: false,
     oauth2LoginLinks: null as object | null,
@@ -82,6 +84,7 @@ export const useEnv = defineStore('env', {
     },
 
     handleHandshakeData(data: HandshakeResponse) {
+      this.allowLogin = data.allowLogin;
       this.allowAnonymousAccess = data.allowAnonymousAccess;
       this.allowRegistration = data.allowRegistration;
       this.oauth2LoginLinks = data.oauth2LoginLinks;

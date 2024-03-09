@@ -117,6 +117,16 @@
 
 默认值：5
 
+## allow-login
+
+是否允许登陆。
+
+当其值为 false 时，allow-anonymous-access 将被设置为 true，allow-registration 将被设置为 false。
+
+Type: boolean
+
+Default: false
+
 ## allow-anonymous-access
 
 是否允许匿名用户访问。
@@ -131,7 +141,7 @@
 
 类型：boolean
 
-默认值：true
+默认值：false
 
 ## admin-username
 

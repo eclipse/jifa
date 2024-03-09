@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -38,6 +38,10 @@ public class UserController extends ConfigurationAccessor {
 
     @PostMapping(value = HTTP_LOGIN_MAPPING)
     public void login(@RequestBody LoginRequest request, HttpServletResponse response) throws InterruptedException {
+        if (!config.isAllowLogin()) {
+            response.setStatus(HttpStatus.NOT_FOUND.value());
+            return;
+        }
         response.addHeader(HttpHeaders.AUTHORIZATION, userService.login(request.username, request.password).getToken());
     }
 

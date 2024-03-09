@@ -119,6 +119,16 @@ Type: int
 
 Default: 5
 
+## allow-login
+
+Whether to allow login.
+
+When it is false, allow-anonymous-access will be set to true and allow-registration will be set to false automatically.
+
+Type: boolean
+
+Default: false
+
 ## allow-anonymous-access
 
 Whether to allow anonymous user access.
@@ -133,7 +143,7 @@ Whether to allow the registration of new users.
 
 Type: boolean
 
-Default: true
+Default: false
 
 ## admin-username
 
