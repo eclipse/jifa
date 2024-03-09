@@ -17,6 +17,7 @@ import { ElNotification } from 'element-plus';
 import { defineStore } from 'pinia';
 // @ts-ignore
 import Cookies from 'js-cookie';
+import { h } from 'vue';
 
 export interface User {
   name: string;
@@ -151,8 +152,8 @@ axios.interceptors.response.use(
         if (data && data.hasOwnProperty('errorCode')) {
           ElNotification.error({
             title: data.errorCode,
-            message: data.message,
-            offset: 80,
+            message: h('p', { style: 'word-break: break-all' }, data.message),
+            offset: 50,
             duration: 0,
             showClose: true
           });
