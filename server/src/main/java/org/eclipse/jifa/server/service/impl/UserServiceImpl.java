@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -38,7 +38,9 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.Optional;
 
+import static org.eclipse.jifa.common.domain.exception.CommonException.CE;
 import static org.eclipse.jifa.server.enums.ServerErrorCode.INCORRECT_PASSWORD;
+import static org.eclipse.jifa.server.enums.ServerErrorCode.UNSUPPORTED_NAMESPACE;
 import static org.eclipse.jifa.server.enums.ServerErrorCode.USERNAME_EXISTS;
 import static org.eclipse.jifa.server.enums.ServerErrorCode.USER_NOT_FOUND;
 
@@ -188,6 +190,20 @@ public class UserServiceImpl extends ConfigurationAccessor implements UserServic
 
     @Override
     public UserEntity getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication instanceof JifaAuthenticationToken token) {
+            return userRepo.findById(token.getUserId()).orElseThrow(() -> CE(USER_NOT_FOUND));
+        }
+
+        if (authentication instanceof AnonymousAuthenticationToken) {
+            return null;
+        }
+
+        throw new ShouldNotReachHereException();
+    }
+
+    @Override
+    public UserEntity getCurrentUserRef() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication instanceof JifaAuthenticationToken token) {
             return userRepo.getReferenceById(token.getUserId());

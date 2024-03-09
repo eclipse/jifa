@@ -184,7 +184,7 @@ public class FileServiceImpl extends ConfigurationAccessor implements FileServic
         Validate.isFalse(config.getDisabledFileTransferMethods().contains(request.getMethod()), FILE_TRANSFER_METHOD_DISABLED);
 
         if (isMaster()) {
-            FileLocation location = workerService.decideLocationForNewFile(userService.getCurrentUser(), request.getType());
+            FileLocation location = workerService.decideLocationForNewFile(userService.getCurrentUserRef(), request.getType());
             assert location.valid();
             if (!location.useSharedStorage()) {
                 return workerService.syncRequest(location.staticWorker(),
@@ -194,7 +194,7 @@ public class FileServiceImpl extends ConfigurationAccessor implements FileServic
 
         TransferringFileEntity transferringFile = new TransferringFileEntity();
         transferringFile.setUniqueName(generateFileUniqueName());
-        transferringFile.setUser(userService.getCurrentUser());
+        transferringFile.setUser(userService.getCurrentUserRef());
         transferringFile.setOriginalName(FileTransferUtil.extractOriginalName(request));
         transferringFile.setType(request.getType());
         transferringFile.setTransferState(FileTransferState.IN_PROGRESS);
@@ -228,7 +228,7 @@ public class FileServiceImpl extends ConfigurationAccessor implements FileServic
         Validate.isFalse(config.getDisabledFileTransferMethods().contains(FileTransferMethod.UPLOAD), FILE_TRANSFER_METHOD_DISABLED);
 
         if (isMaster()) {
-            FileLocation location = workerService.decideLocationForNewFile(userService.getCurrentUser(), type);
+            FileLocation location = workerService.decideLocationForNewFile(userService.getCurrentUserRef(), type);
             if (!location.useSharedStorage()) {
                 return workerService.forwardUploadRequestToStaticWorker(location.staticWorker(), type, file);
             }
@@ -246,7 +246,7 @@ public class FileServiceImpl extends ConfigurationAccessor implements FileServic
         return transactionTemplate.execute(status -> {
             FileEntity newFile = new FileEntity();
             newFile.setUniqueName(uniqueName);
-            newFile.setUser(userService.getCurrentUser());
+            newFile.setUser(userService.getCurrentUserRef());
             newFile.setOriginalName(originalName);
             newFile.setType(type);
             newFile.setSize(size);
