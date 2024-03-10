@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -48,10 +48,12 @@ export const elementLocale = ref(elementLocales.get(defaultLocale));
 
 type LocalType = keyof typeof messages;
 
-export function setLocale(locale: LocalType) {
+export function setLocale(locale: LocalType, save = true) {
   i18n.global.locale.value = locale;
   elementLocale.value = elementLocales.get(locale);
-  window.localStorage.setItem('jifa-i18n', locale);
+  if (save) {
+    window.localStorage.setItem('jifa-i18n', locale);
+  }
 }
 
 export const availableLocales = {
@@ -64,7 +66,19 @@ export const currentLocale = computed(() => i18n.global.locale.value);
 let saved = window.localStorage.getItem('jifa-i18n') as LocalType | null;
 
 if (saved) {
-  setLocale(saved);
+  setLocale(saved, false);
+} else {
+  let languages = window.navigator.languages;
+  if (languages) {
+    outer: for (let lang of languages) {
+      for (let key in messages) {
+        if (lang.startsWith(key)) {
+          setLocale(key as LocalType, false);
+          break outer;
+        }
+      }
+    }
+  }
 }
 
 export function t(key: string, args?: any) {
