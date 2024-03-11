@@ -11,13 +11,12 @@
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
 import { useAnalysisStore } from '@/stores/analysis';
+import { showErrorNotification } from '@/support/utils';
 import axios from 'axios';
 import axiosRetry from 'axios-retry';
-import { ElNotification } from 'element-plus';
 import { defineStore } from 'pinia';
 // @ts-ignore
 import Cookies from 'js-cookie';
-import { h } from 'vue';
 
 export interface User {
   name: string;
@@ -150,13 +149,7 @@ axios.interceptors.response.use(
       let data = resp.data;
       if (status === 500) {
         if (data && data.hasOwnProperty('errorCode')) {
-          ElNotification.error({
-            title: data.errorCode,
-            message: h('p', { style: 'word-break: break-all' }, data.message),
-            offset: 50,
-            duration: 0,
-            showClose: true
-          });
+          showErrorNotification(data.errorCode, data.message);
         }
       }
     }

@@ -13,9 +13,9 @@
 import type { FileType } from '@/composables/file-types';
 import { useAnalysisStore } from '@/stores/analysis';
 import { useEnv } from '@/stores/env';
+import { showErrorNotification } from '@/support/utils';
 import { Client } from '@stomp/stompjs';
 import axios from 'axios';
-import { ElNotification } from 'element-plus';
 // @ts-ignore
 import { v4 as uuidv4 } from 'uuid';
 
@@ -97,13 +97,7 @@ function byStomp(resolve: (req: Requester) => void) {
             }
 
             resRejMap.delete(requestId);
-            ElNotification.error({
-              title: data.errorCode,
-              message: data.message,
-              offset: 80,
-              duration: 0,
-              showClose: true
-            });
+            showErrorNotification(data.errorCode, data.message);
             resRej.reject(data);
           }
         }

@@ -11,6 +11,8 @@
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
 import { formatDate } from '@vueuse/core';
+import { ElNotification } from 'element-plus';
+import { h } from 'vue';
 
 function nullOrUndefined(v: any) {
   return v === null || v === undefined;
@@ -75,4 +77,14 @@ export function prettyTime(number: number, format: string) {
     format = format.replace(formatArr[i], newArr[i]);
   }
   return format;
+}
+
+export function showErrorNotification(errorCode: string, message: string) {
+  ElNotification.error({
+    title: errorCode,
+    message: h('p', { style: 'word-break: break-all' }, message),
+    offset: 50,
+    duration: 0,
+    showClose: true
+  });
 }
