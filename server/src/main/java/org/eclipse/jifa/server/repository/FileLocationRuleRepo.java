@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
+ * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -13,18 +13,15 @@
 package org.eclipse.jifa.server.repository;
 
 import org.eclipse.jifa.server.condition.Cluster;
-import org.eclipse.jifa.server.domain.entity.cluster.StaticWorkerEntity;
+import org.eclipse.jifa.server.domain.entity.cluster.FileLocationRuleEntity;
+import org.eclipse.jifa.server.domain.entity.shared.user.UserEntity;
+import org.eclipse.jifa.server.enums.FileType;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.Optional;
-
 @Cluster
 @Repository
-public interface StaticWorkerRepo extends CrudRepository<StaticWorkerEntity, Long> {
+public interface FileLocationRuleRepo extends CrudRepository<FileLocationRuleEntity, Long> {
 
-    Optional<StaticWorkerEntity> findFirstByOrderByAvailableSpaceDesc();
-
-    Optional<StaticWorkerEntity> findByHostAddress(String hostAddress);
-
+    FileLocationRuleEntity findByUserAndFileType(UserEntity user, FileType fileType);
 }

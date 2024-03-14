@@ -11,9 +11,9 @@
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
 import { useAnalysisStore } from '@/stores/analysis';
+import { showErrorNotification } from '@/support/utils';
 import axios from 'axios';
 import axiosRetry from 'axios-retry';
-import { ElNotification } from 'element-plus';
 import { defineStore } from 'pinia';
 // @ts-ignore
 import Cookies from 'js-cookie';
@@ -29,6 +29,7 @@ export interface PublicKey {
 }
 
 export interface HandshakeResponse {
+  allowLogin: boolean;
   allowAnonymousAccess: boolean;
   allowRegistration: boolean;
   publicKey: PublicKey;
@@ -50,6 +51,7 @@ function goHome() {
 
 export const useEnv = defineStore('env', {
   state: () => ({
+    allowLogin: false,
     allowAnonymousAccess: false,
     allowRegistration: false,
     oauth2LoginLinks: null as object | null,
@@ -82,6 +84,7 @@ export const useEnv = defineStore('env', {
     },
 
     handleHandshakeData(data: HandshakeResponse) {
+      this.allowLogin = data.allowLogin;
       this.allowAnonymousAccess = data.allowAnonymousAccess;
       this.allowRegistration = data.allowRegistration;
       this.oauth2LoginLinks = data.oauth2LoginLinks;
@@ -146,13 +149,7 @@ axios.interceptors.response.use(
       let data = resp.data;
       if (status === 500) {
         if (data && data.hasOwnProperty('errorCode')) {
-          ElNotification.error({
-            title: data.errorCode,
-            message: data.message,
-            offset: 80,
-            duration: 0,
-            showClose: true
-          });
+          showErrorNotification(data.errorCode, data.message);
         }
       }
     }

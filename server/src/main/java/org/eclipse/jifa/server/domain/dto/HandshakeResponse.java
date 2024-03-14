@@ -19,10 +19,11 @@ import java.util.Map;
 import java.util.Set;
 
 public record HandshakeResponse(Role serverRole,
+                                boolean allowLogin,
+                                Map<String, String> oauth2LoginLinks,
                                 boolean allowAnonymousAccess,
                                 boolean allowRegistration,
                                 PublicKey publicKey,
-                                Map<String, String> oauth2LoginLinks,
                                 Set<FileTransferMethod> disabledFileTransferMethods,
                                 User user) {
 }

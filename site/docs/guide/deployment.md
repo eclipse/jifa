@@ -23,24 +23,17 @@ In cluster mode, users need to prepare a MySQL database.
 
 There are two types of roles:
 
-- `MASTER`: is responsible for receiving analysis requests and forwarding to `WORKER` nodes.
+- `MASTER`: is responsible for receiving analysis requests and forwarding to worker nodes.
+- `STATIC_WORKER`: is responsible for processing analysis requests.
+- `ELASTIC_WORKER`: is responsible for processing analysis requests.
 
-- `WORKER`: is responsible for processing analysis requests.
-
-Based on different scheduling strategies, the cluster is divided into two types:
-
-- Elastic Cluster: `WORKER` nodes are scheduled on-demand. Users need to prepare a K8S cluster. The role of `WORKER`
-  nodes is `ELASTIC_WORKER`.
-
-- Static Cluster: `WORKER` nodes need to be started in advance. The `role` of `WORKER` nodes is `STATIC_WORKER`.
-
-### Elastic Cluster
+### Deploy a Cluster
 
 Refer to [cluster.yml](https://github.com/eclipse/jifa/blob/main/cluster.yml).
 
 Command: `kubectl apply -f cluster.yml`
 
-### Static Cluster
+### Deploy a Static Cluster (only contains master nodes and static worker nodes)
 
 The first two steps are the same as standalone mode.
 
@@ -53,7 +46,7 @@ The first two steps are the same as standalone mode.
   $ export MYSQL_USER=<username>
   $ export MYSQL_PASSWORD=<password>
 
-  $ ./jifa/bin/jifa --jifa.role=master --jifa.scheduling-strategy=static
+  $ ./jifa/bin/jifa --jifa.role=master
   ```
 
 - Launch `STATIC_WORKER` nodes

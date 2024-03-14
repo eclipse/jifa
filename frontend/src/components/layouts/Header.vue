@@ -1,5 +1,5 @@
 <!--
-    Copyright (c) 2023 Contributors to the Eclipse Foundation
+    Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
 
     See the NOTICE file(s) distributed with this work for additional
     information regarding copyright ownership.
@@ -24,6 +24,7 @@ import { t } from '@/i18n/i18n';
 import { useEnv } from '@/stores/env';
 import { useHeaderToolbar } from '@/composables/header-toolbar';
 import { useDebouncedRef } from '@/composables/debounced-ref';
+import { useRouter } from 'vue-router';
 
 const logo = computed(() => (isDark.value ? eclipseLogoUrlForDark : eclipseLogoUrl));
 
@@ -37,6 +38,8 @@ const localeOptions = computed(() => {
 });
 
 const themeSwitchColor = computed(() => (isDark.value ? '#1a1a1a' : '#ffffff'));
+
+const router = useRouter();
 
 const { toolbar } = useHeaderToolbar();
 
@@ -62,8 +65,13 @@ onUnmounted(() => {
   <header class="header">
     <div class="container">
       <div class="left-side">
-        <img style="height: calc(var(--ej-header-height) - 4px)" alt="" :src="logo" />
-        <span class="project-name">Jifa</span>
+        <img
+          style="height: calc(var(--ej-header-height) - 10px); cursor: pointer"
+          alt=""
+          :src="logo"
+          @click="router.push({ name: 'Files' })"
+        />
+        <span class="project-name" @click="router.push({ name: 'Files' })">Jifa</span>
 
         <template v-if="toolbar">
           <component :is="toolbar" />
@@ -71,23 +79,6 @@ onUnmounted(() => {
       </div>
 
       <div class="right-side">
-        <el-popover
-          placement="bottom"
-          :show-arrow="false"
-          :popper-style="{ 'min-width': '90px', width: '90px', padding: '5px 0' }"
-          v-if="env.loggedIn"
-        >
-          <template #reference>
-            <el-text style="cursor: pointer">{{ env.user?.name }}</el-text>
-          </template>
-          <template #default>
-            <div class="popover-item" @click="env.logout()">
-              <Logout :size="18" style="margin-right: 5px; height: 18px" />
-              {{ t('header.logout') }}
-            </div>
-          </template>
-        </el-popover>
-
         <el-popover
           placement="bottom"
           :show-arrow="false"
@@ -144,19 +135,17 @@ onUnmounted(() => {
 
 <style scoped>
 .header {
-  position: fixed;
-  top: 0;
-  left: 0;
+  flex-shrink: 0;
   width: 100%;
   height: var(--ej-header-height);
   overflow: hidden;
-  border-bottom: 1px solid var(--el-border-color);
   background-color: var(--el-bg-color);
+  border-radius: var(--el-border-radius-base);
 }
 
 .banner {
   position: fixed;
-  top: 0;
+  top: 12px;
   left: calc((100vw - 420px) / 2);
   right: calc((100vw - 420px) / 2);
   width: 420px;
@@ -182,7 +171,7 @@ onUnmounted(() => {
   font-size: 18px;
   font-weight: 600;
   letter-spacing: 3px;
-  cursor: default;
+  cursor: pointer;
 }
 
 .right-side {

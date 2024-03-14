@@ -22,7 +22,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jifa.common.util.Validate;
 import org.eclipse.jifa.server.enums.FileTransferMethod;
 import org.eclipse.jifa.server.enums.Role;
-import org.eclipse.jifa.server.enums.SchedulingStrategy;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
 
@@ -83,11 +82,6 @@ public class Configuration {
     private String databasePassword;
 
     /**
-     * The scheduling strategy.
-     */
-    private SchedulingStrategy schedulingStrategy;
-
-    /**
      * The name of PersistentVolumeClaim.
      */
     private String storagePVCName;
@@ -121,14 +115,19 @@ public class Configuration {
     private int elasticWorkerIdleThreshold = 5;
 
     /**
-     * Whether to allow anonymous access, default is true
+     * Whether to allow login, false by default
+     */
+    private boolean allowLogin = false;
+
+    /**
+     * Whether to allow anonymous access, true by default
      */
     private boolean allowAnonymousAccess = true;
 
     /**
-     * Whether to allow registration, default is true
+     * Whether to allow registration, false by default
      */
-    private boolean allowRegistration = true;
+    private boolean allowRegistration = false;
 
     /**
      * default admin username
@@ -150,7 +149,6 @@ public class Configuration {
      */
     private boolean openBrowserWhenReady;
 
-
     /**
      * The disabled file transfer methods.
      */
@@ -159,25 +157,34 @@ public class Configuration {
     @PostConstruct
     private void init() {
         if (role == Role.MASTER) {
-            Validate.notNull(schedulingStrategy,
-                             "jifa.scheduling-strategy must be set when role is master");
-            if (schedulingStrategy == SchedulingStrategy.ELASTIC) {
+            if (storagePath != null) {
                 Validate.notBlank(storagePVCName,
-                                  "jifa.storage-pvc-name must be set and not blank when role is master and scheduling strategy is elastic");
+                                  "jifa.service-pvc-name must be set and not blank when storage-path is set for master");
                 Validate.notBlank(serviceAccountName,
-                                  "jifa.service-account-name must be set and not blank when role is master and scheduling strategy is elastic");
+                                  "jifa.service-account-name must be set and not blank when storage-path is set for master");
                 Validate.notBlank(elasticWorkerImage,
-                                  "jifa.elastic-worker-image name must be set and not blank when role is master and scheduling strategy is elastic");
+                                  "jifa.elastic-worker-image name must be set and not blank when storage-path is set for master");
             }
+        } else {
+            Validate.notNull(storagePath, "jifa.storage-path must be set");
         }
 
-        if (role != Role.MASTER || schedulingStrategy != SchedulingStrategy.STATIC) {
-            Validate.notNull(storagePath, "jifa.storage-path must be set");
-
+        if (storagePath != null) {
             storagePath = storagePath.toAbsolutePath();
 
             if (Files.exists(storagePath) || storagePath.toFile().mkdirs()) {
                 Validate.isTrue(Files.isDirectory(storagePath), "jifa.storage-path must be a directory");
+            }
+        }
+
+        if (!allowLogin) {
+            if (!allowAnonymousAccess) {
+                allowAnonymousAccess = true;
+                log.debug("Set jifa.allow-anonymous-access to true because jifa.allow-login is disabled");
+            }
+            if (allowRegistration) {
+                allowRegistration = false;
+                log.debug("Set jifa.registration to true because jifa.allow-login is disabled");
             }
         }
     }

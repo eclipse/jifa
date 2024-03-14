@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -10,16 +10,12 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-package org.eclipse.jifa.server.service;
+package org.eclipse.jifa.server.enums;
 
-import org.eclipse.jifa.server.enums.ElasticWorkerState;
+public enum FileLocationRule {
+    LABELED_STATIC_WORKERS,
 
-public interface ElasticWorkerService extends WorkerService {
+    STATIC_WORKERS,
 
-    ElasticWorkerState getState(long workerId);
-
-    @Override
-    default ElasticWorkerService asElasticWorkerService() {
-        return this;
-    }
+    SHARED_STORAGE
 }

@@ -1,5 +1,5 @@
 <!--
-    Copyright (c) 2023 Contributors to the Eclipse Foundation
+    Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
 
     See the NOTICE file(s) distributed with this work for additional
     information regarding copyright ownership.
@@ -281,7 +281,7 @@ function close(done) {
         style="
           width: 350px;
           padding: 8px 16px;
-          border-radius: var(--ej-common-border-radius);
+          border-radius: var(--el-border-radius-small);
           font-size: 12px;
           word-break: break-all;
           background-color: var(--el-color-error-light-9);

@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -38,6 +38,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.Optional;
 
+import static org.eclipse.jifa.common.domain.exception.CommonException.CE;
 import static org.eclipse.jifa.server.enums.ServerErrorCode.INCORRECT_PASSWORD;
 import static org.eclipse.jifa.server.enums.ServerErrorCode.USERNAME_EXISTS;
 import static org.eclipse.jifa.server.enums.ServerErrorCode.USER_NOT_FOUND;
@@ -142,6 +143,10 @@ public class UserServiceImpl extends ConfigurationAccessor implements UserServic
 
     @Override
     public Long getCurrentUserId() {
+        if (!config.isAllowLogin()) {
+            return null;
+        }
+
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication instanceof JifaAuthenticationToken token) {
             return token.getUserId();
@@ -156,6 +161,10 @@ public class UserServiceImpl extends ConfigurationAccessor implements UserServic
 
     @Override
     public boolean isCurrentUserAdmin() {
+        if (!config.isAllowLogin()) {
+            return false;
+        }
+
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication instanceof JifaAuthenticationToken token) {
             return token.isAdmin();
@@ -170,6 +179,10 @@ public class UserServiceImpl extends ConfigurationAccessor implements UserServic
 
     @Override
     public String getCurrentUserJwtTokenOrNull() {
+        if (!config.isAllowLogin()) {
+            return null;
+        }
+
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null) {
             return null;
@@ -188,6 +201,28 @@ public class UserServiceImpl extends ConfigurationAccessor implements UserServic
 
     @Override
     public UserEntity getCurrentUser() {
+        if (!config.isAllowLogin()) {
+            return null;
+        }
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication instanceof JifaAuthenticationToken token) {
+            return userRepo.findById(token.getUserId()).orElseThrow(() -> CE(USER_NOT_FOUND));
+        }
+
+        if (authentication instanceof AnonymousAuthenticationToken) {
+            return null;
+        }
+
+        throw new ShouldNotReachHereException();
+    }
+
+    @Override
+    public UserEntity getCurrentUserRef() {
+        if (!config.isAllowLogin()) {
+            return null;
+        }
+
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication instanceof JifaAuthenticationToken token) {
             return userRepo.getReferenceById(token.getUserId());

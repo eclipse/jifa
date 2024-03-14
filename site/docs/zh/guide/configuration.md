@@ -69,20 +69,9 @@
 
 默认值：从环境变量 `MYSQL_PASSWORD` 中读取，若未设置则为 `jifa`。
 
-## scheduling-strategy
-
-调度策略。
-
-类型：Enum
-
-- `ELASTIC`
-- `STATIC`
-
-默认值：null
-
 ## storage-pvc-name
 
-弹性集群中使用的 PersistentVolumeClaim 名称。
+集群中使用的 PersistentVolumeClaim 名称。
 
 类型：String
 
@@ -90,7 +79,7 @@
 
 ## service-account-name
 
-弹性集群中使用的 ServiceAccount 名称。
+集群中使用的 ServiceAccount 名称。
 
 类型: String
 
@@ -98,7 +87,7 @@
 
 ## elastic-worker-image
 
-弹性集群中用于运行 `WORKER` 节点的镜像。
+集群中用于运行 `WORKER` 节点的镜像。
 
 类型：String
 
@@ -106,7 +95,7 @@
 
 ## elastic-worker-jvm-options
 
-弹性集群中用于设置 `WORKER` 节点的 JVM 参数。
+集群中用于设置 `ELASTIC_WORKER` 节点的 JVM 参数。
 
 类型：String
 
@@ -114,7 +103,7 @@
 
 ## elastic-worker-port
 
-弹性集群中 `WORKER` 节点的服务监听端口。
+集群中 `ELASTIC_WORKER` 节点的服务监听端口。
 
 类型：int
 
@@ -122,11 +111,21 @@
 
 ## elastic-worker-idle-threshold
 
-弹性集群中 `WORKER` 节点的空闲时间阈值，单位为分钟，最小值为 2。当一个 WORKER 节点的空闲时间超过此值时，将会自动停止。
+集群中 `ELASTIC_WORKER` 节点的空闲时间阈值，单位为分钟，最小值为 2。当一个 `ELASTIC_WORKER` 节点的空闲时间超过此值时，将会自动停止。
 
 类型：int
 
 默认值：5
+
+## allow-login
+
+是否允许登陆。
+
+当其值为 false 时，allow-anonymous-access 将被设置为 true，allow-registration 将被设置为 false。
+
+Type: boolean
+
+Default: false
 
 ## allow-anonymous-access
 
@@ -142,7 +141,7 @@
 
 类型：boolean
 
-默认值：true
+默认值：false
 
 ## admin-username
 

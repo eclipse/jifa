@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -13,8 +13,6 @@
 package org.eclipse.jifa.server.configurer;
 
 import org.eclipse.jifa.server.condition.Cluster;
-import org.eclipse.jifa.server.condition.ElasticCluster;
-import org.eclipse.jifa.server.condition.StaticCluster;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.Configuration;
 
@@ -26,17 +24,5 @@ public class EntityConfigurer {
     @Configuration
     @EntityScan("org.eclipse.jifa.server.domain.entity.cluster")
     public static class ClusterEntityConfigurer {
-    }
-
-    @StaticCluster
-    @Configuration
-    @EntityScan("org.eclipse.jifa.server.domain.entity.static_cluster")
-    public static class StaticClusterEntityConfigurer {
-    }
-
-    @ElasticCluster
-    @Configuration
-    @EntityScan("org.eclipse.jifa.server.domain.entity.elastic_cluster")
-    public static class ElasticClusterEntityConfigurer {
     }
 }

@@ -1,5 +1,5 @@
 <!--
-    Copyright (c) 2023 Contributors to the Eclipse Foundation
+    Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
 
     See the NOTICE file(s) distributed with this work for additional
     information regarding copyright ownership.
@@ -66,7 +66,7 @@ onMounted(() => {
         />
 
         <template v-else-if="!env.loginRequired">
-          <Side />
+          <Side class="ej-side" />
           <div class="ej-main">
             <Main />
           </div>
@@ -81,18 +81,25 @@ onMounted(() => {
   width: 100%;
   height: 100vh;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: var(--ej-container-padding);
 }
 
 .ej-body {
-  margin-top: var(--ej-header-height);
-  height: calc(100vh - var(--ej-header-height));
+  flex-grow: 1;
   overflow: hidden;
+  display: flex;
+  margin-top: var(--ej-layout-margin);
+}
+
+.ej-side {
+  margin-right: var(--ej-layout-margin);
 }
 
 .ej-main {
-  margin-left: var(--ej-side-width);
   height: 100%;
-  padding: var(--ej-main-padding);
+  flex-grow: 1;
   overflow: hidden;
 }
 

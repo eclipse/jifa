@@ -274,6 +274,10 @@ function isEnabled(method: string) {
   }
   return true;
 }
+
+const dialogWidth = computed(() => {
+  return env.disabledFileTransferMethods.length > 0 ? '640px' : '710px';
+});
 </script>
 <template>
   <el-dialog
@@ -281,7 +285,7 @@ function isEnabled(method: string) {
     @update:model-value="(newValue: boolean) => $emit('update:visible', newValue)"
     :before-close="close"
     :title="t('file.new')"
-    width="700px"
+    :width="dialogWidth"
   >
     <el-form
       label-position="right"
@@ -338,7 +342,9 @@ function isEnabled(method: string) {
 
           <el-radio-button
             label="TEXT"
-            :disabled="(params.type as String) === 'HEAP_DUMP' || (params.type as String) === 'JFR_FILE'"
+            :disabled="
+              (params.type as String) === 'HEAP_DUMP' || (params.type as String) === 'JFR_FILE'
+            "
             v-if="isEnabled('TEXT')"
           >
             <div class="ej-file-transfer-method-button">
@@ -621,7 +627,7 @@ function isEnabled(method: string) {
         margin-top: 7px;
         width: 420px;
         padding: 8px 16px;
-        border-radius: var(--ej-common-border-radius);
+        border-radius: var(--el-border-radius-small);
         font-size: 12px;
         word-break: break-all;
         background-color: var(--el-color-error-light-9);

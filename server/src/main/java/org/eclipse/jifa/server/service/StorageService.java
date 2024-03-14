@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -39,4 +39,6 @@ public interface StorageService {
     Path locationOf(FileType type, String name);
 
     Map<FileType, Set<String>> getAllFiles();
+
+    boolean available();
 }

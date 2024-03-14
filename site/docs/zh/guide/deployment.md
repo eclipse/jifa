@@ -21,28 +21,24 @@
 
 集群模式需要准备一个 MySQL 数据库。
 
-集群中有两类运行角色：
+集群中有三类运行角色：
 
-- `MASTER`：主节点，负责接收分析请求，并将请求转发到相应的 `WORKER`。
-- `WORKER`：工作节点，负责处理分析请求。
-
-根据调度策略的不同，集群分为：
-
-- 弹性集群：`WORKER` 节点按需调度。用户需要准备一个 K8S 集群。`WORKER` 节点的 `role` 为 `ELASTIC_WORKER`。
-- 静态集群：需要事先启动 `WORKER` 节点。`WORKER` 节点的 `role` 为 `STATIC_WORKER`。
+- `MASTER`：主节点，负责接收分析请求，并将请求转发到相应的工作节点。
+- `STATIC_WORKER`：静态工作节点，负责处理分析请求。
+- `ELASTIC_WORKER`：弹性工作节点，负责处理分析请求。
 
 适用场景：
 
 - 搭建平台供多个团队使用，且有较多的机器资源。
 - 与其他系统进行集成。
 
-### 弹性集群的部署步骤
+### 部署集群
 
 可参考 [cluster.yml](https://github.com/eclipse/jifa/blob/main/cluster.yml)。
 
 命令：`kubectl apply -f cluster.yml`。
 
-### 静态集群的部署步骤
+### 部署静态集群（仅包含主节点和静态工作节点）
 
 构建和解压步骤和单机模式一样。
 
@@ -55,11 +51,10 @@
   $ export MYSQL_USER=<username>
   $ export MYSQL_PASSWORD=<password>
 
-  # 启动 MASTER，将调度策略设置为 static
-  $ ./jifa/bin/jifa --jifa.role=master --jifa.scheduling-strategy=static
+  $ ./jifa/bin/jifa --jifa.role=master
   ```
 
-- 启动 `STATIC_WORKER` 节点
+- 启动一个或多个 `STATIC_WORKER` 节点
 
   ```shell
   # 设置数据库环境变量
@@ -68,6 +63,5 @@
   $ export MYSQL_USER=<username>
   $ export MYSQL_PASSWORD=<password>
 
-  # 启动 STATIC_WORKER
   $ ./jifa/bin/jifa --jifa.role=static_worker
   ```

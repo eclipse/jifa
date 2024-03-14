@@ -1,5 +1,5 @@
 <!--
-    Copyright (c) 2023 Contributors to the Eclipse Foundation
+    Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
 
     See the NOTICE file(s) distributed with this work for additional
     information regarding copyright ownership.
@@ -35,7 +35,7 @@ function onSelect(index) {
 }
 </script>
 <template>
-  <div class="ej-side">
+  <div>
     <el-menu class="ej-side-menu" :default-active="defaultActive" @select="onSelect" collapse>
       <el-menu-item index="Files">
         <el-icon>
@@ -51,16 +51,18 @@ function onSelect(index) {
   </div>
 </template>
 <style scoped>
-.ej-side {
-  position: fixed;
-  top: var(--ej-header-height);
-  left: 0;
-  bottom: 0;
-  transition: left 0.3s;
+:deep(.el-menu) {
+  border-right: none;
+}
+
+:deep(.el-menu-item:first-child) {
+  border-top-left-radius: var(--el-border-radius-base);
+  border-top-right-radius: var(--el-border-radius-base);
 }
 
 .ej-side-menu {
   height: 100%;
   background-color: var(--el-bg-color);
+  border-radius: var(--el-border-radius-base);
 }
 </style>

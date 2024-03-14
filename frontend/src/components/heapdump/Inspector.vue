@@ -1,5 +1,5 @@
 <!--
-    Copyright (c) 2023 Contributors to the Eclipse Foundation
+    Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
 
     See the NOTICE file(s) distributed with this work for additional
     information regarding copyright ownership.
@@ -145,7 +145,10 @@ onMounted(() => load());
       </el-tab-pane>
     </el-tabs>
   </div>
-  <div class="ej-inspector-div" style="flex-grow: 1; margin-top: 7px; overflow: hidden">
+  <div
+    class="ej-inspector-div"
+    style="flex-grow: 1; margin-top: var(--ej-layout-margin); overflow: hidden"
+  >
     <el-tabs class="ej-tab" v-model="activeTab">
       <el-tab-pane name="Statics" :label="hdt('tab.statics')">
         <Fields static />
@@ -179,7 +182,7 @@ onMounted(() => load());
 <style scoped>
 .ej-inspector-div {
   background-color: var(--el-bg-color);
-  border-radius: var(--ej-common-border-radius);
+  border-radius: var(--el-border-radius-base);
   padding: 5px 8px;
 }
 

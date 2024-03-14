@@ -22,9 +22,11 @@ import org.eclipse.jifa.server.service.CipherService;
 import org.eclipse.jifa.server.service.UserService;
 import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientProperties;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -61,10 +63,11 @@ public class HandshakeController extends ConfigurationAccessor {
         UserEntity userEntity = userService.getCurrentUser();
         User user = userEntity == null ? null : new User(userEntity.getName(), userEntity.isAdmin());
         return new HandshakeResponse(getRole(),
+                                     config.isAllowLogin(),
+                                     config.isAllowLogin() ? oauth2LoginLinks : Collections.emptyMap(),
                                      config.isAllowAnonymousAccess(),
                                      config.isAllowRegistration(),
                                      cipherService.getPublicKeyString(),
-                                     oauth2LoginLinks,
                                      config.getDisabledFileTransferMethods(),
                                      user);
     }

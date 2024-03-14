@@ -70,11 +70,14 @@ tasks.named('compileJava') {
     inputs.files(tasks.named('processResources'))
 }
 
+
+import org.springframework.boot.gradle.tasks.run.BootRun
+
 import java.nio.file.Files
 
 tasks.named("processResources") {
     if (!Files.exists(projectDir.toPath().resolve("src/main/resources/static"))
-        || gradle.startParameter.taskNames.contains("clean")) {
+            || gradle.startParameter.taskNames.contains("clean")) {
         dependsOn(':frontend:build')
     }
 }
@@ -87,9 +90,6 @@ tasks.named("clean") {
 applicationDefaultJvmArgs = ['--add-opens=java.base/java.lang=ALL-UNNAMED',
                              '--add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED',
                              '-Djdk.util.zip.disableZip64ExtraFieldValidation=true']
-
-
-import org.springframework.boot.gradle.tasks.run.BootRun
 
 static void setJvmOptions(BootRun bootRun) {
     bootRun.jvmArgs('--add-opens=java.base/java.lang=ALL-UNNAMED',
@@ -129,7 +129,7 @@ tasks.register('runMaster', BootRun) {
     classpath(project.sourceSets.main.runtimeClasspath)
     mainClass.convention(mainClassName)
 
-    args('--jifa.role=master', '--jifa.scheduling-strategy=static')
+    args('--jifa.role=master')
     setJvmOptions(it)
     setDatabase(it)
 }
