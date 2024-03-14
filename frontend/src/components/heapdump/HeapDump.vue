@@ -1,5 +1,5 @@
 <!--
-    Copyright (c) 2023 Contributors to the Eclipse Foundation
+    Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
 
     See the NOTICE file(s) distributed with this work for additional
     information regarding copyright ownership.
@@ -129,7 +129,7 @@ watchEffect(() => {
   height: 100%;
   flex-grow: 1;
   background-color: var(--el-bg-color);
-  border-radius: var(--ej-common-border-radius);
+  border-radius: var(--el-border-radius-base);
   padding: 5px 8px;
   overflow: hidden;
 }
@@ -140,6 +140,6 @@ watchEffect(() => {
   display: flex;
   flex-direction: column;
   width: 400px;
-  margin-left: 7px;
+  margin-left: var(--ej-layout-margin);
 }
 </style>

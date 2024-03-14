@@ -47,7 +47,7 @@ const { toolbar } = useHeaderToolbar();
     <div class="container">
       <div class="left-side">
         <img
-          style="height: calc(var(--ej-header-height) - 4px); cursor: pointer"
+          style="height: calc(var(--ej-header-height) - 10px); cursor: pointer"
           alt=""
           :src="logo"
           @click="router.push({ name: 'Files' })"
@@ -130,14 +130,12 @@ const { toolbar } = useHeaderToolbar();
 
 <style scoped>
 .header {
-  position: fixed;
-  top: 0;
-  left: 0;
+  flex-shrink: 0;
   width: 100%;
   height: var(--ej-header-height);
   overflow: hidden;
-  border-bottom: 1px solid var(--el-border-color);
   background-color: var(--el-bg-color);
+  border-radius: var(--el-border-radius-base);
 }
 
 .container {

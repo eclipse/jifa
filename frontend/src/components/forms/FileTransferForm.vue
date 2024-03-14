@@ -627,7 +627,7 @@ const dialogWidth = computed(() => {
         margin-top: 7px;
         width: 420px;
         padding: 8px 16px;
-        border-radius: var(--ej-common-border-radius);
+        border-radius: var(--el-border-radius-small);
         font-size: 12px;
         word-break: break-all;
         background-color: var(--el-color-error-light-9);

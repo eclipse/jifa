@@ -646,7 +646,7 @@ onUnmounted(() => {});
   height: 100%;
   flex-grow: 1;
   background-color: var(--el-bg-color);
-  border-radius: var(--ej-common-border-radius);
+  border-radius: var(--el-border-radius-base);
   padding: 5px 0;
   overflow: hidden;
   margin-top: 5px;
