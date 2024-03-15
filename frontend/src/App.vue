@@ -11,14 +11,14 @@
     SPDX-License-Identifier: EPL-2.0
  -->
 <script setup lang="ts">
-import { elementLocale, t } from '@/i18n/i18n';
+import {elementLocale, t} from '@/i18n/i18n';
 import Header from '@/components/layouts/Header.vue';
 import Side from '@/components/layouts/Side.vue';
 import Main from '@/components/layouts/Main.vue';
 import LoginForm from '@/components/forms/LoginForm.vue';
 import axios from 'axios';
-import { useEnv } from '@/stores/env';
-import { ElLoading } from 'element-plus';
+import {useEnv} from '@/stores/env';
+import {ElLoading} from 'element-plus';
 
 const env = useEnv();
 const error = ref(false);
@@ -104,6 +104,7 @@ onMounted(() => {
 }
 
 .ej-error {
+  width: 100%;
   height: 100%;
 }
 </style>
