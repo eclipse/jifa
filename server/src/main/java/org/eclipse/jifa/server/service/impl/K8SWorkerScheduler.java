@@ -111,7 +111,8 @@ public class K8SWorkerScheduler extends ConfigurationAccessor implements Elastic
                         .args(List.of(
                                 "--jifa.role=elastic-worker",
                                 "--jifa.storage-path=" + config.getStoragePath().toString(),
-                                "--jifa.port=" + config.getElasticWorkerPort()))
+                                "--jifa.port=" + config.getElasticWorkerPort(),
+                                "--jifa.elastic-worker-idle-threshold=" + config.getElasticWorkerIdleThreshold()))
                         .addPortsItem(new V1ContainerPort().containerPort(config.getElasticWorkerPort()))
                         .resources(resourceRequirements)
                         .startupProbe(healthCheck);
