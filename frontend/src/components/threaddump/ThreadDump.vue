@@ -251,7 +251,7 @@ onMounted(() => {
             <el-table
               stripe
               :show-header="false"
-              v-bind="threadGroupMoreThanOnePage ? {height: `${40 * threadGroupPageSize}px`} : {}"
+              v-bind="threadGroupMoreThanOnePage ? { height: `${40 * threadGroupPageSize}px` } : {}"
               :data="tableDataOfThreadGroupStats"
             >
               <el-table-column type="expand">

@@ -157,7 +157,7 @@ onMounted(() => {
   <el-table
     stripe
     :show-header="false"
-    v-bind="moreThanOnePage ? {height: `${40 * pageSize}px`} : {}"
+    v-bind="moreThanOnePage ? { height: `${40 * pageSize}px` } : {}"
     :data="tableData"
     row-key="rowKey"
     lazy

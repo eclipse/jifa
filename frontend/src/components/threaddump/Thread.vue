@@ -128,7 +128,7 @@ onMounted(() => {
     stripe
     :show-header="false"
     :max-height="`${40 * pageSize}px`"
-    v-bind="moreThanOnePage ? {height: `${40 * pageSize}px`} : {}"
+    v-bind="moreThanOnePage ? { height: `${40 * pageSize}px` } : {}"
     :data="tableData"
     v-loading="loading"
   >
