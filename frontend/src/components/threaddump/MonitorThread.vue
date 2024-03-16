@@ -1,5 +1,5 @@
 <!--
-    Copyright (c) 2023 Contributors to the Eclipse Foundation
+    Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
 
     See the NOTICE file(s) distributed with this work for additional
     information regarding copyright ownership.
@@ -114,7 +114,8 @@ onMounted(() => {
       <el-table
         stripe
         :show-header="false"
-        :style="stateData[state].moreThanOnePage ? { height: `${40 * pageSize}px` } : {}"
+        :max-height="`${40 * pageSize}px`"
+        v-bind="stateData[state].moreThanOnePage ? {height: `${40 * pageSize}px`} : {}"
         :data="stateData[state].tableData"
         v-loading="stateData[state].loading"
       >
