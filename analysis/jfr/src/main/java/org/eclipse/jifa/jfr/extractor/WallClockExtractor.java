@@ -85,7 +85,7 @@ public class WallClockExtractor extends Extractor {
             this.isWallClockEvents = true;
         }
 
-        if (event.getSettingFor().getEventId() == methodSampleEventId) {
+        if (event.getActiveSetting().eventId() == methodSampleEventId) {
             if (EventConstant.WALL.equals(event.getString("name"))) {
                 this.isWallClockEvents = true;
                 this.interval = Long.parseLong(event.getString("value")) * 1000 * 1000;

@@ -226,6 +226,31 @@ public class TestJFRAnalyzer {
     }
 
     @Test
+    public void testAllocations2() throws IOException {
+        Path path = createTmpFileForResource("object-allocation-sample.jfr");
+        JFRAnalyzerImpl analyzer = new JFRAnalyzerImpl(path, DimensionBuilder.ALLOC, null, ProgressListener.NoOpProgressListener);
+        AnalysisResult result = analyzer.getResult();
+        Assertions.assertNotNull(result.getAllocations());
+
+        List<TaskAllocations> taskAllocations = result.getAllocations().getList();
+        Optional<TaskAllocations> optional =
+                taskAllocations.stream().filter(item -> item.getTask().getName().equals("main")).findAny();
+        Assertions.assertTrue(optional.isPresent());
+        TaskAllocations ta = optional.get();
+        SimpleFlameGraph g = SimpleFlameGraph.parse(ta);
+        Assertions.assertEquals(327, g.totalSampleValue.intValue());
+
+        List<Triple<String, String, String>> list = g.queryLeafNodes(10);
+        Assertions.assertEquals(list.size(), 1);
+
+        Optional<Triple<String, String, String>> t =
+                list.stream().filter(item -> item.getLeft().contains("alloc(int)")).findAny();
+        Assertions.assertTrue(t.isPresent());
+        Assertions.assertEquals(321, Long.valueOf(t.get().getMiddle()));
+        Assertions.assertEquals("98.17", t.get().getRight());
+    }
+
+    @Test
     public void testAllocatedMemory() throws IOException {
         Path path = createTmpFileForResource("jfr.jfr");
         JFRAnalyzerImpl analyzer = new JFRAnalyzerImpl(path, DimensionBuilder.MEM, null, ProgressListener.NoOpProgressListener);
@@ -248,6 +273,31 @@ public class TestJFRAnalyzer {
         Assertions.assertTrue(t.isPresent());
         Assertions.assertEquals(28602671000L, Long.valueOf(t.get().getMiddle()));
         Assertions.assertEquals("99.98", t.get().getRight());
+    }
+
+    @Test
+    public void testAllocatedMemory2() throws IOException {
+        Path path = createTmpFileForResource("object-allocation-sample.jfr");
+        JFRAnalyzerImpl analyzer = new JFRAnalyzerImpl(path, DimensionBuilder.MEM, null, ProgressListener.NoOpProgressListener);
+        AnalysisResult result = analyzer.getResult();
+        Assertions.assertNotNull(result.getAllocatedMemory());
+
+        List<TaskAllocatedMemory> taskAllocations = result.getAllocatedMemory().getList();
+        Optional<TaskAllocatedMemory> optional =
+                taskAllocations.stream().filter(item -> item.getTask().getName().equals("main")).findAny();
+        Assertions.assertTrue(optional.isPresent());
+        TaskAllocatedMemory ta = optional.get();
+        SimpleFlameGraph g = SimpleFlameGraph.parse(ta);
+        Assertions.assertEquals(12638637000L, g.totalSampleValue.longValue());
+
+        List<Triple<String, String, String>> list = g.queryLeafNodes(10);
+        Assertions.assertEquals(list.size(), 1);
+
+        Optional<Triple<String, String, String>> t =
+                list.stream().filter(item -> item.getLeft().contains("alloc(int)")).findAny();
+        Assertions.assertTrue(t.isPresent());
+        Assertions.assertEquals(12615151608L, Long.valueOf(t.get().getMiddle()));
+        Assertions.assertEquals("99.81", t.get().getRight());
     }
 
     @Test

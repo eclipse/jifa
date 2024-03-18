@@ -38,6 +38,7 @@ public abstract class Extractor extends EventVisitor {
             put(EventConstant.EXECUTE_VM_OPERATION, EventVisitor::visitExecuteVMOperation);
             put(EventConstant.OBJECT_ALLOCATION_IN_NEW_TLAB, EventVisitor::visitObjectAllocationInNewTLAB);
             put(EventConstant.OBJECT_ALLOCATION_OUTSIDE_TLAB, EventVisitor::visitObjectAllocationOutsideTLAB);
+            put(EventConstant.OBJECT_ALLOCATION_SAMPLE, EventVisitor::visitObjectAllocationSample);
 
             put(EventConstant.FILE_FORCE, EventVisitor::visitFileForce);
             put(EventConstant.FILE_READ, EventVisitor::visitFileRead);

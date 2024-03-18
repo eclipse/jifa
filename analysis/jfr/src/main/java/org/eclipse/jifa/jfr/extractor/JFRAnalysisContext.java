@@ -23,8 +23,11 @@ import org.eclipse.jifa.jfr.model.symbol.SymbolTable;
 
 import java.util.*;
 
+import static org.eclipse.jifa.jfr.common.EventConstant.OBJECT_ALLOCATION_SAMPLE;
+
 public class JFRAnalysisContext {
     private final Map<String, Long> eventTypeIds = new HashMap<>();
+    private final Map<RecordedEvent.ActiveSetting, String> activeSettings = new HashMap<>();
     private final Map<Long, JavaThread> threads = new HashMap<>();
     private final Map<String, Long> threadNameMap = new HashMap<>();
     @Getter
@@ -51,13 +54,26 @@ public class JFRAnalysisContext {
         }
     }
 
+    public synchronized void putActiveSetting(RecordedEvent.ActiveSetting activeSetting, RecordedEvent event) {
+        this.activeSettings.put(activeSetting, event.getString("value"));
+    }
+
+    public synchronized boolean getActiveSettingBool(String eventName, String settingName) {
+        Long eventId = this.getEventTypeId(OBJECT_ALLOCATION_SAMPLE);
+        RecordedEvent.ActiveSetting setting = new RecordedEvent.ActiveSetting(eventName, eventId, settingName);
+        String v = this.activeSettings.get(setting);
+        if (v != null) {
+            return Boolean.parseBoolean(v);
+        }
+        throw new RuntimeException("should not reach here");
+    }
+
     public synchronized boolean isExecutionSampleEventTypeId(long id) {
         return executionSampleEventTypeIds.contains(id);
     }
 
     public synchronized JavaThread getThread(RecordedThread thread) {
         return threads.computeIfAbsent(thread.getJavaThreadId(), id -> {
-
             JavaThread javaThread = new JavaThread();
             javaThread.setId(id);
             javaThread.setJavaId(thread.getJavaThreadId());

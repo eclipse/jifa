@@ -31,7 +31,7 @@ public abstract class EventConstant {
     public static String NATIVE_EXECUTION_SAMPLE = "jdk.NativeMethodSample";
     public static String EXECUTE_VM_OPERATION = "jdk.ExecuteVMOperation";
 
-    public static String OBJECT_ALLOCATION_SAMPLE = "jdk.ObjectAllocationSample"; // TODO
+    public static String OBJECT_ALLOCATION_SAMPLE = "jdk.ObjectAllocationSample";
     public static String OBJECT_ALLOCATION_IN_NEW_TLAB = "jdk.ObjectAllocationInNewTLAB";
     public static String OBJECT_ALLOCATION_OUTSIDE_TLAB = "jdk.ObjectAllocationOutsideTLAB";
 
