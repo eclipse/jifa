@@ -30,6 +30,9 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+
+import static org.eclipse.jifa.jfr.common.EventConstant.ACTIVE_SETTING;
 
 @Slf4j
 public class RecordedEvent {
@@ -46,7 +49,7 @@ public class RecordedEvent {
     @Getter
     private EventType eventType;
     @Getter
-    private SettingFor settingFor = null;
+    private ActiveSetting activeSetting = null;
 
     public static RecordedEvent newInstance(IItem item, SymbolTable<SymbolBase> symbols) {
         RecordedEvent event = new RecordedEvent(item);
@@ -80,9 +83,11 @@ public class RecordedEvent {
         // fix for JDK Mission Control lib
         if ((itemTypeId.startsWith(EventConstant.EXECUTION_SAMPLE) && !itemTypeId.equals(EventConstant.EXECUTION_SAMPLE))) {
             itemTypeId = EventConstant.EXECUTION_SAMPLE;
-        } else if (itemTypeId.startsWith(EventConstant.OBJECT_ALLOCATION_OUTSIDE_TLAB) && !itemTypeId.equals(EventConstant.OBJECT_ALLOCATION_OUTSIDE_TLAB)) {
+        } else if (itemTypeId.startsWith(EventConstant.OBJECT_ALLOCATION_OUTSIDE_TLAB)
+                && !itemTypeId.equals(EventConstant.OBJECT_ALLOCATION_OUTSIDE_TLAB)) {
             itemTypeId = EventConstant.OBJECT_ALLOCATION_OUTSIDE_TLAB;
-        } else if (itemTypeId.startsWith(EventConstant.OBJECT_ALLOCATION_IN_NEW_TLAB) && !itemTypeId.equals(EventConstant.OBJECT_ALLOCATION_IN_NEW_TLAB)) {
+        } else if (itemTypeId.startsWith(EventConstant.OBJECT_ALLOCATION_IN_NEW_TLAB)
+                && !itemTypeId.equals(EventConstant.OBJECT_ALLOCATION_IN_NEW_TLAB)) {
             itemTypeId = EventConstant.OBJECT_ALLOCATION_IN_NEW_TLAB;
         }
 
@@ -139,14 +144,28 @@ public class RecordedEvent {
             stackTrace = st;
         }
 
-        if ("jdk.ActiveSetting".equals(itemType.getIdentifier())) {
+        if (ACTIVE_SETTING.equals(itemType.getIdentifier())) {
+            String eventName = null;
+            long eventId = -1;
+            String settingName = null;
             for (Map.Entry<IAccessorKey<?>, ? extends IDescribable> entry : itemType.getAccessorKeys().entrySet()) {
-                IMemberAccessor<?, IItem> accessor = itemType.getAccessor(entry.getKey());
                 if (entry.getKey().getIdentifier().equals("settingFor")) {
+                    IMemberAccessor<?, IItem> accessor = itemType.getAccessor(entry.getKey());
                     LabeledIdentifier id = (LabeledIdentifier) accessor.getMember(item);
-                    this.settingFor = new SettingFor(id.getInterfaceId(), id.getImplementationId());
+                    eventName = id.getInterfaceId();
+                    eventId = id.getImplementationId();
+                    continue;
+                }
+                if (entry.getKey().getIdentifier().equals("name")) {
+                    IMemberAccessor<?, IItem> accessor = itemType.getAccessor(entry.getKey());
+                    settingName = (String) accessor.getMember(item);
+                }
+                if (eventName != null && settingName != null && eventId >= 0) {
                     break;
                 }
+            }
+            if (eventName != null && settingName != null && eventId >= 0) {
+                this.activeSetting = new ActiveSetting(eventName, eventId, settingName);
             }
         }
     }
@@ -296,14 +315,16 @@ public class RecordedEvent {
         return FormatToolkit.getPackage(mcPackage);
     }
 
-    @Getter
-    public static class SettingFor {
-        private final String eventType;
-        private final long eventId;
+    public record ActiveSetting(String eventType, Long eventId, String settingName) {
+        @Override
+        public boolean equals(Object b) {
+            if (!(b instanceof ActiveSetting other)) {
+                return false;
+            }
 
-        SettingFor(String eventType, long eventId) {
-            this.eventId = eventId;
-            this.eventType = eventType;
+            return Objects.equals(eventType, other.eventType())
+                    && Objects.equals(eventId, other.eventId())
+                    && Objects.equals(settingName, other.settingName());
         }
     }
 }

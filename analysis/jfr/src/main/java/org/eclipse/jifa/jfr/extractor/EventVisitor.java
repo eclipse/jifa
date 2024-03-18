@@ -71,6 +71,10 @@ public abstract class EventVisitor {
         throw new UnsupportedOperationException();
     }
 
+    void visitObjectAllocationSample(RecordedEvent event) {
+        throw new UnsupportedOperationException();
+    }
+
     void visitFileRead(RecordedEvent event) {
         throw new UnsupportedOperationException();
     }

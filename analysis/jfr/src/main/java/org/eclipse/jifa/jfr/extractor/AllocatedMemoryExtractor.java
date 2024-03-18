@@ -33,9 +33,29 @@ public class AllocatedMemoryExtractor extends AllocationsExtractor {
 
     @Override
     void visitObjectAllocationInNewTLAB(RecordedEvent event) {
+        if (this.useObjectAllocationSample) {
+            return;
+        }
+        this.visitTLABEvent(event, "tlabSize");
+    }
+
+    @Override
+    void visitObjectAllocationOutsideTLAB(RecordedEvent event) {
+        if (this.useObjectAllocationSample) {
+            return;
+        }
+        this.visitTLABEvent(event, "allocationSize");
+    }
+
+    @Override
+    void visitObjectAllocationSample(RecordedEvent event) {
+        this.visitTLABEvent(event, "weight");
+    }
+
+    void visitTLABEvent(RecordedEvent event, String fieldName) {
         RecordedStackTrace stackTrace = event.getStackTrace();
         if (stackTrace == null) {
-            return;
+            stackTrace = StackTraceUtil.DUMMY_STACK_TRACE;
         }
 
         AllocationsExtractor.AllocTaskData allocThreadData = getThreadData(event.getThread());
@@ -43,25 +63,7 @@ public class AllocatedMemoryExtractor extends AllocationsExtractor {
             allocThreadData.setSamples(new HashMap<>());
         }
 
-        long eventTotal = event.getLong("tlabSize");
-
-        allocThreadData.getSamples().compute(stackTrace, (k, temp) -> temp == null ? eventTotal : temp + eventTotal);
-        allocThreadData.allocatedMemory += eventTotal;
-    }
-
-    @Override
-    void visitObjectAllocationOutsideTLAB(RecordedEvent event) {
-        RecordedStackTrace stackTrace = event.getStackTrace();
-        if (stackTrace == null) {
-            return;
-        }
-
-        AllocTaskData allocThreadData = getThreadData(event.getThread());
-        if (allocThreadData.getSamples() == null) {
-            allocThreadData.setSamples(new HashMap<>());
-        }
-
-        long eventTotal = event.getLong("allocationSize");
+        long eventTotal = event.getLong(fieldName);
 
         allocThreadData.getSamples().compute(stackTrace, (k, temp) -> temp == null ? eventTotal : temp + eventTotal);
         allocThreadData.allocatedMemory += eventTotal;

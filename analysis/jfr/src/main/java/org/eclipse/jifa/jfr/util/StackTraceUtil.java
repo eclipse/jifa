@@ -12,6 +12,7 @@
  ********************************************************************************/
 package org.eclipse.jifa.jfr.util;
 
+import org.eclipse.jifa.jfr.model.jfr.RecordedClass;
 import org.eclipse.jifa.jfr.model.jfr.RecordedFrame;
 import org.eclipse.jifa.jfr.model.jfr.RecordedMethod;
 import org.eclipse.jifa.jfr.model.jfr.RecordedStackTrace;
@@ -22,9 +23,12 @@ import org.eclipse.jifa.jfr.model.symbol.SymbolTable;
 import org.eclipse.jifa.jfr.model.Frame;
 import org.eclipse.jifa.jfr.model.StackTrace;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class StackTraceUtil {
+    public static final RecordedStackTrace DUMMY_STACK_TRACE = StackTraceUtil.newDummyStackTrace("", "", "NO Frame");
+
     // FIXME: need cache
     public static StackTrace build(RecordedStackTrace stackTrace, SymbolTable<SymbolBase> symbols) {
         StackTrace result = new StackTrace();
@@ -79,5 +83,21 @@ public class StackTraceUtil {
         }
 
         return result;
+    }
+
+    public static RecordedStackTrace newDummyStackTrace(String packageName, String className, String methodName) {
+        RecordedStackTrace st = new RecordedStackTrace();
+        List<RecordedFrame> list = new ArrayList<>();
+        RecordedFrame f = new RecordedFrame();
+        RecordedMethod m = new RecordedMethod();
+        RecordedClass c = new RecordedClass();
+        c.setPackageName(packageName);
+        c.setName(className);
+        m.setType(c);
+        f.setMethod(m);
+        m.setName(methodName);
+        list.add(f);
+        st.setFrames(list);
+        return st;
     }
 }

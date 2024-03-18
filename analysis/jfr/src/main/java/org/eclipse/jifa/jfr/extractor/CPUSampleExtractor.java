@@ -42,7 +42,7 @@ public class CPUSampleExtractor extends CountExtractor {
 
     @Override
     void visitActiveSetting(RecordedEvent event) {
-        if (this.context.isExecutionSampleEventTypeId(event.getSettingFor().getEventId())) {
+        if (this.context.isExecutionSampleEventTypeId(event.getActiveSetting().eventId())) {
             if (EventConstant.WALL.equals(event.getString("name"))) {
                 this.isWallClockEvents = true;
             }

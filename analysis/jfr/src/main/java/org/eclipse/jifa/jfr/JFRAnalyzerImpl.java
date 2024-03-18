@@ -396,9 +396,10 @@ public class JFRAnalyzerImpl implements JFRAnalyzer {
 
         synchronized (this.context.getEvents()) {
             this.context.addEvent(event);
-            if (event.getSettingFor() != null) {
-                RecordedEvent.SettingFor sf = event.getSettingFor();
-                this.context.putEventTypeId(sf.getEventType(), sf.getEventId());
+            if (event.getActiveSetting() != null) {
+                RecordedEvent.ActiveSetting activeSetting = event.getActiveSetting();
+                this.context.putEventTypeId(activeSetting.eventType(), activeSetting.eventId());
+                this.context.putActiveSetting(activeSetting, event);
             }
         }
     }

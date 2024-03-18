@@ -79,7 +79,7 @@ public class CPUTimeExtractor extends Extractor {
 
     private boolean isWallClockEvents = false;
 
-    private static final RecordedStackTrace DUMMY_STACK_TRACE = newDummyStackTrace("", "", "NO Frame");
+
     private static final RecordedThread DUMMY_THREAD = new RecordedThread("Dummy Thread", -1L, -1L);
     private static final RecordedThread GC_THREAD = new RecordedThread("GC Thread", -10L, -10L);
 
@@ -126,7 +126,7 @@ public class CPUTimeExtractor extends Extractor {
 
     @Override
     void visitActiveSetting(RecordedEvent event) {
-        if (event.getSettingFor().getEventId() == threadCPULoadEventId
+        if (event.getActiveSetting().eventId() == threadCPULoadEventId
                 && EventConstant.PERIOD.equals(event.getString("name"))) {
             updatePeriod(event.getValue("value"));
         }
@@ -135,7 +135,7 @@ public class CPUTimeExtractor extends Extractor {
             this.isWallClockEvents = true;
         }
 
-        if (this.context.isExecutionSampleEventTypeId(event.getSettingFor().getEventId())) {
+        if (this.context.isExecutionSampleEventTypeId(event.getActiveSetting().eventId())) {
             if (EventConstant.WALL.equals(event.getString("name"))) {
                 this.isWallClockEvents = true;
             } else if (EventConstant.INTERVAL.equals(event.getString("name"))) {
@@ -198,7 +198,7 @@ public class CPUTimeExtractor extends Extractor {
     void visitExecutionSample(RecordedEvent event) {
         RecordedStackTrace stackTrace = event.getStackTrace();
         if (stackTrace == null) {
-            stackTrace = DUMMY_STACK_TRACE;
+            stackTrace = StackTraceUtil.DUMMY_STACK_TRACE;
         }
 
         RecordedThread thread = event.getThread("eventThread");
@@ -269,7 +269,7 @@ public class CPUTimeExtractor extends Extractor {
                 gc.setTask(context.getThread(GC_THREAD));
                 gc.setUser(gcTime);
                 Map<StackTrace, Long> gcSamples = new HashMap<>();
-                gcSamples.put(StackTraceUtil.build(newDummyStackTrace("", "JVM", "GC"), context.getSymbols()), 1L);
+                gcSamples.put(StackTraceUtil.build(StackTraceUtil.newDummyStackTrace("", "JVM", "GC"), context.getSymbols()), 1L);
                 gc.setSamples(gcSamples);
                 threadCPUTimes.add(gc);
             }
@@ -297,22 +297,6 @@ public class CPUTimeExtractor extends Extractor {
         List<TaskCPUTime> list = buildThreadCPUTime();
         cpuResult.setList(list);
         result.setCpuTime(cpuResult);
-    }
-
-    private static RecordedStackTrace newDummyStackTrace(String packageName, String className, String methodName) {
-        RecordedStackTrace st = new RecordedStackTrace();
-        List<RecordedFrame> list = new ArrayList<>();
-        RecordedFrame f = new RecordedFrame();
-        RecordedMethod m = new RecordedMethod();
-        RecordedClass c = new RecordedClass();
-        c.setPackageName(packageName);
-        c.setName(className);
-        m.setType(c);
-        f.setMethod(m);
-        m.setName(methodName);
-        list.add(f);
-        st.setFrames(list);
-        return st;
     }
 
     private static long detectAsyncProfilerInterval() {
