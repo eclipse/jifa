@@ -71,7 +71,7 @@ public interface Constant extends org.eclipse.jifa.common.Constant {
 
     byte[] EMPTY_BYTE_ARRAY = new byte[0];
 
-    String K8S_NAMESPACE = "jifa";
+    String DEFAULT_CLUSTER_NAMESPACE = "jifa";
 
     String POD_NAME_PREFIX = "jifa-elastic-worker-";
 
