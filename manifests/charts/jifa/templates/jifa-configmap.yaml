@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-initdb-config
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "jifa.labels" . | nindent 4 }}
+data:
+  initdb.sql: |
+    CREATE DATABASE IF NOT EXISTS jifa;

@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "jifa.mysqlName" . }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    app: mysql
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+        - image: mysql:5.6
+          name: mysql
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: {{ .Values.mysql.password }}
+          ports:
+            - containerPort: 3306
+              name: mysql
+          volumeMounts:
+            - name: {{ include "jifa.mysqlName" . }}
+              mountPath: /var/lib/mysql
+            - name: mysql-initdb
+              mountPath: /docker-entrypoint-initdb.d
+      volumes:
+        - name: {{ include "jifa.mysqlName" . }}
+          persistentVolumeClaim:
+            claimName: {{ include "jifa.mysqlName" . }}
+        - name: mysql-initdb
+          configMap:
+            name: mysql-initdb-config
