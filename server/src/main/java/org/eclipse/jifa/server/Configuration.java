@@ -30,6 +30,7 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Set;
 
+import static org.eclipse.jifa.server.Constant.DEFAULT_CLUSTER_NAMESPACE;
 import static org.eclipse.jifa.server.Constant.DEFAULT_PORT;
 
 @ConfigurationProperties(prefix = "jifa", ignoreUnknownFields = false)
@@ -80,6 +81,11 @@ public class Configuration {
      * The database password
      */
     private String databasePassword;
+
+    /**
+     * The namespace of cluster
+     */
+    private String clusterNamespace = DEFAULT_CLUSTER_NAMESPACE;
 
     /**
      * The name of PersistentVolumeClaim.
