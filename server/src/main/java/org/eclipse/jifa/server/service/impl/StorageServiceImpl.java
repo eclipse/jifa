@@ -88,6 +88,7 @@ public class StorageServiceImpl extends ConfigurationAccessor implements Storage
     @PostConstruct
     private void init() {
         if (isElasticWorker()) {
+            available = true;
             return;
         }
 
