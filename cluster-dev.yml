@@ -56,7 +56,6 @@ metadata:
   namespace: jifa
   name: mysql-pvc
 spec:
-  storageClassName: alibabacloud-cnfs-nas
   accessModes:
     - ReadWriteOnce
   resources:
@@ -131,7 +130,6 @@ metadata:
   namespace: jifa
   name: jifa-pvc
 spec:
-  storageClassName: alibabacloud-cnfs-nas
   accessModes:
     - ReadWriteMany
   resources:
