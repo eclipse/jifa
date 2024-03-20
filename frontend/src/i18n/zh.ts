@@ -118,7 +118,9 @@ export default {
       success: '分析成功',
       comparison: '分析对比',
       selectComparisonTargets: '选择对比目标',
-      setting: '分析设置'
+      setting: '分析设置',
+
+      waitingForResourceScheduling: '分析资源调度中',
     },
 
     heapDump,

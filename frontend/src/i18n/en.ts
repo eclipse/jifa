@@ -118,7 +118,9 @@ export default {
       success: 'Analysis successful',
       comparison: 'Comparison',
       selectComparisonTargets: 'Select Targets',
-      setting: 'Setting'
+      setting: 'Setting',
+
+      waitingForResourceScheduling: 'Waiting for analysis resource scheduling',
     },
 
     heapDump,

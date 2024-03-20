@@ -29,6 +29,7 @@ export interface PublicKey {
 }
 
 export interface HandshakeResponse {
+  serverRole: string;
   allowLogin: boolean;
   allowAnonymousAccess: boolean;
   allowRegistration: boolean;
@@ -51,6 +52,7 @@ function goHome() {
 
 export const useEnv = defineStore('env', {
   state: () => ({
+    serverRole: null as string | null,
     allowLogin: false,
     allowAnonymousAccess: false,
     allowRegistration: false,
@@ -84,6 +86,7 @@ export const useEnv = defineStore('env', {
     },
 
     handleHandshakeData(data: HandshakeResponse) {
+      this.serverRole = data.serverRole;
       this.allowLogin = data.allowLogin;
       this.allowAnonymousAccess = data.allowAnonymousAccess;
       this.allowRegistration = data.allowRegistration;
@@ -112,6 +115,10 @@ export const useEnv = defineStore('env', {
     resetToken() {
       window.localStorage.removeItem(tokenKey);
       Cookies.remove(tokenKey);
+    },
+
+    isCluster() {
+      return this.serverRole === 'MASTER';
     }
   }
 });
