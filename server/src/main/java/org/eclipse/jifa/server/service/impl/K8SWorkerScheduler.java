@@ -122,9 +122,12 @@ public class K8SWorkerScheduler extends ConfigurationAccessor implements Elastic
                     container.addEnvItem(new V1EnvVar().name("JAVA_TOOL_OPTIONS").value(jvmOptions));
                 }
 
-                pod.spec(new V1PodSpec().addContainersItem(container).addVolumesItem(volume)
-                                        .serviceAccountName(config.getServiceAccountName())
-                                        .restartPolicy("Never"));
+                V1PodSpec podSpec = new V1PodSpec().addContainersItem(container).addVolumesItem(volume)
+                                                   .serviceAccountName(config.getServiceAccountName())
+                                                   .restartPolicy("Never");
+                // workaround for https://github.com/kubernetes-client/java/issues/3076
+                podSpec.setOverhead(null);
+                pod.spec(podSpec);
 
                 api.createNamespacedPod(K8S_NAMESPACE, pod).execute();
 
