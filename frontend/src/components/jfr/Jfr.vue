@@ -36,7 +36,7 @@ const filter = ref(null);
 const toggleFilterValuesChecked = ref(true);
 const flameGraphDataSource = ref(null);
 const flameGraphEmptyData = ref({ format: 'line', data: [] });
-const taskName = ref(null);
+const taskName = ref('');
 const flameGraphModalVisible = ref(false);
 const hasData = ref(false);
 
@@ -202,6 +202,8 @@ async function queryFlameGraph(include: boolean, taskSet: any) {
 
 function onDimensionIndexChange() {
   toggleFilterValuesChecked.value = true;
+  selectedFilterIndex.value = 0;
+  taskName.value = '';
   queryGraph();
 }
 
@@ -211,6 +213,7 @@ async function onSelectedFilterIndexChange() {
     let filterName =
       perfDimensions.value[selectedDimensionIndex.value].filters[selectedFilterIndex.value].key;
     await queryFlameGraph(false, []);
+    taskName.value = '';
     if (filterName === 'Thread') {
       buildFilterValueByThreads();
     } else if (filterName === 'Class') {
@@ -598,9 +601,16 @@ onUnmounted(() => {});
                       "
                     >
                       <div>
-                        <el-text truncated>
-                          {{ data.key }}
-                        </el-text>
+                        <el-tooltip
+                          class="box-item"
+                          effect="dark"
+                          :content="data.key"
+                          placement="bottom"
+                        >
+                          <el-text truncated>
+                            {{ data.key }}
+                          </el-text>
+                        </el-tooltip>
                       </div>
                       <div>
                         <el-text tag="b" size="small" truncated>
