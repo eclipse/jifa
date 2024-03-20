@@ -33,6 +33,8 @@ Refer to [cluster.yml](https://github.com/eclipse/jifa/blob/main/cluster.yml).
 
 Command: `kubectl apply -f cluster.yml`
 
+If your cluster does not have a default `Storage Class`, you need to modify `cluster.yml` to set it.
+
 ### Deploy a Static Cluster (only contains master nodes and static worker nodes)
 
 The first two steps are the same as standalone mode.
