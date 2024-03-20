@@ -125,6 +125,7 @@ export const useEnv = defineStore('env', {
 
 axiosRetry(axios, {
   retries: 60,
+  shouldResetTimeout: true,
   retryDelay: (retryCount) => {
     return 2000;
   },
