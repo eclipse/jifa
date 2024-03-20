@@ -17,7 +17,7 @@ import { useAnalysisApiRequester } from '@/composables/analysis-api-requester';
 import { ElMessageBox, ElNotification } from 'element-plus';
 import type { FileType } from '@/composables/file-types';
 import { t } from '@/i18n/i18n';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { useHeaderToolbar } from '@/composables/header-toolbar';
 import { useEnv } from '@/stores/env';
 
@@ -121,9 +121,13 @@ function pollProgress() {
     .catch(handleError);
 }
 
-function handleError(error?) {
-  if (error) {
-    log.value = error;
+function handleError(e?) {
+  if (e instanceof AxiosError) {
+    log.value = e.response?.data?.message ? e.response.data.message : e;
+  } else if (e.message) {
+    log.value = e.message;
+  } else if (e) {
+    log.value = e;
   }
   analysis.setPhase(Phase.FAILURE);
 }
@@ -171,7 +175,7 @@ onMounted(() => {
         analyze();
       }
     })
-    .catch((e) => handleError(e.response?.data?.message ? e.response.data.message : e));
+    .catch(handleError);
 });
 
 onUnmounted(() => {

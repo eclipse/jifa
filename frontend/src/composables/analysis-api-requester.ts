@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -158,7 +158,7 @@ function request(api: string, parameters?: object) {
 
 function requestWithTarget(api: string, type: FileType, target: string, parameters?: object) {
   if (!rp) {
-    rp = new Promise<Requester>(byAxios);
+    rp = new Promise<Requester>(byStomp);
   }
 
   return rp.then((requester) => {

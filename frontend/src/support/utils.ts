@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -79,12 +79,21 @@ export function prettyTime(number: number, format: string) {
   return format;
 }
 
+let hasUnclosedError = false
+
 export function showErrorNotification(errorCode: string, message: string) {
+  if (hasUnclosedError) {
+    return;
+  }
+  hasUnclosedError = true;
   ElNotification.error({
     title: errorCode,
     message: h('p', { style: 'word-break: break-all' }, message),
     offset: 50,
     duration: 0,
-    showClose: true
+    showClose: true,
+    onClose() {
+      hasUnclosedError = false;
+    },
   });
 }
