@@ -11,15 +11,15 @@
     SPDX-License-Identifier: EPL-2.0
  -->
 <script setup lang="ts">
-import { onBeforeRouteLeave, useRoute } from 'vue-router';
-import { Phase, useAnalysisStore } from '@/stores/analysis';
-import { useAnalysisApiRequester } from '@/composables/analysis-api-requester';
-import { ElMessageBox, ElNotification } from 'element-plus';
-import type { FileType } from '@/composables/file-types';
-import { t } from '@/i18n/i18n';
-import axios, { AxiosError } from 'axios';
-import { useHeaderToolbar } from '@/composables/header-toolbar';
-import { useEnv } from '@/stores/env';
+import {onBeforeRouteLeave, useRoute} from 'vue-router';
+import {Phase, useAnalysisStore} from '@/stores/analysis';
+import {useAnalysisApiRequester} from '@/composables/analysis-api-requester';
+import {ElMessageBox, ElNotification} from 'element-plus';
+import type {FileType} from '@/composables/file-types';
+import {t} from '@/i18n/i18n';
+import axios, {AxiosError} from 'axios';
+import {useHeaderToolbar} from '@/composables/header-toolbar';
+import {useEnv} from '@/stores/env';
 
 const props = defineProps<{
   target: string;
@@ -115,7 +115,7 @@ function pollProgress() {
           500
         );
       } else {
-        handleError();
+        handleError(data);
       }
     })
     .catch(handleError);
