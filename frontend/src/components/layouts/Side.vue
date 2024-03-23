@@ -11,10 +11,11 @@
     SPDX-License-Identifier: EPL-2.0
  -->
 <script setup lang="ts">
-import { useRoute, useRouter } from 'vue-router';
-import { DataAnalysis, Files } from '@element-plus/icons-vue';
-import { useAnalysisStore } from '@/stores/analysis';
-import type { FileType } from '@/composables/file-types';
+import {t} from '@/i18n/i18n';
+import {useRoute, useRouter} from 'vue-router';
+import {DataAnalysis, Files} from '@element-plus/icons-vue';
+import {useAnalysisStore} from '@/stores/analysis';
+import type {FileType} from '@/composables/file-types';
 
 const router = useRouter();
 const route = useRoute();
@@ -37,16 +38,26 @@ function onSelect(index) {
 <template>
   <div>
     <el-menu class="ej-side-menu" :default-active="defaultActive" @select="onSelect" collapse>
-      <el-menu-item index="Files">
-        <el-icon>
-          <Files />
-        </el-icon>
-      </el-menu-item>
-      <el-menu-item index="Analysis" :disabled="!analysis.target">
-        <el-icon>
-          <DataAnalysis />
-        </el-icon>
-      </el-menu-item>
+      <el-tooltip placement="right" :show-arrow="false" :offset="6" :content="t('menu.files')">
+        <el-menu-item index="Files">
+          <el-icon>
+            <Files/>
+          </el-icon>
+        </el-menu-item>
+      </el-tooltip>
+      <el-tooltip
+          placement="right"
+          :show-arrow="false"
+          :offset="6"
+          :content="t('menu.analysisView')"
+          :disabled="!analysis.target"
+      >
+        <el-menu-item index="Analysis" :disabled="!analysis.target">
+          <el-icon>
+            <DataAnalysis/>
+          </el-icon>
+        </el-menu-item>
+      </el-tooltip>
     </el-menu>
   </div>
 </template>

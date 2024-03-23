@@ -43,6 +43,11 @@ export default {
       download: '下载原文件'
     },
 
+    menu: {
+      files: "文件",
+      analysisView: "分析视图",
+    },
+
     serviceUnavailable: {
       title: '服务不可用',
       subtitle: '请联系系统管理员'

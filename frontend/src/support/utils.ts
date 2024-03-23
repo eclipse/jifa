@@ -10,9 +10,9 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
-import { formatDate } from '@vueuse/core';
-import { ElNotification } from 'element-plus';
-import { h } from 'vue';
+import {formatDate} from '@vueuse/core';
+import {ElNotification} from 'element-plus';
+import {h} from 'vue';
 
 function nullOrUndefined(v: any) {
   return v === null || v === undefined;
@@ -79,7 +79,7 @@ export function prettyTime(number: number, format: string) {
   return format;
 }
 
-let hasUnclosedError = false
+let hasUnclosedError = false;
 
 export function showErrorNotification(errorCode: string, message: string) {
   if (hasUnclosedError) {
@@ -94,6 +94,6 @@ export function showErrorNotification(errorCode: string, message: string) {
     showClose: true,
     onClose() {
       hasUnclosedError = false;
-    },
+    }
   });
 }

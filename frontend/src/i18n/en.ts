@@ -43,6 +43,11 @@ export default {
       download: 'Download'
     },
 
+    menu: {
+      files: "Files",
+      analysisView: "Analysis View",
+    },
+
     serviceUnavailable: {
       title: 'Service is unavailable',
       subtitle: 'Please contact the administrator'
