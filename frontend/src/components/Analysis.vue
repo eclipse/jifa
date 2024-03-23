@@ -11,19 +11,21 @@
     SPDX-License-Identifier: EPL-2.0
  -->
 <script setup lang="ts">
-import { onBeforeRouteLeave, useRoute } from 'vue-router';
-import { Phase, useAnalysisStore } from '@/stores/analysis';
-import { useAnalysisApiRequester } from '@/composables/analysis-api-requester';
-import { ElMessageBox, ElNotification } from 'element-plus';
-import type { FileType } from '@/composables/file-types';
-import { t } from '@/i18n/i18n';
-import axios from 'axios';
-import { useHeaderToolbar } from '@/composables/header-toolbar';
+import {onBeforeRouteLeave, useRoute} from 'vue-router';
+import {Phase, useAnalysisStore} from '@/stores/analysis';
+import {useAnalysisApiRequester} from '@/composables/analysis-api-requester';
+import {ElMessageBox, ElNotification} from 'element-plus';
+import type {FileType} from '@/composables/file-types';
+import {t} from '@/i18n/i18n';
+import axios, {AxiosError} from 'axios';
+import {useHeaderToolbar} from '@/composables/header-toolbar';
+import {useEnv} from '@/stores/env';
 
 const props = defineProps<{
   target: string;
 }>();
 
+const env = useEnv();
 const route = useRoute();
 const analysis = useAnalysisStore();
 analysis.setTarget(route.meta.fileType as FileType, props.target);
@@ -34,6 +36,7 @@ const analysisComponent = toRaw(analysis.fileType?.analysisComponent);
 
 const { request } = useAnalysisApiRequester();
 
+const loadingMessage = env.isCluster() ? t('analysis.waitingForResourceScheduling') : '';
 const progress = ref(0);
 const log = ref('');
 const analysisLogDiv = ref(null);
@@ -112,15 +115,19 @@ function pollProgress() {
           500
         );
       } else {
-        handleError();
+        handleError(data);
       }
     })
     .catch(handleError);
 }
 
-function handleError(error?) {
-  if (error) {
-    log.value = error;
+function handleError(e?) {
+  if (e instanceof AxiosError) {
+    log.value = e.response?.data?.message ? e.response.data.message : e;
+  } else if (e.message) {
+    log.value = e.message;
+  } else if (e) {
+    log.value = e;
   }
   analysis.setPhase(Phase.FAILURE);
 }
@@ -168,7 +175,7 @@ onMounted(() => {
         analyze();
       }
     })
-    .catch((e) => handleError(e.response?.data?.message ? e.response.data.message : e));
+    .catch(handleError);
 });
 
 onUnmounted(() => {
@@ -180,7 +187,12 @@ onUnmounted(() => {
 </script>
 <template>
   <transition mode="out-in">
-    <div class="ej-common-view-div" v-if="analysis.phase == Phase.INIT" v-loading="true"></div>
+    <div
+      class="ej-common-view-div"
+      v-if="analysis.phase == Phase.INIT"
+      v-loading="true"
+      :element-loading-text="loadingMessage"
+    ></div>
     <div
       class="ej-common-view-div"
       style="display: flex; flex-direction: column; justify-content: center; align-items: center"

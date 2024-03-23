@@ -26,12 +26,16 @@ import org.eclipse.jifa.jfr.model.TaskAllocations;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class AllocationsExtractor extends Extractor {
+import static org.eclipse.jifa.jfr.common.EventConstant.OBJECT_ALLOCATION_SAMPLE;
 
-    protected static final List<String> INTERESTED = Collections.unmodifiableList(new ArrayList<String>() {
+public class AllocationsExtractor extends Extractor {
+    protected boolean useObjectAllocationSample;
+
+    protected static final List<String> INTERESTED = Collections.unmodifiableList(new ArrayList<>() {
         {
             add(EventConstant.OBJECT_ALLOCATION_IN_NEW_TLAB);
             add(EventConstant.OBJECT_ALLOCATION_OUTSIDE_TLAB);
+            add(OBJECT_ALLOCATION_SAMPLE);
         }
     });
 
@@ -49,6 +53,11 @@ public class AllocationsExtractor extends Extractor {
 
     public AllocationsExtractor(JFRAnalysisContext context) {
         super(context, INTERESTED);
+        try {
+            this.useObjectAllocationSample = this.context.getActiveSettingBool(OBJECT_ALLOCATION_SAMPLE, "enabled");
+        } catch (Exception e) {
+            this.useObjectAllocationSample = false;
+        }
     }
 
     AllocTaskData getThreadData(RecordedThread thread) {
@@ -57,9 +66,29 @@ public class AllocationsExtractor extends Extractor {
 
     @Override
     void visitObjectAllocationInNewTLAB(RecordedEvent event) {
+        if (useObjectAllocationSample) {
+            return;
+        }
+        visitEvent(event);
+    }
+
+    @Override
+    void visitObjectAllocationOutsideTLAB(RecordedEvent event) {
+        if (useObjectAllocationSample) {
+            return;
+        }
+        this.visitEvent(event);
+    }
+
+    @Override
+    void visitObjectAllocationSample(RecordedEvent event) {
+        this.visitEvent(event);
+    }
+
+    void visitEvent(RecordedEvent event) {
         RecordedStackTrace stackTrace = event.getStackTrace();
         if (stackTrace == null) {
-            return;
+            stackTrace = StackTraceUtil.DUMMY_STACK_TRACE;
         }
 
         AllocTaskData allocThreadData = getThreadData(event.getThread());
@@ -69,11 +98,6 @@ public class AllocationsExtractor extends Extractor {
 
         allocThreadData.getSamples().compute(stackTrace, (k, count) -> count == null ? 1 : count + 1);
         allocThreadData.allocations += 1;
-    }
-
-    @Override
-    void visitObjectAllocationOutsideTLAB(RecordedEvent event) {
-        this.visitObjectAllocationInNewTLAB(event);
     }
 
     private List<TaskAllocations> buildThreadAllocations() {

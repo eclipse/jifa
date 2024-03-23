@@ -286,10 +286,10 @@ public class FileServiceImpl extends ConfigurationAccessor implements FileServic
         FileEntity file = getFileEntityByIdAndCheckAuthority(fileId);
         Resource resource = null;
         if (isMaster()) {
-            // forward the request to the static worker
             FileStaticWorkerBindEntity bind = fileStaticWorkerBindRepo.findByFileId(file.getId())
-                                                                      .orElseThrow(() -> CE(INTERNAL_ERROR));
+                                                                      .orElse(null);
             if (bind != null) {
+                // forward the request to the static worker
                 resource = workerService.forwardDownloadRequestToStaticWorker(bind.getStaticWorker(), file.getId());
             }
         }

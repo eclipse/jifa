@@ -19,6 +19,7 @@ import jakarta.validation.constraints.Positive;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jifa.common.util.Validate;
 import org.eclipse.jifa.server.enums.FileTransferMethod;
 import org.eclipse.jifa.server.enums.Role;
@@ -30,6 +31,7 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Set;
 
+import static org.eclipse.jifa.server.Constant.DEFAULT_CLUSTER_NAMESPACE;
 import static org.eclipse.jifa.server.Constant.DEFAULT_PORT;
 
 @ConfigurationProperties(prefix = "jifa", ignoreUnknownFields = false)
@@ -80,6 +82,11 @@ public class Configuration {
      * The database password
      */
     private String databasePassword;
+
+    /**
+     * The namespace of cluster
+     */
+    private String clusterNamespace = DEFAULT_CLUSTER_NAMESPACE;
 
     /**
      * The name of PersistentVolumeClaim.
@@ -157,13 +164,11 @@ public class Configuration {
     @PostConstruct
     private void init() {
         if (role == Role.MASTER) {
-            if (storagePath != null) {
-                Validate.notBlank(storagePVCName,
-                                  "jifa.service-pvc-name must be set and not blank when storage-path is set for master");
-                Validate.notBlank(serviceAccountName,
-                                  "jifa.service-account-name must be set and not blank when storage-path is set for master");
-                Validate.notBlank(elasticWorkerImage,
-                                  "jifa.elastic-worker-image name must be set and not blank when storage-path is set for master");
+            if (storagePath == null || StringUtils.isAnyBlank(storagePVCName, serviceAccountName, elasticWorkerImage)) {
+                storagePath = null;
+                storagePVCName = null;
+                serviceAccountName = null;
+                elasticWorkerImage = null;
             }
         } else {
             Validate.notNull(storagePath, "jifa.storage-path must be set");
@@ -171,7 +176,6 @@ public class Configuration {
 
         if (storagePath != null) {
             storagePath = storagePath.toAbsolutePath();
-
             if (Files.exists(storagePath) || storagePath.toFile().mkdirs()) {
                 Validate.isTrue(Files.isDirectory(storagePath), "jifa.storage-path must be a directory");
             }

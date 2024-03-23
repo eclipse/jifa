@@ -38,6 +38,8 @@
 
 命令：`kubectl apply -f cluster.yml`。
 
+如果集群没有默认的 `Storage Class`，需要修改 `cluster.yml` 进行设置。
+
 ### 部署静态集群（仅包含主节点和静态工作节点）
 
 构建和解压步骤和单机模式一样。

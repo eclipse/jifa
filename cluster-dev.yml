@@ -56,7 +56,6 @@ metadata:
   namespace: jifa
   name: mysql-pvc
 spec:
-  storageClassName: alibabacloud-cnfs-nas
   accessModes:
     - ReadWriteOnce
   resources:
@@ -131,7 +130,6 @@ metadata:
   namespace: jifa
   name: jifa-pvc
 spec:
-  storageClassName: alibabacloud-cnfs-nas
   accessModes:
     - ReadWriteMany
   resources:
@@ -159,7 +157,7 @@ spec:
       serviceAccountName: jifa-service-account
       containers:
         - name: main-container
-          image: eclipsejifa/jifa:latest
+          image: eclipsejifa/jifa:0.3.0-SNAPSHOT
           imagePullPolicy: Always
           volumeMounts:
             - name: jifa-pv
@@ -178,7 +176,7 @@ spec:
             - --jifa.storage-pvc-name=jifa-pvc
             - --jifa.storage-path=/jifa-storage
             - --jifa.service-account-name=jifa-service-account
-            - --jifa.elastic-worker-image=eclipsejifa/jifa:latest
+            - --jifa.elastic-worker-image=eclipsejifa/jifa:0.3.0-SNAPSHOT
           ports:
             - name: jifa-port
               containerPort: 8102
