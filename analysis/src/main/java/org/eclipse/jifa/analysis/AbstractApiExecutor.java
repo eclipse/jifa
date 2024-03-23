@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -26,6 +26,7 @@ import org.eclipse.jifa.analysis.listener.DefaultProgressListener;
 import org.eclipse.jifa.analysis.listener.ProgressListener;
 import org.eclipse.jifa.analysis.support.MethodNameConverter;
 import org.eclipse.jifa.analysis.util.TypeParameterUtil;
+import org.eclipse.jifa.common.domain.exception.ErrorCodeException;
 import org.eclipse.jifa.common.util.ExecutorFactory;
 import org.eclipse.jifa.common.util.Validate;
 
@@ -51,6 +52,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static org.eclipse.jifa.analysis.enums.AnalysisErrorCode.FILE_NOT_FOUND;
 import static org.eclipse.jifa.analysis.listener.ProgressListener.NoOpProgressListener;
 
 @Slf4j
@@ -272,6 +274,7 @@ public abstract class AbstractApiExecutor<Analyzer> implements ApiExecutor {
     }
 
     public boolean needOptionsForAnalysis(@ApiParameterMeta(targetPath = true) Path target) {
+        checkExists(target);
         return false;
     }
 
@@ -280,6 +283,9 @@ public abstract class AbstractApiExecutor<Analyzer> implements ApiExecutor {
         if (cachedAnalyzer.getIfPresent(target) != null) {
             return;
         }
+
+        checkExists(target);
+
         ProgressListener progressListener = new DefaultProgressListener();
 
         boolean puttedByMe = buildingAnalyzerListeners.putIfAbsent(target, progressListener) == null;
@@ -308,7 +314,7 @@ public abstract class AbstractApiExecutor<Analyzer> implements ApiExecutor {
         }
     }
 
-    public Progress progressOfAnalysis(@ApiParameterMeta(targetPath = true) Path target) throws IOException {
+    public final Progress progressOfAnalysis(@ApiParameterMeta(targetPath = true) Path target) throws IOException {
         if (cachedAnalyzer.getIfPresent(target) != null) {
             Progress progress = new Progress();
             progress.setPercent(1);
@@ -323,6 +329,7 @@ public abstract class AbstractApiExecutor<Analyzer> implements ApiExecutor {
             progress.setPercent(listener.percent());
             return progress;
         }
+        checkExists(target);
         Progress result = new Progress();
         result.setState(Progress.State.FAILURE);
         File errorLog = errorLogFile(target);
@@ -363,6 +370,12 @@ public abstract class AbstractApiExecutor<Analyzer> implements ApiExecutor {
      */
     protected int getCacheDuration() {
         return 8;
+    }
+
+    protected void checkExists(Path target) {
+        if (!target.toFile().exists()) {
+            throw new ErrorCodeException(FILE_NOT_FOUND);
+        }
     }
 
     private void cleanAndDisposeAnalyzerCache(Path target) {

@@ -39,6 +39,11 @@ public class ErrorUtil {
         if (throwable instanceof MissingServletRequestParameterException || throwable instanceof IllegalArgumentException) {
             return CommonErrorCode.ILLEGAL_ARGUMENT;
         }
+        while ((throwable = throwable.getCause()) != null) {
+            if (throwable instanceof ErrorCodeAccessor errorCodeAccessor) {
+                return errorCodeAccessor.getErrorCode();
+            }
+        }
         return CommonErrorCode.INTERNAL_ERROR;
     }
 
