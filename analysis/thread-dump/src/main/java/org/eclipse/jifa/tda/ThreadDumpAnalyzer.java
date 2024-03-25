@@ -175,13 +175,17 @@ public class ThreadDumpAnalyzer {
         });
     }
 
+    private PageView<Thread> buildVThreadsPageView(List<Thread> threads, PagingRequest paging) {
+        return PageViewBuilder.build(threads, paging);
+    }
+
     /**
      * @param name   the thread name
      * @param type   the thread type
      * @param paging paging request
      * @return the threads filtered by name and type
      */
-    public PageView<VThread> threads(@ApiParameterMeta(required = false) String name,
+    public PageView<Thread> threads(@ApiParameterMeta(required = false) String name,
                                      @ApiParameterMeta(required = false) ThreadType type,
                                      PagingRequest paging) {
         List<Thread> threads = new ArrayList<>();
@@ -195,7 +199,7 @@ public class ThreadDumpAnalyzer {
             threads.add(t);
         }, snapshot.getJavaThreads(), snapshot.getNonJavaThreads());
 
-        return buildVThreadPageView(threads, paging);
+        return buildVThreadsPageView(threads, paging);
     }
 
     /**
