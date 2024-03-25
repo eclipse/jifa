@@ -99,6 +99,11 @@ public class Configuration {
     private String serviceAccountName;
 
     /**
+     * The name of image pull secret
+     */
+    private String imagePullSecretName;
+
+    /**
      * The container image of elastic workers.
      */
     private String elasticWorkerImage;
