@@ -86,6 +86,14 @@ Type: String
 
 Default: null
 
+## image-pull-secret-name
+
+The name of image pull secret
+
+Type: String
+
+Default: null
+
 ## elastic-worker-image
 
 Docker image used in the cluster to run `ELASTIC_WORKER` nodes.

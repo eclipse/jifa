@@ -85,6 +85,14 @@
 
 默认值: null
 
+## image-pull-secret-name
+
+集群中用于拉取 `WORKER` 镜像的密钥的名字。
+
+类型: String
+
+默认值: null
+
 ## elastic-worker-image
 
 集群中用于运行 `WORKER` 节点的镜像。
