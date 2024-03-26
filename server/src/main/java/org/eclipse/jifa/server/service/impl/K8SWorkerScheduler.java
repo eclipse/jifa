@@ -23,6 +23,7 @@ import io.kubernetes.client.openapi.models.V1ContainerPort;
 import io.kubernetes.client.openapi.models.V1ContainerStatus;
 import io.kubernetes.client.openapi.models.V1EnvVar;
 import io.kubernetes.client.openapi.models.V1HTTPGetAction;
+import io.kubernetes.client.openapi.models.V1LocalObjectReference;
 import io.kubernetes.client.openapi.models.V1ObjectMeta;
 import io.kubernetes.client.openapi.models.V1PersistentVolumeClaimVolumeSource;
 import io.kubernetes.client.openapi.models.V1Pod;
@@ -125,6 +126,13 @@ public class K8SWorkerScheduler extends ConfigurationAccessor implements Elastic
                 V1PodSpec podSpec = new V1PodSpec().addContainersItem(container).addVolumesItem(volume)
                                                    .serviceAccountName(config.getServiceAccountName())
                                                    .restartPolicy("Never");
+
+                String imagePullSecretName = config.getImagePullSecretName();
+                if (StringUtils.isNotBlank(imagePullSecretName)) {
+                    podSpec.addImagePullSecretsItem(new V1LocalObjectReference()
+                            .name(imagePullSecretName));
+                }
+
                 // workaround for https://github.com/kubernetes-client/java/issues/3076
                 podSpec.setOverhead(null);
                 pod.spec(podSpec);
