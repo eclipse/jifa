@@ -1,0 +1,17 @@
+{{- if .Values.rbac.create }}
+apiVersion: {{ include "common.capabilities.rbac.apiVersion" . }}
+kind: RoleBinding
+metadata:
+  name: {{ include "jifa.fullname" . }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    {{- include "jifa.labels" . | nindent 4 }}
+roleRef:
+  kind: Role
+  name: {{ include "jifa.fullname" . }}
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+  - kind: ServiceAccount
+    name: {{ template "jifa.serviceAccountName" . }}
+    namespace: {{ .Release.Namespace }}
+{{- end }}

@@ -1,0 +1,13 @@
+{{- if .Values.mysql.create -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "jifa.mysqlName" . }}
+  namespace: {{ .Release.Namespace | quote }}
+spec:
+  type: {{ .Values.mysql.service.type }}
+  ports:
+    - port: {{ .Values.mysql.service.port }}
+  selector:
+    app: mysql
+{{- end }}
