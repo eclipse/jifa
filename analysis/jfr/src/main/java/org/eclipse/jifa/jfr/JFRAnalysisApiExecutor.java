@@ -43,6 +43,7 @@ public class JFRAnalysisApiExecutor extends AbstractApiExecutor<JFRAnalyzer> {
 
     @Override
     public boolean needOptionsForAnalysis(Path target) {
+        checkExists(target);
         return false;
     }
 

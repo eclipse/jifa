@@ -43,6 +43,11 @@ export default {
       download: 'Download'
     },
 
+    menu: {
+      files: "Files",
+      analysisView: "Analysis View",
+    },
+
     serviceUnavailable: {
       title: 'Service is unavailable',
       subtitle: 'Please contact the administrator'
@@ -118,7 +123,9 @@ export default {
       success: 'Analysis successful',
       comparison: 'Comparison',
       selectComparisonTargets: 'Select Targets',
-      setting: 'Setting'
+      setting: 'Setting',
+
+      waitingForResourceScheduling: 'Waiting for analysis resource scheduling',
     },
 
     heapDump,

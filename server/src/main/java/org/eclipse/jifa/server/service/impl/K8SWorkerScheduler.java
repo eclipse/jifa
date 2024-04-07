@@ -23,6 +23,7 @@ import io.kubernetes.client.openapi.models.V1ContainerPort;
 import io.kubernetes.client.openapi.models.V1ContainerStatus;
 import io.kubernetes.client.openapi.models.V1EnvVar;
 import io.kubernetes.client.openapi.models.V1HTTPGetAction;
+import io.kubernetes.client.openapi.models.V1LocalObjectReference;
 import io.kubernetes.client.openapi.models.V1ObjectMeta;
 import io.kubernetes.client.openapi.models.V1PersistentVolumeClaimVolumeSource;
 import io.kubernetes.client.openapi.models.V1Pod;
@@ -52,7 +53,6 @@ import static org.eclipse.jifa.server.Constant.DEFAULT_PORT;
 import static org.eclipse.jifa.server.Constant.ELASTIC_WORKER_IDENTITY_ENV_KEY;
 import static org.eclipse.jifa.server.Constant.HTTP_API_PREFIX;
 import static org.eclipse.jifa.server.Constant.HTTP_HEALTH_CHECK_MAPPING;
-import static org.eclipse.jifa.server.Constant.K8S_NAMESPACE;
 import static org.eclipse.jifa.server.Constant.POD_NAME_PREFIX;
 import static org.eclipse.jifa.server.Constant.WORKER_CONTAINER_NAME;
 
@@ -112,7 +112,8 @@ public class K8SWorkerScheduler extends ConfigurationAccessor implements Elastic
                                 "--jifa.role=elastic-worker",
                                 "--jifa.storage-path=" + config.getStoragePath().toString(),
                                 "--jifa.port=" + config.getElasticWorkerPort(),
-                                "--jifa.elastic-worker-idle-threshold=" + config.getElasticWorkerIdleThreshold()))
+                                "--jifa.elastic-worker-idle-threshold=" + config.getElasticWorkerIdleThreshold(),
+                                "--jifa.cluster-namespace=" + config.getClusterNamespace()))
                         .addPortsItem(new V1ContainerPort().containerPort(config.getElasticWorkerPort()))
                         .resources(resourceRequirements)
                         .startupProbe(healthCheck);
@@ -122,14 +123,24 @@ public class K8SWorkerScheduler extends ConfigurationAccessor implements Elastic
                     container.addEnvItem(new V1EnvVar().name("JAVA_TOOL_OPTIONS").value(jvmOptions));
                 }
 
-                pod.spec(new V1PodSpec().addContainersItem(container).addVolumesItem(volume)
-                                        .serviceAccountName(config.getServiceAccountName())
-                                        .restartPolicy("Never"));
+                V1PodSpec podSpec = new V1PodSpec().addContainersItem(container).addVolumesItem(volume)
+                                                   .serviceAccountName(config.getServiceAccountName())
+                                                   .restartPolicy("Never");
 
-                api.createNamespacedPod(K8S_NAMESPACE, pod).execute();
+                String imagePullSecretName = config.getImagePullSecretName();
+                if (StringUtils.isNotBlank(imagePullSecretName)) {
+                    podSpec.addImagePullSecretsItem(new V1LocalObjectReference()
+                            .name(imagePullSecretName));
+                }
+
+                // workaround for https://github.com/kubernetes-client/java/issues/3076
+                podSpec.setOverhead(null);
+                pod.spec(podSpec);
+
+                api.createNamespacedPod(config.getClusterNamespace(), pod).execute();
 
                 while (true) {
-                    pod = api.readNamespacedPod(podName, K8S_NAMESPACE).execute();
+                    pod = api.readNamespacedPod(podName, config.getClusterNamespace()).execute();
                     V1PodStatus status = pod.getStatus();
                     String podIP = status != null ? status.getPodIP() : null;
                     if (podIP != null) {
@@ -153,7 +164,7 @@ public class K8SWorkerScheduler extends ConfigurationAccessor implements Elastic
                             }
                         }
                     }
-                    pod = api.readNamespacedPod(podName, K8S_NAMESPACE).execute();
+                    pod = api.readNamespacedPod(podName, config.getClusterNamespace()).execute();
                 }
             } catch (Throwable t) {
                 if (t instanceof ApiException apiException) {
@@ -171,13 +182,13 @@ public class K8SWorkerScheduler extends ConfigurationAccessor implements Elastic
 
     @Override
     public void terminate(long identity) throws ApiException {
-        api.deleteNamespacedPod(buildPodUniqueName(identity), K8S_NAMESPACE).execute();
+        api.deleteNamespacedPod(buildPodUniqueName(identity), config.getClusterNamespace()).execute();
     }
 
     @Override
     public void terminateInconsistentInstancesQuietly() {
         try {
-            V1PodList pods = api.listNamespacedPod(K8S_NAMESPACE).execute();
+            V1PodList pods = api.listNamespacedPod(config.getClusterNamespace()).execute();
             for (V1Pod pod : pods.getItems()) {
                 try {
                     if (pod.getMetadata() == null) {

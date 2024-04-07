@@ -12,10 +12,12 @@
  ********************************************************************************/
 package org.eclipse.jifa.server.controller;
 
+import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jifa.server.Constant;
 import org.eclipse.jifa.server.condition.ConditionalOnRole;
 import org.eclipse.jifa.server.domain.dto.AnalysisApiRequest;
 import org.eclipse.jifa.server.domain.dto.AnalysisApiStompResponseMessage;
+import org.eclipse.jifa.server.domain.exception.ElasticWorkerNotReadyException;
 import org.eclipse.jifa.server.domain.security.JifaAuthenticationToken;
 import org.eclipse.jifa.server.enums.Role;
 import org.eclipse.jifa.server.service.AnalysisApiService;
@@ -40,6 +42,7 @@ import static org.eclipse.jifa.server.Constant.STOMP_ANALYSIS_API_MAPPING;
 
 @ConditionalOnRole({Role.MASTER, Role.STANDALONE_WORKER})
 @Controller
+@Slf4j
 public class AnalysisApiStompController {
 
     private final AnonymousAuthenticationToken ANONYMOUS = new AnonymousAuthenticationToken(Constant.ANONYMOUS_KEY,
@@ -84,6 +87,14 @@ public class AnalysisApiStompController {
     @SendToUser(destinations = STOMP_ANALYSIS_API_MAPPING, broadcast = false)
     public AnalysisApiStompResponseMessage
     handleRequestException(Throwable throwable, @Header(name = Constant.STOMP_ANALYSIS_API_REQUEST_ID_KEY, required = false, defaultValue = "") String requestId) {
+        log(throwable);
         return new AnalysisApiStompResponseMessage(requestId, null, throwable);
+    }
+
+    private void log(Throwable throwable) {
+        if (throwable instanceof ElasticWorkerNotReadyException) {
+            return;
+        }
+        log.error("Error occurred when handling stomp request", throwable);
     }
 }

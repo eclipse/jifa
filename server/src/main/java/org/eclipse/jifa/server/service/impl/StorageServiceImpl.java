@@ -88,6 +88,9 @@ public class StorageServiceImpl extends ConfigurationAccessor implements Storage
     @PostConstruct
     private void init() {
         if (isElasticWorker()) {
+            basePath = config.getStoragePath();
+            Validate.isTrue(Files.isDirectory(basePath));
+            available = true;
             return;
         }
 
@@ -95,7 +98,6 @@ public class StorageServiceImpl extends ConfigurationAccessor implements Storage
             if (config.getStoragePath() == null) {
                 return;
             }
-
             // TODO: check k8s environment
         }
 

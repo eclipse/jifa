@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -15,7 +15,6 @@ package org.eclipse.jifa.server.util;
 import com.google.gson.JsonObject;
 import io.netty.handler.timeout.ReadTimeoutException;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jifa.common.domain.exception.ErrorCode;
 import org.eclipse.jifa.common.domain.exception.ErrorCodeAccessor;
 import org.eclipse.jifa.common.enums.CommonErrorCode;
@@ -29,10 +28,7 @@ public class ErrorUtil {
     public static byte[] toJson(Throwable throwable) {
         JsonObject json = new JsonObject();
         json.addProperty("errorCode", getErrorCodeOf(throwable).name());
-        String message = getMessage(throwable);
-        if (StringUtils.isNotBlank(message)) {
-            json.addProperty("message", message);
-        }
+        json.addProperty("message", getMessage(throwable));
         return json.toString().getBytes(Constant.CHARSET);
     }
 
@@ -42,6 +38,11 @@ public class ErrorUtil {
         }
         if (throwable instanceof MissingServletRequestParameterException || throwable instanceof IllegalArgumentException) {
             return CommonErrorCode.ILLEGAL_ARGUMENT;
+        }
+        while ((throwable = throwable.getCause()) != null) {
+            if (throwable instanceof ErrorCodeAccessor errorCodeAccessor) {
+                return errorCodeAccessor.getErrorCode();
+            }
         }
         return CommonErrorCode.INTERNAL_ERROR;
     }
@@ -67,6 +68,14 @@ public class ErrorUtil {
 
         if (message == null) {
             message = fallbackMessage;
+        }
+
+        if (message == null) {
+            if (throwable instanceof ErrorCodeAccessor errorCodeAccessor) {
+                message = errorCodeAccessor.getErrorCode().name();
+            } else {
+                message = "Error occurred";
+            }
         }
 
         try {
