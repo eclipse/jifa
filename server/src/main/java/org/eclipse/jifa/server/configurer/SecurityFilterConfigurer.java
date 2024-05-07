@@ -12,9 +12,6 @@
  ********************************************************************************/
 package org.eclipse.jifa.server.configurer;
 
-import com.nimbusds.jose.jwk.JWKSet;
-import com.nimbusds.jose.jwk.RSAKey;
-import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import jakarta.annotation.Nullable;
 import jakarta.servlet.Filter;
 import jakarta.servlet.http.Cookie;
@@ -22,9 +19,9 @@ import org.eclipse.jifa.server.ConfigurationAccessor;
 import org.eclipse.jifa.server.Constant;
 import org.eclipse.jifa.server.condition.ConditionalOnRole;
 import org.eclipse.jifa.server.filter.JwtTokenRefreshFilter;
-import org.eclipse.jifa.server.service.CipherService;
 import org.eclipse.jifa.server.service.JwtService;
 import org.eclipse.jifa.server.service.UserService;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
@@ -39,14 +36,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.JwtEncoder;
-import org.springframework.security.oauth2.jwt.JwtTimestampValidator;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.oauth2.server.resource.web.BearerTokenAuthenticationEntryPoint;
 import org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver;
 import org.springframework.security.oauth2.server.resource.web.access.BearerTokenAccessDeniedHandler;
@@ -55,8 +45,6 @@ import org.springframework.security.web.savedrequest.NullRequestCache;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
-import java.time.Duration;
 
 import static org.eclipse.jifa.server.Constant.COOKIE_JIFA_TOKEN_KEY;
 import static org.eclipse.jifa.server.Constant.HTTP_API_PREFIX;
@@ -70,23 +58,8 @@ import static org.eclipse.jifa.server.enums.Role.STANDALONE_WORKER;
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
-public class SecurityConfigurer extends ConfigurationAccessor {
-
-    @Bean
-    public JwtEncoder jwtEncoder(CipherService cipherService) {
-        RSAKey jwk = new RSAKey.Builder(cipherService.getPublicKey()).privateKey(cipherService.getPrivateKey()).build();
-        return new NimbusJwtEncoder(new ImmutableJWKSet<>(new JWKSet(jwk)));
-    }
-
-    @Bean
-    public JwtDecoder jwtDecoder(CipherService cipherService) {
-        NimbusJwtDecoder decoder = NimbusJwtDecoder.withPublicKey(cipherService.getPublicKey()).build();
-
-        if (getRole() == MASTER || getRole() == STANDALONE_WORKER) {
-            decoder.setJwtValidator(new JwtTimestampValidator(Duration.ZERO));
-        }
-        return decoder;
-    }
+@ConditionalOnProperty(value = "jifa.security.filters.enabled", havingValue = "true", matchIfMissing = true)
+public class SecurityFilterConfigurer extends ConfigurationAccessor {
 
     @Bean
     public SecurityFilterChain configure(HttpSecurity hs, UserService userService, JwtService jwtService,
@@ -176,11 +149,6 @@ public class SecurityConfigurer extends ConfigurationAccessor {
         // must be after spring security filter chain
         frb.setOrder(Integer.MAX_VALUE);
         return frb;
-    }
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
     }
 
     @Bean

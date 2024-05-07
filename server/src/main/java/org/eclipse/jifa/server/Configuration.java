@@ -166,6 +166,13 @@ public class Configuration {
      */
     private Set<FileTransferMethod> disabledFileTransferMethods = Collections.emptySet();
 
+    /**
+     * Install the web security filters. Default is true.
+     *
+     * Use this to allow integration with custom security filters.
+     */
+    private boolean securityFiltersEnabled = true;
+
     @PostConstruct
     private void init() {
         if (role == Role.MASTER) {
