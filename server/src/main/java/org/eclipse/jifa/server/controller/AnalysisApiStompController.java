@@ -18,7 +18,6 @@ import org.eclipse.jifa.server.condition.ConditionalOnRole;
 import org.eclipse.jifa.server.domain.dto.AnalysisApiRequest;
 import org.eclipse.jifa.server.domain.dto.AnalysisApiStompResponseMessage;
 import org.eclipse.jifa.server.domain.exception.ElasticWorkerNotReadyException;
-import org.eclipse.jifa.server.domain.security.JifaAuthenticationToken;
 import org.eclipse.jifa.server.enums.Role;
 import org.eclipse.jifa.server.service.AnalysisApiService;
 import org.eclipse.jifa.server.util.ControllerUtil;
@@ -31,6 +30,7 @@ import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.simp.stomp.StompHeaders;
 import org.springframework.messaging.support.MessageHeaderAccessor;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -63,8 +63,8 @@ public class AnalysisApiStompController {
                   Message<byte[]> message) {
         StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
         assert accessor != null;
-        JifaAuthenticationToken token = (JifaAuthenticationToken) accessor.getUser();
-        SecurityContextHolder.getContext().setAuthentication(token != null ? token : ANONYMOUS);
+        Authentication auth = (Authentication) accessor.getUser();
+        SecurityContextHolder.getContext().setAuthentication(auth != null ? auth : ANONYMOUS);
 
         try {
             MimeType mimeType = ControllerUtil.checkMimeTypeForStompMessage(contentType);
