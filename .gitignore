@@ -7,6 +7,7 @@
 gradle-app.setting
 
 .idea
+.vscode/
 **/node_modules/
 **/tmp/
 
