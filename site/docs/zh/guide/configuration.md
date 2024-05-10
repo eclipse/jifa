@@ -169,6 +169,14 @@ Default: false
 
 默认值：password
 
+## security-filters-enabled
+
+是否启用默认的安全过滤器用于认证与授权。
+
+如果需要自定义应用的安全认证方式，请将此参数设置为 false。
+
+默认值: true
+
 ## input-files
 
 本地的待分析文件，仅在 `STANDALONE_WORKER` 角色中使用。
