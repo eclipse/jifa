@@ -171,6 +171,14 @@ Type: String
 
 Default: password
 
+## security-filters-enabled
+
+Whether to enable the default security filters for web authentication. If set to 'false', the web security filters will not be enabled.
+
+Use this option if you intend to customize JIFA with an alternative authentication and authorization layer.
+
+Default: true
+
 ## input-files
 
 Local files to be analyzed, used only in `STANDALONE_WORKER` role.
