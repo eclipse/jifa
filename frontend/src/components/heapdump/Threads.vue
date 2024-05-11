@@ -67,7 +67,8 @@ const columns = [
     label: 'Name',
     width: 130,
     align: 'right',
-    property: 'name'
+    property: 'name',
+    sortable: true,
   },
   {
     label: 'Shallow Size',
