@@ -14,10 +14,10 @@
 package org.eclipse.jifa.gclog.diagnoser;
 
 import org.eclipse.jifa.gclog.event.GCEvent;
-import org.eclipse.jifa.gclog.event.evnetInfo.CpuTime;
-import org.eclipse.jifa.gclog.event.evnetInfo.GCEventBooleanType;
-import org.eclipse.jifa.gclog.event.evnetInfo.GCMemoryItem;
-import org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea;
+import org.eclipse.jifa.gclog.event.eventInfo.CpuTime;
+import org.eclipse.jifa.gclog.event.eventInfo.GCEventBooleanType;
+import org.eclipse.jifa.gclog.event.eventInfo.GCMemoryItem;
+import org.eclipse.jifa.gclog.event.eventInfo.MemoryArea;
 import org.eclipse.jifa.gclog.model.GCEventType;
 import org.eclipse.jifa.gclog.model.GCModel;
 
@@ -39,13 +39,13 @@ import static org.eclipse.jifa.gclog.diagnoser.AbnormalType.BAD_SYS;
 import static org.eclipse.jifa.gclog.diagnoser.AbnormalType.BAD_USR;
 import static org.eclipse.jifa.gclog.diagnoser.AbnormalType.BAD_YOUNG_GEN_CAPACITY;
 import static org.eclipse.jifa.gclog.diagnoser.AbnormalType.TO_SPACE_EXHAUSTED;
-import static org.eclipse.jifa.gclog.event.evnetInfo.GCEventBooleanType.GC_AFTER_REMARK;
-import static org.eclipse.jifa.gclog.event.evnetInfo.GCEventBooleanType.GC_AT_END_OF_OLD_CYCLE;
-import static org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea.HEAP;
-import static org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea.HUMONGOUS;
-import static org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea.METASPACE;
-import static org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea.OLD;
-import static org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea.YOUNG;
+import static org.eclipse.jifa.gclog.event.eventInfo.GCEventBooleanType.GC_AFTER_REMARK;
+import static org.eclipse.jifa.gclog.event.eventInfo.GCEventBooleanType.GC_AT_END_OF_OLD_CYCLE;
+import static org.eclipse.jifa.gclog.event.eventInfo.MemoryArea.HEAP;
+import static org.eclipse.jifa.gclog.event.eventInfo.MemoryArea.HUMONGOUS;
+import static org.eclipse.jifa.gclog.event.eventInfo.MemoryArea.METASPACE;
+import static org.eclipse.jifa.gclog.event.eventInfo.MemoryArea.OLD;
+import static org.eclipse.jifa.gclog.event.eventInfo.MemoryArea.YOUNG;
 import static org.eclipse.jifa.gclog.util.Constant.UNKNOWN_DOUBLE;
 import static org.eclipse.jifa.gclog.util.Constant.UNKNOWN_INT;
 

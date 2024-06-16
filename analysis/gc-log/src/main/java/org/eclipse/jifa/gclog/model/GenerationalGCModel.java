@@ -14,9 +14,9 @@
 package org.eclipse.jifa.gclog.model;
 
 import org.eclipse.jifa.gclog.event.GCEvent;
-import org.eclipse.jifa.gclog.event.evnetInfo.GCCause;
-import org.eclipse.jifa.gclog.event.evnetInfo.GCEventBooleanType;
-import org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea;
+import org.eclipse.jifa.gclog.event.eventInfo.GCCause;
+import org.eclipse.jifa.gclog.event.eventInfo.GCEventBooleanType;
+import org.eclipse.jifa.gclog.event.eventInfo.MemoryArea;
 import org.eclipse.jifa.gclog.model.modeInfo.GCCollectorType;
 import org.eclipse.jifa.gclog.model.modeInfo.GCLogStyle;
 

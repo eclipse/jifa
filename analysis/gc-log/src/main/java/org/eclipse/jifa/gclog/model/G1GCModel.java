@@ -14,9 +14,9 @@
 package org.eclipse.jifa.gclog.model;
 
 import org.eclipse.jifa.gclog.event.GCEvent;
-import org.eclipse.jifa.gclog.event.evnetInfo.GCEventBooleanType;
-import org.eclipse.jifa.gclog.event.evnetInfo.GCMemoryItem;
-import org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea;
+import org.eclipse.jifa.gclog.event.eventInfo.GCEventBooleanType;
+import org.eclipse.jifa.gclog.event.eventInfo.GCMemoryItem;
+import org.eclipse.jifa.gclog.event.eventInfo.MemoryArea;
 import org.eclipse.jifa.gclog.model.modeInfo.GCCollectorType;
 import org.eclipse.jifa.gclog.model.modeInfo.GCLogStyle;
 import org.eclipse.jifa.gclog.util.LongData;
@@ -25,15 +25,15 @@ import org.eclipse.jifa.gclog.vo.TimeRange;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.eclipse.jifa.gclog.event.evnetInfo.GCEventBooleanType.GC_AFTER_REMARK;
-import static org.eclipse.jifa.gclog.event.evnetInfo.GCEventBooleanType.GC_AT_END_OF_OLD_CYCLE;
-import static org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea.ARCHIVE;
-import static org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea.EDEN;
-import static org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea.HEAP;
-import static org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea.HUMONGOUS;
-import static org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea.METASPACE;
-import static org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea.OLD;
-import static org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea.SURVIVOR;
+import static org.eclipse.jifa.gclog.event.eventInfo.GCEventBooleanType.GC_AFTER_REMARK;
+import static org.eclipse.jifa.gclog.event.eventInfo.GCEventBooleanType.GC_AT_END_OF_OLD_CYCLE;
+import static org.eclipse.jifa.gclog.event.eventInfo.MemoryArea.ARCHIVE;
+import static org.eclipse.jifa.gclog.event.eventInfo.MemoryArea.EDEN;
+import static org.eclipse.jifa.gclog.event.eventInfo.MemoryArea.HEAP;
+import static org.eclipse.jifa.gclog.event.eventInfo.MemoryArea.HUMONGOUS;
+import static org.eclipse.jifa.gclog.event.eventInfo.MemoryArea.METASPACE;
+import static org.eclipse.jifa.gclog.event.eventInfo.MemoryArea.OLD;
+import static org.eclipse.jifa.gclog.event.eventInfo.MemoryArea.SURVIVOR;
 import static org.eclipse.jifa.gclog.model.GCEventType.FULL_GC;
 import static org.eclipse.jifa.gclog.model.GCEventType.G1_CONCURRENT_CYCLE;
 import static org.eclipse.jifa.gclog.model.GCEventType.G1_CONCURRENT_MARK;

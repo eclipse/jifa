@@ -20,7 +20,7 @@ import lombok.ToString;
 import org.eclipse.jifa.common.domain.exception.CommonException;
 import org.eclipse.jifa.common.domain.exception.ShouldNotReachHereException;
 import org.eclipse.jifa.gclog.event.TimedEvent;
-import org.eclipse.jifa.gclog.event.evnetInfo.GCCause;
+import org.eclipse.jifa.gclog.event.eventInfo.GCCause;
 import org.eclipse.jifa.gclog.model.GCEventType;
 import org.eclipse.jifa.gclog.model.GCModel;
 import org.eclipse.jifa.gclog.model.ZGCModel;
