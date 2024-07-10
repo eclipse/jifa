@@ -72,17 +72,7 @@ import java.lang.ref.Cleaner;
 import java.lang.ref.SoftReference;
 import java.net.URL;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.StringTokenizer;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
@@ -268,6 +258,27 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer {
                 map.put((String) result.getColumnValue(row, 1), (String) result.getColumnValue(row, 2));
             }
             return map;
+        });
+    }
+
+    @Override
+    public Map<String, String> getEnvVariables() {
+        return $(() -> {
+            Map<String, String> env = new HashMap<>();
+            Collection<IClass> classes = context.snapshot.getClassesByName("java.lang.ProcessEnvironment", true);
+            if(classes == null || classes.isEmpty()){
+                return env;
+            }
+            IClass systemClass = classes.iterator().next();
+            IObject iObject = (IObject) systemClass.resolveValue("theEnvironment");
+            IResultTable result = (IResultTable) SnapshotQuery.lookup("hash_entries", context.snapshot)
+                    .setArgument("objects", iObject).execute(new ProgressListenerImpl(NoOpProgressListener));
+            int rowCount = result.getRowCount();
+            for(int i = 0; i< rowCount; i++){
+                Object row = result.getRow(i);
+                env.put((String) result.getColumnValue(row, 1), (String) result.getColumnValue(row, 2));
+            }
+            return env;
         });
     }
 

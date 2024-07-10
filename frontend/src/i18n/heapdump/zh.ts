@@ -40,6 +40,7 @@ export default {
     threads: '线程',
     unreachableObjects: '不可达对象',
     systemProperties: '系统属性',
+    envVariables: '环境变量',
     directByteBuffers: '堆外内存',
     classLoaders: '类加载器',
     duplicateClasses: '重复类',

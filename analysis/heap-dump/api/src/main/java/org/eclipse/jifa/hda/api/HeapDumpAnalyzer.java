@@ -34,6 +34,8 @@ public interface HeapDumpAnalyzer {
 
     Map<String, String> getSystemProperties();
 
+    Map<String, String> getEnvVariables();
+
     List<Overview.BigObject> getBiggestObjects();
 
     @ApiMeta(aliases = "object")
