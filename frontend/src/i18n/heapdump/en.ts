@@ -40,7 +40,7 @@ export default {
     threads: 'Threads',
     unreachableObjects: 'Unreachable Objects',
     systemProperties: 'System Properties',
-    envVariables: 'Env Variables',
+    envVariables: 'Environment Variables',
     directByteBuffers: 'Direct Byte Buffers',
     classLoaders: 'Class Loaders',
     duplicateClasses: 'Duplicated Classes',
