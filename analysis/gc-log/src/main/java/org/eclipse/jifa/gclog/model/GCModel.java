@@ -659,7 +659,7 @@ public abstract class GCModel {
                 if (youngReduction != Constant.UNKNOWN_INT && totalReduction != Constant.UNKNOWN_INT) {
                     long promotion = youngReduction - totalReduction;
                     if (humongous != null && humongous.getMemoryReduction() != Constant.UNKNOWN_INT) {
-                        promotion -= humongous.getMemoryReduction();
+                        promotion += humongous.getMemoryReduction();
                     }
                     event.setPromotion(zeroIfNegative(promotion));
                 }
