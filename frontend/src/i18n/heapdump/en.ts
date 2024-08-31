@@ -61,6 +61,7 @@ export default {
     numberOfGCRoots: 'GC Root Count',
     creationDate: 'Creation Date',
     identifierSize: 'OS Bit',
+    jvmOptions: 'JVM Options',
 
     biggestObjectsChartTitle: 'Biggest Objects (by Retained Size)'
   },

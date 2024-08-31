@@ -72,7 +72,18 @@ import java.lang.ref.Cleaner;
 import java.lang.ref.SoftReference;
 import java.net.URL;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
@@ -194,6 +205,14 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer {
         }
     }
 
+    private static <V> V $(RV<V> rv, V def) {
+        try {
+            return rv.run();
+        } catch (Throwable t) {
+            return def;
+        }
+    }
+
     private static void $(R e) {
         $(() -> {
             e.run();
@@ -210,13 +229,36 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer {
     public Overview.Details getDetails() {
         return $(() -> {
                      SnapshotInfo snapshotInfo = context.snapshot.getSnapshotInfo();
-                     return new Overview.Details(snapshotInfo.getJvmInfo(), snapshotInfo.getIdentifierSize(),
-                                                 snapshotInfo.getCreationDate().getTime(), snapshotInfo.getNumberOfObjects(),
-                                                 snapshotInfo.getNumberOfGCRoots(), snapshotInfo.getNumberOfClasses(),
-                                                 snapshotInfo.getNumberOfClassLoaders(), snapshotInfo.getUsedHeapSize(),
-                                                 false);
+                     return new Overview.Details(snapshotInfo.getIdentifierSize(),
+                                                 snapshotInfo.getCreationDate().getTime(),
+                                                 snapshotInfo.getNumberOfObjects(),
+                                                 snapshotInfo.getNumberOfGCRoots(),
+                                                 snapshotInfo.getNumberOfClasses(),
+                                                 snapshotInfo.getNumberOfClassLoaders(),
+                                                 snapshotInfo.getUsedHeapSize(),
+                                                 getJVMOptions());
                  }
                 );
+    }
+
+    private List<String> getJVMOptions() {
+        return $(() -> {
+            List<String> result = new ArrayList<>();
+            IResult oqlResult = getOQLResult(context, "select v.vmArgs.list.a.@objectId from sun.management.VMManagementImpl v");
+            if (oqlResult instanceof IResultTable t && t.getRowCount() == 1) {
+                Object row = t.getRow(0);
+                Integer id = (Integer) t.getColumnValue(row, 0);
+                IObjectArray array = (IObjectArray) context.snapshot.getObject(id);
+                long[] refs = array.getReferenceArray();
+                for (long address : refs) {
+                    if (address != 0) {
+                        IObject object = context.snapshot.getObject(context.snapshot.mapAddressToId(address));
+                        result.add(object.getClassSpecificName());
+                    }
+                }
+            }
+            return result;
+        }, Collections.emptyList());
     }
 
     private <Res extends IResult> Res queryByCommand(AnalysisContext context,

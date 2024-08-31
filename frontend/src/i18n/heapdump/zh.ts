@@ -61,6 +61,7 @@ export default {
     numberOfGCRoots: 'GC 根对象数量',
     creationDate: '创建时间',
     identifierSize: '系统位数',
+    jvmOptions: 'JVM 选项',
 
     biggestObjectsChartTitle: '大对象（按对象的支配内存大小计算）'
   },
