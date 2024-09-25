@@ -48,7 +48,6 @@ curl -fsSL https://raw.githubusercontent.com/eclipse/jifa/main/jifa.sh | bash -s
 ## 相关链接
 
 - [GitHub Pages](https://eclipse.github.io/jifa/zh/)
-- [邮件列表](https://accounts.eclipse.org/mailing-list/jifa-dev)
 - 钉钉交流群二维码
 
   <div>

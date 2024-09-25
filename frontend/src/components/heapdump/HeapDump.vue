@@ -18,6 +18,7 @@ import DominatorTree from '@/components/heapdump/DominatorTree.vue';
 import Histogram from '@/components/heapdump/Histogram.vue';
 import Threads from '@/components/heapdump/Threads.vue';
 import SystemProperties from '@/components/heapdump/SystemProperties.vue';
+import EnvVariables from '@/components/heapdump/EnvVariables.vue';
 import Query from '@/components/heapdump/Query.vue';
 import GCRoots from '@/components/heapdump/GCRoots.vue';
 import UnreachableObjects from '@/components/heapdump/UnreachableObjects.vue';
@@ -56,7 +57,8 @@ const tabs = {
   DirectByteBuffers,
   DuplicateClasses,
   UnreachableObjects,
-  SystemProperties
+  SystemProperties,
+  EnvVariables
 };
 
 const width = useDebouncedRef(window.innerWidth);

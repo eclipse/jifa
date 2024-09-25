@@ -86,6 +86,14 @@ Type: String
 
 Default: null
 
+## image-pull-secret-name
+
+The name of image pull secret
+
+Type: String
+
+Default: null
+
 ## elastic-worker-image
 
 Docker image used in the cluster to run `ELASTIC_WORKER` nodes.
@@ -162,6 +170,14 @@ The password of the administrator account.
 Type: String
 
 Default: password
+
+## security-filters-enabled
+
+Whether to enable the default security filters for web authentication. If set to 'false', the web security filters will not be enabled.
+
+Use this option if you intend to customize JIFA with an alternative authentication and authorization layer.
+
+Default: true
 
 ## input-files
 

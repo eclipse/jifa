@@ -11,10 +11,10 @@
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
 
-package org.eclipse.jifa.gclog.event.evnetInfo;
+package org.eclipse.jifa.gclog.event.eventInfo;
 
-public enum GCEventLevel {
-    EVENT,
-    PHASE,
-    SUBPHASE,
+public enum GCPause {
+    PAUSE,
+    CONCURRENT,
+    PARTIAL  // to get its pause time, we need to consider its paused phases
 }

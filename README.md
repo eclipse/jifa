@@ -47,5 +47,3 @@ Note: Please make sure that Docker is installed.
 
 ## Links
 - [GitHub Pages](https://eclipse.github.io/jifa)
-- [Mail List](https://accounts.eclipse.org/mailing-list/jifa-dev)
-- [Slack Channel](https://eclipsejifa.slack.com/)

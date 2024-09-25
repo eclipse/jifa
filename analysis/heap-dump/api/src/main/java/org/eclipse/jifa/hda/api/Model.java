@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -754,8 +754,6 @@ public interface Model {
         @Data
         class Details {
 
-            public String jvmInfo;
-
             public int identifierSize;
 
             public long creationDate;
@@ -770,13 +768,12 @@ public interface Model {
 
             public long usedHeapSize;
 
-            public boolean generationInfoAvailable;
+            public List<String> jvmOptions;
 
-            public Details(String jvmInfo, int identifierSize, long creationDate, int numberOfObjects,
+            public Details(int identifierSize, long creationDate, int numberOfObjects,
                            int numberOfGCRoots,
                            int numberOfClasses, int numberOfClassLoaders, long usedHeapSize,
-                           boolean generationInfoAvailable) {
-                this.jvmInfo = jvmInfo;
+                           List<String> jvmOptions) {
                 this.identifierSize = identifierSize;
                 this.creationDate = creationDate;
                 this.numberOfObjects = numberOfObjects;
@@ -784,7 +781,7 @@ public interface Model {
                 this.numberOfClasses = numberOfClasses;
                 this.numberOfClassLoaders = numberOfClassLoaders;
                 this.usedHeapSize = usedHeapSize;
-                this.generationInfoAvailable = generationInfoAvailable;
+                this.jvmOptions = jvmOptions;
             }
         }
     }

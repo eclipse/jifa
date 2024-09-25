@@ -16,7 +16,7 @@ import com.google.common.collect.ImmutableSet;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jifa.analysis.listener.DefaultProgressListener;
 import org.eclipse.jifa.gclog.event.GCEvent;
-import org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea;
+import org.eclipse.jifa.gclog.event.eventInfo.MemoryArea;
 import org.eclipse.jifa.gclog.fragment.GCLogAnalyzer;
 import org.eclipse.jifa.gclog.model.*;
 import org.eclipse.jifa.gclog.parser.*;
@@ -27,7 +27,7 @@ import org.junit.jupiter.api.Test;
 import java.util.*;
 
 import static org.eclipse.jifa.gclog.TestUtil.generateShuffledGCLog;
-import static org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea.*;
+import static org.eclipse.jifa.gclog.event.eventInfo.MemoryArea.*;
 
 /*
 This test aims the same as TestFragmentedParserToGCModelLegacy.

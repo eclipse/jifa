@@ -15,7 +15,7 @@ package org.eclipse.jifa.gclog;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jifa.gclog.event.GCEvent;
 import org.eclipse.jifa.gclog.event.Safepoint;
-import org.eclipse.jifa.gclog.event.evnetInfo.GCMemoryItem;
+import org.eclipse.jifa.gclog.event.eventInfo.GCMemoryItem;
 import org.eclipse.jifa.gclog.fragment.GCLogAnalyzer;
 import org.eclipse.jifa.gclog.model.*;
 import org.eclipse.jifa.gclog.model.modeInfo.GCCollectorType;
@@ -27,12 +27,12 @@ import org.junit.jupiter.api.Test;
 
 import java.util.*;
 
-import static org.eclipse.jifa.gclog.event.evnetInfo.GCCause.*;
-import static org.eclipse.jifa.gclog.event.evnetInfo.GCCause.ALLOCATION_FAILURE;
-import static org.eclipse.jifa.gclog.event.evnetInfo.GCEventBooleanType.TO_SPACE_EXHAUSTED;
-import static org.eclipse.jifa.gclog.event.evnetInfo.GCEventBooleanType.YOUNG_GC_BECOME_FULL_GC;
-import static org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea.*;
-import static org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea.HEAP;
+import static org.eclipse.jifa.gclog.event.eventInfo.GCCause.*;
+import static org.eclipse.jifa.gclog.event.eventInfo.GCCause.ALLOCATION_FAILURE;
+import static org.eclipse.jifa.gclog.event.eventInfo.GCEventBooleanType.TO_SPACE_EXHAUSTED;
+import static org.eclipse.jifa.gclog.event.eventInfo.GCEventBooleanType.YOUNG_GC_BECOME_FULL_GC;
+import static org.eclipse.jifa.gclog.event.eventInfo.MemoryArea.*;
+import static org.eclipse.jifa.gclog.event.eventInfo.MemoryArea.HEAP;
 import static org.eclipse.jifa.gclog.util.Constant.UNKNOWN_DOUBLE;
 
 /*

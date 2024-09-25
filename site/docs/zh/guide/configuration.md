@@ -85,6 +85,14 @@
 
 默认值: null
 
+## image-pull-secret-name
+
+集群中用于拉取 `WORKER` 镜像的密钥的名字。
+
+类型: String
+
+默认值: null
+
 ## elastic-worker-image
 
 集群中用于运行 `WORKER` 节点的镜像。
@@ -160,6 +168,14 @@ Default: false
 类型：String
 
 默认值：password
+
+## security-filters-enabled
+
+是否启用默认的安全过滤器用于认证与授权。
+
+如果需要自定义应用的安全认证方式，请将此参数设置为 false。
+
+默认值: true
 
 ## input-files
 

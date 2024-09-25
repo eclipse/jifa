@@ -37,11 +37,11 @@ import org.eclipse.jifa.gclog.event.GCEvent;
 import org.eclipse.jifa.gclog.event.Safepoint;
 import org.eclipse.jifa.gclog.event.ThreadEvent;
 import org.eclipse.jifa.gclog.event.TimedEvent;
-import org.eclipse.jifa.gclog.event.evnetInfo.GCCause;
-import org.eclipse.jifa.gclog.event.evnetInfo.GCEventLevel;
-import org.eclipse.jifa.gclog.event.evnetInfo.GCMemoryItem;
-import org.eclipse.jifa.gclog.event.evnetInfo.GCPause;
-import org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea;
+import org.eclipse.jifa.gclog.event.eventInfo.GCCause;
+import org.eclipse.jifa.gclog.event.eventInfo.GCEventLevel;
+import org.eclipse.jifa.gclog.event.eventInfo.GCMemoryItem;
+import org.eclipse.jifa.gclog.event.eventInfo.GCPause;
+import org.eclipse.jifa.gclog.event.eventInfo.MemoryArea;
 import org.eclipse.jifa.gclog.model.modeInfo.GCCollectorType;
 import org.eclipse.jifa.gclog.model.modeInfo.GCLogMetadata;
 import org.eclipse.jifa.gclog.model.modeInfo.GCLogStyle;
@@ -75,14 +75,14 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea.ARCHIVE;
-import static org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea.EDEN;
-import static org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea.HEAP;
-import static org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea.HUMONGOUS;
-import static org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea.METASPACE;
-import static org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea.OLD;
-import static org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea.SURVIVOR;
-import static org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea.YOUNG;
+import static org.eclipse.jifa.gclog.event.eventInfo.MemoryArea.ARCHIVE;
+import static org.eclipse.jifa.gclog.event.eventInfo.MemoryArea.EDEN;
+import static org.eclipse.jifa.gclog.event.eventInfo.MemoryArea.HEAP;
+import static org.eclipse.jifa.gclog.event.eventInfo.MemoryArea.HUMONGOUS;
+import static org.eclipse.jifa.gclog.event.eventInfo.MemoryArea.METASPACE;
+import static org.eclipse.jifa.gclog.event.eventInfo.MemoryArea.OLD;
+import static org.eclipse.jifa.gclog.event.eventInfo.MemoryArea.SURVIVOR;
+import static org.eclipse.jifa.gclog.event.eventInfo.MemoryArea.YOUNG;
 import static org.eclipse.jifa.gclog.model.GCEventType.CMS_CONCURRENT_MARK_SWEPT;
 import static org.eclipse.jifa.gclog.model.GCEventType.FULL_GC;
 import static org.eclipse.jifa.gclog.model.GCEventType.G1_CONCURRENT_CYCLE;
@@ -466,6 +466,13 @@ public abstract class GCModel {
             endTime = Math.max(endTime, event.getPhases().get(event.getPhases().size() - 1).getEndTime());
         }
         setEndTime(Math.max(this.endTime, endTime));
+        // update start time.
+        event = gcEvents.get(0);
+        double startTime = event.getStartTime();
+        if (event.hasPhases()) {
+            startTime = Math.min(startTime, event.getPhases().get(0).getStartTime());
+        }
+        setStartTime(Math.min(this.startTime, startTime));
     }
 
     @ApiMeta("timeGraphData")
@@ -652,7 +659,7 @@ public abstract class GCModel {
                 if (youngReduction != Constant.UNKNOWN_INT && totalReduction != Constant.UNKNOWN_INT) {
                     long promotion = youngReduction - totalReduction;
                     if (humongous != null && humongous.getMemoryReduction() != Constant.UNKNOWN_INT) {
-                        promotion -= humongous.getMemoryReduction();
+                        promotion += humongous.getMemoryReduction();
                     }
                     event.setPromotion(zeroIfNegative(promotion));
                 }

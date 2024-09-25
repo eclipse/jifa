@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -33,6 +33,8 @@ public interface HeapDumpAnalyzer {
     Overview.Details getDetails();
 
     Map<String, String> getSystemProperties();
+
+    Map<String, String> getEnvVariables();
 
     List<Overview.BigObject> getBiggestObjects();
 

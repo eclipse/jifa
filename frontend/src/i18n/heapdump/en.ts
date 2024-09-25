@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -40,6 +40,7 @@ export default {
     threads: 'Threads',
     unreachableObjects: 'Unreachable Objects',
     systemProperties: 'System Properties',
+    envVariables: 'Environment Variables',
     directByteBuffers: 'Direct Byte Buffers',
     classLoaders: 'Class Loaders',
     duplicateClasses: 'Duplicated Classes',
@@ -60,6 +61,7 @@ export default {
     numberOfGCRoots: 'GC Root Count',
     creationDate: 'Creation Date',
     identifierSize: 'OS Bit',
+    jvmOptions: 'JVM Options',
 
     biggestObjectsChartTitle: 'Biggest Objects (by Retained Size)'
   },

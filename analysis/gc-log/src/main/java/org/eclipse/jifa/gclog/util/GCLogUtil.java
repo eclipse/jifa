@@ -13,7 +13,7 @@
 
 package org.eclipse.jifa.gclog.util;
 
-import org.eclipse.jifa.gclog.event.evnetInfo.CpuTime;
+import org.eclipse.jifa.gclog.event.eventInfo.CpuTime;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;

@@ -99,6 +99,11 @@ public class Configuration {
     private String serviceAccountName;
 
     /**
+     * The name of image pull secret
+     */
+    private String imagePullSecretName;
+
+    /**
      * The container image of elastic workers.
      */
     private String elasticWorkerImage;
@@ -160,6 +165,13 @@ public class Configuration {
      * The disabled file transfer methods.
      */
     private Set<FileTransferMethod> disabledFileTransferMethods = Collections.emptySet();
+
+    /**
+     * Install the web security filters. Default is true.
+     *
+     * Use this to allow integration with custom security filters.
+     */
+    private boolean securityFiltersEnabled = true;
 
     @PostConstruct
     private void init() {

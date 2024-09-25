@@ -1,5 +1,5 @@
 <!--
-    Copyright (c) 2023 Contributors to the Eclipse Foundation
+    Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
 
     See the NOTICE file(s) distributed with this work for additional
     information regarding copyright ownership.
@@ -11,17 +11,17 @@
     SPDX-License-Identifier: EPL-2.0
  -->
 <script setup lang="ts">
-import { useAnalysisApiRequester } from '@/composables/analysis-api-requester';
-import { hdt } from '@/components/heapdump/utils';
-import { prettyCount, prettySize, prettyDate } from '@/support/utils';
-import { a2rgb, PIE_COLORS, REMAINDER_COLOR } from '@/components/heapdump/color-helper';
-import { ArcElement, Chart, Title, Tooltip } from 'chart.js';
-import { Doughnut } from 'vue-chartjs';
-import { useSelectedObject } from '@/composables/heapdump/selected-object';
-import { currentLocale } from '@/i18n/i18n';
-import { isDark } from '@/composables/theme';
+import {useAnalysisApiRequester} from '@/composables/analysis-api-requester';
+import {hdt} from '@/components/heapdump/utils';
+import {prettyCount, prettyDate, prettySize} from '@/support/utils';
+import {a2rgb, PIE_COLORS, REMAINDER_COLOR} from '@/components/heapdump/color-helper';
+import {ArcElement, Chart, Title, Tooltip} from 'chart.js';
+import {Doughnut} from 'vue-chartjs';
+import {useSelectedObject} from '@/composables/heapdump/selected-object';
+import {currentLocale} from '@/i18n/i18n';
+import {isDark} from '@/composables/theme';
 import CommonContextMenu from '@/components/common/CommonContextMenu.vue';
-import { commonMenu as menu } from '@/components/heapdump/menu';
+import {commonMenu as menu} from '@/components/heapdump/menu';
 
 const { request } = useAnalysisApiRequester();
 
@@ -40,7 +40,8 @@ request('details').then((data) => {
     'numberOfClassLoaders',
     'numberOfGCRoots',
     'creationDate',
-    'identifierSize'
+    'identifierSize',
+    'jvmOptions'
   ];
   let formatters = [
     prettySize,
@@ -49,7 +50,8 @@ request('details').then((data) => {
     prettyCount,
     prettyCount,
     prettyDate,
-    (i) => (i === 8 ? '64 bit' : '32 bit')
+    (i) => (i === 8 ? '64 bit' : '32 bit'),
+    (options) => (options.length > 0 ? options.join(' ') : 'N/A')
   ];
   for (let i = 0; i < keys.length; i++) {
     information.value.push({

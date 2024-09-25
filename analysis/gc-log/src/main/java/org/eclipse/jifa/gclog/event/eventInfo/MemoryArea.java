@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: EPL-2.0
  ********************************************************************************/
 
-package org.eclipse.jifa.gclog.event.evnetInfo;
+package org.eclipse.jifa.gclog.event.eventInfo;
 
 public enum MemoryArea {
     EDEN("eden"),

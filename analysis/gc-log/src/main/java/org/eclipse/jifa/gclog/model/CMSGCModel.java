@@ -15,15 +15,15 @@ package org.eclipse.jifa.gclog.model;
 
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.jifa.gclog.event.GCEvent;
-import org.eclipse.jifa.gclog.event.evnetInfo.GCEventBooleanType;
+import org.eclipse.jifa.gclog.event.eventInfo.GCEventBooleanType;
 import org.eclipse.jifa.gclog.model.modeInfo.GCCollectorType;
 import org.eclipse.jifa.gclog.util.LongData;
 import org.eclipse.jifa.gclog.vo.TimeRange;
 
 import java.util.List;
 
-import static org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea.METASPACE;
-import static org.eclipse.jifa.gclog.event.evnetInfo.MemoryArea.OLD;
+import static org.eclipse.jifa.gclog.event.eventInfo.MemoryArea.METASPACE;
+import static org.eclipse.jifa.gclog.event.eventInfo.MemoryArea.OLD;
 import static org.eclipse.jifa.gclog.model.GCEventType.CMS_CONCURRENT_ABORTABLE_PRECLEAN;
 import static org.eclipse.jifa.gclog.model.GCEventType.CMS_CONCURRENT_FAILURE;
 import static org.eclipse.jifa.gclog.model.GCEventType.CMS_CONCURRENT_INTERRUPTED;

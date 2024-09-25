@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2021, 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -74,6 +74,7 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -204,6 +205,14 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer {
         }
     }
 
+    private static <V> V $(RV<V> rv, V def) {
+        try {
+            return rv.run();
+        } catch (Throwable t) {
+            return def;
+        }
+    }
+
     private static void $(R e) {
         $(() -> {
             e.run();
@@ -220,13 +229,36 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer {
     public Overview.Details getDetails() {
         return $(() -> {
                      SnapshotInfo snapshotInfo = context.snapshot.getSnapshotInfo();
-                     return new Overview.Details(snapshotInfo.getJvmInfo(), snapshotInfo.getIdentifierSize(),
-                                                 snapshotInfo.getCreationDate().getTime(), snapshotInfo.getNumberOfObjects(),
-                                                 snapshotInfo.getNumberOfGCRoots(), snapshotInfo.getNumberOfClasses(),
-                                                 snapshotInfo.getNumberOfClassLoaders(), snapshotInfo.getUsedHeapSize(),
-                                                 false);
+                     return new Overview.Details(snapshotInfo.getIdentifierSize(),
+                                                 snapshotInfo.getCreationDate().getTime(),
+                                                 snapshotInfo.getNumberOfObjects(),
+                                                 snapshotInfo.getNumberOfGCRoots(),
+                                                 snapshotInfo.getNumberOfClasses(),
+                                                 snapshotInfo.getNumberOfClassLoaders(),
+                                                 snapshotInfo.getUsedHeapSize(),
+                                                 getJVMOptions());
                  }
                 );
+    }
+
+    private List<String> getJVMOptions() {
+        return $(() -> {
+            List<String> result = new ArrayList<>();
+            IResult oqlResult = getOQLResult(context, "select v.vmArgs.list.a.@objectId from sun.management.VMManagementImpl v");
+            if (oqlResult instanceof IResultTable t && t.getRowCount() == 1) {
+                Object row = t.getRow(0);
+                Integer id = (Integer) t.getColumnValue(row, 0);
+                IObjectArray array = (IObjectArray) context.snapshot.getObject(id);
+                long[] refs = array.getReferenceArray();
+                for (long address : refs) {
+                    if (address != 0) {
+                        IObject object = context.snapshot.getObject(context.snapshot.mapAddressToId(address));
+                        result.add(object.getClassSpecificName());
+                    }
+                }
+            }
+            return result;
+        }, Collections.emptyList());
     }
 
     private <Res extends IResult> Res queryByCommand(AnalysisContext context,
@@ -268,6 +300,27 @@ public class HeapDumpAnalyzerImpl implements HeapDumpAnalyzer {
                 map.put((String) result.getColumnValue(row, 1), (String) result.getColumnValue(row, 2));
             }
             return map;
+        });
+    }
+
+    @Override
+    public Map<String, String> getEnvVariables() {
+        return $(() -> {
+            Map<String, String> env = new HashMap<>();
+            Collection<IClass> classes = context.snapshot.getClassesByName("java.lang.ProcessEnvironment", true);
+            if(classes == null || classes.isEmpty()){
+                return env;
+            }
+            IClass systemClass = classes.iterator().next();
+            IObject iObject = (IObject) systemClass.resolveValue("theEnvironment");
+            IResultTable result = (IResultTable) SnapshotQuery.lookup("hash_entries", context.snapshot)
+                    .setArgument("objects", iObject).execute(new ProgressListenerImpl(NoOpProgressListener));
+            int rowCount = result.getRowCount();
+            for(int i = 0; i< rowCount; i++){
+                Object row = result.getRow(i);
+                env.put((String) result.getColumnValue(row, 1), (String) result.getColumnValue(row, 2));
+            }
+            return env;
         });
     }
 

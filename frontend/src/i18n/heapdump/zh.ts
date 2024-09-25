@@ -1,5 +1,5 @@
 /********************************************************************************
- * Copyright (c) 2023 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023, 2024 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -40,6 +40,7 @@ export default {
     threads: '线程',
     unreachableObjects: '不可达对象',
     systemProperties: '系统属性',
+    envVariables: '环境变量',
     directByteBuffers: '堆外内存',
     classLoaders: '类加载器',
     duplicateClasses: '重复类',
@@ -60,6 +61,7 @@ export default {
     numberOfGCRoots: 'GC 根对象数量',
     creationDate: '创建时间',
     identifierSize: '系统位数',
+    jvmOptions: 'JVM 选项',
 
     biggestObjectsChartTitle: '大对象（按对象的支配内存大小计算）'
   },
