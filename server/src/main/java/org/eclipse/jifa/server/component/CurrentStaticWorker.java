@@ -50,7 +50,7 @@ public class CurrentStaticWorker extends ConfigurationAccessor {
 
     @PostConstruct
     private void init() throws IOException {
-        InetAddress localHost = InetAddress.getLocalHost();
+        InetAddress localHost = getLocalHostExactAddress();
         String hostAddress = localHost.getHostAddress();
         current = this.staticWorkerRepo.findByHostAddress(hostAddress).orElseGet(() -> {
             StaticWorkerEntity worker = new StaticWorkerEntity();
@@ -77,5 +77,27 @@ public class CurrentStaticWorker extends ConfigurationAccessor {
         current.setAvailableSpace(storageService.getAvailableSpace());
         current.setTotalSpace(storageService.getTotalSpace());
         current = staticWorkerRepo.save(current);
+    }
+
+    private InetAddress getLocalHostExactAddress() {
+        try {
+            Enumeration<NetworkInterface> allNetworkInterfaces = NetworkInterface.getNetworkInterfaces();
+            while (allNetworkInterfaces.hasMoreElements()) {
+                NetworkInterface networkInterface = allNetworkInterfaces.nextElement();
+                if (!networkInterface.isLoopback() && !networkInterface.isVirtual() && networkInterface.isUp()) {
+                    Enumeration<InetAddress> addresses = networkInterface.getInetAddresses();
+                    while (addresses.hasMoreElements()) {
+                        InetAddress inetAddress = addresses.nextElement();
+                        if (inetAddress instanceof Inet4Address) {
+                            return inetAddress;
+                        }
+                    }
+                }
+            }
+            return InetAddress.getLocalHost();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }
