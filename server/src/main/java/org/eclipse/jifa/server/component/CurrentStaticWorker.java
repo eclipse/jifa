@@ -80,7 +80,7 @@ public class CurrentStaticWorker extends ConfigurationAccessor {
         current = staticWorkerRepo.save(current);
     }
 
-    public String getLocalHostExactAddress() throws IOException {
+    private String getLocalHostExactAddress() throws IOException {
         Enumeration<NetworkInterface> allNetworkInterfaces = NetworkInterface.getNetworkInterfaces();
         while (allNetworkInterfaces.hasMoreElements()) {
             NetworkInterface networkInterface = allNetworkInterfaces.nextElement();
