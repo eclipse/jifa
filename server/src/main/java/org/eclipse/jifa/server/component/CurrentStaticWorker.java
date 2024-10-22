@@ -50,8 +50,7 @@ public class CurrentStaticWorker extends ConfigurationAccessor {
 
     @PostConstruct
     private void init() throws IOException {
-        InetAddress localHost = getLocalHostExactAddress();
-        String hostAddress = localHost.getHostAddress();
+        String hostAddress = getLocalHostExactAddress();
         current = this.staticWorkerRepo.findByHostAddress(hostAddress).orElseGet(() -> {
             StaticWorkerEntity worker = new StaticWorkerEntity();
             worker.setHostAddress(hostAddress);
@@ -79,25 +78,20 @@ public class CurrentStaticWorker extends ConfigurationAccessor {
         current = staticWorkerRepo.save(current);
     }
 
-    private InetAddress getLocalHostExactAddress() {
-        try {
-            Enumeration<NetworkInterface> allNetworkInterfaces = NetworkInterface.getNetworkInterfaces();
-            while (allNetworkInterfaces.hasMoreElements()) {
-                NetworkInterface networkInterface = allNetworkInterfaces.nextElement();
-                if (!networkInterface.isLoopback() && !networkInterface.isVirtual() && networkInterface.isUp()) {
-                    Enumeration<InetAddress> addresses = networkInterface.getInetAddresses();
-                    while (addresses.hasMoreElements()) {
-                        InetAddress inetAddress = addresses.nextElement();
-                        if (inetAddress instanceof Inet4Address) {
-                            return inetAddress;
-                        }
+    public String getLocalHostExactAddress() throws SocketException, UnknownHostException {
+        Enumeration<NetworkInterface> allNetworkInterfaces = NetworkInterface.getNetworkInterfaces();
+        while (allNetworkInterfaces.hasMoreElements()) {
+            NetworkInterface networkInterface = allNetworkInterfaces.nextElement();
+            if (!networkInterface.isLoopback() && !networkInterface.isVirtual() && networkInterface.isUp()) {
+                Enumeration<InetAddress> addresses = networkInterface.getInetAddresses();
+                while (addresses.hasMoreElements()) {
+                    InetAddress inetAddress = addresses.nextElement();
+                    if (inetAddress instanceof Inet4Address) {
+                        return inetAddress.getHostAddress();
                     }
                 }
             }
-            return InetAddress.getLocalHost();
-        } catch (Exception e) {
-            e.printStackTrace();
         }
-        return null;
+        return InetAddress.getLocalHost().getHostAddress();
     }
 }
