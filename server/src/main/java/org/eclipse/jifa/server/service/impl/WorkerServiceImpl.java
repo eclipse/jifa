@@ -65,6 +65,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.BodyInserter;
 import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.web.reactive.function.client.ExchangeStrategies;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.util.DefaultUriBuilderFactory;
@@ -127,7 +128,13 @@ public class WorkerServiceImpl extends ConfigurationAccessor implements WorkerSe
                                           .doOnConnected(conn -> conn
                                                   .addHandlerLast(new ReadTimeoutHandler(Long.MAX_VALUE, TimeUnit.SECONDS))
                                                   .addHandlerLast(new WriteTimeoutHandler(Long.MAX_VALUE, TimeUnit.SECONDS)));
+
+        final int maxInMemorySize = 10 * 1024 * 1024;
+        final ExchangeStrategies exchangeStrategies = ExchangeStrategies.builder()
+                .codecs(configurer -> configurer.defaultCodecs().maxInMemorySize(maxInMemorySize))
+                .build();
         webClient = WebClient.builder()
+                             .exchangeStrategies(exchangeStrategies)
                              .clientConnector(new ReactorClientHttpConnector(httpClient))
                              .build();
 
