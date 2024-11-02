@@ -211,14 +211,10 @@ public class WorkerServiceImpl extends ConfigurationAccessor implements WorkerSe
     @Override
     public long forwardUploadRequestToStaticWorker(StaticWorkerEntity worker, FileType type, MultipartFile file) throws Throwable {
         MultipartBodyBuilder builder = new MultipartBodyBuilder();
-        try {
-            builder.part("file", new ByteArrayResource(file.getBytes()))
-                   .filename(file.getOriginalFilename() != null ? file.getOriginalFilename() : Constant.DEFAULT_FILENAME)
-                   .contentType(MediaType.APPLICATION_OCTET_STREAM);
-            builder.part("type", type.name());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        builder.part("file", file.getResource())
+               .filename(file.getOriginalFilename() != null ? file.getOriginalFilename() : Constant.DEFAULT_FILENAME)
+               .contentType(MediaType.APPLICATION_OCTET_STREAM);
+        builder.part("type", type.name());
 
         UriBuilder uriBuilder = new DefaultUriBuilderFactory().builder()
                                                               .scheme("http")
